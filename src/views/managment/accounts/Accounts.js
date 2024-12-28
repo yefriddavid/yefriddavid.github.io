@@ -23,7 +23,8 @@ function JsonTable() {
         bodyFormData.append('action', 'getAccounts')
         bodyFormData.append('year', '2024')
         bodyFormData.append('month', '12')
-        bodyFormData.append('type', 'Incoming')
+        // bodyFormData.append('type', 'Incoming')
+        bodyFormData.append('type', 'Outcoming')
 
         const response = await axios.post(url, bodyFormData)
 
@@ -43,7 +44,7 @@ function JsonTable() {
     return fetchData()
   }, [])
 
-  const elementItems = data.map( (i) => 
+  const elementItems = data.map( (i) =>
           <AccountItem key={i.accountId} account={i} />
   )
 
