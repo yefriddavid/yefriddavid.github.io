@@ -58,8 +58,8 @@ const AccountItem = ({account: i}) => (
                   <CTableRow key={i.accountId}>
                     <CTableHeaderCell scope="row">{i.accountId}</CTableHeaderCell>
                     <CTableDataCell>{i.name}</CTableDataCell>
-                    <CTableDataCell>Otto</CTableDataCell>
-                    <CTableDataCell>Mensual</CTableDataCell>
+                    <CTableDataCell>{i.paymentMethod}</CTableDataCell>
+                    <CTableDataCell>{i.period}</CTableDataCell>
                     <CTableDataCell>{i.value}</CTableDataCell>
                   </CTableRow>)
 
@@ -86,7 +86,7 @@ const Accounts = () => {
                 <CTableRow>
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Name</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Clasification</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Payment Method</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Period</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Value</CTableHeaderCell>
                 </CTableRow>
