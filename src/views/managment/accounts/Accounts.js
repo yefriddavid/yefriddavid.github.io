@@ -21,10 +21,10 @@ function JsonTable() {
         var bodyFormData = new FormData()
         bodyFormData.append('token', '123-456-789')
         bodyFormData.append('action', 'getAccounts')
-        bodyFormData.append('year', '2024')
-        bodyFormData.append('month', '12')
+        //bodyFormData.append('year', '2024')
+        //bodyFormData.append('month', '12')
         // bodyFormData.append('type', 'Incoming')
-        bodyFormData.append('type', 'Outcoming')
+        //bodyFormData.append('type', 'Outcoming')
 
         const response = await axios.post(url, bodyFormData)
 
@@ -58,9 +58,9 @@ const AccountItem = ({account: i}) => (
                   <CTableRow key={i.accountId}>
                     <CTableHeaderCell scope="row">{i.accountId}</CTableHeaderCell>
                     <CTableDataCell>{i.name}</CTableDataCell>
+                    <CTableDataCell>{i.type}</CTableDataCell>
                     <CTableDataCell>{i.paymentMethod}</CTableDataCell>
                     <CTableDataCell>{i.period}</CTableDataCell>
-                    <CTableDataCell>{i.value}</CTableDataCell>
                   </CTableRow>)
 
 
@@ -86,9 +86,9 @@ const Accounts = () => {
                 <CTableRow>
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Name</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Type</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Payment Method</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Period</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Value</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
