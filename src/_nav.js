@@ -29,12 +29,12 @@ const _nav = [
   },
   {
     component: CNavTitle,
-    name: 'Theme',
+    name: 'Managment',
   },
   {
     component: CNavItem,
     name: 'Accounts',
-    to: '/theme/accounts',
+    to: '/managment/accounts',
     icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
   },
   {
@@ -51,7 +51,13 @@ const _nav = [
   },
   {
     component: CNavTitle,
-    name: 'Components',
+    name: 'Movements',
+  },
+  {
+    component: CNavItem,
+    name: 'Accounts',
+    to: '/movements/accounts',
+    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
   },
   {
     component: CNavGroup,
