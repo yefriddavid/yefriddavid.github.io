@@ -35,9 +35,15 @@ const _nav = [
     component: CNavItem,
     name: 'Accounts',
     to: '/managment/accounts',
-    icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Payments',
+    to: '/managment/payments',
+    icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+  },
+  /*{
     component: CNavItem,
     name: 'Colors',
     to: '/theme/colors',
@@ -48,7 +54,7 @@ const _nav = [
     name: 'Typography',
     to: '/theme/typography',
     icon: <CIcon icon={cilPencil} customClassName="nav-icon" />,
-  },
+  },*/
   {
     component: CNavTitle,
     name: 'Movements',
