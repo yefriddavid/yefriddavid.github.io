@@ -1,27 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { DataGrid, Column, MasterDetail, Selection } from 'devextreme-react/data-grid';
-import { Button } from 'devextreme-react/button';
-import axios from 'axios'
+import React, { useState, useEffect, Component } from 'react'
+import { DataGrid, Column, MasterDetail, Selection, LoadPanel } from 'devextreme-react/data-grid'
+import { Button } from 'devextreme-react/button'
 import DocumentoFirebase from './test'
+import { fetchAccounts, fetchAccountPayments } from './Services'
+import TextField from '@material-ui/core/TextField'
+import Autocomplete from '@material-ui/lab/Autocomplete'
+//import { Controller, useFormContext } from "react-hook-form"
+import moment from 'moment'
+
+const initialState = {
+  data: [],
+  loading: false,
+  year: moment().format('Y'),
+  month: moment().format('MMMM'),
+  monthNumber: moment().format('M'),
+  // monthNumber: "10",
+}
 
 const onContentReady = (e) => {
   if (!e.component.getSelectedRowKeys().length) { e.component.selectRowsByIndexes([0]); }
-};
+}
 
 const onSelectionChanged = (e) => {
-  e.component.collapseAll(-1);
-  e.component.expandRow(e.currentSelectedRowKeys[0]);
-};
+  e.component.collapseAll(-1)
+  e.component.expandRow(e.currentSelectedRowKeys[0])
+}
 
-const ItemDetail = (account) => {
+const ItemDetail = (account, year, month) => {
   const [data, setData] = useState([])
   const [load, setLoad] = useState([])
 
   const { data: itemAccount } = account
+  // const { year, monthNumber,  } = this.state
 
   const fetchData = async () => {
     try {
-      const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
+      /*const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
 
       var bodyFormData = new FormData()
       bodyFormData.append('token', '123-456-789')
@@ -29,14 +43,16 @@ const ItemDetail = (account) => {
       bodyFormData.append('action', 'getAccountPayments')
       bodyFormData.append('accountId', itemAccount.accountId)
 
-      bodyFormData.append('year', '2024')
-      bodyFormData.append('month', '12')
+      bodyFormData.append('year', year)
+      bodyFormData.append('month', month)*/
 
-      const response = await axios.post(url, bodyFormData)
+      //const response = await axios.post(url, bodyFormData)
+
+      const accounts = await fetchAccountPayments({year, month, accountId: itemAccount.accountId})
 
       // console.log(response.data.data.payments)
       //console.log(response.data.data)
-      const payments = response.data.data?.payments?.items || []
+      const payments = accounts.data?.payments?.items || []
       // const { items: payments } = data.payments
       //const { items } = data
       //console.log(payments)
@@ -52,16 +68,14 @@ const ItemDetail = (account) => {
     fetchData();
   }, []);
 
-    // const data = JSON.stringify(rowData.data)
-    // console.log(data)
+  // const data = JSON.stringify(rowData.data)
+  // console.log(data)
 
-    const comment = data.length ? data[0].comment : "";
-    const value = data.length ? data[0].value : "";
+  const comment = data.length ? data[0].comment : "";
+  const value = data.length ? data[0].value : "";
 
-  console.log(data);
-console.log("data:");
 
-  if(load !== true){
+  if (load !== true) {
     return <center>
       <h5>Loading...</h5>
     </center>
@@ -69,36 +83,36 @@ console.log("data:");
   }
 
   const myPayments = data || [];
-  if(!myPayments.length){
+  if (!myPayments.length) {
     return <center>
       <h5>No payments yet...</h5>
     </center>
 
   }
-  return myPayments.map( (i) =>
-        <div key={i.paymentId}>
-        ID: {i.paymentId} <br />
-        comment: {i.comment} <br />
-        value: {i.value} <br />
-        <br />
-  <DocumentoFirebase paymentId={i.paymentId} />
-        <br />
-        <button>
-          Vaucher
-        </button>
-        <hr />
+  return myPayments.map((i) =>
+    <div key={i.paymentId}>
+      ID: {i.paymentId} <br />
+      comment: {i.comment} <br />
+      value: {i.value} <br />
+      <br />
+      <DocumentoFirebase paymentId={i.paymentId} />
+      <br />
+      <button>
+        Vaucher
+      </button>
+      <hr />
     </div>
-   )
-    return (
-      <ul>
-        comment: {comment} <br />
-        value: {value} <br />
-        <br />
-        <button>
-          Vaucher
-        </button>
-      </ul>
-    );
+  )
+  return (
+    <ul>
+      comment: {comment} <br />
+      value: {value} <br />
+      <br />
+      <button>
+        Vaucher
+      </button>
+    </ul>
+  );
 
   return (
     <div>
@@ -108,90 +122,163 @@ console.log("data:");
 };
 
 
-const App = () => {
-  const [data, setData] = useState([])
+class App extends Component {
+  state = {
+    ...initialState
+  }
+  setDefaultState = () => {
+    this.setState({
+      ...initialState
+    });
+  }
+  componentDidMount() {
+    this.fetchData()
+  }
+  onChangeAnyState = (v, name) => {
+    const { state } = this
 
-  const fetchData = async () => {
+    if (name=="month") {
+
+      this.setState({ ...state, "month": v, monthNumber: moment().month(v).format("M") })
+
+    }
+    else {
+
+      this.setState({ ...state, [name]: v })
+
+    }
+
+  }
+
+
+  /*const [data, setData] = useState([])
+  const [year, setYear] = useState([])
+  const [month, setMonth] = useState([])*/
+  //const { control, setValue } = useFormContext();
+
+
+  fetchData = async () => {
+
+    // const { year } = this.state
+    const { year, monthNumber: month } = this.state
+    console.log("fetch data", month);
     try {
-      const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
+
+      //this.onChangeAnyState([], "data")
+      //this.onChangeAnyState(true, "loading")
+      /*const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
 
       var bodyFormData = new FormData()
       bodyFormData.append('token', '123-456-789')
       bodyFormData.append('action', 'getAccounts')
       bodyFormData.append('type', 'Outcoming')
 
-      bodyFormData.append('year', '2024')
-      bodyFormData.append('month', '12')
-      bodyFormData.append('noEmptyAccounts', 'true')
+      bodyFormData.append('year', year)
+      bodyFormData.append('month', month)
+      bodyFormData.append('noEmptyAccounts', 'true')*/
 
-      const response = await axios.post(url, bodyFormData)
+      // const response = await axios.post(url, bodyFormData)
+      const response = await fetchAccounts({year, month, 
+        type: 'Outcoming',
+        'noEmptyAccounts': 'true'})
 
-      const { data } = response.data
+      const { data } = response
       const { items } = data
-      console.log(items)
 
-      setData(items)
+      this.onChangeAnyState(items, "data")
+      //this.onChangeAnyState(false, "loading")
     } catch (error) {
-      console.error('Error loading jQuery:', error);
+      console.error('Error loading jQuery:', error)
     }
-  };
+  }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  render() {
 
+    /*useEffect(() => {
+      fetchData()
+    }, [])*/
 
-  return (
-    <div>
-      Period:
-      <br />
-      year:
-      <select>
-        <option value="2025">
-          2025
-        </option>
-        <option value="2024">
-          2024
-        </option>
-      </select>
-      <br />
-      Month:
-      <select month="month">
-        <option value="1">
-          January
-        </option>
-        <option value="11">
-          November
-        </option>
-        <option value="12">
-          December
-        </option>
-      </select>
-      <br />
-      <br />
+    const { state, onChangeAnyState, fetchData } = this;
+    const { data, year, month, monthNumber, loading } = state;
+    const months = moment.months()
+    const years = ["2024", "2025"]
+    console.log("render");
 
-      <Button text="Refresh Data" onClick={fetchData} />
-      <DataGrid
-        id="gridContainer"
-      keyExpr="accountId"
+    return (
+      <div>
+
+        Period:
+        <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
+        <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
+        {monthNumber}
+        <br />
+        {year}
+
+        <br />
+
+        <Button text="Refresh Data" onClick={fetchData} />
+        <DataGrid
+          id="gridContainer"
+          keyExpr="accountId"
           onSelectionChanged={onSelectionChanged}
-    onContentReady={onContentReady}
-        dataSource={data}
-        showBorders={true}
-      >
-            <Selection mode="single" />
+          onContentReady={onContentReady}
+          dataSource={data}
+          showBorders={true}
+        >
+          <Selection mode="single" />
 
-        <Column dataField="accountId" width={70} caption="#" />
-        <Column dataField="name" />
-        <Column dataField="paymentMethod" />
-        <Column dataField="period" caption="Period" />
-        <Column dataField="value" caption="Value" />
+          <Column dataField="accountId" width={70} caption="#" />
+          <Column dataField="name" />
+          <Column dataField="paymentMethod" />
+          <Column dataField="period" caption="Period" />
+          <Column dataField="value" caption="Value" />
 
-        <MasterDetail enabled={false} render={ItemDetail} />
+          <MasterDetail enabled={false} render={ (item) => ItemDetail(item, year, monthNumber)} />
 
-      </DataGrid>
-    </div>
-  );
-};
+          <LoadPanel
+          visible={loading}
+                enabled="true"
+                height={100}
+                width={250}
+                indicatorSrc="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
+            />
 
-export default App;
+        </DataGrid>
+      </div>
+    );
+  }
+}
+
+// const SelectControl = ({ title, options, value }) => {
+class SelectControl extends Component {
+  state = {
+    value: ''
+  }
+  onChangeValueHandler = (_, v) => {
+    const { onChange, name } = this.props;
+    onChange(v, name)
+  }
+
+  render() {
+    const { value, onChange, title, options } = this.props;
+
+    return (<>
+      <h3>{title}</h3>
+      <Autocomplete
+        onChange={ this.onChangeValueHandler }
+        value={value}
+        options={options}
+        style={{ width: 300, hight: 50 }}
+        renderInput={(params) =>
+          <TextField {...params} label={title} variant="outlined" />}
+      />
+    </>)
+
+  }
+}
+
+export default App
+/*onChange={(event, newValue) => {
+        setValue(newValue);
+      }}
+      */
