@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DataGrid, Column, MasterDetail, Selection } from 'devextreme-react/data-grid';
 import { Button } from 'devextreme-react/button';
 import axios from 'axios'
+import DocumentoFirebase from './test'
 
 const onContentReady = (e) => {
   if (!e.component.getSelectedRowKeys().length) { e.component.selectRowsByIndexes([0]); }
@@ -79,6 +80,8 @@ console.log("data:");
         ID: {i.paymentId} <br />
         comment: {i.comment} <br />
         value: {i.value} <br />
+        <br />
+  <DocumentoFirebase paymentId={i.paymentId} />
         <br />
         <button>
           Vaucher
