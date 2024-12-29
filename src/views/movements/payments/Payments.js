@@ -9,7 +9,8 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import moment from 'moment'
 
 const initialState = {
-  data: [],
+  response: {},
+  data: null,
   loading: false,
   year: moment().format('Y'),
   month: moment().format('MMMM'),
@@ -35,27 +36,10 @@ const ItemDetail = (account, year, month) => {
 
   const fetchData = async () => {
     try {
-      /*const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
-
-      var bodyFormData = new FormData()
-      bodyFormData.append('token', '123-456-789')
-      // bodyFormData.append('action', 'getAccounts')
-      bodyFormData.append('action', 'getAccountPayments')
-      bodyFormData.append('accountId', itemAccount.accountId)
-
-      bodyFormData.append('year', year)
-      bodyFormData.append('month', month)*/
-
-      //const response = await axios.post(url, bodyFormData)
 
       const accounts = await fetchAccountPayments({year, month, accountId: itemAccount.accountId})
 
-      // console.log(response.data.data.payments)
-      //console.log(response.data.data)
       const payments = accounts.data?.payments?.items || []
-      // const { items: payments } = data.payments
-      //const { items } = data
-      //console.log(payments)
 
       setLoad(true)
       setData(payments)
@@ -151,41 +135,31 @@ class App extends Component {
   }
 
 
-  /*const [data, setData] = useState([])
-  const [year, setYear] = useState([])
-  const [month, setMonth] = useState([])*/
-  //const { control, setValue } = useFormContext();
-
-
   fetchData = async () => {
 
-    // const { year } = this.state
-    const { year, monthNumber: month } = this.state
+    const { state } = this
+    const { year, monthNumber: month } = state
     console.log("fetch data", month);
+    
+    //this.onChangeAnyState(true, "loading")
+    
+    //this.setState({...state, data: null })
+      this.onChangeAnyState(null, "data")
     try {
 
-      //this.onChangeAnyState([], "data")
-      //this.onChangeAnyState(true, "loading")
-      /*const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
-
-      var bodyFormData = new FormData()
-      bodyFormData.append('token', '123-456-789')
-      bodyFormData.append('action', 'getAccounts')
-      bodyFormData.append('type', 'Outcoming')
-
-      bodyFormData.append('year', year)
-      bodyFormData.append('month', month)
-      bodyFormData.append('noEmptyAccounts', 'true')*/
-
-      // const response = await axios.post(url, bodyFormData)
       const response = await fetchAccounts({year, month, 
         type: 'Outcoming',
         'noEmptyAccounts': 'true'})
 
-      const { data } = response
-      const { items } = data
+      const { data, parametres } = response
+      const { items: accounts } = data
 
-      this.onChangeAnyState(items, "data")
+      //this.onChangeAnyState(items, "data")
+      this.onChangeAnyState(accounts, "data")
+      //this.onChangeAnyState({ parameters }, "response")
+      //this.setState({...state, data: accounts, response: { parametres } })
+      //this.setState({...this.state, data: items)
+
       //this.onChangeAnyState(false, "loading")
     } catch (error) {
       console.error('Error loading jQuery:', error)
@@ -203,6 +177,7 @@ class App extends Component {
     const months = moment.months()
     const years = ["2024", "2025"]
     console.log("render");
+    console.log(loading);
 
     return (
       <div>
@@ -233,14 +208,16 @@ class App extends Component {
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
 
-          <MasterDetail enabled={false} render={ (item) => ItemDetail(item, year, monthNumber)} />
+          <MasterDetail 
+          autoExpandAll = "false"
+          enabled={false} render={ (item) => ItemDetail(item, year, monthNumber)} />
 
           <LoadPanel
-          visible={loading}
+          visible={!data}
                 enabled="true"
                 height={100}
                 width={250}
-                indicatorSrc="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
+                indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
             />
 
         </DataGrid>
