@@ -14,6 +14,7 @@ const onSelectionChanged = (e) => {
 
 const ItemDetail = (account) => {
   const [data, setData] = useState([])
+  const [load, setLoad] = useState([])
 
   const { data: itemAccount } = account
 
@@ -33,12 +34,13 @@ const ItemDetail = (account) => {
       const response = await axios.post(url, bodyFormData)
 
       // console.log(response.data.data.payments)
-      console.log(response.data.data)
+      //console.log(response.data.data)
       const payments = response.data.data?.payments?.items || []
       // const { items: payments } = data.payments
       //const { items } = data
-      console.log(payments)
+      //console.log(payments)
 
+      setLoad(true)
       setData(payments)
     } catch (error) {
       console.error('Error loading jQuery:', error);
@@ -55,9 +57,26 @@ const ItemDetail = (account) => {
     const comment = data.length ? data[0].comment : "";
     const value = data.length ? data[0].value : "";
 
+  console.log(data);
+console.log("data:");
+
+  if(load !== true){
+    return <center>
+      <h5>Loading...</h5>
+    </center>
+
+  }
+
   const myPayments = data || [];
+  if(!myPayments.length){
+    return <center>
+      <h5>No payments yet...</h5>
+    </center>
+
+  }
   return myPayments.map( (i) =>
         <div key={i.paymentId}>
+        ID: {i.paymentId} <br />
         comment: {i.comment} <br />
         value: {i.value} <br />
         <br />
@@ -98,8 +117,9 @@ const App = () => {
       bodyFormData.append('action', 'getAccounts')
       bodyFormData.append('type', 'Outcoming')
 
-      //bodyFormData.append('year', '2024')
-      //bodyFormData.append('month', '12')
+      bodyFormData.append('year', '2024')
+      bodyFormData.append('month', '12')
+      bodyFormData.append('noEmptyAccounts', 'true')
 
       const response = await axios.post(url, bodyFormData)
 
@@ -120,6 +140,33 @@ const App = () => {
 
   return (
     <div>
+      Period:
+      <br />
+      year:
+      <select>
+        <option value="2025">
+          2025
+        </option>
+        <option value="2024">
+          2024
+        </option>
+      </select>
+      <br />
+      Month:
+      <select month="month">
+        <option value="1">
+          January
+        </option>
+        <option value="11">
+          November
+        </option>
+        <option value="12">
+          December
+        </option>
+      </select>
+      <br />
+      <br />
+
       <Button text="Refresh Data" onClick={fetchData} />
       <DataGrid
         id="gridContainer"
@@ -133,9 +180,9 @@ const App = () => {
 
         <Column dataField="accountId" width={70} caption="#" />
         <Column dataField="name" />
-        <Column dataField="type" />
         <Column dataField="paymentMethod" />
         <Column dataField="period" caption="Period" />
+        <Column dataField="value" caption="Value" />
 
         <MasterDetail enabled={false} render={ItemDetail} />
 
