@@ -1,89 +1,149 @@
-import ODataStore from 'devextreme/data/odata/store'
-import React, { useEffect, useState, createRef, useCallback } from 'react'
-import DataGrid, {
-  Column,
-  // DataGridTypes,
-  Grouping,
-  GroupPanel,
-  Pager,
-  Paging,
-  SearchPanel,
-} from 'devextreme-react/data-grid';
-import DiscountCell from './DiscountCell.jsx';
+import React, { useState, useEffect } from 'react';
+import { DataGrid, Column, MasterDetail, Selection } from 'devextreme-react/data-grid';
+import { Button } from 'devextreme-react/button';
+import axios from 'axios'
 
-const pageSizes = [10, 25, 50, 100];
-
-const dataSourceOptions = {
-  store: new ODataStore({
-    version: 2,
-    url: 'https://js.devexpress.com/Demos/SalesViewer/odata/DaySaleDtoes',
-    key: 'Id',
-    beforeSend(request) {
-      const year = new Date().getFullYear() - 1;
-      request.params.startDate = `${year}-05-10`;
-      request.params.endDate = `${year}-5-15`;
-    },
-  }),
+const onContentReady = (e) => {
+  if (!e.component.getSelectedRowKeys().length) { e.component.selectRowsByIndexes([0]); }
 };
 
-const Payments = () => {
-  const [collapsed, setCollapsed] = useState(true);
+const onSelectionChanged = (e) => {
+  e.component.collapseAll(-1);
+  e.component.expandRow(e.currentSelectedRowKeys[0]);
+};
 
-  // const onContentReady = useCallback((e: DataGridTypes.ContentReadyEvent) => {
-  const onContentReady = useCallback((e) => {
-      if (collapsed) {
-        e.component.expandRow(['EnviroCare'])
-        setCollapsed(false)
-      }
-    }, [collapsed]);
+  const renderItems = (rowData) => {
+    const { data } = rowData
+    // const data = JSON.stringify(rowData.data)
+    // console.log(data)
+
+    return (
+      <ul>
+        {data.name}
+        <button>
+          Vaucher
+        </button>
+      </ul>
+    );
+  };
+
+const ItemDetail = (account) => {
+  const [data, setData] = useState([])
+
+  const { data: itemAccount } = account
+
+  const fetchData = async () => {
+    try {
+      const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
+
+      var bodyFormData = new FormData()
+      bodyFormData.append('token', '123-456-789')
+      // bodyFormData.append('action', 'getAccounts')
+      bodyFormData.append('action', 'getAccountPayments')
+      bodyFormData.append('accountId', itemAccount.accountId)
+
+      bodyFormData.append('year', '2024')
+      bodyFormData.append('month', '12')
+
+      const response = await axios.post(url, bodyFormData)
+
+      // console.log(response.data.data.payments)
+      console.log(response.data.data)
+      const payments = response.data.data?.payments?.items || []
+      // const { items: payments } = data.payments
+      //const { items } = data
+      console.log(payments)
+
+      setData(payments)
+    } catch (error) {
+      console.error('Error loading jQuery:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+    // const data = JSON.stringify(rowData.data)
+    // console.log(data)
+
+    const comment = data.length ? data[0].comment : "";
+    const value = data.length ? data[0].value : "";
+    return (
+      <ul>
+        comment: {comment} <br />
+        value: {value} <br />
+        <br />
+        <button>
+          Vaucher
+        </button>
+      </ul>
+    );
 
   return (
-    <DataGrid
-      dataSource={dataSourceOptions}
-      allowColumnReordering={true}
-      rowAlternationEnabled={true}
-      showBorders={true}
-      width="100%"
-      onContentReady={onContentReady}
-    >
-      <GroupPanel visible={true} />
-      <SearchPanel visible={true} highlightCaseSensitive={true} />
-      <Grouping autoExpandAll={false} />
-
-      <Column dataField="Product" groupIndex={0} />
-      <Column
-        dataField="Amount"
-        caption="Account Name"
-        dataType="number"
-        format="currency"
-        alignment="right"
-      />
-      <Column
-        dataField="Discount"
-        caption="Discount %"
-        dataType="number"
-        format="percent"
-        alignment="right"
-        allowGrouping={false}
-        cellRender={DiscountCell}
-        cssClass="bullet"
-      />
-      <Column dataField="SaleDate" dataType="date" caption="Payment Date" />
-      <Column dataField="Region" dataType="string" caption="Type" />
-      <Column dataField="Sector" dataType="string" caption="Value" />
-      <Column dataField="Channel" dataType="string" caption="Vaucher" />
-      <Column dataField="Customer" dataType="string" width={150} caption="Payment Method" />
-
-      <Pager
-        visible={true}
-        allowedPageSizes={pageSizes}
-        showPageSizeSelector={true}
-      />
-      <Paging defaultPageSize={10} />
-    </DataGrid>
+    <div>
+      david rios
+    </div>
   );
 };
 
-export default Payments;
+
+const App = () => {
+  const [data, setData] = useState([])
+
+  const fetchData = async () => {
+    try {
+      const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
+
+      var bodyFormData = new FormData()
+      bodyFormData.append('token', '123-456-789')
+      bodyFormData.append('action', 'getAccounts')
+      bodyFormData.append('type', 'Outcoming')
+
+      //bodyFormData.append('year', '2024')
+      //bodyFormData.append('month', '12')
+
+      const response = await axios.post(url, bodyFormData)
+
+      const { data } = response.data
+      const { items } = data
+      console.log(items)
+
+      setData(items)
+    } catch (error) {
+      console.error('Error loading jQuery:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
 
+  return (
+    <div>
+      <Button text="Refresh Data" onClick={fetchData} />
+      <DataGrid
+        id="gridContainer"
+      keyExpr="accountId"
+          onSelectionChanged={onSelectionChanged}
+    onContentReady={onContentReady}
+        dataSource={data}
+        showBorders={true}
+      >
+            <Selection mode="single" />
+
+        <Column dataField="accountId" width={70} caption="#" />
+        <Column dataField="name" />
+        <Column dataField="type" />
+        <Column dataField="paymentMethod" />
+        <Column dataField="period" caption="Period" />
+
+        <MasterDetail enabled={false} render={ItemDetail} />
+
+      </DataGrid>
+    </div>
+  );
+};
+
+export default App;
