@@ -12,21 +12,6 @@ const onSelectionChanged = (e) => {
   e.component.expandRow(e.currentSelectedRowKeys[0]);
 };
 
-  const renderItems = (rowData) => {
-    const { data } = rowData
-    // const data = JSON.stringify(rowData.data)
-    // console.log(data)
-
-    return (
-      <ul>
-        {data.name}
-        <button>
-          Vaucher
-        </button>
-      </ul>
-    );
-  };
-
 const ItemDetail = (account) => {
   const [data, setData] = useState([])
 
@@ -69,6 +54,19 @@ const ItemDetail = (account) => {
 
     const comment = data.length ? data[0].comment : "";
     const value = data.length ? data[0].value : "";
+
+  const myPayments = data || [];
+  return myPayments.map( (i) =>
+        <div key={i.paymentId}>
+        comment: {i.comment} <br />
+        value: {i.value} <br />
+        <br />
+        <button>
+          Vaucher
+        </button>
+        <hr />
+    </div>
+   )
     return (
       <ul>
         comment: {comment} <br />
