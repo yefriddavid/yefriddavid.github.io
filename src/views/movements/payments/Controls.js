@@ -7,6 +7,7 @@ import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import { CFormInput } from '@coreui/react'
+import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
 
 
 import {
@@ -14,7 +15,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CCol,
   CLink,
   CModal,
   CModalBody,
@@ -22,7 +22,6 @@ import {
   CModalHeader,
   CModalTitle,
   CPopover,
-  CRow,
   CTooltip,
 } from '@coreui/react'
 
@@ -204,11 +203,15 @@ const NewPaymentComponent = ({visible, setVisible, account, name}) => {
 }
 
 const ItemDetail = (account, year, month, onOpenVaucher) => {
-  const [data, setData] = useState([])
-  const [load, setLoad] = useState([])
+  const { data: itemAccount } = account
+  const { payments } = itemAccount;
+  //console.log(payments);
+  const [data, setData] = useState(payments.items)
+  const [load, setLoad] = useState(true)
   //const [currentVaucher, setCurrentVaucher] = useState()
 
-  const { data: itemAccount } = account
+  //setData(payments)
+
   // const { year, monthNumber,  } = this.state
 
   const fetchData = async () => {
@@ -225,12 +228,10 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  //useEffect(() => {
+  //  fetchData();
+  //}, []);
 
-  // const data = JSON.stringify(rowData.data)
-  // console.log(data)
 
   const comment = data.length ? data[0].comment : "";
   const value = data.length ? data[0].value : "";
@@ -250,33 +251,63 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
     </center>
 
   }
-  return myPayments.map((i) =>
-    <div key={i.paymentId}>
-      ID: {i.paymentId} <br />
-      comment: {i.comment} <br />
-      value: {i.value} <br />
-      <br />
+  return (
+    <CRow>
+      {myPayments.map((i) => (
+        <CCol sm={3} key={crypto.randomUUID()}>
+    <CCard key={i.paymentId} style={{ width: '18rem' }}>
       <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
-      
-      <hr />
-    </div>
-  )
-  return (
-    <ul>
-      comment: {comment} <br />
-      value: {value} <br />
-      <br />
-      <button onClick={ (e) => onOpenVaucher(true, "showVaucherPaymentModal") }>
-        show Vaucher
-      </button>
-    </ul>
-  );
+      <CCardBody>
+        <CCardTitle>{i.value}</CCardTitle>
+        <CCardText>
+          comment: {i.comment} <br />
+          Payment Method: {i.paymentMethod} <br />
+          date: {i.date}
+        </CCardText>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+        <CButton color="primary" size="sm">
+          Edit
+        </CButton>
+        <CButton color="danger" size="sm">
+          Remove
+        </CButton>
+        <CButton color="info" size="sm">
+          Show Vaucher
+        </CButton>
+      </div>
+      </CCardBody>
+    </CCard>      
+    </CCol>
+  ))}
+    </CRow>)
 
-  return (
-    <div>
-      david rios
-    </div>
-  );
+  //return myPayments.map((i) =>
+  //  <div key={i.paymentId}>
+  //    ID: {i.paymentId} <br />
+  //    comment: {i.comment} <br />
+  //    value: {i.value} <br />
+  //    <br />
+  //    <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
+  //    
+  //    <hr />
+  //  </div>
+  //)
+  //return (
+  //  <ul>
+  //    comment: {comment} <br />
+  //    value: {value} <br />
+  //    <br />
+  //    <button onClick={ (e) => onOpenVaucher(true, "showVaucherPaymentModal") }>
+  //      show Vaucher
+  //    </button>
+  //  </ul>
+  //);
+
+  //return (
+  //  <div>
+  //    david rios
+  //  </div>
+  //);
 };
 
 export {

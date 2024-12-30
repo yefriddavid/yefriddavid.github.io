@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { db } from './firebase' // Importa tu instancia de Firebase
 import { collection, getDocs, query, where, setDoc, doc, addDoc } from 'firebase/firestore'
 import { VaucherModalViewer } from './Controls'
+import { CCardImage } from '@coreui/react'
 
 const EditPaymentVaucher = async ({paymentId, vaucher}) => {
 
@@ -70,6 +71,17 @@ function VaucherControlViewer({paymentId}) {
   }, [])
 
   //{documento ? (
+  return (
+    <div>
+      {documento ? (documento.map((i) =>
+          <CCardImage key={crypto.randomUUID()} orientation="top" src={i.file} />
+        )
+      ) : (
+        <p>Loading Vaucher...</p>
+      )}
+    </div>
+  )
+
   return (
     <div>
       {documento ? (documento.map((i) =>

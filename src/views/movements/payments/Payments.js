@@ -5,6 +5,10 @@ import { SelectControl, NewPaymentComponent, VaucherModalViewer, ItemDetail } fr
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
+import { cilX, cilCheckCircle } from '@coreui/icons';
+import { CIcon } from '@coreui/icons-react';
+
+
 //import { Controller, useFormContext } from "react-hook-form"
 import moment from 'moment'
 import {
@@ -132,7 +136,6 @@ class App extends Component {
       <div>
 
         <NewPaymentComponent account={currentAccount} visible={showNewPaymentModal} name="showNewPaymentModal" setVisible={onChangeAnyState} />
-        <VaucherModalViewer account={currentAccount} visible={showModalVaucherViewer} name="showModalVaucherViewer" setVisible={onChangeAnyState} />
         <br />
         Period:
         <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
@@ -159,6 +162,26 @@ class App extends Component {
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
+            <Column dataField="Status"
+                   cellRender={cellData => {
+
+                     const { data } = cellData;
+                     const { total } = data.payments;
+                     const { value } = data;
+                     //console.log(cellData);
+                     if(value <= total){
+                       //if(true){
+                        return <CIcon className="text-info" icon={cilCheckCircle} size="xl"/>
+
+                     }else{
+                        return <CIcon className="text-danger" icon={cilX} size="xl"/>
+
+                     }
+                       const color = value < total ? 'red' : 'green';
+                       return <span style={{ color }}>{value}</span>;
+                   }}
+            />
+
           <Column type="buttons" caption="actions">
                 <GButton
                     name="add"
