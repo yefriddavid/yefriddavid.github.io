@@ -1,17 +1,34 @@
 import React, { useState, useEffect, Component } from 'react'
-import { DataGrid, Column, MasterDetail, Selection, LoadPanel } from 'devextreme-react/data-grid'
+import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
-import DocumentoFirebase from './test'
-import { fetchAccounts, fetchAccountPayments } from './Services'
+import { VaucherControlViewer } from './Database'
+import { SelectControl, NewPaymentComponent } from './Controls'
+import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 //import { Controller, useFormContext } from "react-hook-form"
 import moment from 'moment'
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CLink,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CPopover,
+  CRow,
+  CTooltip,
+} from '@coreui/react'
 
 const initialState = {
+  showModal: false,
   response: {},
   data: null,
-  loading: false,
   year: moment().format('Y'),
   month: moment().format('MMMM'),
   monthNumber: moment().format('M'),
@@ -79,7 +96,7 @@ const ItemDetail = (account, year, month) => {
       comment: {i.comment} <br />
       value: {i.value} <br />
       <br />
-      <DocumentoFirebase paymentId={i.paymentId} />
+      <VaucherControlViewer paymentId={i.paymentId} />
       <br />
       <button>
         Vaucher
@@ -140,14 +157,14 @@ class App extends Component {
     const { state } = this
     const { year, monthNumber: month } = state
     console.log("fetch data", month);
-    
+
     //this.onChangeAnyState(true, "loading")
-    
+
     //this.setState({...state, data: null })
       this.onChangeAnyState(null, "data")
     try {
 
-      const response = await fetchAccounts({year, month, 
+      const response = await fetchAccounts({year, month,
         type: 'Outcoming',
         'noEmptyAccounts': 'true'})
 
@@ -166,6 +183,16 @@ class App extends Component {
     }
   }
 
+  addAccountPayment(item){
+
+    const { state, onChangeAnyState } = this
+    const { data } = item.row
+
+    this.setState({ ...state, showModal: true, currentAccount: data })
+    console.log(data);
+
+  }
+
   render() {
 
     /*useEffect(() => {
@@ -173,21 +200,18 @@ class App extends Component {
     }, [])*/
 
     const { state, onChangeAnyState, fetchData } = this;
-    const { data, year, month, monthNumber, loading } = state;
+    const { data, year, month, monthNumber, showModal, currentAccount } = state;
     const months = moment.months()
-    const years = ["2024", "2025"]
-    console.log("render");
-    console.log(loading);
+    const years = [(year-1).toString(), year.toString(), (year+1).toString()]
 
     return (
       <div>
 
+        <NewPaymentComponent account={currentAccount} visible={showModal} setVisible={onChangeAnyState} />
+        <br />
         Period:
         <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
         <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
-        {monthNumber}
-        <br />
-        {year}
 
         <br />
 
@@ -201,14 +225,25 @@ class App extends Component {
           showBorders={true}
         >
           <Selection mode="single" />
-
+                <Editing
+                    allowUpdating={true}
+                    allowDeleting={true}
+                />
           <Column dataField="accountId" width={70} caption="#" />
           <Column dataField="name" />
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
+          <Column type="buttons" caption="actions">
+                <GButton
+                    name="add"
+                onClick={(e) => this.addAccountPayment(e) }
+                />
+                  <GButton name="edit" />
+        <GButton name="delete" />
+                </Column>
 
-          <MasterDetail 
+          <MasterDetail
           autoExpandAll = "false"
           enabled={false} render={ (item) => ItemDetail(item, year, monthNumber)} />
 
@@ -226,36 +261,5 @@ class App extends Component {
   }
 }
 
-// const SelectControl = ({ title, options, value }) => {
-class SelectControl extends Component {
-  state = {
-    value: ''
-  }
-  onChangeValueHandler = (_, v) => {
-    const { onChange, name } = this.props;
-    onChange(v, name)
-  }
-
-  render() {
-    const { value, onChange, title, options } = this.props;
-
-    return (<>
-      <h3>{title}</h3>
-      <Autocomplete
-        onChange={ this.onChangeValueHandler }
-        value={value}
-        options={options}
-        style={{ width: 300, hight: 50 }}
-        renderInput={(params) =>
-          <TextField {...params} label={title} variant="outlined" />}
-      />
-    </>)
-
-  }
-}
 
 export default App
-/*onChange={(event, newValue) => {
-        setValue(newValue);
-      }}
-      */
