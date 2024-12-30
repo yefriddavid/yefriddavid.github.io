@@ -7,6 +7,7 @@ import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { cilX, cilCheckCircle } from '@coreui/icons';
 import { CIcon } from '@coreui/icons-react';
+import { useSelector, useDispatch } from 'react-redux'
 
 
 //import { Controller, useFormContext } from "react-hook-form"
@@ -30,7 +31,7 @@ import {
 
 const initialState = {
   showNewPaymentModal: false,
-  showModalVaucherViewer: false,
+  // showModalVaucherViewer: false,
   response: {},
   data: null,
   year: moment().format('Y'),
@@ -64,7 +65,7 @@ class App extends Component {
     const { state } = this
     console.log(name);
 
-    if (name=="month") {
+    if (name == "month") {
 
       this.setState({ ...state, "month": v, monthNumber: moment().month(v).format("M") })
 
@@ -87,12 +88,14 @@ class App extends Component {
     //this.onChangeAnyState(true, "loading")
 
     //this.setState({...state, data: null })
-      this.onChangeAnyState(null, "data")
+    this.onChangeAnyState(null, "data")
     try {
 
-      const response = await fetchAccounts({year, month,
+      const response = await fetchAccounts({
+        year, month,
         type: 'Outcoming',
-        'noEmptyAccounts': 'true'})
+        'noEmptyAccounts': 'true'
+      })
 
       const { data, parametres } = response
       const { items: accounts } = data
@@ -109,7 +112,7 @@ class App extends Component {
     }
   }
 
-  addAccountPayment(item){
+  addAccountPayment(item) {
 
     const { state, onChangeAnyState } = this
     const { data } = item.row
@@ -126,11 +129,9 @@ class App extends Component {
     }, [])*/
 
     const { state, onChangeAnyState, fetchData } = this;
-    const { data, year, month, monthNumber, showNewPaymentModal, currentAccount, showModalVaucherViewer } = state;
+    const { data, year, month, monthNumber, showNewPaymentModal, currentAccount } = state;
     const months = moment.months()
-    const years = [(year-1).toString(), year.toString(), (year+1).toString()]
-    console.log("showModalVaucherViewer");
-    console.log(showModalVaucherViewer);
+    const years = [(year - 1).toString(), year.toString(), (year + 1).toString()]
 
     return (
       <div>
@@ -153,55 +154,55 @@ class App extends Component {
           showBorders={true}
         >
           <Selection mode="single" />
-                <Editing
-                    allowUpdating={true}
-                    allowDeleting={true}
-                />
+          <Editing
+            allowUpdating={true}
+            allowDeleting={true}
+          />
           <Column dataField="accountId" width={70} caption="#" />
           <Column dataField="name" />
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
-            <Column dataField="Status"
-                   cellRender={cellData => {
+          <Column dataField="Status"
+            cellRender={cellData => {
 
-                     const { data } = cellData;
-                     const { total } = data.payments;
-                     const { value } = data;
-                     //console.log(cellData);
-                     if(value <= total){
-                       //if(true){
-                        return <CIcon className="text-info" icon={cilCheckCircle} size="xl"/>
+              const { data } = cellData;
+              const { total: payed } = data.payments;
+              const { value: totalAmount } = data;
+              //console.log(cellData);
+              if (totalAmount <= payed) {
+                //if(true){
+                return <CIcon className="text-info" icon={cilCheckCircle} size="xl" />
 
-                     }else{
-                        return <CIcon className="text-danger" icon={cilX} size="xl"/>
+              } else {
+                return <CIcon className="text-danger" icon={cilX} size="xl" />
 
-                     }
-                       const color = value < total ? 'red' : 'green';
-                       return <span style={{ color }}>{value}</span>;
-                   }}
-            />
+              }
+              const color = value < total ? 'red' : 'green';
+              return <span style={{ color }}>{value}</span>;
+            }}
+          />
 
           <Column type="buttons" caption="actions">
-                <GButton
-                    name="add"
-                onClick={(e) => this.addAccountPayment(e) }
-                />
-                  <GButton name="edit" />
-        <GButton name="delete" />
-                </Column>
+            <GButton
+              name="add"
+              onClick={(e) => this.addAccountPayment(e)}
+            />
+            <GButton name="edit" />
+            <GButton name="delete" />
+          </Column>
 
           <MasterDetail
-          autoExpandAll = "false"
-          enabled={false} render={ (item) => ItemDetail(item, year, monthNumber, onChangeAnyState)} />
+            autoExpandAll="false"
+            enabled={false} render={(item) => ItemDetail(item, year, monthNumber, onChangeAnyState)} />
 
           <LoadPanel
-          visible={!data}
-                enabled="true"
-                height={100}
-                width={250}
-                indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
-            />
+            visible={!data}
+            enabled="true"
+            height={100}
+            width={250}
+            indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
+          />
 
         </DataGrid>
       </div>

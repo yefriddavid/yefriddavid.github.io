@@ -6,9 +6,14 @@ import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Servic
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
-import { CFormInput } from '@coreui/react'
+import { CFormInput, CFormSelect } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
+import moment from 'moment'
+import { useTranslation } from "react-i18next";
 
+
+const currencyCode = "COP";
+const myCode = 'es-CO'
 
 import {
   CButton,
@@ -25,6 +30,9 @@ import {
   CTooltip,
 } from '@coreui/react'
 
+
+
+
 class SelectControl extends Component {
   state = {
     value: ''
@@ -40,7 +48,7 @@ class SelectControl extends Component {
     return (<>
       <h3>{title}</h3>
       <Autocomplete
-        onChange={ this.onChangeValueHandler }
+        onChange={this.onChangeValueHandler}
         value={value}
         options={options}
         style={{ width: 300, hight: 50 }}
@@ -58,7 +66,7 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) =
   console.log(visible);
 
   // const [visible1, setVisible] = useState(false)
-  return vaucher? (
+  return vaucher ? (
     <>
       <CModal size="xl" visible={visible} onClose={() => setVisible(false)}>
         <CModalHeader>
@@ -66,12 +74,12 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) =
         </CModalHeader>
         <CModalBody>
           <center>
-          <img width1="200" hight1="200" src={vaucher} />
-        </center>
+            <img width1="200" hight1="200" src={vaucher} />
+          </center>
         </CModalBody>
         <CModalFooter>
-          <CButton color="primary" onClick={ () => savePayment() }>Delete</CButton>
-          <CButton color="primary" onClick={ () => savePayment() }>Change</CButton>
+          <CButton color="primary" onClick={() => savePayment()}>Delete</CButton>
+          <CButton color="primary" onClick={() => savePayment()}>Change</CButton>
           <CButton color="secondary" onClick={() => setVisible(false, name)}>
             Close
           </CButton>
@@ -80,67 +88,86 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) =
     </>
   ) : null
 }
-const NewPaymentComponent = ({visible, setVisible, account, name}) => {
+//const NewPaymentComponent = ({visible, setVisible, account, name}) => {
+class NewPaymentComponent extends Component {
 
-  const [formState, setState] = useState({ value: 0, fullPayed: true })
+  state = {
 
-  const setFormState = (e, b) => {
+  }
+  // const [formState, setState] = useState({ value: 0, fullPayed: true, paymentMethod: account?.paymentMethod || "Payment xx" })
 
+  setDefaultState = () => {
+    const { account } = this.props
+    this.setState({
+      fullPayed: true,
+      value: 0,
+      paymentMethod: account?.paymentMethod
+    });
+  }
+  componentDidMount() {
+    // this.fetchData()
+  }
+
+  setFormState = (e, b) => {
+
+    return
     const { value, name } = e.target
+    const { state: formState } = this
 
 
-    if(name=="fullPayed"){
+    if (name == "fullPayed") {
 
-      if (formState.fullPayed == true){
-        setState({ ...formState, value: account.value } )
+      if (formState.fullPayed == true) {
+        this.setState({ ...formState, value: account.value })
 
       }
       else {
         //setFormState({ target: { name: "value", value: 0 } })
-        setState({ ...formState, value: 0 } )
+        this.setState({ ...formState, value: 0 })
 
       }
-      setState({...formState, [name]: !formState.fullPayed})
+      this.setState({ ...formState, [name]: !formState.fullPayed })
     }
-    else{
+    else {
 
-      setState({...formState, [name]: value})
+      this.setState({ ...formState, [name]: value })
     }
 
   }
-  const onChangeImage = async (e) => {
+  onChangeImage = async (e) => {
 
     console.log(e.target.files);
     const file = e.target.files[0];
     let base64String;
 
     let reader = new FileReader();
-            console.log("next");
+    console.log("next");
 
-            reader.onload = function () {
-                base64String = reader.result
-                /*base64String = reader.result.replace("data:", "")
-                    .replace(/^.+,/, "");*/
+    reader.onload = function () {
+      base64String = reader.result
+      /*base64String = reader.result.replace("data:", "")
+          .replace(/^.+,/, "");*/
 
-              //imageBase64Stringsep = base64String;
+      //imageBase64Stringsep = base64String;
 
-                // alert(imageBase64Stringsep);
-                console.log(base64String);
-              setState({ ...formState, vaucher: base64String });
+      // alert(imageBase64Stringsep);
+      console.log(base64String);
+      this.setState({ ...formState, vaucher: base64String });
 
-            }
+    }
     reader.readAsDataURL(file);
 
   }
-  const setValueDefault = async (e) => {
 
-    console.log(e.target.value);
-    setState({...formState, value: account.value})
+  setValueDefault = async (e) => {
+
+    // console.log(e.target.value);
+    this.setState({ ...formState, value: account.value })
 
   }
-  const savePayment = async () => {
+  savePayment = async () => {
 
-    console.log("start save");
+    // console.log("start save");
     const formData = {
       accountId: account.accountId,
       comment: formState.comment,
@@ -149,60 +176,80 @@ const NewPaymentComponent = ({visible, setVisible, account, name}) => {
       value: formState.value,
       month: account.month,
       year: account.year,
+      paymentMethod: formState.paymentMethod,
       vaucher: formState.vaucher,
 
 
     }
     const newPayment = await addAccountPayment(formData)
-    const {paymentId} = newPayment.data
-    console.log(paymentId);
+    const { paymentId } = newPayment.data
+    // console.log(paymentId);
 
   }
   // const [visible1, setVisible] = useState(false)
-  return account? (
-    <>
-      <CButton color="primary" onClick={() => setVisible(!visible)}>
-        Launch demo modal
-      </CButton>
-      <CModal visible={visible} onClose={() => setVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>New Payment ({account?.accountId})</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          Account: <b>{account?.name}</b>
-          <br />
-          Pago completo:
-          <input type="checkbox" onChange={ setFormState } defaultChecked={formState.fullPayed} name="fullPayed" id="fullPayed" />
-          <br />
-          Value:
-          <CFormInput type="text" onChange={setFormState} value={formState.value} name="value" id="value" />
-          <br />
-          Comment:
-          <CFormInput type="text" onChange={setFormState} value={formState.comment} name="comment" id="comment" />
-          <br />
-          Date:
-          <CFormInput type="text" onChange={setFormState} value={formState.date} name="date" id="date" />
-          <br />
-          Vaucher:
-          <CFormInput type="file" onChange={onChangeImage} />
-          <br />
-          <center>
-          <img width="200" hight="300" src={formState.vaucher} />
-        </center>
 
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false, name)}>
-            Close
-          </CButton>
-          <CButton color="primary" onClick={ () => savePayment() }>Save changes</CButton>
-        </CModalFooter>
-      </CModal>
-    </>
-  ) : null
+  render() {
+
+    const { setFormState, props, state: formState, onChangeImage, savePayment } = this
+    const { account, visible, setVisible, name } = props
+
+    return account ? (
+      <>
+        <CModal visible={visible} onClose={() => setVisible(false)}>
+          <CModalHeader>
+            <CModalTitle>New Payment ({account?.accountId})</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            Account: <b>{account?.name}</b>
+            <br />
+            Pago completo:
+            <input type="checkbox" onChange={setFormState} defaultChecked={formState.fullPayed} name="fullPayed" id="fullPayed" />
+            <br />
+            Value:
+            <CFormInput type="text" onChange={setFormState} value={formState.value} name="value" id="value" />
+            <br />
+            Comment:
+            <CFormInput type="text" onChange={setFormState} value={formState.comment} name="comment" id="comment" />
+            <br />
+            Date:
+            <CFormInput type="text" onChange={setFormState} value={formState.date} name="date" id="date" />
+            <br />
+            Payment Method:
+            <CFormSelect onChange={setFormState} value={formState.paymentMethod} name="paymentMethod">
+              <option value="Cash">
+                Cash
+              </option>
+              <option value="Credit Card">
+                Credit Card
+              </option>
+            </CFormSelect>
+            <br />
+            Vaucher:
+            <CFormInput type="file" onChange={onChangeImage} />
+            <br />
+            <center>
+              <img width="200" hight="300" src={formState.vaucher} />
+              {JSON.stringify(formState)}
+              {JSON.stringify(account)}
+            </center>
+
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={() => setVisible(false, name)}>
+              Close
+            </CButton>
+            <CButton color="primary" onClick={() => savePayment()}>Save changes</CButton>
+          </CModalFooter>
+        </CModal>
+      </>
+    ) : null
+  }
 }
 
 const ItemDetail = (account, year, month, onOpenVaucher) => {
+
+  const { t } = useTranslation();
+
   const { data: itemAccount } = account
   const { payments } = itemAccount;
   //console.log(payments);
@@ -214,10 +261,22 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
 
   // const { year, monthNumber,  } = this.state
 
+  const formatValue = value => {
+
+    const price = value;
+
+    // Format the price above to USD using the locale, style, and currency.
+    let CurrencyFormat = new Intl.NumberFormat(myCode, {
+        style: 'currency',
+        currency: currencyCode,
+    });
+    return CurrencyFormat.format(price)
+
+  }
   const fetchData = async () => {
     try {
 
-      const accounts = await fetchAccountPayments({year, month, accountId: itemAccount.accountId})
+      const accounts = await fetchAccountPayments({ year, month, accountId: itemAccount.accountId })
 
       const payments = accounts.data?.payments?.items || []
 
@@ -251,34 +310,37 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
     </center>
 
   }
+
   return (
     <CRow>
       {myPayments.map((i) => (
         <CCol sm={3} key={crypto.randomUUID()}>
-    <CCard key={i.paymentId} style={{ width: '18rem' }}>
-      <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
-      <CCardBody>
-        <CCardTitle>{i.value}</CCardTitle>
-        <CCardText>
-          comment: {i.comment} <br />
-          Payment Method: {i.paymentMethod} <br />
-          date: {i.date}
-        </CCardText>
-          <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-        <CButton color="primary" size="sm">
-          Edit
-        </CButton>
-        <CButton color="danger" size="sm">
-          Remove
-        </CButton>
-        <CButton color="info" size="sm">
-          Show Vaucher
-        </CButton>
-      </div>
-      </CCardBody>
-    </CCard>      
-    </CCol>
-  ))}
+          <CCard key={i.paymentId} style={{ width: '18rem' }}>
+            <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
+            <CCardBody>
+              <CCardTitle>{formatValue(i.value)}</CCardTitle>
+              <CCardText>
+                <ul style={{paddingLeft: "10px"}}>
+                  <li style={{textWrap: 'wrap'}}><b>{t("comment")}</b>: {i.comment} </li>
+                  <li><b>{t("paymentMethod")}</b>: {i.payment_method} </li>
+                  <li><b>{t("date")}</b>: {moment(i.date).format("yyyy/MMM/DD")} </li>
+                </ul>
+              </CCardText>
+              <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                <CButton color="primary" size="sm">
+                  {t("edit")}
+                </CButton>
+                <CButton color="danger" size="sm">
+                  {t("remove")}
+                </CButton>
+                <CButton color="info" size="sm">
+                  {t("showVaucher")}
+                </CButton>
+              </div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      ))}
     </CRow>)
 
   //return myPayments.map((i) =>
@@ -288,7 +350,7 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
   //    value: {i.value} <br />
   //    <br />
   //    <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
-  //    
+  //
   //    <hr />
   //  </div>
   //)
@@ -314,5 +376,5 @@ export {
   SelectControl,
   NewPaymentComponent,
   ItemDetail,
-VaucherModalViewer
+  VaucherModalViewer
 }
