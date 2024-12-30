@@ -1,8 +1,7 @@
 import React, { useState, useEffect, Component } from 'react'
 import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
-import { VaucherControlViewer } from './Database'
-import { SelectControl, NewPaymentComponent } from './Controls'
+import { SelectControl, NewPaymentComponent, VaucherModalViewer, ItemDetail } from './Controls'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -26,7 +25,8 @@ import {
 } from '@coreui/react'
 
 const initialState = {
-  showModal: false,
+  showNewPaymentModal: false,
+  showModalVaucherViewer: false,
   response: {},
   data: null,
   year: moment().format('Y'),
@@ -44,85 +44,6 @@ const onSelectionChanged = (e) => {
   e.component.expandRow(e.currentSelectedRowKeys[0])
 }
 
-const ItemDetail = (account, year, month) => {
-  const [data, setData] = useState([])
-  const [load, setLoad] = useState([])
-
-  const { data: itemAccount } = account
-  // const { year, monthNumber,  } = this.state
-
-  const fetchData = async () => {
-    try {
-
-      const accounts = await fetchAccountPayments({year, month, accountId: itemAccount.accountId})
-
-      const payments = accounts.data?.payments?.items || []
-
-      setLoad(true)
-      setData(payments)
-    } catch (error) {
-      console.error('Error loading jQuery:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // const data = JSON.stringify(rowData.data)
-  // console.log(data)
-
-  const comment = data.length ? data[0].comment : "";
-  const value = data.length ? data[0].value : "";
-
-
-  if (load !== true) {
-    return <center>
-      <h5>Loading...</h5>
-    </center>
-
-  }
-
-  const myPayments = data || [];
-  if (!myPayments.length) {
-    return <center>
-      <h5>No payments yet...</h5>
-    </center>
-
-  }
-  return myPayments.map((i) =>
-    <div key={i.paymentId}>
-      ID: {i.paymentId} <br />
-      comment: {i.comment} <br />
-      value: {i.value} <br />
-      <br />
-      <VaucherControlViewer paymentId={i.paymentId} />
-      <br />
-      <button>
-        Vaucher
-      </button>
-      <hr />
-    </div>
-  )
-  return (
-    <ul>
-      comment: {comment} <br />
-      value: {value} <br />
-      <br />
-      <button>
-        Vaucher
-      </button>
-    </ul>
-  );
-
-  return (
-    <div>
-      david rios
-    </div>
-  );
-};
-
-
 class App extends Component {
   state = {
     ...initialState
@@ -137,6 +58,7 @@ class App extends Component {
   }
   onChangeAnyState = (v, name) => {
     const { state } = this
+    console.log(name);
 
     if (name=="month") {
 
@@ -188,7 +110,7 @@ class App extends Component {
     const { state, onChangeAnyState } = this
     const { data } = item.row
 
-    this.setState({ ...state, showModal: true, currentAccount: data })
+    this.setState({ ...state, showNewPaymentModal: true, currentAccount: data })
     console.log(data);
 
   }
@@ -200,14 +122,17 @@ class App extends Component {
     }, [])*/
 
     const { state, onChangeAnyState, fetchData } = this;
-    const { data, year, month, monthNumber, showModal, currentAccount } = state;
+    const { data, year, month, monthNumber, showNewPaymentModal, currentAccount, showModalVaucherViewer } = state;
     const months = moment.months()
     const years = [(year-1).toString(), year.toString(), (year+1).toString()]
+    console.log("showModalVaucherViewer");
+    console.log(showModalVaucherViewer);
 
     return (
       <div>
 
-        <NewPaymentComponent account={currentAccount} visible={showModal} setVisible={onChangeAnyState} />
+        <NewPaymentComponent account={currentAccount} visible={showNewPaymentModal} name="showNewPaymentModal" setVisible={onChangeAnyState} />
+        <VaucherModalViewer account={currentAccount} visible={showModalVaucherViewer} name="showModalVaucherViewer" setVisible={onChangeAnyState} />
         <br />
         Period:
         <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
@@ -245,7 +170,7 @@ class App extends Component {
 
           <MasterDetail
           autoExpandAll = "false"
-          enabled={false} render={ (item) => ItemDetail(item, year, monthNumber)} />
+          enabled={false} render={ (item) => ItemDetail(item, year, monthNumber, onChangeAnyState)} />
 
           <LoadPanel
           visible={!data}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Component } from 'react'
+import { VaucherControlViewer } from './Database'
 import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
@@ -51,24 +52,28 @@ class SelectControl extends Component {
 
   }
 }
-const VaucherModalViewer = ({ paymentId, vaucher, visible }) => {
+const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) => {
 
   const [formState, setState] = useState({ value: 0, fullPayed: true })
+  console.log("visible");
+  console.log(visible);
 
   // const [visible1, setVisible] = useState(false)
   return vaucher? (
     <>
-      <CModal visible={visible} onClose={() => setVisible(false)}>
+      <CModal size="xl" visible={visible} onClose={() => setVisible(false)}>
         <CModalHeader>
-          <CModalTitle>Vaucher ({accountId || null})</CModalTitle>
+          <CModalTitle>Vaucher ({paymentId || null})</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <imge src={vaucher} />
+          <center>
+          <img width1="200" hight1="200" src={vaucher} />
+        </center>
         </CModalBody>
         <CModalFooter>
           <CButton color="primary" onClick={ () => savePayment() }>Delete</CButton>
           <CButton color="primary" onClick={ () => savePayment() }>Change</CButton>
-          <CButton color="secondary" onClick={() => setVisible(false, "showModal")}>
+          <CButton color="secondary" onClick={() => setVisible(false, name)}>
             Close
           </CButton>
         </CModalFooter>
@@ -76,7 +81,7 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible }) => {
     </>
   ) : null
 }
-const NewPaymentComponent = ({visible, setVisible, account}) => {
+const NewPaymentComponent = ({visible, setVisible, account, name}) => {
 
   const [formState, setState] = useState({ value: 0, fullPayed: true })
 
@@ -188,7 +193,7 @@ const NewPaymentComponent = ({visible, setVisible, account}) => {
 
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false, "showModal")}>
+          <CButton color="secondary" onClick={() => setVisible(false, name)}>
             Close
           </CButton>
           <CButton color="primary" onClick={ () => savePayment() }>Save changes</CButton>
@@ -198,7 +203,85 @@ const NewPaymentComponent = ({visible, setVisible, account}) => {
   ) : null
 }
 
+const ItemDetail = (account, year, month, onOpenVaucher) => {
+  const [data, setData] = useState([])
+  const [load, setLoad] = useState([])
+  //const [currentVaucher, setCurrentVaucher] = useState()
+
+  const { data: itemAccount } = account
+  // const { year, monthNumber,  } = this.state
+
+  const fetchData = async () => {
+    try {
+
+      const accounts = await fetchAccountPayments({year, month, accountId: itemAccount.accountId})
+
+      const payments = accounts.data?.payments?.items || []
+
+      setLoad(true)
+      setData(payments)
+    } catch (error) {
+      console.error('Error loading jQuery:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // const data = JSON.stringify(rowData.data)
+  // console.log(data)
+
+  const comment = data.length ? data[0].comment : "";
+  const value = data.length ? data[0].value : "";
+
+
+  if (load !== true) {
+    return <center>
+      <h5>Loading...</h5>
+    </center>
+
+  }
+
+  const myPayments = data || [];
+  if (!myPayments.length) {
+    return <center>
+      <h5>No payments yet...</h5>
+    </center>
+
+  }
+  return myPayments.map((i) =>
+    <div key={i.paymentId}>
+      ID: {i.paymentId} <br />
+      comment: {i.comment} <br />
+      value: {i.value} <br />
+      <br />
+      <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
+      
+      <hr />
+    </div>
+  )
+  return (
+    <ul>
+      comment: {comment} <br />
+      value: {value} <br />
+      <br />
+      <button onClick={ (e) => onOpenVaucher(true, "showVaucherPaymentModal") }>
+        show Vaucher
+      </button>
+    </ul>
+  );
+
+  return (
+    <div>
+      david rios
+    </div>
+  );
+};
+
 export {
   SelectControl,
-  NewPaymentComponent
+  NewPaymentComponent,
+  ItemDetail,
+VaucherModalViewer
 }

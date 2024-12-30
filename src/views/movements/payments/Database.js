@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { db } from './firebase' // Importa tu instancia de Firebase
 import { collection, getDocs, query, where, setDoc, doc, addDoc } from 'firebase/firestore'
+import { VaucherModalViewer } from './Controls'
 
 const EditPaymentVaucher = async ({paymentId, vaucher}) => {
 
@@ -40,6 +41,7 @@ const CreatePaymentVaucher = async ({paymentId, vaucher}) => {
 
 function VaucherControlViewer({paymentId}) {
   const [documento, setDocumento] = useState(null)
+  const [showModalVaucherViewer, setStateVaucherModal] = useState(false)
   //alert(paymentId)
   useEffect(() => {
     const obtenerDocumento = async () => {
@@ -50,6 +52,7 @@ function VaucherControlViewer({paymentId}) {
 
         const newData = querySnapshot.docs.map((doc) => ({...doc.data() }))
         setDocumento(newData)
+        //
         //const docRef = db.collection('paymentVauchers').doc('test');
         //const docSnap = await docRef.get();
 
@@ -70,12 +73,17 @@ function VaucherControlViewer({paymentId}) {
   return (
     <div>
       {documento ? (documento.map((i) =>
-        <div>
+        <div key={crypto.randomUUID()}>
           <img width="250" higth="500" src={i.file} />
           {/* Agrega aquí más campos a mostrar */}
+          <VaucherModalViewer vaucher={i.file} visible={showModalVaucherViewer} name="showModalVaucherViewer" setVisible={setStateVaucherModal} />
+          <br />
+          <button onClick={ (e) => setStateVaucherModal(true) }>
+            Show Vaucher
+          </button>
         </div>
       )) : (
-        <p>Cargando documento...</p>
+        <p>Loading Vaucher...</p>
       )}
     </div>
   );
