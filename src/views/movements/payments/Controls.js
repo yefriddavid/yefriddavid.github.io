@@ -51,6 +51,31 @@ class SelectControl extends Component {
 
   }
 }
+const VaucherModalViewer = ({ paymentId, vaucher, visible }) => {
+
+  const [formState, setState] = useState({ value: 0, fullPayed: true })
+
+  // const [visible1, setVisible] = useState(false)
+  return vaucher? (
+    <>
+      <CModal visible={visible} onClose={() => setVisible(false)}>
+        <CModalHeader>
+          <CModalTitle>Vaucher ({accountId || null})</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <imge src={vaucher} />
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="primary" onClick={ () => savePayment() }>Delete</CButton>
+          <CButton color="primary" onClick={ () => savePayment() }>Change</CButton>
+          <CButton color="secondary" onClick={() => setVisible(false, "showModal")}>
+            Close
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </>
+  ) : null
+}
 const NewPaymentComponent = ({visible, setVisible, account}) => {
 
   const [formState, setState] = useState({ value: 0, fullPayed: true })
@@ -130,7 +155,7 @@ const NewPaymentComponent = ({visible, setVisible, account}) => {
 
   }
   // const [visible1, setVisible] = useState(false)
-  return (
+  return account? (
     <>
       <CButton color="primary" onClick={() => setVisible(!visible)}>
         Launch demo modal
@@ -156,7 +181,10 @@ const NewPaymentComponent = ({visible, setVisible, account}) => {
           <br />
           Vaucher:
           <CFormInput type="file" onChange={onChangeImage} />
-          <img src={formState.vaucher} />
+          <br />
+          <center>
+          <img width="200" hight="300" src={formState.vaucher} />
+        </center>
 
         </CModalBody>
         <CModalFooter>
@@ -167,7 +195,7 @@ const NewPaymentComponent = ({visible, setVisible, account}) => {
         </CModalFooter>
       </CModal>
     </>
-  )
+  ) : null
 }
 
 export {
