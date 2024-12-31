@@ -181,7 +181,7 @@ class NewPaymentComponent extends Component {
 
 
     }
-    const newPayment = await addAccountPayment(formData)
+    // const newPayment = await addAccountPayment(formData)
     const { paymentId } = newPayment.data
     // console.log(paymentId);
 
@@ -195,7 +195,7 @@ class NewPaymentComponent extends Component {
 
     return account ? (
       <>
-        <CModal visible={visible} onClose={() => setVisible(false)}>
+        <CModal visible={visible} onClose={() => setVisible(null)}>
           <CModalHeader>
             <CModalTitle>New Payment ({account?.accountId})</CModalTitle>
           </CModalHeader>
@@ -253,7 +253,7 @@ const ItemDetail = (account, year, month, onOpenVaucher) => {
   const { data: itemAccount } = account
   const { payments } = itemAccount;
   //console.log(payments);
-  const [data, setData] = useState(payments.items)
+  const [data, setData] = useState(payments?.items || [])
   const [load, setLoad] = useState(true)
   //const [currentVaucher, setCurrentVaucher] = useState()
 
