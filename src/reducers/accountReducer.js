@@ -2,6 +2,7 @@
 import * as accountActions from '../actions/accountActions'
 import { createReducer } from 'redux-act'
 import { combineReducers } from 'redux'
+import cloneDeep from 'lodash/cloneDeep';
 
 const initial = {
   error: null,
@@ -33,18 +34,81 @@ const state = createReducer({
       fetching: true
     }
   },
+  [accountActions.selectVaucher]: (state, payload) => {
+    return {
+      ...state,
+      selectedVaucher: payload
+      //selectedAccount: payload
+    }
+  },
   [accountActions.selectAccount]: (state, payload) => {
     return {
       ...state,
       selectedAccount: payload
     }
   },
-  [accountActions.appendVaucherToPayment]: (state, payload) => {
+  /*[accountActions.loadVauchersToAccountPayment]: (state, payload) => {
 
-    //console.log(payload);
+    //console.log("OappendVaucher");
+
+    const { data: data2 } = state?.data
+    let data = cloneDeep(data2)
+    const { items } = data
+
+    if(items){
+
+      const accountIndex = items.findIndex( e => e.accountId = payload.accountId )
+
+      data.items[accountIndex] = { ...payload, vaucherLoaded: true }
+
+      data = { data }
+      //console.log(data);
+      return {
+        ...state,
+        //davidRios: true
+        data
+      }
+
+    }
+
+    },*/
+  [accountActions.appendVauchersToAccount]: (state, payload) => {
+
+    //console.log("OappendVaucher");
+
+    const { data: data2 } = state?.data
+    let data = cloneDeep(data2)
+    const { items } = data
+
+    if(items){
+
+      const accountIndex = items.findIndex( e => e.accountId == payload.accountId )
+      // let payment = items.find( e => e.accountId == payload.accountId )
+      // const accountIndex = items.find( e => e.accountId = payload.accountId )
+
+      //alert(accountIndex)
+      //console.log("accountIndex");
+      //console.log(accountIndex);
+      //console.log(items);
+      //console.log(payment);
+      //console.log(payload.accountId);
+      //payment = { ...payload, vaucherLoaded: true }
+
+      items[accountIndex] = { ...payload, vaucherLoaded: true }
+
+      data = { data }
+      //console.log(data);
+      return {
+        ...state,
+        //davidRios: true
+        data
+      }
+
+    }
     return {
       ...state,
-      selectedAccountPrueba: payload
+      data
+      //selectedAccountPrueba: payload
     }
 
   },

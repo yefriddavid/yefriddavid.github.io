@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Component } from 'react'
 import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
-import { SelectControl, NewPaymentComponent, VaucherModalViewer, ItemDetail } from './Controls'
+import { SelectControl, NewPaymentComponent } from './Controls'
+import ItemDetail from './ItemDetail'
 import ModalPaymentComponent  from './ModalPaymentComponent'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
@@ -85,6 +86,17 @@ class App extends Component {
     this.props.actions.accounts.selectAccount(account)
 
   }
+
+  loadVauchers(item){
+
+    console.log(item);
+    const { data: account, rowType } = item;
+    if (rowType == "data"){
+    this.props.actions.accounts.loadVauchersToAccountPayment(account)
+
+    }
+
+  }
   onChangeAnyState = (v, name) => {
     const { state } = this
     //console.log(name);
@@ -143,6 +155,7 @@ class App extends Component {
           onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
           dataSource={data}
+        onRowClick={ (e) => this.loadVauchers(e) }
           showBorders={true}
         >
           <Selection mode="single" />
@@ -192,8 +205,9 @@ class App extends Component {
           </Column>
 
           <MasterDetail
+          key={crypto.randomUUID()}
             autoExpandAll="false"
-            enabled={false} render={(item) => ItemDetail(item, year, monthNumber, onChangeAnyState)} />
+            enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)} />
 
           <LoadPanel
             visible={!data}

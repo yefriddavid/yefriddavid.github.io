@@ -5,7 +5,6 @@ import sagaPaymentVauchers from './paymentVaucherSagas'
 
 export default function* rootSagas() {
   yield all([
-    // sagaPaymentVauchers(),
     sagaPayments(),
     sagaAccounts(),
     sagaPaymentVauchers(),
