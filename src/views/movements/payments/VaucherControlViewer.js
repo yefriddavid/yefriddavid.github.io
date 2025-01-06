@@ -48,7 +48,7 @@ const CreatePaymentVaucher = async ({paymentId, vaucher}) => {
 
 }
 
-function VaucherControlViewer({selectedVaucher}) {
+function VaucherControlViewer({payment}) {
 
   const { paymentId, vaucher } = payment
 

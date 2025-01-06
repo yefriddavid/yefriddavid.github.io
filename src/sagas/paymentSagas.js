@@ -1,5 +1,5 @@
 import { put, call, take, fork, all, takeLatest } from 'redux-saga/effects'
-import { root } from 'postcss';
+//import { root } from 'postcss';
 import * as paymentActions from '../actions/paymentActions'
 import * as apiServices from '../services/providers/api/accounts'
 
@@ -39,8 +39,8 @@ export default function* rootSagas() {
   // yield fork(createPayment)
   //console.log("paymen sagas");
   yield all([
-    takeLatest(fetchPayments.fetchRequest, fetchPayments),
-    takeLatest(createPayment.createRequest, createPayment)
+    takeLatest(paymentActions.fetchRequest, fetchPayments),
+    takeLatest(paymentActions.createRequest, createPayment)
   ])
 
 }

@@ -68,7 +68,7 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) =
   // const [visible1, setVisible] = useState(false)
   return vaucher ? (
     <>
-      <CModal size="xl" visible={visible} onClose={() => setVisible(false)}>
+      <CModal size="xl" visible={visible} onClose={() => setVisible(null)}>
         <CModalHeader>
           <CModalTitle>Vaucher ({paymentId || null})</CModalTitle>
         </CModalHeader>
@@ -80,7 +80,7 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) =
         <CModalFooter>
           <CButton color="primary" onClick={() => savePayment()}>Delete</CButton>
           <CButton color="primary" onClick={() => savePayment()}>Change</CButton>
-          <CButton color="secondary" onClick={() => setVisible(false, name)}>
+          <CButton color="secondary" onClick={() => setVisible(null)}>
             Close
           </CButton>
         </CModalFooter>

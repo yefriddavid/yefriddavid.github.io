@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from 'react'
+import React, { useState, useEffect, Component, PureComponent } from 'react'
 import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
@@ -10,6 +10,8 @@ import * as paymentActions from '../../../actions/paymentActions'
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
+import PropTypes from 'prop-types';
+
 
 
 import {
@@ -30,20 +32,27 @@ import {
 
 
 
-class ModalPaymentComponent extends Component {
+class ModalPaymentComponent extends PureComponent {
 
-  state = {
+  //const [selectedImage, setSelectedImage] = useState(null);
+  /*state = {
 
-  }
+  }*/
   // const [formState, setState] = useState({ value: 0, fullPayed: true, paymentMethod: account?.paymentMethod || "Payment xx" })
 
-  setDefaultState = () => {
-    const { account } = this.props
-    this.setState({
+
+  constructor(props) {
+    super(props)
+    const { account } = props
+
+    this.state = {
+      //prueba: this.props,
       fullPayed: true,
-      value: 0,
-      paymentMethod: account?.paymentMethod
-    });
+      // value: 0,
+      paymentMethod: account?.paymentMethod,
+      value: account?.value
+    }
+
   }
   componentDidMount() {
     // this.fetchData()
@@ -51,27 +60,30 @@ class ModalPaymentComponent extends Component {
 
   setFormState = (e, b) => {
 
-    return
     const { value, name } = e.target
     const { state: formState } = this
-
+    const { account } = this.props
 
     if (name == "fullPayed") {
 
-      if (formState.fullPayed == true) {
-        this.setState({ ...formState, value: account.value })
+      let newAccountValue = null;
+
+      if (!formState.fullPayed) {
+
+        newAccountValue = account.value
 
       }
       else {
-        //setFormState({ target: { name: "value", value: 0 } })
-        this.setState({ ...formState, value: 0 })
-
+        newAccountValue = 0
       }
-      this.setState({ ...formState, [name]: !formState.fullPayed })
+
+      this.setState({ ...formState, [name]: !formState.fullPayed, value: newAccountValue })
+
     }
     else {
 
       this.setState({ ...formState, [name]: value })
+
     }
 
   }
@@ -82,7 +94,8 @@ class ModalPaymentComponent extends Component {
     let base64String;
 
     let reader = new FileReader();
-    console.log("next");
+
+    const self = this
 
     reader.onload = function () {
       base64String = reader.result
@@ -92,8 +105,11 @@ class ModalPaymentComponent extends Component {
       //imageBase64Stringsep = base64String;
 
       // alert(imageBase64Stringsep);
-      console.log(base64String);
-      this.setState({ ...formState, vaucher: base64String });
+      //console.log(base64String);
+      self.setFormState({ target: { value: base64String, name: "vaucher"}})
+      //self.setStatus({ ...self.state, vaucher: base64String });
+      //self.render()
+
 
     }
     reader.readAsDataURL(file);
@@ -102,7 +118,6 @@ class ModalPaymentComponent extends Component {
 
   setValueDefault = async (e) => {
 
-    // console.log(e.target.value);
     this.setState({ ...formState, value: account.value })
 
   }
@@ -132,9 +147,13 @@ class ModalPaymentComponent extends Component {
 
   render() {
 
-    const { setFormState, props, state: formState, onChangeImage, savePayment } = this
+    const { setFormState, props, state, onChangeImage, savePayment } = this
     const { account, visible, setVisible, name } = props
+    const { vaucher, fullPayed, comment, date, paymentMethod, value } = state
 
+    //console.log("showme account object");
+    //console.log(account);
+    //return (<></>)
     return account ? (
       <>
         <CModal visible={visible} onClose={() => setVisible(null)}>
@@ -145,19 +164,19 @@ class ModalPaymentComponent extends Component {
             Account: <b>{account?.name}</b>
             <br />
             Pago completo:
-            <input type="checkbox" onChange={setFormState} defaultChecked={formState.fullPayed} name="fullPayed" id="fullPayed" />
+            <input type="checkbox" onChange={(e) => setFormState(e)} defaultChecked={fullPayed} name="fullPayed" id="fullPayed" />
             <br />
             Value:
-            <CFormInput type="text" onChange={setFormState} value={formState.value} name="value" id="value" />
+            <CFormInput type="text" onChange={setFormState} value={value} name="value" id="value" />
             <br />
             Comment:
-            <CFormInput type="text" onChange={setFormState} value={formState.comment} name="comment" id="comment" />
+            <CFormInput type="text" onChange={setFormState} value={comment} name="comment" id="comment" />
             <br />
             Date:
-            <CFormInput type="text" onChange={setFormState} value={formState.date} name="date" id="date" />
+            <CFormInput type="text" onChange={setFormState} value={date} name="date" id="date" />
             <br />
             Payment Method:
-            <CFormSelect onChange={setFormState} value={formState.paymentMethod} name="paymentMethod">
+            <CFormSelect onChange={setFormState} value={paymentMethod} name="paymentMethod">
               <option value="Cash">
                 Cash
               </option>
@@ -170,9 +189,7 @@ class ModalPaymentComponent extends Component {
             <CFormInput type="file" onChange={onChangeImage} />
             <br />
             <center>
-              <img width="200" hight="300" src={formState.vaucher} />
-              {JSON.stringify(formState)}
-              {JSON.stringify(account)}
+              <img width="200" hight="300" src={vaucher} />
             </center>
 
           </CModalBody>
@@ -202,6 +219,10 @@ const mapDispatchToProps = (dispatch) => {
         }
     }
 }
+
+ModalPaymentComponent.propTypes = {
+  account: PropTypes.object.isRequired
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalPaymentComponent)
 

@@ -115,7 +115,8 @@ class ItemDetail1 extends Component {
     //const load = false
 
     const { t, formatValue } = this;
-    const { account, selectedVaucher } = this.props
+    const { account } = this.props
+    const { selectedVaucher } = this.props.accounts
     //const { data: itemAccount } = account
     const { payments } = account;
 
@@ -142,14 +143,17 @@ class ItemDetail1 extends Component {
 
     }
 
+    console.log("selectedVaucher");
+    console.log(selectedVaucher);
+    console.log(this.props);
   return (
-    <CRow>
+    <CRow key={crypto.randomUUID()}>
       {myPayments.map((i) => (
         <CCol sm={3} key={crypto.randomUUID()}>
           <CCard key={i.paymentId} style={{ width: '18rem' }}>
 
-            <VaucherControlViewer key={i.paymentId} payment={i} />
-            <VaucherModalViewer key={i.paymentId} vaucher={selectedVaucher} paymentId={i.paymentId} visible={selectedVaucher} setVisible={this.showVaucher} />
+            <VaucherControlViewer key={crypto.randomUUID()} payment={i} />
+            <VaucherModalViewer key={crypto.randomUUID()} vaucher={selectedVaucher} paymentId={i.paymentId} visible={selectedVaucher} setVisible={() => this.showVaucher(null)} />
 
             <CCardBody>
               <CCardTitle>{formatValue(i.value)}</CCardTitle>

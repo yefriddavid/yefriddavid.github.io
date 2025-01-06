@@ -90,11 +90,14 @@ class App extends Component {
   loadVauchers(item){
 
     console.log(item);
-    const { data: account, rowType } = item;
-    if (rowType == "data"){
+    const { key } = item
+    const data = this.props.accounts?.data?.data?.items;
+    const account = data.find( e => e.accountId == key );
+    //console.log(account);
+    //if (rowType == "data"){
     this.props.actions.accounts.loadVauchersToAccountPayment(account)
 
-    }
+    //}
 
   }
   onChangeAnyState = (v, name) => {
@@ -137,10 +140,19 @@ class App extends Component {
     const months = moment.months()
     const years = [(year - 1).toString(), year.toString(), (year + 1).toString()]
 
+    let MyModal = <h5>titulo</h5>;
+    if(selectedAccount){
+      // MyModal = <h5>modal here {"test"}</h5>;
+        MyModal = <ModalPaymentComponent account={selectedAccount} visible={typeof selectedAccount != "undefined"} name="showNewPaymentModal" setVisible={this.selectAccount} />
+        //alert("ya va a existir")
+    }
+
     return (
       <div>
 
-        <ModalPaymentComponent account={selectedAccount} visible={selectedAccount !== null} name="showNewPaymentModal" setVisible={this.selectAccount} />
+        {MyModal}
+
+
         <br />
         Period:
         <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
@@ -155,7 +167,7 @@ class App extends Component {
           onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
           dataSource={data}
-        onRowClick={ (e) => this.loadVauchers(e) }
+        onRowExpanded={ (e) => this.loadVauchers(e) }
           showBorders={true}
         >
           <Selection mode="single" />
