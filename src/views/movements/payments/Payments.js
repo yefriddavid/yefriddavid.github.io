@@ -1,12 +1,21 @@
 import React, { useState, useEffect, Component } from 'react'
 import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
 import { Button } from 'devextreme-react/button'
-import { SelectControl, NewPaymentComponent, VaucherModalViewer, ItemDetail } from './Controls'
+import { SelectControl, NewPaymentComponent } from './Controls'
+import ItemDetail from './ItemDetail'
+import ModalPaymentComponent  from './ModalPaymentComponent'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { cilX, cilCheckCircle } from '@coreui/icons';
 import { CIcon } from '@coreui/icons-react';
+import { useSelector, useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
+import * as paymentActions from '../../../actions/paymentActions'
+import * as accountActions from '../../../actions/accountActions'
+import { bindActionCreators } from 'redux';
+
+
 
 
 //import { Controller, useFormContext } from "react-hook-form"
@@ -29,10 +38,10 @@ import {
 } from '@coreui/react'
 
 const initialState = {
-  showNewPaymentModal: false,
-  showModalVaucherViewer: false,
-  response: {},
-  data: null,
+  //showNewPaymentModal: false,
+  // showModalVaucherViewer: false,
+  //response: {},
+  //data: null,
   year: moment().format('Y'),
   month: moment().format('MMMM'),
   monthNumber: moment().format('M'),
@@ -57,14 +66,45 @@ class App extends Component {
       ...initialState
     });
   }
+
   componentDidMount() {
-    this.fetchData()
+    const filters = {
+      noEmptyAccounts: "true",
+      type: "Outcoming",
+      year: "2024",
+      month: "12"
+    }
+    this.refreshData(filters)
+  }
+
+  refreshData = (filters) => {
+    this.props.actions.accounts.fetchData(filters)
+
+  }
+  selectAccount = (account) => {
+
+    this.props.actions.accounts.selectAccount(account)
+
+  }
+
+  loadVauchers(item){
+
+    console.log(item);
+    const { key } = item
+    const data = this.props.accounts?.data?.data?.items;
+    const account = data.find( e => e.accountId == key );
+    //console.log(account);
+    //if (rowType == "data"){
+    this.props.actions.accounts.loadVauchersToAccountPayment(account)
+
+    //}
+
   }
   onChangeAnyState = (v, name) => {
     const { state } = this
-    console.log(name);
+    //console.log(name);
 
-    if (name=="month") {
+    if (name == "month") {
 
       this.setState({ ...state, "month": v, monthNumber: moment().month(v).format("M") })
 
@@ -77,65 +117,42 @@ class App extends Component {
 
   }
 
-
-  fetchData = async () => {
-
-    const { state } = this
-    const { year, monthNumber: month } = state
-    console.log("fetch data", month);
-
-    //this.onChangeAnyState(true, "loading")
-
-    //this.setState({...state, data: null })
-      this.onChangeAnyState(null, "data")
-    try {
-
-      const response = await fetchAccounts({year, month,
-        type: 'Outcoming',
-        'noEmptyAccounts': 'true'})
-
-      const { data, parametres } = response
-      const { items: accounts } = data
-
-      //this.onChangeAnyState(items, "data")
-      this.onChangeAnyState(accounts, "data")
-      //this.onChangeAnyState({ parameters }, "response")
-      //this.setState({...state, data: accounts, response: { parametres } })
-      //this.setState({...this.state, data: items)
-
-      //this.onChangeAnyState(false, "loading")
-    } catch (error) {
-      console.error('Error loading jQuery:', error)
-    }
-  }
-
-  addAccountPayment(item){
+  addAccountPayment(item) {
 
     const { state, onChangeAnyState } = this
     const { data } = item.row
 
     this.setState({ ...state, showNewPaymentModal: true, currentAccount: data })
-    console.log(data);
+    //console.log(data);
 
   }
 
   render() {
 
-    /*useEffect(() => {
-      fetchData()
-    }, [])*/
+    const data = this.props.accounts?.data?.data?.items;
+    const { selectedAccount } = this.props.accounts;
+    //console.log("selectedAccount");
+    //console.log(selectedAccount);
+    //console.log(this.props.accounts);
 
-    const { state, onChangeAnyState, fetchData } = this;
-    const { data, year, month, monthNumber, showNewPaymentModal, currentAccount, showModalVaucherViewer } = state;
+    const { onChangeAnyState, fetchData } = this;
+    const { year, month, monthNumber } = this.state;
     const months = moment.months()
-    const years = [(year-1).toString(), year.toString(), (year+1).toString()]
-    console.log("showModalVaucherViewer");
-    console.log(showModalVaucherViewer);
+    const years = [(year - 1).toString(), year.toString(), (year + 1).toString()]
+
+    let MyModal = <></>;
+    if(selectedAccount){
+      // MyModal = <h5>modal here {"test"}</h5>;
+        MyModal = <ModalPaymentComponent account={selectedAccount} visible={typeof selectedAccount != "undefined"} name="showNewPaymentModal" setVisible={this.selectAccount} />
+        //alert("ya va a existir")
+    }
 
     return (
       <div>
 
-        <NewPaymentComponent account={currentAccount} visible={showNewPaymentModal} name="showNewPaymentModal" setVisible={onChangeAnyState} />
+        {MyModal}
+
+
         <br />
         Period:
         <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
@@ -150,58 +167,67 @@ class App extends Component {
           onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
           dataSource={data}
+        onRowExpanded={ (e) => this.loadVauchers(e) }
           showBorders={true}
         >
           <Selection mode="single" />
-                <Editing
-                    allowUpdating={true}
-                    allowDeleting={true}
-                />
+          <Editing
+            allowUpdating={true}
+            allowDeleting={true}
+          />
           <Column dataField="accountId" width={70} caption="#" />
           <Column dataField="name" />
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
-            <Column dataField="Status"
-                   cellRender={cellData => {
+          <Column dataField="Status"
+            cellRender={cellData => {
 
-                     const { data } = cellData;
-                     const { total } = data.payments;
-                     const { value } = data;
-                     //console.log(cellData);
-                     if(value <= total){
-                       //if(true){
-                        return <CIcon className="text-info" icon={cilCheckCircle} size="xl"/>
+              const { data } = cellData;
+              const { payments } = data;
+              if (payments) {
 
-                     }else{
-                        return <CIcon className="text-danger" icon={cilX} size="xl"/>
+                const { total: payed } = payments;
+                const { value: totalAmount } = data;
+                //console.log(cellData);
+                if (totalAmount <= payed) {
+                  return <CIcon className="text-info" icon={cilCheckCircle} size="xl" />
 
-                     }
-                       const color = value < total ? 'red' : 'green';
-                       return <span style={{ color }}>{value}</span>;
-                   }}
-            />
+                } else {
+                  return <CIcon className="text-danger" icon={cilX} size="xl" />
+
+                }
+
+              } else {
+
+                return <CIcon className="text-danger" icon={cilX} size="xl" />
+
+              }
+
+            }}
+          />
 
           <Column type="buttons" caption="actions">
-                <GButton
-                    name="add"
-                onClick={(e) => this.addAccountPayment(e) }
-                />
-                  <GButton name="edit" />
-        <GButton name="delete" />
-                </Column>
+            <GButton
+              name="add"
+              onClick={(e) => this.selectAccount(e.row.data)}
+            />
+            <GButton name="edit" />
+            <GButton name="delete" />
+          </Column>
 
           <MasterDetail
-          autoExpandAll = "false"
-          enabled={false} render={ (item) => ItemDetail(item, year, monthNumber, onChangeAnyState)} />
+          key={crypto.randomUUID()}
+            autoExpandAll="false"
+            enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)} />
 
           <LoadPanel
-          visible={!data}
-                enabled="true"
-                height={100}
-                width={250}
-                indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
-            />
+            visible={!data}
+            enabled="true"
+            height={100}
+            width={250}
+            indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
+          />
 
         </DataGrid>
       </div>
@@ -210,4 +236,27 @@ class App extends Component {
 }
 
 
-export default App
+//export default App
+
+
+const mapStateToProps = (state) => {
+  //console.log(state)
+    return {
+      //isFetchingJunior: state.login.rest.fetching,
+      accounts: state.account.state
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        actions: {
+          //auth: bindActionCreators(authActions, dispatch),
+            payments: bindActionCreators(paymentActions, dispatch),
+            accounts: bindActionCreators(accountActions, dispatch)
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
+
+

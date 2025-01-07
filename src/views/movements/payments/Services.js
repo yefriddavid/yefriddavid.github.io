@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { CreatePaymentVaucher } from './Database'
+//import { CreatePaymentVaucher } from './Database'
 
 const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
 const token = '123-456-789'
@@ -70,8 +70,8 @@ const addAccountPayment = async (params) => {
 
 const savePaymentVaucher = async (data) => {
 
-  return await CreatePaymentVaucher(data)
-  
+  //return await CreatePaymentVaucher(data)
+
 
 }
 
