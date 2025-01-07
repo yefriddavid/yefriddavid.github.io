@@ -143,9 +143,6 @@ class ItemDetail1 extends Component {
 
     }
 
-    console.log("selectedVaucher");
-    console.log(selectedVaucher);
-    console.log(this.props);
   return (
     <CRow key={crypto.randomUUID()}>
       {myPayments.map((i) => (

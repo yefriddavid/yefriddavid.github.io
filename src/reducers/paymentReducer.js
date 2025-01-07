@@ -1,4 +1,7 @@
-import { fetchRequest, beginRequestFetch, createRequest, errorRequestCreate } from '../actions/paymentActions'
+import { fetchRequest, beginRequestFetch,
+  successRequestCreate,
+  createRequest, errorRequestCreate }
+from '../actions/paymentActions'
 import { createReducer } from 'redux-act'
 import { combineReducers } from 'redux'
 
@@ -20,6 +23,7 @@ const state = createReducer({
         }
     },
   [errorRequestCreate]: (state, payload) => {
+    //alert("Aca hay un gravisimo error")
         return {
             ...state,
             error: payload,
@@ -38,6 +42,14 @@ const state = createReducer({
         return {
             ...state,
             fetching: true
+        }
+    },
+    [successRequestCreate]: (state, payload) => {
+
+      return {
+            ...state,
+            fetching: false,
+            saved: true
         }
     },
   /*[successRequest]: (state, payload) => {

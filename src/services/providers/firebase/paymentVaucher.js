@@ -89,6 +89,7 @@ const fetchVaucherPayment = async (paymentId) => {
 }
 
 export {
+  CreatePaymentVaucher,
   fetchVaucherPayment,
   fetchVaucherPaymentMultiple
 }

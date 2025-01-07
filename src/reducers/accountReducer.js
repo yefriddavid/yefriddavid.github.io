@@ -1,7 +1,9 @@
 // import { fetchData, beginRequest, successRequest, errorRequest } from '../actions/accountActions'
-import * as accountActions from '../actions/accountActions'
 import { createReducer } from 'redux-act'
 import { combineReducers } from 'redux'
+import * as paymentActions from '../actions/paymentActions'
+import * as accountActions from '../actions/accountActions'
+
 import cloneDeep from 'lodash/cloneDeep';
 
 const initial = {
@@ -118,7 +120,15 @@ const state = createReducer({
       data: payload,
       fetching: false
     }
-  }
+  },
+    [paymentActions.successRequestCreate]: (state, payload) => {
+
+      // si se crea un payment asociado a la cuenta seleccionada actualmente, entonces limpiamos la variable
+      return {
+            ...state,
+        selectedAccount: null
+        }
+    },
 }, initial)
 
 export default combineReducers({

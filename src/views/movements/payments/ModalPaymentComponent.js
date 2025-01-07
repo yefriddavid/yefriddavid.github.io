@@ -11,6 +11,12 @@ import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import DatePicker from "react-datepicker";
+import moment from "moment";
+import { CSpinner } from '@coreui/react'
+
+import "react-datepicker/dist/react-datepicker.css";
+
 
 
 
@@ -58,6 +64,9 @@ class ModalPaymentComponent extends PureComponent {
     // this.fetchData()
   }
 
+  setDate = date => {
+    this.setFormState({ target: { name: "date", value: date } })
+  }
   setFormState = (e, b) => {
 
     const { value, name } = e.target
@@ -121,24 +130,30 @@ class ModalPaymentComponent extends PureComponent {
     this.setState({ ...formState, value: account.value })
 
   }
-  savePayment = async (account) => {
+  savePayment = async () => {
 
+    const { account } = this.props
+    const { state } = this
     // console.log("start save");
     const formData = {
       accountId: account.accountId,
       //comment: formState.comment,
       deviceId: "web",
-      //date: formState.date,
-      //value: formState.value,
+      //date: state.date,
+      //value: state.value,
       month: account.month,
       year: account.year,
-      //paymentMethod: formState.paymentMethod,
-      //vaucher: formState.vaucher,
-
-
+      ...state
+      ,date: moment(state.date).format("yyyy/MMM/DD")
+      //paymentMethod: state.paymentMethod,
+      //vaucher: state.vaucher,
     }
+    console.log(formData);
+
     // const newPayment = await addAccountPayment(formData)
+
     this.props.actions.payments.createRequest(formData)
+
     //const { paymentId } = newPayment.data
     // console.log(paymentId);
 
@@ -151,6 +166,18 @@ class ModalPaymentComponent extends PureComponent {
     const { account, visible, setVisible, name } = props
     const { vaucher, fullPayed, comment, date, paymentMethod, value } = state
 
+    const { fetching } = this.props.payments
+
+    let saveButtonControl = null
+
+    if(fetching === true){
+      saveButtonControl = <CSpinner color="info" />
+    }
+    else {
+      saveButtonControl = <CButton color="primary" onClick={() => savePayment(account)}>Save changes</CButton>
+
+    }
+  console.log(fetching);
     //console.log("showme account object");
     //console.log(account);
     //return (<></>)
@@ -173,7 +200,8 @@ class ModalPaymentComponent extends PureComponent {
             <CFormInput type="text" onChange={setFormState} value={comment} name="comment" id="comment" />
             <br />
             Date:
-            <CFormInput type="text" onChange={setFormState} value={date} name="date" id="date" />
+            <DatePicker selected={date} onChange={(date) => this.setDate(date)} name="date" />
+
             <br />
             Payment Method:
             <CFormSelect onChange={setFormState} value={paymentMethod} name="paymentMethod">
@@ -197,7 +225,7 @@ class ModalPaymentComponent extends PureComponent {
             <CButton color="secondary" onClick={() => setVisible(false, name)}>
               Close
             </CButton>
-            <CButton color="primary" onClick={() => savePayment(account)}>Save changes</CButton>
+            { saveButtonControl }
           </CModalFooter>
         </CModal>
       </>

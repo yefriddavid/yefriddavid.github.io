@@ -140,7 +140,7 @@ class App extends Component {
     const months = moment.months()
     const years = [(year - 1).toString(), year.toString(), (year + 1).toString()]
 
-    let MyModal = <h5>titulo</h5>;
+    let MyModal = <></>;
     if(selectedAccount){
       // MyModal = <h5>modal here {"test"}</h5>;
         MyModal = <ModalPaymentComponent account={selectedAccount} visible={typeof selectedAccount != "undefined"} name="showNewPaymentModal" setVisible={this.selectAccount} />

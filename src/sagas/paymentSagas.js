@@ -1,7 +1,7 @@
 import { put, call, take, fork, all, takeLatest } from 'redux-saga/effects'
 //import { root } from 'postcss';
 import * as paymentActions from '../actions/paymentActions'
-import * as apiServices from '../services/providers/api/accounts'
+import * as apiServices from '../services/providers/api/payments'
 
 function* fetchPayments() {
 
@@ -20,24 +20,21 @@ function* fetchPayments() {
 
 }
 
-function* createPayment() {
+function* createPayment({ payload }) {
     try{
-      const { payload: data } = yield take(`${paymentActions.createRequest}`)
-      const response = yield call(apiService.createPayment, data)
-      yield put(paymentActions.successRequestCreate(response.data))
+
+      yield put(paymentActions.beginRequestCreate())
+      const response = yield call(apiServices.createPayment, payload)
+      yield put(paymentActions.successRequestCreate({...response.data, vaucher: payload.vaucher}))
 
     } catch (e) {
-
-      yield put(paymentActions.errorRequestCreate(e.toString()))
+      yield put(paymentActions.errorRequestCreate(e.message))
 
     }
 }
 
 export default function* rootSagas() {
 
-  // yield fork(fetchPayments)
-  // yield fork(createPayment)
-  //console.log("paymen sagas");
   yield all([
     takeLatest(paymentActions.fetchRequest, fetchPayments),
     takeLatest(paymentActions.createRequest, createPayment)

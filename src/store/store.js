@@ -9,6 +9,19 @@ import combinedReducers from '../reducers/combineReducers'
 
 import rootSagas from '../sagas'
 
+const CashFlowMiddleware = (store) => (next) => (action) => {
+
+  //alert("  my middleware")
+  ///console.log("my middleware");
+  ///console.log(action);
+  ///console.log(store.getState());
+
+  ///if(false){
+
+  ///}
+
+  return next(action)
+}
 
 const sagaMiddleware = createSagaMiddleware()
 const store = configureStore({
@@ -20,7 +33,7 @@ const store = configureStore({
 
  // middleware: getDefaultMiddleware().concat(routerMiddleware(history)),
   //middleware: [sagaMiddleware]
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware).concat(CashFlowMiddleware),
 
 })
 
