@@ -48,8 +48,8 @@ const state = createReducer({
 
       return {
             ...state,
-            fetching: false,
-            saved: true
+        fetching: false//,
+        //saved: true
         }
     },
   /*[successRequest]: (state, payload) => {

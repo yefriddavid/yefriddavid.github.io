@@ -19,6 +19,7 @@ const state = createReducer({
     //console.log(payload)
     return {
       ...state,
+      data: null,
       filters: payload
     }
   },
@@ -26,6 +27,7 @@ const state = createReducer({
     return {
       ...state,
       error: payload,
+      data: [],
       fetching: false,
       isError: true
     }

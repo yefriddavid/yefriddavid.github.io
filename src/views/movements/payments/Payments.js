@@ -14,6 +14,7 @@ import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/paymentActions'
 import * as accountActions from '../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
+import { Notification } from './Alert';
 
 
 
@@ -38,14 +39,11 @@ import {
 } from '@coreui/react'
 
 const initialState = {
-  //showNewPaymentModal: false,
-  // showModalVaucherViewer: false,
-  //response: {},
-  //data: null,
   year: moment().format('Y'),
   month: moment().format('MMMM'),
   monthNumber: moment().format('M'),
-  // monthNumber: "10",
+  noEmptyAccounts: "true",
+  type: "Outcoming",
 }
 
 const onContentReady = (e) => {
@@ -68,17 +66,19 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const filters = {
+    /*const filters = {
       noEmptyAccounts: "true",
       type: "Outcoming",
       year: "2024",
       month: "12"
-    }
-    this.refreshData(filters)
+    }*/
+    this.refreshData()
   }
 
-  refreshData = (filters) => {
-    this.props.actions.accounts.fetchData(filters)
+  refreshData = _ => {
+
+    // console.log(this.state);
+    this.props.actions.accounts.fetchData({ ...this.state, month: this.state.monthNumber })
 
   }
   selectAccount = (account) => {
@@ -130,15 +130,16 @@ class App extends Component {
   render() {
 
     const data = this.props.accounts?.data?.data?.items;
-    const { selectedAccount } = this.props.accounts;
+    const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts;
+    console.log(fetchErrorMessage);
     //console.log("selectedAccount");
     //console.log(selectedAccount);
     //console.log(this.props.accounts);
 
-    const { onChangeAnyState, fetchData } = this;
+    const { onChangeAnyState, refreshData } = this;
     const { year, month, monthNumber } = this.state;
     const months = moment.months()
-    const years = [(year - 1).toString(), year.toString(), (year + 1).toString()]
+    const years = [(year - 1).toString(), year.toString(), (parseInt(year) + 1).toString()]
 
     let MyModal = <></>;
     if(selectedAccount){
@@ -150,6 +151,7 @@ class App extends Component {
     return (
       <div>
 
+        <Notification message={fetchErrorMessage} visible={fetchIsError} />
         {MyModal}
 
 
@@ -160,7 +162,7 @@ class App extends Component {
 
         <br />
 
-        <Button text="Refresh Data" onClick={fetchData} />
+        <Button text="Refresh Data" onClick={refreshData} />
         <DataGrid
           id="gridContainer"
           keyExpr="accountId"

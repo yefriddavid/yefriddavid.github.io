@@ -177,10 +177,7 @@ class ModalPaymentComponent extends PureComponent {
       saveButtonControl = <CButton color="primary" onClick={() => savePayment(account)}>Save changes</CButton>
 
     }
-  console.log(fetching);
-    //console.log("showme account object");
-    //console.log(account);
-    //return (<></>)
+
     return account ? (
       <>
         <CModal visible={visible} onClose={() => setVisible(null)}>
