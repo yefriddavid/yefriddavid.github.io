@@ -51,7 +51,7 @@ const CreatePaymentVaucher = async ({paymentId, vaucher}) => {
 function VaucherControlViewer({payment}) {
 
   const { paymentId, vaucher } = payment
-
+console.log(payment);
   if(vaucher === false){
     return (
         <center>
