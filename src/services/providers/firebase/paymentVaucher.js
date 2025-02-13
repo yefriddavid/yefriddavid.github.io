@@ -9,11 +9,11 @@ import { CCardImage } from '@coreui/react'
 
 import { CSpinner } from '@coreui/react'
 
-const EditPaymentVaucher = async ({paymentId, vaucher}) => {
+const EditPaymentVaucher = async ({paymentId, vaucher, year = 2025}) => {
 
   try {
 
-    const docRef = doc(db, 'paymentVauchers', 'new-user-id')
+    const docRef = doc(db, 'paymentVauchers-' + year, 'new-user-id')
     // console.log(paymentId)
     // console.log(vaucher)
     await setDoc(docRef, docRef)
@@ -36,11 +36,11 @@ const RemovePaymentVaucher = async ({vaucherId}) => {
   }
 
 }
-const CreatePaymentVaucher = async ({paymentId, vaucher}) => {
+const CreatePaymentVaucher = async ({paymentId, vaucher, year = 2025}) => {
 
   try {
     const newData = { id: paymentId, file: vaucher }
-    const docRef = await addDoc(collection(db, "paymentVauchers"), newData)
+    const docRef = await addDoc(collection(db, "paymentVauchers-" + year), newData)
     return docRef //await setDoc(docRef, { id: paymentId, file: vaucher })
   } catch (error) {
     console.error('Error al crear el documento:', error)
