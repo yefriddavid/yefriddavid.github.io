@@ -178,7 +178,8 @@ class App extends Component {
             allowDeleting={true}
           />
           <Column dataField="accountId" width={70} caption="#" />
-          <Column dataField="name" />
+          <Column dataField="name" width={320} />
+          <Column dataField="maxDate" width={50} caption="Fecha Limite" />
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />

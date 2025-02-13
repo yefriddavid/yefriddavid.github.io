@@ -211,6 +211,10 @@ class ModalPaymentComponent extends PureComponent {
             Vaucher:
             <CFormInput type="file" onChange={onChangeImage} />
             <br />
+            <span style={{color:"red", fontSize:"10px"}}>
+              Solo archivos en formato imagenes
+            </span>
+            <br />
             <center>
               <img width="200" hight="300" src={vaucher} />
             </center>

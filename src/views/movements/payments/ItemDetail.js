@@ -159,6 +159,7 @@ class ItemDetail1 extends Component {
                   <li style={{textWrap: 'wrap'}}><b>{t("comment")}</b>: {i.comment} </li>
                   <li><b>{t("paymentMethod")}</b>: {i.payment_method} </li>
                   <li><b>{t("date")}</b>: {moment(i.date).format("yyyy/MMM/DD")} </li>
+                  <li><b>{t("ID")}</b>: {i.paymentId} </li>
                 </ul>
               </CCardText>
               <div className="d-grid gap-2 d-md-flex justify-content-md-end">
