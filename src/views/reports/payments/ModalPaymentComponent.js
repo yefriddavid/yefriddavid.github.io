@@ -134,7 +134,6 @@ class ModalPaymentComponent extends PureComponent {
 
     const { account } = this.props
     const { state } = this
-    const monthId = account.monthId // moment().month(account.month).format("M");
     // console.log("start save");
     const formData = {
       accountId: account.accountId,
@@ -142,18 +141,21 @@ class ModalPaymentComponent extends PureComponent {
       deviceId: "web",
       //date: state.date,
       //value: state.value,
-      month: monthId, // account.month,
+      month: account.month,
       year: account.year,
       ...state
       ,date: moment(state.date).format("yyyy/MMM/DD")
       //paymentMethod: state.paymentMethod,
       //vaucher: state.vaucher,
     }
-    //console.log(formData);
-    //console.log(this.props);
+    console.log(formData);
+
+    // const newPayment = await addAccountPayment(formData)
 
     this.props.actions.payments.createRequest(formData)
 
+    //const { paymentId } = newPayment.data
+    // console.log(paymentId);
 
   }
   // const [visible1, setVisible] = useState(false)

@@ -131,7 +131,7 @@ class App extends Component {
 
     const data = this.props.accounts?.data?.data?.items;
     const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts;
-    //console.log(fetchErrorMessage);
+    console.log(fetchErrorMessage);
     //console.log("selectedAccount");
     //console.log(selectedAccount);
     //console.log(this.props.accounts);

@@ -4,18 +4,21 @@ import * as accountActions from '../actions/accountActions'
 import * as apiService from '../services/providers/api/accounts'
 
 function* fetchAccounts({ payload: filters }) {
-  //while(true){
+
   try{
 
-  // const { payload: filters } = yield take(accountActions.fetchData)
-
-  // yield call(apiServices.fetchAccounts, filters)
       yield put(accountActions.beginRequest())
-      const responseApiLogin = yield call(apiService.fetchAccounts, filters)
-      yield put(accountActions.successRequest(responseApiLogin))
-      //yield fork(logoutFlow)
+      const response = yield call(apiService.fetchAccounts, filters)
+    //console.log(response);
+    if(response.status == "error"){
+      yield put(accountActions.errorRequest(response.message))
 
-      //yield fork(watchStartBackgroundApiTasks, request)
+    }
+    else{
+      yield put(accountActions.successRequest(response))
+
+    }
+
     } catch (e) {
 
       yield put(accountActions.errorRequest(e.toString()))

@@ -9,6 +9,7 @@ const Accounts = React.lazy(() => import('./views/managment/accounts/Accounts'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
+const Reports = React.lazy(() => import('./views/reports/Reports'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -64,6 +65,7 @@ const routes = [
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', element: Accounts },
   { path: '/managment/payments', name: 'Payments', element: Payments },
+  { path: '/managment/reports', name: 'Reports', element: Reports },
 
   { path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },
