@@ -1,7 +1,13 @@
 import { put, call, take, fork, all, takeLatest } from 'redux-saga/effects'
 //import { root } from 'postcss';
 import * as paymentActions from '../actions/paymentActions'
-import * as apiServices from '../services/providers/api/payments'
+import * as apiServices from '../services/providers/api/payment'
+import * as firebaseServices from '../services/providers/firebase/paymentVaucher'
+
+import { of } from 'rxjs'
+import { map } from 'rxjs/operators'
+
+const name$ = of('John')
 
 function* fetchPayments() {
 
@@ -20,12 +26,36 @@ function* fetchPayments() {
 
 }
 
+function* deletePayment({ payload }) {
+  try{
+
+    yield put(paymentActions.beginRequestCreate())
+    const response = yield call(apiServices.createPayment, { paymentId: payload.id })
+
+    // delete vaucher
+    const r = yield call(apiServices.deletePayment, { paymentId: payload.id, year: payment.year })
+
+    yield put(paymentActions.successRequestCreate({...response.data, vaucher: payload.vaucher}))
+
+  } catch (e) {
+
+    yield put(paymentActions.errorRequestCreate(e.message))
+
+  }
+
+}
+
+
 function* createPayment({ payload }) {
     try{
 
       yield put(paymentActions.beginRequestCreate())
-      const response = yield call(apiServices.createPayment, payload)
-      yield put(paymentActions.successRequestCreate({...response.data, vaucher: payload.vaucher}))
+      const createdPaymentResponse = yield call(apiServices.createPayment, payload)
+      const createdPaymentVaucherResponse = yield call(firebaseServices.createPaymentVaucher, payload)
+
+      const result = { ...createdPaymentResponse.data, vaucher: payload.vaucher }
+      yield put(paymentActions.successRequestCreate(result))
+      //yield put(paymentActions.successRequestCreate({...response.data, vaucher: payload.vaucher}))
 
     } catch (e) {
       yield put(paymentActions.errorRequestCreate(e.message))
@@ -40,4 +70,8 @@ export default function* rootSagas() {
     takeLatest(paymentActions.createRequest, createPayment)
   ])
 
+}
+
+export {
+  createPayment
 }

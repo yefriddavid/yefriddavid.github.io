@@ -5,24 +5,21 @@ const token = '123-456-789'
 
 export const fetchAccounts = async (params) => {
 
-  //try {
-    var bodyFormData = new FormData()
-    bodyFormData.append('token', token)
-    bodyFormData.append('action', 'getAccounts')
+  const bodyFormData = new FormData()
+  bodyFormData.append('token', token)
+  bodyFormData.append('action', 'getAccounts')
 
-    const keys = Object.keys(params)
-    for(let key of keys){
-      bodyFormData.append(key, params[key])
-    }
+  const keys = Object.keys(params)
+  for(let key of keys){
+    bodyFormData.append(key, params[key])
+  }
 
   const response = await axios({
     method:'post',
     data: bodyFormData
   })
 
-    return response.data
-    /*} catch (error) {
-    console.error('Error loading jQuery:', error)
-  }*/
+  return response.data
+
 }
 
