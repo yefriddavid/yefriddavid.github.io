@@ -11,6 +11,8 @@ const Accounts = React.lazy(() => import('./views/managment/accounts/Accounts'))
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Reports = React.lazy(() => import('./views/reports/Reports'))
 
+const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -60,6 +62,7 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
+  //{ path: '/', exact: true, element: AbountMe },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
