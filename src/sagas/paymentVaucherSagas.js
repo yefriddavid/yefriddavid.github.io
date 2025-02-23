@@ -135,9 +135,9 @@ export default function* rootSagas() {
   yield all([
     takeLatest([accountActions.loadVauchersToAccountPayment], addVauchersToAccountPayments),
     takeLatest([paymentVaucherActions.fetchRequest], fetchPaymentVaucher),
-    takeLatest([paymentActions.createRequest], createPaymentVaucher),
-    takeLatest([paymentActions.deleteRequest], deletePaymentVaucher),
-    takeLatest([paymentActions.editRequest], editVaucherPayment),
+    //takeLatest([paymentActions.createRequest], createPaymentVaucher),
+    //takeLatest([paymentActions.deleteRequest], deletePaymentVaucher),
+    //takeLatest([paymentActions.editRequest], editVaucherPayment),
   ])
 
 }
