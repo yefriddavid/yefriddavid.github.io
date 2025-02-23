@@ -25,7 +25,7 @@ const Page500 = () => {
               </h1>
               <h4 className="pt-3">Software Develepor!</h4>
               <p className="text-body-secondary float-start">
-                I love to travel but I hate to arrive!
+                I love to travel but, I hate to arrive.
               </p>
             </span>
           </CCol>
