@@ -21,13 +21,25 @@ import withRouter from '../../../context/searchParamsContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const Login = (props) => {
-  const [username, setText] = useState('')
+
+  const [credentials, setPassword] = useState({username: '', password: ''})
   const navigate = useNavigate()
+
+  const token = localStorage.getItem('token')
+  if (token) {
+
+    setTimeout( () => {
+
+      navigate('/managment/payments')
+    }, 1)
+
+  }
 
   const authLogin = () => {
     //alert("aca")
     //console.log(props)
 
+    const { username, password } = credentials
     if (username == 'fabian' || username == 'david' || username == 'pao') {
       localStorage.setItem('token', '123-456-789')
 
@@ -39,8 +51,8 @@ const Login = (props) => {
     }
   }
 
-  const handleChangeUsername = (event) => {
-    setText(event.target.value)
+  const handleChange = (event) => {
+    setPassword({ ...credentials, [event.target.name]: event.target.value })
   }
 
   return (
@@ -62,8 +74,8 @@ const Login = (props) => {
                       */}
                       <CFormInput
                       name="username"
-                      value={username}
-                      onChange={handleChangeUsername}
+                      value={credentials.username}
+                      onChange={handleChange}
                       placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
@@ -73,32 +85,35 @@ const Login = (props) => {
                       </CInputGroupText>
                       */}
                       <CFormInput
+                        name="password"
+                        value={credentials.password}
+                        onChange={handleChange}
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
                       />
                     </CInputGroup>
                     <CRow>
-                      <CCol xs={6}>
-                        <CButton onClick={ authLogin } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white"}}>
+                      <CCol xs={12}>
+                        <CButton onClick={ authLogin } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
+                          <CIcon icon={cilUser} /> {' '}
                           Login
                         </CButton>
-                      </CCol>
-                      <CCol xs={6} className="text-right">
                       </CCol>
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary1 py-5" style={{ width: '44%', backgroundColor: '#000' }}>
+              <CCard className="text-white bg-primary1 py-5 .d-none .d-sm-block .d-md-none" style={{ width: '44%', backgroundColor: '#000' }}>
                 <CCardBody className="text-center">
                   <div>
                     <h2>Managment Software</h2>
                     <p>
-                      My administrator managment
+                      Powered by {' '}
+                      <Link to="https://yefriddavid.github.io">
+                        @yefriddavid
+                      </Link>
                     </p>
-                    <Link to="/register">
-                    </Link>
                   </div>
                 </CCardBody>
               </CCard>

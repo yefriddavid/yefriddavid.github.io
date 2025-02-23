@@ -64,13 +64,13 @@ const routes = [
   //  { path: '/', exact: true, name: 'Home' },
   //{ path: '/', exact: true, element: AbountMe },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/theme', name: 'Theme', element: Colors, exact: true },
-  { path: '/theme/colors', name: 'Colors', element: Colors },
+  //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
+  // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', element: Accounts },
   { path: '/managment/payments', name: 'Payments', element: Payments },
-  { path: '/managment/reports', name: 'Reports', element: Reports },
+  { path: '/managment/reports', name: 'Reports', element: Reports }
 
-  { path: '/theme/typography', name: 'Typography', element: Typography },
+  /*{ path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },
   { path: '/base/accordion', name: 'Accordion', element: Accordion },
   { path: '/base/breadcrumbs', name: 'Breadcrumbs', element: Breadcrumbs },
@@ -110,7 +110,7 @@ const routes = [
   { path: '/notifications/badges', name: 'Badges', element: Badges },
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
-  { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/widgets', name: 'Widgets', element: Widgets },*/
 ]
 
 export default routes
