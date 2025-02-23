@@ -162,7 +162,9 @@ class App extends Component {
 
         <br />
 
-        <Button text="Refresh Data" onClick={refreshData} />
+        <Button className="btn btn-warning btn-sm" text="Refresh Data" onClick={refreshData} />
+        <br />
+        <br />
         <DataGrid
           id="gridContainer"
           keyExpr="accountId"
