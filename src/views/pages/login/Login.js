@@ -55,9 +55,11 @@ const Login = (props) => {
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     <CInputGroup className="mb-3">
+                      {/*}
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
+                      */}
                       <CFormInput
                       name="username"
                       value={username}
@@ -65,9 +67,11 @@ const Login = (props) => {
                       placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
+                      {/*
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
                       </CInputGroupText>
+                      */}
                       <CFormInput
                         type="password"
                         placeholder="Password"
