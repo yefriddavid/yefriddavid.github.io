@@ -18,7 +18,11 @@ const Page500 = () => {
         <CRow className="justify-content-center">
           <CCol md={6}>
             <span className="clearfix">
-              <h1 className="float-start display-3 me-4">Nothing</h1>
+              <h1 className="float-start display-3 me-4">
+                <a style={{color: 'inherit', textDecoration:'none'}} href="/#/login">
+                  Nothing
+                </a>
+              </h1>
               <h4 className="pt-3">Discover it yourself</h4>
               <p className="text-body-secondary float-start">
                 I love to travel but I hate to arrive!
