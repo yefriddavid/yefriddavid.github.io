@@ -76,7 +76,7 @@ const Login = (props) => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton onClick={ authLogin } color="primary" className="px-4">
+                        <CButton onClick={ authLogin } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white"}}>
                           Login
                         </CButton>
                       </CCol>
