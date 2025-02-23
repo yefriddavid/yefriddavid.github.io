@@ -1,4 +1,6 @@
-import React from 'react'
+//import React from 'react'
+import React, { useState, useEffect } from 'react'
+
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -16,18 +18,29 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import withRouter from '../../../context/searchParamsContext'
-import { useNavigate, useSearchParams } from 'react-router-dom';
-
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const Login = (props) => {
+  const [username, setText] = useState('')
   const navigate = useNavigate()
 
   const authLogin = () => {
     //alert("aca")
     //console.log(props)
-    localStorage.setItem('token', '123-456-789')
 
-    navigate('/managment/payments')
+    if (username == 'fabian' || username == 'david' || username == 'pao') {
+      localStorage.setItem('token', '123-456-789')
+
+      navigate('/managment/payments')
+
+    }
+    else {
+      alert('Password invalido')
+    }
+  }
+
+  const handleChangeUsername = (event) => {
+    setText(event.target.value)
   }
 
   return (
@@ -45,7 +58,11 @@ const Login = (props) => {
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput
+                      name="username"
+                      value={username}
+                      onChange={handleChangeUsername}
+                      placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
