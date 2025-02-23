@@ -1,4 +1,6 @@
-import React from 'react'
+//import React from 'react'
+import React, { useState, useEffect } from 'react'
+
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -15,15 +17,39 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import withRouter from '../../../context/searchParamsContext'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
-const Login = () => {
+const Login = (props) => {
+  const [username, setText] = useState('')
+  const navigate = useNavigate()
+
+  const authLogin = () => {
+    //alert("aca")
+    //console.log(props)
+
+    if (username == 'fabian' || username == 'david' || username == 'pao') {
+      localStorage.setItem('token', '123-456-789')
+
+      navigate('/managment/payments')
+
+    }
+    else {
+      alert('Password invalido')
+    }
+  }
+
+  const handleChangeUsername = (event) => {
+    setText(event.target.value)
+  }
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8}>
             <CCardGroup>
-              <CCard className="p-4">
+              <CCard className="p-4" style={{ width: '44%', backgroundColor: '#ffc107' }}>
                 <CCardBody>
                   <CForm>
                     <h1>Login</h1>
@@ -32,7 +58,11 @@ const Login = () => {
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput
+                      name="username"
+                      value={username}
+                      onChange={handleChangeUsername}
+                      placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -46,31 +76,24 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
+                        <CButton onClick={ authLogin } color="primary" className="px-4">
                           Login
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
-                          Forgot password?
-                        </CButton>
                       </CCol>
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
+              <CCard className="text-white bg-primary1 py-5" style={{ width: '44%', backgroundColor: '#000' }}>
                 <CCardBody className="text-center">
                   <div>
-                    <h2>Sign up</h2>
+                    <h2>Managment Software</h2>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
+                      My administrator managment
                     </p>
                     <Link to="/register">
-                      <CButton color="primary" className="mt-3" active tabIndex={-1}>
-                        Register Now!
-                      </CButton>
                     </Link>
                   </div>
                 </CCardBody>
@@ -83,4 +106,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default withRouter(Login)
