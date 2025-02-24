@@ -27,7 +27,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const Login = (props) => {
   const cookieUsername = getCookie('username') || ''
-  const [LoginFormData, setFormdata] = useState({ username: cookieUsername, password: '', disabledButton: false, defaultChecked: cookieUsername == '' ? false : true })
+  const cookiePassword = getCookie('password') || ''
+  const [LoginFormData, setFormdata] = useState({ username: cookieUsername, password: cookiePassword, disabledButton: false, defaultChecked: cookieUsername == '' ? false : true })
   const navigate = useNavigate()
   document.title = `yefriddavid`
 
@@ -48,11 +49,13 @@ const Login = (props) => {
     if (checked === true) {
 
       setCookie('username', username)
+      setCookie('password', password)
 
     }
     else {
 
       deleteCookie('username')
+      deleteCookie('password')
 
     }
   }
