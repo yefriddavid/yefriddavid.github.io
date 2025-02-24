@@ -57,7 +57,14 @@ const Login = (props) => {
 
     }
   }
-  const authLogin = () => {
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSubmit()
+    }
+  }
+
+  const handleSubmit = () => {
     //alert("aca")
     //console.log(props)
 
@@ -98,6 +105,7 @@ const Login = (props) => {
                       name="username"
                       value={credentials.username}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="Username" autoComplete="username" />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
@@ -110,6 +118,7 @@ const Login = (props) => {
                         name="password"
                         value={credentials.password}
                         onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
@@ -132,7 +141,7 @@ const Login = (props) => {
 
                     <CRow>
                       <CCol xs={12}>
-                        <CButton onClick={ authLogin } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
+                        <CButton onClick={ handleSubmit } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
                           <CIcon icon={cilUser} /> {' '}
                           Login
                         </CButton>
