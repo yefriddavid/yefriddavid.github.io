@@ -24,6 +24,7 @@ const Login = (props) => {
 
   const [credentials, setPassword] = useState({username: '', password: ''})
   const navigate = useNavigate()
+  document.title = `yefriddavid`
 
   const token = localStorage.getItem('token')
   if (token) {

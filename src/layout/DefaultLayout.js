@@ -2,6 +2,8 @@ import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
 
 const DefaultLayout = () => {
+  document.title = `Cash Flow`
+
   return (
     <div>
       <AppSidebar />
