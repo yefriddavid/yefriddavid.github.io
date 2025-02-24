@@ -84,7 +84,7 @@ const Login = (props) => {
       navigate('/managment/payments')
     } else {
       handleChange({ target: { name: 'disabledButton', value: false } })
-      alert('Password invalido')
+      alert(response.data.message)
     }
   }
 
