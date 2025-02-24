@@ -1,6 +1,9 @@
 //import React from 'react'
 import React, { useState, useEffect } from 'react'
-import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next';
+import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next'
+import axios from 'axios'
+import { CSpinner } from '@coreui/react'
+
 
 import { Link } from 'react-router-dom'
 import {
@@ -23,11 +26,8 @@ import withRouter from '../../../context/searchParamsContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const Login = (props) => {
-
   const cookieUsername = getCookie('username') || ''
-  const defaultChecked = cookieUsername == '' ? false : true
-  // alert(cookieUsername)
-  const [credentials, setPassword] = useState({username: cookieUsername, password: ''})
+  const [LoginFormData, setFormdata] = useState({ username: cookieUsername, password: '', disabledButton: false, defaultChecked: cookieUsername == '' ? false : true })
   const navigate = useNavigate()
   document.title = `yefriddavid`
 
@@ -42,9 +42,8 @@ const Login = (props) => {
   }
 
   const rememberMe = (event) => {
-
     const { checked } = event.target
-    const { username } = credentials
+    const { username } = LoginFormData
 
     if (checked === true) {
 
@@ -64,24 +63,33 @@ const Login = (props) => {
     }
   }
 
-  const handleSubmit = () => {
-    //alert("aca")
-    //console.log(props)
+  const handleSubmit = async () => {
+    handleChange({ target: { name: 'disabledButton', value: true } })
+    const { username, password } = LoginFormData
+    const bodyFormData = new FormData()
+    bodyFormData.append('action', 'login')
+    bodyFormData.append('username', username)
+    bodyFormData.append('password', password)
 
-    const { username, password } = credentials
-    if (username == 'fabian' || username == 'david' || username == 'pao') {
-      localStorage.setItem('token', '123-456-789')
+    const response = await axios({
+      method: 'post',
+      url: 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec',
+      data: bodyFormData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    if (response.data.status == 'ok' && response.data.data.token) {
+      localStorage.setItem('token', response.data.data.token)
 
       navigate('/managment/payments')
-
-    }
-    else {
+    } else {
+      handleChange({ target: { name: 'disabledButton', value: false } })
       alert('Password invalido')
     }
   }
 
   const handleChange = (event) => {
-    setPassword({ ...credentials, [event.target.name]: event.target.value })
+    setFormdata({ ...LoginFormData, [event.target.name]: event.target.value })
   }
 
   return (
@@ -103,7 +111,7 @@ const Login = (props) => {
                       */}
                       <CFormInput
                       name="username"
-                      value={credentials.username}
+                      value={LoginFormData.username}
                       onChange={handleChange}
                       onKeyDown={handleKeyDown}
                       placeholder="Username" autoComplete="username" />
@@ -116,7 +124,7 @@ const Login = (props) => {
                       */}
                       <CFormInput
                         name="password"
-                        value={credentials.password}
+                        value={LoginFormData.password}
                         onChange={handleChange}
                       onKeyDown={handleKeyDown}
                         type="password"
@@ -134,15 +142,16 @@ const Login = (props) => {
                         onChange={rememberMe}
                         label="Remember me"
                         id="formSwitchCheckChecked"
-                      defaultChecked={defaultChecked}
+                      defaultChecked={LoginFormData.defaultChecked}
                       />
 
                     </CInputGroup>
 
                     <CRow>
                       <CCol xs={12}>
-                        <CButton onClick={ handleSubmit } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
-                          <CIcon icon={cilUser} /> {' '}
+                        <CButton disabled={LoginFormData.disabledButton} onClick={ handleSubmit } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
+                          { LoginFormData.disabledButton == true ? <CSpinner as="span" size="sm" aria-hidden="true" /> : <CIcon icon={cilUser} /> }
+                           {' '}
                           Login
                         </CButton>
                       </CCol>
