@@ -1,5 +1,6 @@
 //import React from 'react'
 import React, { useState, useEffect } from 'react'
+import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next';
 
 import { Link } from 'react-router-dom'
 import {
@@ -13,6 +14,7 @@ import {
   CFormInput,
   CInputGroup,
   CInputGroupText,
+  CFormSwitch,
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -22,7 +24,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const Login = (props) => {
 
-  const [credentials, setPassword] = useState({username: '', password: ''})
+  const cookieUsername = getCookie('username') || ''
+  const defaultChecked = cookieUsername == '' ? false : true
+  // alert(cookieUsername)
+  const [credentials, setPassword] = useState({username: cookieUsername, password: ''})
   const navigate = useNavigate()
   document.title = `yefriddavid`
 
@@ -36,6 +41,22 @@ const Login = (props) => {
 
   }
 
+  const rememberMe = (event) => {
+
+    const { checked } = event.target
+    const { username } = credentials
+
+    if (checked === true) {
+
+      setCookie('username', username)
+
+    }
+    else {
+
+      deleteCookie('username')
+
+    }
+  }
   const authLogin = () => {
     //alert("aca")
     //console.log(props)
@@ -93,7 +114,22 @@ const Login = (props) => {
                         placeholder="Password"
                         autoComplete="current-password"
                       />
+
+
+
+
+
                     </CInputGroup>
+                    <CInputGroup className="mb-4">
+                      <CFormSwitch
+                        onChange={rememberMe}
+                        label="Remember me"
+                        id="formSwitchCheckChecked"
+                      defaultChecked={defaultChecked}
+                      />
+
+                    </CInputGroup>
+
                     <CRow>
                       <CCol xs={12}>
                         <CButton onClick={ authLogin } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
