@@ -44,7 +44,7 @@ const Login = (props) => {
 
   const rememberMe = (event) => {
     const { checked } = event.target
-    const { username } = LoginFormData
+    const { username, password } = LoginFormData
 
     if (checked === true) {
 
