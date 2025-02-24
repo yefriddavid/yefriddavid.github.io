@@ -2,7 +2,7 @@ import axios from 'axios'
 //import { CreatePaymentVaucher } from './Database'
 
 const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
-const token = '123-456-789'
+const token = localStorage.getItem('token')
 
 const fetchAccounts = async (params) => {
 
