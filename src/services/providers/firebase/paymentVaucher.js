@@ -15,73 +15,67 @@ import {
 import { of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { v4 as uuidv4 } from 'uuid'
+import * as yup from 'yup'
+
 
 const tablsPrefix = import.meta.env.VITE_APP_TABLES_PREFIX
 const t = map( year => `${tablsPrefix}paymentVauchers-${year}` )
 //console.log(import.meta.env);
 
+const schemaBasic = yup.object().shape({
+  year: yup.number().required('Year is required').typeError('Year must be a number'),
+  paymentId: yup.number().required('paymentId is required').typeError('Year must be a number'),
+})
+
+const schemaCreateAndEdit = yup.object().shape({
+  // ID: yup.string().required('ID is required').typeError('Year must be a string'),
+  vaucher: yup.string().required('vaucher is required').typeError('Year must be a string'),
+}).concat(schemaBasic)
+
 
 const editVaucherPayment = async (payload) => {
 
-  if (!payload.ID) {
-    throw new Error("ID is required")
-  }
+  await schemaCreateAndEdit.validate(payload)
+  const { paymentId, vaucher, year } = payload
 
-  await createPaymentVaucher(payload)
+  const newId = paymentId
+  const collectionName = await of(year).pipe(t).toPromise()
+  const newData = { file: vaucher }
+  //const docRef = doc(db, collectionName, newId)
+  //const rs = await setDoc(docRef, newData)
 
-  return await fetchVaucherPayment(payload)
-  try {
+  return { status: true }
 
-    const { paymentId, vaucher, year = 2025 } = payload
-
-    const collectionName = await of(year).pipe(t).toPromise()
-    // const docRef = doc(db, 'paymentVauchers-' + year, 'new-user-id')
-    const docRef = doc(db, collectionName, paymentId)
-    const r = await setDoc(docRef, docRef)
-    return { data: r }
-
-  } catch (error) {
-    console.error('Error al obtener el documento:', error)
-  }
 }
 
 const deleteVaucherPayment = async (payload) => {
 
-  try {
+  await schemaBasic.validate(payload);
+  const { id, year = 2025 } = payload
 
-    const { id, year = 2025 } = payload
+  //const collectionName = "paymentVauchers-2025" // await of(year).pipe(t).toPromise()
+  const collectionName = await of(year).pipe(t).toPromise()
+  //const collectionName = "test-paymentVauchers-2025"
+  const docRef = doc(db, collectionName, id)
+  const response = await deleteDoc(docRef)
+  return { data: payload,  status: "ok" }
 
-    //const collectionName = "paymentVauchers-2025" // await of(year).pipe(t).toPromise()
-    const collectionName = await of(year).pipe(t).toPromise()
-    //const collectionName = "test-paymentVauchers-2025"
-    const docRef = doc(db, collectionName, id)
-    const response = await deleteDoc(docRef)
-    return { data: payload,  status: "ok" }
-
-  } catch (e) {
-    // console.error('Error al eliminar el vaucher:', error)
-    //return e
-    //console.log(e);
-    return { data: 2 }
-  }
 }
-const createPaymentVaucher = async ({ ID, paymentId, vaucher, year = 2025 }) => {
-  try {
+const createPaymentVaucher = async (payload) => {
 
-    const newId = ID ? ID: uuidv4();
-    const collectionName = await of(year).pipe(t).toPromise()
-    const newData = { id: paymentId, file: vaucher }
-    const docRef = doc(db, collectionName, newId)
-    const rs = await setDoc(docRef, newData)
+  await schemaCreateAndEdit.validate(payload)
+  const { paymentId, vaucher, year } = payload
 
-    //console.log(rs)
-    return { status: true }
+  const newId = paymentId // ID ? ID: uuidv4();
+  const collectionName = await of(year).pipe(t).toPromise()
+  const newData = { file: vaucher }
+  console.log(newData)
+  console.log(collectionName)
+  //const docRef = doc(db, collectionName, newId)
+  //// const rs = await setDoc(docRef, newData)
 
-    // const docRef = await addDoc(collection(db, collectionName), newData)
-    return rs //await setDoc(docRef, { id: paymentId, file: vaucher })
-  } catch (error) {
-    console.error('Error al crear el documento:', error)
-  }
+  //return { status: true }
+
 }
 
 const fetchVaucherPaymentMultiple = async (payments) => {

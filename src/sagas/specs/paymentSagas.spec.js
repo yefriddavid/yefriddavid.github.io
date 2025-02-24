@@ -60,5 +60,25 @@ describe('paymentSaga', () => {
     });
   })
 
+  describe('deleteData', () => {
+    it('should delete handle payment successfully', () => {
+
+      const errorMessage = 'Network Error';
+
+      testSaga(deletePayment, actions.deleteRequest(mockData))
+        .next()
+        .put(actions.beginRequestDelete())
+        .next()
+        .call(apiPaymentHttClient.deletePayment, mockData)
+        .next({ data: mockData })
+        .call(apiPaymentVaucerHttClient.createPaymentVaucher, mockData)
+        .next()
+        .put(actions.errorRequestDelete(errorMessage))
+        .next()
+        .finish();
+
+    });
+  })
+
 })
 

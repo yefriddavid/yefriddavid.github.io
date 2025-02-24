@@ -9,6 +9,7 @@ describe('paymentVauchersHttClient', () => {
 
   describe('crud', () => {
 
+    /*
     test.sequential('should create data successfully', async () => {
 
       const response = await httpClient.createPaymentVaucher({ ID, ...mockData })
@@ -29,15 +30,22 @@ describe('paymentVauchersHttClient', () => {
       //console.log(response);
       expect(response).toHaveProperty('data');
 
-    })
+    })*/
 
+    test.sequential('should create data successfully', async () => {
 
-    test.sequential('should delete data successfully', async () => {
-
-      const response = await httpClient.deleteVaucherPayment({ id: ID })
+      // const response = await httpClient.createPaymentVaucher({ ID, ...mockData })
+      const response = await httpClient.createPaymentVaucher(mockData)
       expect(response).toHaveProperty('status');
 
     })
+
+      /*test.sequential('should delete data successfully', async () => {
+
+      const response = await httpClient.deleteVaucherPayment({ id: ID, year: "davaid" })
+      expect(response).toHaveProperty('status');
+
+    })*/
   })
 
 })

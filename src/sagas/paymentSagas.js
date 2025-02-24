@@ -29,13 +29,13 @@ function* fetchPayments() {
 function* deletePayment({ payload }) {
   try{
 
-    yield put(paymentActions.beginRequestCreate())
-    const response = yield call(apiServices.createPayment, { paymentId: payload.id })
+    yield put(paymentActions.beginRequestDelete())
+    const response = yield call(apiServices.deletePayment, { paymentId: payload.id, year: payload.year })
 
     // delete vaucher
-    const r = yield call(apiServices.deletePayment, { paymentId: payload.id, year: payment.year })
+    const r = yield call(firebaseServices.deleteVaucherPayment, { paymentId: payload.id, year: payload.year })
 
-    yield put(paymentActions.successRequestCreate({...response.data, vaucher: payload.vaucher}))
+    yield put(paymentActions.successRequestDelete({...response.data, vaucher: payload.vaucher}))
 
   } catch (e) {
 
@@ -73,5 +73,6 @@ export default function* rootSagas() {
 }
 
 export {
+  deletePayment,
   createPayment
 }
