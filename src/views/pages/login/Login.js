@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next'
 import axios from 'axios'
 import { CSpinner } from '@coreui/react'
-
-
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -28,41 +26,46 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 const Login = (props) => {
   const cookieUsername = getCookie('username') || ''
   const cookiePassword = getCookie('password') || ''
-  const [LoginFormData, setFormdata] = useState({ username: cookieUsername, password: cookiePassword, disabledButton: false, defaultChecked: cookieUsername == '' ? false : true })
+  const [LoginFormData, setFormdata] = useState({
+    username: cookieUsername,
+    password: cookiePassword,
+    disabledButton: false,
+    rememberMeChecked: cookieUsername == '' ? false : true,
+    defaultChecked: cookieUsername == '' ? false : true
+  })
   const navigate = useNavigate()
   document.title = `yefriddavid`
 
   const token = localStorage.getItem('token')
   if (token) {
-
-    setTimeout( () => {
-
+    setTimeout(() => {
       navigate('/managment/payments')
     }, 1)
-
   }
 
   const rememberMe = (event) => {
     const { checked } = event.target
-    const { username, password } = LoginFormData
+
+    handleChange({ target: { name: 'rememberMeChecked', value: checked } })
 
     if (checked === true) {
-
+      const { username, password } = LoginFormData
+      console.log(username);
+      console.log(password);
       setCookie('username', username)
       setCookie('password', password)
-
-    }
-    else {
-
+    } else {
       deleteCookie('username')
       deleteCookie('password')
-
     }
   }
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       handleSubmit()
+    } else {
+      //const { rememberMeChecked } = LoginFormData
+      rememberMe({ target: { checked: LoginFormData.rememberMeChecked } })
     }
   }
 
@@ -145,7 +148,7 @@ const Login = (props) => {
                         onChange={rememberMe}
                         label="Remember me"
                         id="formSwitchCheckChecked"
-                      defaultChecked={LoginFormData.defaultChecked}
+                        defaultChecked={LoginFormData.defaultChecked}
                       />
 
                     </CInputGroup>
