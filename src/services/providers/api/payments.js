@@ -1,6 +1,6 @@
 import { axios } from './utilApi'
 
-const token = '123-456-789'
+const token = localStorage.getItem('token')
 
 export const fetchAccounts = async (params) => {
 

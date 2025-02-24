@@ -11,7 +11,7 @@ const App = () => {
       const url = 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
 
       var bodyFormData = new FormData()
-      bodyFormData.append('token', '123-456-789')
+      bodyFormData.append('token', localStorage.getItem('token'))
       bodyFormData.append('action', 'getAccounts')
 
       const response = await axios.post(url, bodyFormData)
