@@ -11,9 +11,20 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilMagnifyingGlass } from '@coreui/icons'
 
-const Page500 = () => {
+//import NodeImg from './src/assets/images/learns/nodejs.png'
+import NodeImg from 'src/assets/images/learns/nodejs.png'
+import DockerImg from 'src/assets/images/learns/docker.png'
+import Html5Img from 'src/assets/images/learns/html5.png'
+import LinuxImg from 'src/assets/images/learns/linux.png'
+import AwsImg from 'src/assets/images/learns/aws.png'
+import GolangImg from 'src/assets/images/learns/golang.png'
+import ReacJsImg from 'src/assets/images/learns/reactjs.png'
+
+const AboutMe = () => {
   return (
+    <>
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={6}>
@@ -31,8 +42,20 @@ const Page500 = () => {
           </CCol>
         </CRow>
       </CContainer>
+
+
     </div>
+      <footer>
+        <img width="150" high="150" src={NodeImg} />
+        <img width="150" high="150" src={DockerImg} />
+        <img width="150" high="150" src={Html5Img} />
+        <img width="150" high="150" src={LinuxImg} />
+        <img width="90" high="150" src={AwsImg} />
+        <img width="80" high="150" src={GolangImg} />
+        <img width="100" high="150" src={ReacJsImg} />
+      </footer>
+    </>
   )
 }
 
-export default Page500
+export default AboutMe
