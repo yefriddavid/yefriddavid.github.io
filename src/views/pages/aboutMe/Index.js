@@ -26,7 +26,7 @@ const AboutMe = () => {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
 
       <CContainer>
-        <CRow className="justify-content-center">
+        <CRow className="justify-content-center" style1={{fontFamily: "Oswald"}}>
           <CCol md={6}>
             <span className="clearfix">
               <h1 className="float-start display-3 me-4">
