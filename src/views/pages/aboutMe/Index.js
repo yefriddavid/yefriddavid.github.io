@@ -53,19 +53,21 @@ const AboutMe = () => {
 
     </div>
       <footer>
-        <img width="150" high="150" src={NodeImg} />
-        <img width="150" high="150" src={DockerImg} />
-        <img width="150" high="150" src={Html5Img} />
-        <img width="150" high="150" src={LinuxImg} />
         <img width="90" high="150" src={AwsImg} />
+        <img width="150" high="150" src={LinuxImg} />
+        <img width="150" high="150" src={DockerImg} />
+
+        <img width="150" high="150" src={NodeImg} />
         <img width="80" high="150" src={GolangImg} />
-        <img width="100" high="150" src={ReacJsImg} />
 
         <img width="100" high="150" src={MongoDbImg} />
         <img width="100" high="150" src={MysqlImg} />
+        <img width="100" high="150" src={RedisImg} />
+
+        <img width="150" high="150" src={Html5Img} />
+        <img width="100" high="150" src={ReacJsImg} />
         <img width="100" high="150" src={ReduxImg} />
         <img width="100" high="150" src={SagaImg} />
-        <img width="100" high="150" src={RedisImg} />
       </footer>
     </>
   )
