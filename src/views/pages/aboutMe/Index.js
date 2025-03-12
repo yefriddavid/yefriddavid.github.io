@@ -24,6 +24,7 @@ import MongoDbImg from 'src/assets/images/skills/mongodb.png'
 import MysqlImg from 'src/assets/images/skills/mysql.png'
 import ReduxImg from 'src/assets/images/skills/redux.png'
 import SagaImg from 'src/assets/images/skills/sagas.png'
+import RedisImg from 'src/assets/images/skills/redis.png'
 
 const AboutMe = () => {
   return (
@@ -64,6 +65,7 @@ const AboutMe = () => {
         <img width="100" high="150" src={MysqlImg} />
         <img width="100" high="150" src={ReduxImg} />
         <img width="100" high="150" src={SagaImg} />
+        <img width="100" high="150" src={RedisImg} />
       </footer>
     </>
   )
