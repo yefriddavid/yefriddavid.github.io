@@ -1,3 +1,14 @@
+# Deploy
+
+Para publicar cambios en producción (GitHub Pages):
+
+1. Crea una rama desde `main` con tus cambios
+2. Abre un Pull Request apuntando a `main`
+3. Aprueba y haz merge del Pull Request
+4. GitHub Actions desplegará automáticamente a GitHub Pages
+
+---
+
 # CoreUI Free React Admin Template [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?text=CoreUI%20-%20Free%React%204%20Admin%20Template%20&url=https://coreui.io&hashtags=bootstrap,admin,template,dashboard,panel,free,angular,react,vue)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
