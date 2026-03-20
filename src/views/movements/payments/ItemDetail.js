@@ -12,7 +12,7 @@ import moment from 'moment'
 import { useTranslation } from "react-i18next";
 import { VaucherModalViewer } from './Controls'
 
-import './ItemDetail.css'
+import './ItemDetail.scss'
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/paymentActions'
@@ -138,11 +138,11 @@ class ItemDetail1 extends Component {
 
     const myPayments = data || [];
     if (!myPayments.length) {
-      return <div className="payment-no-data">No payments yet...</div>
+      return <div className="payment-detail__empty">No payments yet...</div>
     }
 
     return (
-      <div className="payment-detail-wrapper">
+      <div className="payment-detail">
         {myPayments.map((i) => (
           <VaucherModalViewer key={i.paymentId} vaucher={selectedVaucher} paymentId={i.paymentId} visible={!!selectedVaucher} setVisible={() => this.showVaucher(null)} />
         ))}

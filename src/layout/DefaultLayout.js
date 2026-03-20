@@ -5,11 +5,11 @@ const DefaultLayout = () => {
   document.title = `Cash Flow`
 
   return (
-    <div>
+    <div className="app-layout">
       <AppSidebar />
-      <div className="wrapper d-flex flex-column min-vh-100">
+      <div className="app-layout__content d-flex flex-column min-vh-100">
         <AppHeader />
-        <div className="body flex-grow-1">
+        <div className="app-layout__body flex-grow-1">
           <AppContent />
         </div>
         <AppFooter />

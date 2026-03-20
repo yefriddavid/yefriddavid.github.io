@@ -15,7 +15,7 @@ import * as paymentActions from '../../../actions/paymentActions'
 import * as accountActions from '../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
 import { Notification } from './Alert';
-import './Payments.css'
+import './Payments.scss'
 
 //import { Controller, useFormContext } from "react-hook-form"
 import moment from 'moment'
@@ -33,6 +33,7 @@ import {
   CModalTitle,
   CPopover,
   CRow,
+  CSpinner,
   CTooltip,
 } from '@coreui/react'
 
@@ -52,6 +53,42 @@ class App extends Component {
   state = {
     ...initialState,
     expandedRowKey: null,
+    cachedData: null,
+    isFetching: false,
+  }
+
+  // ── Cache helpers ───────────────────────────────────────────────
+  getCacheKey() {
+    const { year, monthNumber } = this.state
+    return `payments_cache_${year}_${monthNumber}`
+  }
+
+  loadCache() {
+    try {
+      const raw = localStorage.getItem(this.getCacheKey())
+      if (raw) this.setState({ cachedData: JSON.parse(raw) })
+    } catch {}
+  }
+
+  saveCache(items) {
+    try {
+      localStorage.setItem(this.getCacheKey(), JSON.stringify(items))
+    } catch {}
+  }
+
+  // ── Lifecycle ───────────────────────────────────────────────────
+  componentDidMount() {
+    this.loadCache()
+    this.refreshData()
+  }
+
+  componentDidUpdate(prevProps) {
+    const newData = this.props.accounts?.data?.data?.items
+    const prevData = prevProps.accounts?.data?.data?.items
+    if (newData && newData !== prevData) {
+      this.saveCache(newData)
+      this.setState({ isFetching: false })
+    }
   }
 
   onRowClick = (e) => {
@@ -68,27 +105,14 @@ class App extends Component {
       this.setState({ expandedRowKey: clickedKey })
     }
   }
+
   setDefaultState = () => {
-    this.setState({
-      ...initialState
-    });
+    this.setState({ ...initialState })
   }
 
-  componentDidMount() {
-    /*const filters = {
-      noEmptyAccounts: "true",
-      type: "Outcoming",
-      year: "2024",
-      month: "12"
-    }*/
-    this.refreshData()
-  }
-
-  refreshData = _ => {
-
-    // console.log(this.state);
+  refreshData = () => {
+    this.setState({ isFetching: true })
     this.props.actions.accounts.fetchData({ ...this.state, month: this.state.monthNumber })
-
   }
   selectAccount = (account) => {
 
@@ -111,19 +135,11 @@ class App extends Component {
   }
   onChangeAnyState = (v, name) => {
     const { state } = this
-    //console.log(name);
+    const newState = name === 'month'
+      ? { ...state, month: v, monthNumber: moment().month(v).format('M') }
+      : { ...state, [name]: v }
 
-    if (name == "month") {
-
-      this.setState({ ...state, "month": v, monthNumber: moment().month(v).format("M") })
-
-    }
-    else {
-
-      this.setState({ ...state, [name]: v })
-
-    }
-
+    this.setState(newState, () => this.loadCache())
   }
 
   addAccountPayment(item) {
@@ -138,15 +154,12 @@ class App extends Component {
 
   render() {
 
-    const data = this.props.accounts?.data?.data?.items;
+    const reduxData = this.props.accounts?.data?.data?.items;
     const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts;
-    //console.log(fetchErrorMessage);
-    //console.log("selectedAccount");
-    //console.log(selectedAccount);
-    //console.log(this.props.accounts);
+    const { cachedData, isFetching, year, month, monthNumber } = this.state;
+    const data = reduxData ?? cachedData;
 
     const { onChangeAnyState, refreshData } = this;
-    const { year, month, monthNumber } = this.state;
     const months = moment.months()
     const years = [(year - 1).toString(), year.toString(), (parseInt(year) + 1).toString()]
 
@@ -164,13 +177,26 @@ class App extends Component {
         {MyModal}
 
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="payments-filters">
           <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
           <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
           <Button text="Refresh" onClick={refreshData} type="default" stylingMode="contained" />
+          {isFetching && data && (
+            <div className="payments-fetching">
+              <CSpinner size="sm" color="primary" />
+              <span>Actualizando...</span>
+            </div>
+          )}
         </div>
-        <DataGrid
+
+        {!data ? (
+          <div className="payments-loading">
+            <CSpinner color="primary" />
+            <span>Cargando...</span>
+          </div>
+        ) : <DataGrid
           id="paymentsGrid"
+          className="payments-grid"
           keyExpr="accountId"
           onContentReady={onContentReady}
           onRowClick={this.onRowClick}
@@ -192,23 +218,16 @@ class App extends Component {
           <Column dataField="maxDate" width={50} caption="Fecha Limite" />
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
-          <Column dataField="value" caption="Value" />
+          <Column dataField="value" caption="Value"
+            cellRender={({ value }) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)}
+          />
           <Column dataField="Status" width={90} alignment="center"
             cellRender={cellData => {
               const { data } = cellData;
               const { payments } = data;
               const paid = payments && payments.total >= data.value;
               return (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '2px 10px',
-                  borderRadius: 20,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: '0.04em',
-                  background: paid ? '#d3f9d8' : '#ffe3e3',
-                  color: paid ? '#2f9e44' : '#e03131',
-                }}>
+                <span className={`payment-status payment-status--${paid ? 'paid' : 'pending'}`}>
                   {paid ? 'Paid' : 'Pending'}
                 </span>
               )
@@ -229,15 +248,8 @@ class App extends Component {
             autoExpandAll="false"
             enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)} />
 
-          <LoadPanel
-            visible={!data}
-            enabled="true"
-            height={100}
-            width={250}
-            indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
-          />
 
-        </DataGrid>
+        </DataGrid>}
       </div>
     );
   }

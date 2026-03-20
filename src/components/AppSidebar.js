@@ -37,7 +37,7 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <h3>
-          Cash Flow
+          Cash <span>Flow</span>
         </h3>
         <CSidebarBrand to="/">
           {/*<CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />*/}

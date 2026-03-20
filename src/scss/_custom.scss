@@ -1,1 +1,56 @@
 // Here you can add other styles
+
+// ─── Design tokens ────────────────────────────────────────────────
+$sidebar-bg:       #1e3a5f;   // azul marino medio — claro pero profundo
+$sidebar-accent:   #10b981;   // emerald-500 — acento "cash flow"
+$sidebar-accent-dim: rgba(16, 185, 129, 0.18);
+$sidebar-divider:  rgba(255, 255, 255, 0.08);
+$sidebar-text:     rgba(255, 255, 255, 0.70);
+$sidebar-text-hi:  #ffffff;
+
+// ─── Sidebar ──────────────────────────────────────────────────────
+.sidebar {
+  --cui-sidebar-bg:                        #{$sidebar-bg};
+  --cui-sidebar-brand-color:               #{$sidebar-text-hi};
+  --cui-sidebar-header-border-color:       #{$sidebar-divider};
+
+  // Nav links
+  --cui-sidebar-nav-link-color:            #{$sidebar-text};
+  --cui-sidebar-nav-link-icon-color:       rgba(255, 255, 255, 0.40);
+  --cui-sidebar-nav-link-hover-color:      #{$sidebar-text-hi};
+  --cui-sidebar-nav-link-hover-icon-color: #{$sidebar-accent};
+  --cui-sidebar-nav-link-hover-bg:         #{$sidebar-accent-dim};
+  --cui-sidebar-nav-link-active-color:     #{$sidebar-accent};
+  --cui-sidebar-nav-link-active-icon-color:#{$sidebar-accent};
+  --cui-sidebar-nav-link-active-bg:        #{$sidebar-accent-dim};
+
+  // Group titles & submenus
+  --cui-sidebar-nav-title-color:           rgba(255, 255, 255, 0.35);
+  --cui-sidebar-nav-group-bg:              rgba(0, 0, 0, 0.15);
+  --cui-sidebar-nav-group-toggle-show-color: #{$sidebar-text-hi};
+
+  // Footer / toggler
+  --cui-sidebar-footer-border-color:       #{$sidebar-divider};
+  --cui-sidebar-toggler-bg:                rgba(255, 255, 255, 0.06);
+  --cui-sidebar-toggler-hover-bg:          #{$sidebar-accent-dim};
+  --cui-sidebar-toggler-indicator-color:   rgba(255, 255, 255, 0.50);
+  --cui-sidebar-toggler-indicator-hover-color: #{$sidebar-accent};
+
+  border-right: 1px solid #{$sidebar-divider} !important;
+
+  // Línea de acento en el ítem activo
+  .nav-link.active {
+    border-left: 3px solid $sidebar-accent;
+    padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
+  }
+
+  // Brand — "Cash Flow" con acento
+  .sidebar-brand,
+  h3 {
+    color: $sidebar-text-hi;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+
+    span { color: $sidebar-accent; }
+  }
+}
