@@ -171,7 +171,7 @@ class App extends Component {
     }
 
     return (
-      <div>
+      <div className="payments-container">
 
         <Notification message={fetchErrorMessage} visible={fetchIsError} />
         {MyModal}
@@ -203,7 +203,7 @@ class App extends Component {
           onRowExpanded={(e) => this.loadVauchers(e)}
           showBorders={true}
           columnAutoWidth={true}
-          columnHidingEnabled={false}
+          columnHidingEnabled={true}
           allowColumnResizing={true}
           rowAlternationEnabled={true}
           hoverStateEnabled={true}
@@ -213,12 +213,12 @@ class App extends Component {
             allowUpdating={true}
             allowDeleting={true}
           />
-          <Column dataField="accountId" width={70} caption={t('payments.columns.id')} />
-          <Column dataField="name" width={320} caption={t('payments.columns.name')} />
-          <Column dataField="maxDate" width={120} caption={t('payments.columns.dueDate')} />
-          <Column dataField="paymentMethod" caption={t('payments.columns.paymentMethod')} allowEditing={false} />
-          <Column dataField="period" caption={t('payments.columns.period')} />
-          <Column caption="Fecha" width={110} allowEditing={false}
+          <Column dataField="accountId" width={60} caption={t('payments.columns.id')} hidingPriority={5} />
+          <Column dataField="name" minWidth={120} caption={t('payments.columns.name')} hidingPriority={8} />
+          <Column dataField="maxDate" width={110} caption={t('payments.columns.dueDate')} hidingPriority={4} />
+          <Column dataField="paymentMethod" caption={t('payments.columns.paymentMethod')} allowEditing={false} hidingPriority={2} />
+          <Column dataField="period" caption={t('payments.columns.period')} hidingPriority={1} />
+          <Column caption="Fecha" width={110} allowEditing={false} hidingPriority={3}
             cellRender={({ data }) => {
               const items = data?.payments?.items
               if (!items?.length) return null
@@ -226,10 +226,10 @@ class App extends Component {
               return <span>{moment(last.date).format('MMM DD, YYYY')}</span>
             }}
           />
-          <Column dataField="value" caption={t('payments.columns.value')}
+          <Column dataField="value" caption={t('payments.columns.value')} hidingPriority={6}
             cellRender={({ value }) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)}
           />
-          <Column dataField="Status" width={130} alignment="center" caption={t('payments.columns.status')} allowEditing={false}
+          <Column dataField="Status" width={120} alignment="center" caption={t('payments.columns.status')} allowEditing={false} hidingPriority={7}
             cellRender={cellData => {
               const { data } = cellData;
               const { payments } = data;
@@ -242,7 +242,7 @@ class App extends Component {
             }}
           />
 
-          <Column type="buttons" caption={t('payments.columns.actions')} width={100}>
+          <Column type="buttons" caption={t('payments.columns.actions')} width={90}>
             <GButton
               name="add"
               onClick={(e) => this.selectAccount(e.row.data)}

@@ -216,7 +216,7 @@ const PAYMENT_METHOD_KEYS = [
   { key: 'other',    tKey: 'paymentForm.methods.other' },
 ]
 
-const PaymentEditForm = ({ payment, onCancel, onSave }) => {
+const PaymentEditForm = ({ payment, status, onCancel, onSave }) => {
   const { t } = useTranslation()
   const [form, setForm] = React.useState({
     value: payment.value || '',
@@ -224,6 +224,8 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
     payment_method: payment.payment_method || '',
     comment: payment.comment || '',
   })
+
+  const statusLabel = status || ''
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
@@ -237,6 +239,16 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
       </div>
 
       <div className="payment-form__body">
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('paymentForm.status')}</label>
+          <input
+            className="payment-form__input payment-form__input--readonly"
+            type="text"
+            value={statusLabel}
+            readOnly
+          />
+        </div>
+
         <div className="payment-form__field">
           <label className="payment-form__label">{t('paymentForm.value')}</label>
           <input
@@ -391,6 +403,8 @@ class ItemDetail1 extends Component {
     const { selectedVaucher } = this.props.accounts
     //const { data: itemAccount } = account
     const { payments } = account;
+    const isPaid = payments && payments.total >= account.value
+    const accountStatus = isPaid ? t('payments.status.paid') : t('payments.status.pending')
 
     const data = payments?.items || []
     const comment = data.length ? data[0].comment : "";
@@ -441,6 +455,7 @@ class ItemDetail1 extends Component {
               ) : editingPayment?.paymentId === i.paymentId ? (
                 <PaymentEditForm
                   payment={i}
+                  status={accountStatus}
                   onCancel={cancelEdit}
                   onSave={saveEdit}
                 />

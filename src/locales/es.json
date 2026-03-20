@@ -55,6 +55,7 @@
   },
   "paymentForm": {
     "title": "Editar pago",
+    "status": "Estado",
     "value": "Valor",
     "date": "Fecha",
     "method": "Método de pago",

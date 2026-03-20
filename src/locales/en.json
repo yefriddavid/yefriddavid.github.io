@@ -55,6 +55,7 @@
   },
   "paymentForm": {
     "title": "Edit payment",
+    "status": "Status",
     "value": "Value",
     "date": "Date",
     "method": "Payment method",

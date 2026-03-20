@@ -1,3 +1,11 @@
+// ─── Payments Container ───────────────────────────────────────────
+.payments-container {
+  @media (max-width: 575.98px) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 // ─── Payments Grid ────────────────────────────────────────────────
 #paymentsGrid {
   border-radius: 10px;
@@ -138,6 +146,46 @@
   gap: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+
+  @media (max-width: 575.98px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    > * { width: 100%; }
+
+    .dx-button { width: 100% !important; }
+  }
+
+  .dx-button {
+    height: auto !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: #16a34a !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+    transition: transform 0.15s, box-shadow 0.15s !important;
+
+    .dx-button-content {
+      padding: 9px 20px !important;
+    }
+
+    .dx-button-text {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      color: #fff !important;
+      letter-spacing: 0.03em !important;
+    }
+
+    &:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 5px 14px rgba(22, 163, 74, 0.45) !important;
+      background: #15803d !important;
+    }
+
+    &:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25) !important;
+    }
+  }
 }
 
 .payments-fetching {

@@ -278,6 +278,13 @@
       resize: none;
       line-height: 1.5;
     }
+
+    &--readonly {
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: default;
+      pointer-events: none;
+    }
   }
 
   &__actions {
@@ -289,15 +296,17 @@
 
   &__btn {
     flex: 1;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 8px;
     border: none;
-    padding: 7px 0;
+    padding: 10px 0;
     cursor: pointer;
-    transition: opacity 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    letter-spacing: 0.02em;
 
-    &:hover { opacity: 0.85; }
+    &:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    &:active { transform: translateY(0); box-shadow: none; }
 
     &--cancel {
       background: #f1f5f9;
@@ -305,8 +314,9 @@
     }
 
     &--save {
-      background: #1e3a5f;
+      background: #16a34a;
       color: #fff;
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
     }
   }
 }
