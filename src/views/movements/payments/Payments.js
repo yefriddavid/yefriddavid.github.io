@@ -15,9 +15,7 @@ import * as paymentActions from '../../../actions/paymentActions'
 import * as accountActions from '../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
 import { Notification } from './Alert';
-
-
-
+import './Payments.css'
 
 //import { Controller, useFormContext } from "react-hook-form"
 import moment from 'moment'
@@ -50,14 +48,25 @@ const onContentReady = (e) => {
   if (!e.component.getSelectedRowKeys().length) { e.component.selectRowsByIndexes([0]); }
 }
 
-const onSelectionChanged = (e) => {
-  e.component.collapseAll(-1)
-  e.component.expandRow(e.currentSelectedRowKeys[0])
-}
-
 class App extends Component {
   state = {
-    ...initialState
+    ...initialState,
+    expandedRowKey: null,
+  }
+
+  onRowClick = (e) => {
+    if (e.rowType !== 'data') return
+    const { expandedRowKey } = this.state
+    const clickedKey = e.key
+
+    if (expandedRowKey === clickedKey) {
+      e.component.collapseAll(-1)
+      this.setState({ expandedRowKey: null })
+    } else {
+      e.component.collapseAll(-1)
+      e.component.expandRow(clickedKey)
+      this.setState({ expandedRowKey: clickedKey })
+    }
   }
   setDefaultState = () => {
     this.setState({
@@ -155,24 +164,23 @@ class App extends Component {
         {MyModal}
 
 
-        <br />
-        Period:
-        <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
-        <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
-
-        <br />
-
-        <Button className="btn btn-warning btn-sm" text="Refresh Data" onClick={refreshData} />
-        <br />
-        <br />
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
+          <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
+          <Button text="Refresh" onClick={refreshData} type="default" stylingMode="contained" />
+        </div>
         <DataGrid
-          id="gridContainer"
+          id="paymentsGrid"
           keyExpr="accountId"
-          onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
+          onRowClick={this.onRowClick}
           dataSource={data}
-        onRowExpanded={ (e) => this.loadVauchers(e) }
+          onRowExpanded={(e) => this.loadVauchers(e)}
           showBorders={true}
+          columnAutoWidth={true}
+          columnHidingEnabled={false}
+          rowAlternationEnabled={true}
+          hoverStateEnabled={true}
         >
           <Selection mode="single" />
           <Editing
@@ -185,34 +193,29 @@ class App extends Component {
           <Column dataField="paymentMethod" />
           <Column dataField="period" caption="Period" />
           <Column dataField="value" caption="Value" />
-          <Column dataField="Status"
+          <Column dataField="Status" width={90} alignment="center"
             cellRender={cellData => {
-
               const { data } = cellData;
               const { payments } = data;
-              if (payments) {
-
-                const { total: payed } = payments;
-                const { value: totalAmount } = data;
-                //console.log(cellData);
-                if (totalAmount <= payed) {
-                  return <CIcon className="text-info" icon={cilCheckCircle} size="xl" />
-
-                } else {
-                  return <CIcon className="text-danger" icon={cilX} size="xl" />
-
-                }
-
-              } else {
-
-                return <CIcon className="text-danger" icon={cilX} size="xl" />
-
-              }
-
+              const paid = payments && payments.total >= data.value;
+              return (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '2px 10px',
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  background: paid ? '#d3f9d8' : '#ffe3e3',
+                  color: paid ? '#2f9e44' : '#e03131',
+                }}>
+                  {paid ? 'Paid' : 'Pending'}
+                </span>
+              )
             }}
           />
 
-          <Column type="buttons" caption="actions">
+          <Column type="buttons" caption="actions" width={100}>
             <GButton
               name="add"
               onClick={(e) => this.selectAccount(e.row.data)}
