@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 import {
   CCloseButton,
@@ -17,12 +18,14 @@ import { logo } from 'src/assets/brand/logo'
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
-import navigation from '../_nav'
+import getNav from '../_nav'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
+  const { t } = useTranslation()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const navigation = getNav(t)
 
   return (
     <CSidebar
