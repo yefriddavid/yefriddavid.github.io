@@ -12,6 +12,7 @@ import moment from 'moment'
 import { useTranslation } from "react-i18next";
 import { VaucherModalViewer } from './Controls'
 
+import './ItemDetail.css'
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/paymentActions'
@@ -137,47 +138,49 @@ class ItemDetail1 extends Component {
 
     const myPayments = data || [];
     if (!myPayments.length) {
-      return <center>
-        <h5>No payments yet...</h5>
-      </center>
-
+      return <div className="payment-no-data">No payments yet...</div>
     }
 
-  return (
-    <CRow key={crypto.randomUUID()}>
-      {myPayments.map((i) => (
-        <CCol sm={3} key={crypto.randomUUID()}>
-          <CCard key={i.paymentId} style={{ width: '18rem' }}>
-
-            <VaucherControlViewer key={crypto.randomUUID()} payment={i} />
-            <VaucherModalViewer key={crypto.randomUUID()} vaucher={selectedVaucher} paymentId={i.paymentId} visible={selectedVaucher} setVisible={() => this.showVaucher(null)} />
-
-            <CCardBody>
-              <CCardTitle>{formatValue(i.value)}</CCardTitle>
-              <CCardText>
-                <ul style={{paddingLeft: "10px"}}>
-                  <li style={{textWrap: 'wrap'}}><b>{t("comment")}</b>: {i.comment} </li>
-                  <li><b>{t("paymentMethod")}</b>: {i.payment_method} </li>
-                  <li><b>{t("date")}</b>: {moment(i.date).format("yyyy/MMM/DD")} </li>
-                  <li><b>{t("ID")}</b>: {i.paymentId} </li>
-                </ul>
-              </CCardText>
-              <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                <CButton color="primary" size="sm">
-                  {t("edit")}
-                </CButton>
-                <CButton color="danger" size="sm">
-                  {t("remove")}
-                </CButton>
-                <CButton onClick={ () => this.showVaucher(i)} color="info" size="sm">
-                  {t("showVaucher")}
-                </CButton>
+    return (
+      <div className="payment-detail-wrapper">
+        {myPayments.map((i) => (
+          <VaucherModalViewer key={i.paymentId} vaucher={selectedVaucher} paymentId={i.paymentId} visible={!!selectedVaucher} setVisible={() => this.showVaucher(null)} />
+        ))}
+        <CRow className="g-3">
+          {myPayments.map((i) => (
+            <CCol key={i.paymentId} xs={12} sm={6} md={4} lg={3}>
+              <div className="payment-card">
+                <div className="payment-card__image">
+                  <VaucherControlViewer payment={i} />
+                </div>
+                <div className="payment-card__amount">
+                  {formatValue(i.value)}
+                </div>
+                <div className="payment-card__details">
+                  <div className="payment-card__row">
+                    <span className="payment-card__label">Date</span>
+                    <span className="payment-card__value">{moment(i.date).format("MMM DD, YYYY")}</span>
+                  </div>
+                  <div className="payment-card__row">
+                    <span className="payment-card__label">Method</span>
+                    <span className="payment-card__badge">{i.payment_method}</span>
+                  </div>
+                  {i.comment && (
+                    <div className="payment-card__comment">{i.comment}</div>
+                  )}
+                  <div className="payment-card__id">#{i.paymentId}</div>
+                </div>
+                <div className="payment-card__actions">
+                  <CButton color="light" size="sm">Edit</CButton>
+                  <CButton color="light" size="sm" style={{ color: '#e03131' }}>Remove</CButton>
+                  <CButton color="info" size="sm" variant="outline" onClick={() => this.showVaucher(i)}>Voucher</CButton>
+                </div>
               </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      ))}
-    </CRow>)
+            </CCol>
+          ))}
+        </CRow>
+      </div>
+    )
 
   }
 };

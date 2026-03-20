@@ -1,0 +1,12 @@
+#paymentsGrid .dx-data-row > td {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 13px;
+}
+
+#paymentsGrid .dx-header-row > td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}

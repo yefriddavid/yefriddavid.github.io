@@ -1,0 +1,124 @@
+.payment-detail-wrapper {
+  padding: 20px 12px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.payment-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.payment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.payment-card__image {
+  background: #f1f3f5;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.payment-card__image img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.payment-card__amount {
+  padding: 14px 16px 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  letter-spacing: -0.5px;
+}
+
+.payment-card__details {
+  padding: 4px 16px 12px;
+  flex: 1;
+}
+
+.payment-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.payment-card__row:last-of-type {
+  border-bottom: none;
+}
+
+.payment-card__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #adb5bd;
+}
+
+.payment-card__value {
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.payment-card__badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #e7f5ff;
+  color: #1971c2;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.payment-card__comment {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #6c757d;
+  border-left: 3px solid #dee2e6;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.payment-card__id {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #ced4da;
+  text-align: right;
+}
+
+.payment-card__actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #f1f3f5;
+}
+
+.payment-card__actions .btn {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.payment-no-data {
+  text-align: center;
+  padding: 40px;
+  color: #adb5bd;
+  font-size: 14px;
+}

@@ -65,6 +65,16 @@ const _nav = [
     to: '/movements/accounts',
     icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
   },
+  {
+    component: CNavTitle,
+    name: 'Tools',
+  },
+  {
+    component: CNavItem,
+    name: 'Increase / Decrease',
+    to: '/tools/increase-decrease',
+    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+  },
 ]
 
 export default _nav
