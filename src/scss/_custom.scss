@@ -38,6 +38,12 @@ $sidebar-text-hi:  #ffffff;
 
   border-right: 1px solid #{$sidebar-divider} !important;
 
+  // En mobile, el sidebar ocupa toda la altura como overlay
+  @media (max-width: 991.98px) {
+    position: fixed !important;
+    z-index: 1050;
+  }
+
   // Línea de acento en el ítem activo
   .nav-link.active {
     border-left: 3px solid $sidebar-accent;
@@ -52,5 +58,49 @@ $sidebar-text-hi:  #ffffff;
     letter-spacing: 0.03em;
 
     span { color: $sidebar-accent; }
+  }
+}
+
+// ─── Responsive global ────────────────────────────────────────────
+@media (max-width: 767.98px) {
+  // Evitar desbordamiento horizontal en la app
+  body {
+    overflow-x: hidden;
+  }
+
+  // Áreas de toque mínimas (44px recomendado por WCAG)
+  .btn,
+  .dx-button {
+    min-height: 40px;
+  }
+
+  // Header más compacto en mobile
+  .header {
+    .breadcrumb {
+      font-size: 12px;
+    }
+  }
+
+  // Contenido principal sin padding lateral excesivo
+  .wrapper > .body {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+// ─── DevExtreme adaptive detail row ───────────────────────────────
+// Estilos para la fila expandida que muestra columnas ocultas
+.dx-adaptive-detail-row {
+  .dx-field-item-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+  }
+
+  .dx-field-item-content {
+    font-size: 13px;
+    color: #334155;
   }
 }

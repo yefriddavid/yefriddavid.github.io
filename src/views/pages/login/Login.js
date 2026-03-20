@@ -104,7 +104,7 @@ const Login = (props) => {
         <CRow className="justify-content-center">
           <CCol md={8}>
             <CCardGroup>
-              <CCard className="p-4" style={{ width: '44%', backgroundColor: '#ffc107' }}>
+              <CCard className="p-4" style={{ backgroundColor: '#ffc107' }}>
                 <CCardBody>
                   <CForm>
                     <h1>Login</h1>
@@ -165,7 +165,7 @@ const Login = (props) => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary1 py-5 .d-none .d-sm-block .d-md-none" style={{ width: '44%', backgroundColor: '#000' }}>
+              <CCard className="text-white bg-primary1 py-5 d-none d-sm-flex" style={{ backgroundColor: '#000' }}>
                 <CCardBody className="text-center">
                   <div>
                     <h2>Managment Software</h2>

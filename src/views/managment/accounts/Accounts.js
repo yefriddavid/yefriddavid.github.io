@@ -37,12 +37,14 @@ const App = () => {
         id="gridContainer"
         dataSource={data}
         showBorders={true}
+        columnAutoWidth={true}
+        columnHidingEnabled={true}
       >
-        <Column dataField="accountId" width={70} caption="#" />
-        <Column dataField="name" />
-        <Column dataField="type" />
-        <Column dataField="paymentMethod" />
-        <Column dataField="period" caption="Period" />
+        <Column dataField="accountId" width={60} caption="#" hidingPriority={3} />
+        <Column dataField="name" minWidth={120} hidingPriority={5} />
+        <Column dataField="type" hidingPriority={2} />
+        <Column dataField="paymentMethod" hidingPriority={1} />
+        <Column dataField="period" caption="Period" hidingPriority={4} />
       </DataGrid>
     </div>
   );
