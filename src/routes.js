@@ -13,6 +13,9 @@ const Reports = React.lazy(() => import('./views/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
+// Tools
+const IncreaseDecrease = React.lazy(() => import('./views/tools/increase-decrease/IncreaseDecrease'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -68,7 +71,9 @@ const routes = [
   // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', element: Accounts },
   { path: '/managment/payments', name: 'Payments', element: Payments },
-  { path: '/managment/reports', name: 'Reports', element: Reports }
+  { path: '/managment/reports', name: 'Reports', element: Reports },
+
+  { path: '/tools/increase-decrease', name: 'Increase Decrease', element: IncreaseDecrease },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },
