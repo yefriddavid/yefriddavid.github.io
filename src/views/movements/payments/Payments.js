@@ -229,7 +229,7 @@ class App extends Component {
           <Column dataField="value" caption={t('payments.columns.value')}
             cellRender={({ value }) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)}
           />
-          <Column dataField="Status" width={90} alignment="center" caption={t('payments.columns.status')} allowEditing={false}
+          <Column dataField="Status" width={130} alignment="center" caption={t('payments.columns.status')} allowEditing={false}
             cellRender={cellData => {
               const { data } = cellData;
               const { payments } = data;

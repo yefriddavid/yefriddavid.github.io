@@ -66,14 +66,14 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   //  { path: '/', exact: true, name: 'Home' },
   //{ path: '/', exact: true, element: AbountMe },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/dashboard', name: 'Dashboard', tKey: 'nav.dashboard', element: Dashboard },
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
-  { path: '/managment/accounts', name: 'Accounts', element: Accounts },
-  { path: '/managment/payments', name: 'Payments', element: Payments },
-  { path: '/managment/reports', name: 'Reports', element: Reports },
+  { path: '/managment/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
+  { path: '/managment/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
+  { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 
-  { path: '/tools/increase-decrease', name: 'Increase Decrease', element: IncreaseDecrease },
+  { path: '/tools/increase-decrease', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },
