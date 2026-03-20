@@ -9,7 +9,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import { CFormInput, CFormSelect } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
 import moment from 'moment'
-import { useTranslation } from "react-i18next";
+import { useTranslation, withTranslation } from 'react-i18next'
 import { VaucherModalViewer } from './Controls'
 
 import './ItemDetail.scss'
@@ -64,6 +64,7 @@ const pdfToImage = async (file) => {
 }
 
 const VoucherUploader = ({ payment, onClose, onUploaded }) => {
+  const { t } = useTranslation()
   const [preview, setPreview]       = React.useState(payment.vaucher || null)
   const [isDirty, setIsDirty]       = React.useState(false)
   const [dragOver, setDragOver]     = React.useState(false)
@@ -84,7 +85,7 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
         setPreview(base64)
         setIsDirty(true)
       } catch {
-        setError('No se pudo convertir el PDF. Intenta con otro archivo.')
+        setError(t('voucher.error.pdf'))
       } finally {
         setConverting(false)
       }
@@ -92,7 +93,7 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
     }
 
     if (!file.type.startsWith('image/')) {
-      setError('Solo se permiten imágenes o PDFs.')
+      setError(t('voucher.error.format'))
       return
     }
 
@@ -118,7 +119,7 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
       setSuccess(true)
       setTimeout(() => { onUploaded(payment.paymentId, preview); }, 900)
     } catch (e) {
-      setError('Error al guardar. Intenta de nuevo.')
+      setError(t('voucher.error.save'))
     } finally {
       setUploading(false)
     }
@@ -127,12 +128,11 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
   return (
     <div className="voucher-uploader">
       <div className="voucher-uploader__header">
-        <span className="voucher-uploader__title">Voucher</span>
+        <span className="voucher-uploader__title">{t('voucher.title')}</span>
         <span className="voucher-uploader__id">#{payment.paymentId}</span>
       </div>
 
       <div className="voucher-uploader__body">
-        {/* Drop zone */}
         <div
           className={`voucher-uploader__zone${dragOver ? ' voucher-uploader__zone--active' : ''}`}
           onClick={() => inputRef.current.click()}
@@ -143,12 +143,12 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
           {uploading ? (
             <div className="voucher-uploader__placeholder">
               <span className="voucher-uploader__spinner voucher-uploader__spinner--dark" />
-              <span className="voucher-uploader__hint">Guardando...</span>
+              <span className="voucher-uploader__hint">{t('voucher.saving')}</span>
             </div>
           ) : converting ? (
             <div className="voucher-uploader__placeholder">
               <span className="voucher-uploader__spinner voucher-uploader__spinner--dark" />
-              <span className="voucher-uploader__hint">Convirtiendo PDF...</span>
+              <span className="voucher-uploader__hint">{t('voucher.converting')}</span>
             </div>
           ) : preview ? (
             <img className="voucher-uploader__preview" src={preview} alt="voucher" />
@@ -159,8 +159,8 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <span className="voucher-uploader__hint">Arrastra o haz click</span>
-              <span className="voucher-uploader__sub">PNG · JPG · WEBP · PDF</span>
+              <span className="voucher-uploader__hint">{t('voucher.dragOrClick')}</span>
+              <span className="voucher-uploader__sub">{t('voucher.formats')}</span>
             </div>
           )}
           <input
@@ -174,7 +174,7 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
 
         {preview && (
           <button className="voucher-uploader__change" onClick={() => inputRef.current.click()}>
-            Cambiar imagen
+            {t('voucher.changeImage')}
           </button>
         )}
 
@@ -185,21 +185,21 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Guardado
+            {t('voucher.saved')}
           </div>
         )}
       </div>
 
       <div className="voucher-uploader__actions">
         <CButton className="voucher-uploader__btn voucher-uploader__btn--cancel" onClick={onClose} disabled={uploading}>
-          Cancelar
+          {t('common.cancel')}
         </CButton>
         <CButton
           className={`voucher-uploader__btn voucher-uploader__btn--save${!isDirty ? ' voucher-uploader__btn--disabled' : ''}`}
           onClick={onUpload}
           disabled={!isDirty || uploading}
         >
-          {uploading ? <span className="voucher-uploader__spinner" /> : 'Guardar'}
+          {uploading ? <span className="voucher-uploader__spinner" /> : t('common.save')}
         </CButton>
       </div>
     </div>
@@ -207,9 +207,17 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
 }
 
 // ─── Payment Edit Form ────────────────────────────────────────────
-const PAYMENT_METHODS = ['Efectivo', 'Transferencia', 'Tarjeta débito', 'Tarjeta crédito', 'Cheque', 'Otro']
+const PAYMENT_METHOD_KEYS = [
+  { key: 'cash',     tKey: 'paymentForm.methods.cash' },
+  { key: 'transfer', tKey: 'paymentForm.methods.transfer' },
+  { key: 'debit',    tKey: 'paymentForm.methods.debit' },
+  { key: 'credit',   tKey: 'paymentForm.methods.credit' },
+  { key: 'check',    tKey: 'paymentForm.methods.check' },
+  { key: 'other',    tKey: 'paymentForm.methods.other' },
+]
 
 const PaymentEditForm = ({ payment, onCancel, onSave }) => {
+  const { t } = useTranslation()
   const [form, setForm] = React.useState({
     value: payment.value || '',
     date: payment.date ? moment(payment.date).format('YYYY-MM-DD') : '',
@@ -224,13 +232,13 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
   return (
     <div className="payment-form">
       <div className="payment-form__header">
-        <span className="payment-form__title">Editar pago</span>
+        <span className="payment-form__title">{t('paymentForm.title')}</span>
         <span className="payment-form__id">#{payment.paymentId}</span>
       </div>
 
       <div className="payment-form__body">
         <div className="payment-form__field">
-          <label className="payment-form__label">Valor</label>
+          <label className="payment-form__label">{t('paymentForm.value')}</label>
           <input
             className="payment-form__input"
             type="number"
@@ -241,7 +249,7 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
         </div>
 
         <div className="payment-form__field">
-          <label className="payment-form__label">Fecha</label>
+          <label className="payment-form__label">{t('paymentForm.date')}</label>
           <input
             className="payment-form__input"
             type="date"
@@ -251,20 +259,22 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
         </div>
 
         <div className="payment-form__field">
-          <label className="payment-form__label">Método de pago</label>
+          <label className="payment-form__label">{t('paymentForm.method')}</label>
           <select className="payment-form__input payment-form__input--select" value={form.payment_method} onChange={set('payment_method')}>
-            <option value="">Seleccionar...</option>
-            {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
+            <option value="">{t('paymentForm.selectMethod')}</option>
+            {PAYMENT_METHOD_KEYS.map((m) => (
+              <option key={m.key} value={t(m.tKey)}>{t(m.tKey)}</option>
+            ))}
           </select>
         </div>
 
         <div className="payment-form__field">
-          <label className="payment-form__label">Comentario</label>
+          <label className="payment-form__label">{t('paymentForm.comment')}</label>
           <textarea
             className="payment-form__input payment-form__input--textarea"
             value={form.comment}
             onChange={set('comment')}
-            placeholder="Observaciones..."
+            placeholder={t('paymentForm.commentPlaceholder')}
             rows={3}
           />
         </div>
@@ -272,10 +282,10 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
 
       <div className="payment-form__actions">
         <CButton className="payment-form__btn payment-form__btn--cancel" onClick={onCancel}>
-          Cancelar
+          {t('common.cancel')}
         </CButton>
         <CButton className="payment-form__btn payment-form__btn--save" onClick={handleSave}>
-          Guardar
+          {t('common.save')}
         </CButton>
       </div>
     </div>
@@ -285,12 +295,6 @@ const PaymentEditForm = ({ payment, onCancel, onSave }) => {
 // <VaucherControlViewer key={i.paymentId} paymentId={i.paymentId} />
 
 class ItemDetail1 extends Component {
-
-  t = (e) => {
-
-    return e
-    return useTranslation()(e)
-  }
 
   state = { editingPayment: null, voucherPayment: null, previewVoucher: null }
 
@@ -380,7 +384,8 @@ class ItemDetail1 extends Component {
   render(){
     //const load = false
 
-    const { t, formatValue, startEdit, cancelEdit, saveEdit, openVoucher, closeVoucher, onVoucherUploaded, openPreview, closePreview } = this;
+    const { t } = this.props
+    const { formatValue, startEdit, cancelEdit, saveEdit, openVoucher, closeVoucher, onVoucherUploaded, openPreview, closePreview } = this;
     const { editingPayment, voucherPayment, previewVoucher } = this.state;
     const { account } = this.props
     const { selectedVaucher } = this.props.accounts
@@ -404,14 +409,14 @@ class ItemDetail1 extends Component {
 
     const myPayments = data || [];
     if (!myPayments.length) {
-      return <div className="payment-detail__empty">No payments yet...</div>
+      return <div className="payment-detail__empty">{this.props.t('payments.empty')}</div>
     }
 
     return (
       <div className="payment-detail">
         <CModal size="xl" visible={!!previewVoucher} onClose={closePreview} alignment="center">
           <CModalHeader>
-            <CModalTitle>Voucher #{previewVoucher?.paymentId}</CModalTitle>
+            <CModalTitle>{t('voucher.modalTitle', { id: previewVoucher?.paymentId })}</CModalTitle>
           </CModalHeader>
           <CModalBody style={{ textAlign: 'center', background: '#f8f9fa' }}>
             <img
@@ -453,11 +458,11 @@ class ItemDetail1 extends Component {
                   </div>
                   <div className="payment-card__details">
                     <div className="payment-card__row">
-                      <span className="payment-card__label">Date</span>
+                      <span className="payment-card__label">{t('payments.card.date')}</span>
                       <span className="payment-card__value">{moment(i.date).format("MMM DD, YYYY")}</span>
                     </div>
                     <div className="payment-card__row">
-                      <span className="payment-card__label">Method</span>
+                      <span className="payment-card__label">{t('payments.card.method')}</span>
                       <span className="payment-card__badge">{i.payment_method}</span>
                     </div>
                     {i.comment && (
@@ -466,9 +471,9 @@ class ItemDetail1 extends Component {
                     <div className="payment-card__id">#{i.paymentId}</div>
                   </div>
                   <div className="payment-card__actions">
-                    <CButton color="light" size="sm" onClick={() => startEdit(i)}>Edit</CButton>
-                    <CButton color="light" size="sm" style={{ color: '#e03131' }}>Remove</CButton>
-                    <CButton color="info" size="sm" variant="outline" onClick={() => openVoucher(i)}>Voucher</CButton>
+                    <CButton color="light" size="sm" onClick={() => startEdit(i)}>{t('common.edit')}</CButton>
+                    <CButton color="light" size="sm" style={{ color: '#e03131' }}>{t('common.remove')}</CButton>
+                    <CButton color="info" size="sm" variant="outline" onClick={() => openVoucher(i)}>{t('payments.card.voucher')}</CButton>
                   </div>
                 </div>
               )}
@@ -504,6 +509,6 @@ const ItemDetail = (account, year, month ) => {
   return (<ItemDetailControl account={account}/>)
 }
 
-const ItemDetailControl = connect(mapStateToProps, mapDispatchToProps)(ItemDetail1)
+const ItemDetailControl = connect(mapStateToProps, mapDispatchToProps)(withTranslation()(ItemDetail1))
 //export default connect(mapStateToProps, mapDispatchToProps)(ItemDetail)
 export default ItemDetail

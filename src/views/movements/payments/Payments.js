@@ -14,6 +14,7 @@ import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/paymentActions'
 import * as accountActions from '../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
+import { withTranslation } from 'react-i18next'
 import { Notification } from './Alert';
 import './Payments.scss'
 
@@ -154,7 +155,7 @@ class App extends Component {
   }
 
   render() {
-
+    const { t } = this.props
     const reduxData = this.props.accounts?.data?.data?.items;
     const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts;
     const { cachedData, isFetching, year, month, monthNumber } = this.state;
@@ -166,9 +167,7 @@ class App extends Component {
 
     let MyModal = <></>;
     if(selectedAccount){
-      // MyModal = <h5>modal here {"test"}</h5>;
         MyModal = <ModalPaymentComponent account={selectedAccount} visible={typeof selectedAccount != "undefined"} name="showNewPaymentModal" setVisible={this.selectAccount} />
-        //alert("ya va a existir")
     }
 
     return (
@@ -177,15 +176,14 @@ class App extends Component {
         <Notification message={fetchErrorMessage} visible={fetchIsError} />
         {MyModal}
 
-
         <div className="payments-filters">
-          <SelectControl title="Month" name="month" onChange={onChangeAnyState} value={month} options={months} />
-          <SelectControl title="Year" name="year" onChange={onChangeAnyState} value={year} options={years} />
-          <Button text="Refresh" onClick={refreshData} type="default" stylingMode="contained" />
+          <SelectControl title={t('payments.filters.month')} name="month" onChange={onChangeAnyState} value={month} options={months} />
+          <SelectControl title={t('payments.filters.year')} name="year" onChange={onChangeAnyState} value={year} options={years} />
+          <Button text={t('common.refresh')} onClick={refreshData} type="default" stylingMode="contained" />
           {isFetching && data && (
             <div className="payments-fetching">
               <CSpinner size="sm" color="primary" />
-              <span>Actualizando...</span>
+              <span>{t('common.updating')}</span>
             </div>
           )}
         </div>
@@ -193,7 +191,7 @@ class App extends Component {
         {!data ? (
           <div className="payments-loading">
             <CSpinner color="primary" />
-            <span>Cargando...</span>
+            <span>{t('common.loading')}</span>
           </div>
         ) : <DataGrid
           id="paymentsGrid"
@@ -215,28 +213,36 @@ class App extends Component {
             allowUpdating={true}
             allowDeleting={true}
           />
-          <Column dataField="accountId" width={70} caption="#" />
-          <Column dataField="name" width={320} />
-          <Column dataField="maxDate" width={50} caption="Fecha Limite" />
-          <Column dataField="paymentMethod" />
-          <Column dataField="period" caption="Period" />
-          <Column dataField="value" caption="Value"
+          <Column dataField="accountId" width={70} caption={t('payments.columns.id')} />
+          <Column dataField="name" width={320} caption={t('payments.columns.name')} />
+          <Column dataField="maxDate" width={120} caption={t('payments.columns.dueDate')} />
+          <Column dataField="paymentMethod" caption={t('payments.columns.paymentMethod')} allowEditing={false} />
+          <Column dataField="period" caption={t('payments.columns.period')} />
+          <Column caption="Fecha" width={110} allowEditing={false}
+            cellRender={({ data }) => {
+              const items = data?.payments?.items
+              if (!items?.length) return null
+              const last = items.reduce((a, b) => new Date(a.date) > new Date(b.date) ? a : b)
+              return <span>{moment(last.date).format('MMM DD, YYYY')}</span>
+            }}
+          />
+          <Column dataField="value" caption={t('payments.columns.value')}
             cellRender={({ value }) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)}
           />
-          <Column dataField="Status" width={90} alignment="center"
+          <Column dataField="Status" width={90} alignment="center" caption={t('payments.columns.status')} allowEditing={false}
             cellRender={cellData => {
               const { data } = cellData;
               const { payments } = data;
               const paid = payments && payments.total >= data.value;
               return (
                 <span className={`payment-status payment-status--${paid ? 'paid' : 'pending'}`}>
-                  {paid ? 'Paid' : 'Pending'}
+                  {paid ? t('payments.status.paid') : t('payments.status.pending')}
                 </span>
               )
             }}
           />
 
-          <Column type="buttons" caption="actions" width={100}>
+          <Column type="buttons" caption={t('payments.columns.actions')} width={100}>
             <GButton
               name="add"
               onClick={(e) => this.selectAccount(e.row.data)}
@@ -246,10 +252,9 @@ class App extends Component {
           </Column>
 
           <MasterDetail
-          key={crypto.randomUUID()}
+            key={crypto.randomUUID()}
             autoExpandAll="false"
             enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)} />
-
 
         </DataGrid>}
       </div>
@@ -279,6 +284,6 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(App))
 
 

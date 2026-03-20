@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { db } from './firebase' // Importa tu instancia de Firebase
 import { collection, getDocs, query,
   deleteDoc,
@@ -49,9 +50,8 @@ const CreatePaymentVaucher = async ({paymentId, vaucher}) => {
 }
 
 function VaucherControlViewer({payment}) {
-
+  const { t } = useTranslation()
   const { paymentId, vaucher } = payment
-console.log(payment);
   if(vaucher === false){
     return (
         <center>
@@ -80,7 +80,7 @@ console.log(payment);
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 15l-5-5L5 21"/>
         </svg>
         <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          No voucher
+          {t('voucher.noVoucher')}
         </span>
       </div>
     )

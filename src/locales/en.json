@@ -1,0 +1,90 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "remove": "Remove",
+    "close": "Close",
+    "loading": "Loading...",
+    "updating": "Updating...",
+    "refresh": "Refresh",
+    "dashboard": "Dashboard",
+    "saveChanges": "Save changes"
+  },
+  "payments": {
+    "columns": {
+      "id": "#",
+      "name": "Name",
+      "dueDate": "Due Date",
+      "paymentMethod": "Payment Method",
+      "period": "Period",
+      "value": "Value",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filters": {
+      "month": "Month",
+      "year": "Year"
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending"
+    },
+    "card": {
+      "date": "Date",
+      "method": "Method",
+      "voucher": "Voucher"
+    },
+    "empty": "No payments yet..."
+  },
+  "voucher": {
+    "title": "Voucher",
+    "saving": "Saving...",
+    "converting": "Converting PDF...",
+    "dragOrClick": "Drag or click",
+    "formats": "PNG · JPG · WEBP · PDF",
+    "changeImage": "Change image",
+    "saved": "Saved",
+    "noVoucher": "No voucher",
+    "modalTitle": "Voucher #{{id}}",
+    "error": {
+      "pdf": "Could not convert the PDF. Try another file.",
+      "format": "Only images or PDFs are allowed.",
+      "save": "Error saving. Please try again."
+    }
+  },
+  "paymentForm": {
+    "title": "Edit payment",
+    "value": "Value",
+    "date": "Date",
+    "method": "Payment method",
+    "selectMethod": "Select...",
+    "comment": "Comment",
+    "commentPlaceholder": "Notes...",
+    "methods": {
+      "cash": "Cash",
+      "transfer": "Transfer",
+      "debit": "Debit card",
+      "credit": "Credit card",
+      "check": "Check",
+      "other": "Other"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "management": "Management",
+    "accounts": "Accounts",
+    "payments": "Payments",
+    "movements": "Movements",
+    "tools": "Tools",
+    "increaseDecrease": "Increase / Decrease"
+  },
+  "auth": {
+    "login": "Login",
+    "signIn": "Sign In to your account",
+    "username": "Username",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "logout": "Logout"
+  }
+}

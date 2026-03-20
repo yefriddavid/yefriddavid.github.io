@@ -1,0 +1,90 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "remove": "Eliminar",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "updating": "Actualizando...",
+    "refresh": "Actualizar",
+    "dashboard": "Dashboard",
+    "saveChanges": "Guardar cambios"
+  },
+  "payments": {
+    "columns": {
+      "id": "#",
+      "name": "Nombre",
+      "dueDate": "Fecha Límite",
+      "paymentMethod": "Método de Pago",
+      "period": "Período",
+      "value": "Valor",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "filters": {
+      "month": "Mes",
+      "year": "Año"
+    },
+    "status": {
+      "paid": "Pagado",
+      "pending": "Pendiente"
+    },
+    "card": {
+      "date": "Fecha",
+      "method": "Método",
+      "voucher": "Comprobante"
+    },
+    "empty": "Sin pagos registrados"
+  },
+  "voucher": {
+    "title": "Comprobante",
+    "saving": "Guardando...",
+    "converting": "Convirtiendo PDF...",
+    "dragOrClick": "Arrastra o haz click",
+    "formats": "PNG · JPG · WEBP · PDF",
+    "changeImage": "Cambiar imagen",
+    "saved": "Guardado",
+    "noVoucher": "Sin comprobante",
+    "modalTitle": "Comprobante #{{id}}",
+    "error": {
+      "pdf": "No se pudo convertir el PDF. Intenta con otro archivo.",
+      "format": "Solo se permiten imágenes o PDFs.",
+      "save": "Error al guardar. Intenta de nuevo."
+    }
+  },
+  "paymentForm": {
+    "title": "Editar pago",
+    "value": "Valor",
+    "date": "Fecha",
+    "method": "Método de pago",
+    "selectMethod": "Seleccionar...",
+    "comment": "Comentario",
+    "commentPlaceholder": "Observaciones...",
+    "methods": {
+      "cash": "Efectivo",
+      "transfer": "Transferencia",
+      "debit": "Tarjeta débito",
+      "credit": "Tarjeta crédito",
+      "check": "Cheque",
+      "other": "Otro"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "management": "Administración",
+    "accounts": "Cuentas",
+    "payments": "Pagos",
+    "movements": "Movimientos",
+    "tools": "Herramientas",
+    "increaseDecrease": "Aumento / Disminución"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signIn": "Ingresa a tu cuenta",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "rememberMe": "Recordarme",
+    "logout": "Cerrar sesión"
+  }
+}
