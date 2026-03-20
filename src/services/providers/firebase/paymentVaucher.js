@@ -1,26 +1,27 @@
-import React, { useState, useEffect } from 'react'
 import { db } from './settings'
 import {
   collection,
   getDocs,
   query,
   deleteDoc,
-  or,
   where,
   setDoc,
+  updateDoc,
   doc,
   addDoc,
 } from 'firebase/firestore'
-import { CCardImage } from '@coreui/react'
 
-import { CSpinner } from '@coreui/react'
-
-const EditPaymentVaucher = async ({ paymentId, vaucher, year = 2025 }) => {
+const UpdatePaymentVaucher = async ({ paymentId, vaucher, year = 2025 }) => {
   try {
-    const docRef = doc(db, 'paymentVauchers-' + year, 'new-user-id')
-    await setDoc(docRef, docRef)
+    const q = query(collection(db, 'paymentVauchers-' + year), where('id', '==', parseInt(paymentId)))
+    const querySnapshot = await getDocs(q)
+    if (querySnapshot.empty) throw new Error('Documento no encontrado')
+    const docRef = querySnapshot.docs[0].ref
+    await updateDoc(docRef, { file: vaucher })
+    return docRef
   } catch (error) {
-    console.error('Error al obtener el documento:', error)
+    console.error('Error al actualizar el vaucher:', error)
+    throw error
   }
 }
 
@@ -79,6 +80,7 @@ const fetchVaucherPayment = async (paymentId) => {
 
 export {
   CreatePaymentVaucher,
+  UpdatePaymentVaucher,
   fetchVaucherPayment,
   fetchVaucherPaymentMultiple
 }

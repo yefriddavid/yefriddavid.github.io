@@ -125,6 +125,7 @@ class App extends Component {
     console.log(item);
     const { key } = item
     const data = this.props.accounts?.data?.data?.items;
+    if (!data) return;
     const account = data.find( e => e.accountId == key );
     //console.log(account);
     //if (rowType == "data"){
@@ -205,6 +206,7 @@ class App extends Component {
           showBorders={true}
           columnAutoWidth={true}
           columnHidingEnabled={false}
+          allowColumnResizing={true}
           rowAlternationEnabled={true}
           hoverStateEnabled={true}
         >
