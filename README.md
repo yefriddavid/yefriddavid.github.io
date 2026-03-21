@@ -1,196 +1,268 @@
-# Deploy
+# My Admin — Cash Flow Dashboard
 
-Para publicar cambios en producción (GitHub Pages):
+> Panel de administración de flujo de caja personal, construido sobre React 18 + Vite con integración a Google Apps Script y Firebase Firestore.
 
-1. Crea una rama desde `main` con tus cambios
-2. Abre un Pull Request apuntando a `main`
-3. Aprueba y haz merge del Pull Request
-4. GitHub Actions desplegará automáticamente a GitHub Pages
+[![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)](https://vitejs.dev)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2-764abc?style=flat-square&logo=redux)](https://redux-toolkit.js.org)
+[![Firebase](https://img.shields.io/badge/Firebase-11-ffca28?style=flat-square&logo=firebase)](https://firebase.google.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 ---
 
-# CoreUI Free React Admin Template [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?text=CoreUI%20-%20Free%React%204%20Admin%20Template%20&url=https://coreui.io&hashtags=bootstrap,admin,template,dashboard,panel,free,angular,react,vue)
+## Tabla de contenidos
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![@coreui coreui](https://img.shields.io/badge/@coreui%20-coreui-lightgrey.svg?style=flat-square)](https://github.com/coreui/coreui)
-[![npm package][npm-coreui-badge]][npm-coreui]
-[![NPM downloads][npm-coreui-download]][npm-coreui]
-[![@coreui react](https://img.shields.io/badge/@coreui%20-react-lightgrey.svg?style=flat-square)](https://github.com/coreui/react)
-[![npm package][npm-coreui-react-badge]][npm-coreui-react]
-[![NPM downloads][npm-coreui-react-download]][npm-coreui-react]  
+- [Descripción](#descripción)
+- [Características](#características)
+- [Arquitectura](#arquitectura)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Instalación y comandos](#instalación-y-comandos)
+- [Backend y fuentes de datos](#backend-y-fuentes-de-datos)
+- [Sistema de temas](#sistema-de-temas)
+- [Estado global (Redux)](#estado-global-redux)
+- [Internacionalización](#internacionalización)
+- [Caché de vouchers](#caché-de-vouchers)
+- [Despliegue](#despliegue)
 
-[npm-coreui]: https://www.npmjs.com/package/@coreui/coreui
-[npm-coreui-badge]: https://img.shields.io/npm/v/@coreui/coreui.png?style=flat-square
-[npm-coreui-download]: https://img.shields.io/npm/dm/@coreui/coreui.svg?style=flat-square
-[npm-coreui-react]: https://www.npmjs.com/package/@coreui/react
-[npm-coreui-react-badge]: https://img.shields.io/npm/v/@coreui/react.png?style=flat-square
-[npm-coreui-react-download]: https://img.shields.io/npm/dm/@coreui/react.svg?style=flat-square
-[npm]: https://www.npmjs.com/package/@coreui/react
+---
 
-[![Bootstrap Admin Template](https://assets.coreui.io/products/coreui-free-bootstrap-admin-template-light-dark.webp)](https://coreui.io/product/free-react-admin-template/)
+## Descripción
 
-CoreUI is meant to be the UX game changer. Pure & transparent code is devoid of redundant components, so the app is light enough to offer ultimate user experience. This means mobile devices also, where the navigation is just as easy and intuitive as on a desktop or laptop. The CoreUI Layout API lets you customize your project for almost any device – be it Mobile, Web or WebApp – CoreUI covers them all!
+**My Admin** es un dashboard SPA para la gestión de cuentas, pagos y comprobantes (vouchers) de flujo de caja. Permite visualizar el estado de pago de cuentas por mes/año, adjuntar vouchers en imagen o PDF, y consultar reportes históricos. Está desplegado en GitHub Pages y consume dos backends: Google Apps Script (datos de pagos) y Firebase Firestore (vouchers).
 
-## Table of Contents
+---
 
-* [Versions](#versions)
-* [CoreUI PRO](#coreui-pro)
-* [CoreUI PRO React Admin Templates](#coreui-pro-react-admin-templates)
-* [Quick Start](#quick-start)
-* [Installation](#installation)
-* [Basic usage](#basic-usage)
-* [What's included](#whats-included)
-* [Documentation](#documentation)
-* [Versioning](#versioning)
-* [Creators](#creators)
-* [Community](#community)
-* [Support CoreUI Development](#support-coreui-development)
-* [Copyright and License](#copyright-and-license)
+## Características
 
-## Versions
+| Módulo | Descripción |
+|---|---|
+| **Pagos** | Grid de cuentas con detalle de pagos por mes/año, estado pagado/pendiente |
+| **Vouchers** | Subida de imagen o PDF (convertido a imagen), almacenado en Firestore |
+| **Reportes** | Visualización histórica de comprobantes de pago |
+| **Cuentas** | CRUD de cuentas con DataGrid DevExtreme |
+| **Visitas** | Registro de visitas a la página pública About Me (Firebase) |
+| **Temas** | Selector de tema en el header: Cash (negro/ámbar) y Ocean (azul/esmeralda) |
+| **i18n** | Soporte multilenguaje (Español por defecto) con i18next |
 
-* [CoreUI Free Bootstrap Admin Template](https://github.com/coreui/coreui-free-bootstrap-admin-template)
-* [CoreUI Free Angular Admin Template](https://github.com/coreui/coreui-free-angular-admin-template)
-* [CoreUI Free React.js Admin Template (Vite)](https://github.com/coreui/coreui-free-react-admin-template)
-* [CoreUI Free React.js Admin Template (Create React App)](https://github.com/coreui/coreui-free-react-admin-template-cra)
-* [CoreUI Free Vue.js Admin Template](https://github.com/coreui/coreui-free-vue-admin-template)
+---
 
-## CoreUI PRO
+## Arquitectura
 
-* 💪  [CoreUI PRO Angular Admin Template](https://coreui.io/product/angular-dashboard-template/)
-* 💪  [CoreUI PRO Bootstrap Admin Template](https://coreui.io/product/bootstrap-dashboard-template/)
-* 💪  [CoreUI PRO Next.js Admin Template](https://coreui.io/product/next-js-dashboard-template/)
-* 💪  [CoreUI PRO React Admin Template](https://coreui.io/product/react-dashboard-template/)
-* 💪  [CoreUI PRO Vue Admin Template](https://coreui.io/product/vue-dashboard-template/)
-
-## CoreUI PRO React Admin Templates
-
-| Default Theme | Light Theme |
-| --- | --- |
-| [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_default_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=default) | [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_light_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=light)|
-
-| Modern Theme | Bright Theme |
-| --- | --- |
-| [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_default_v3_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=modern) | [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_light_v3_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=bright)|
-
-## Quick Start
-
-- [Download the latest release](https://github.com/coreui/coreui-free-react-admin-template/archive/refs/heads/main.zip)
-- Clone the repo: `git clone https://github.com/coreui/coreui-free-react-admin-template.git`
-
-### Installation
-
-``` bash
-$ npm install
+```
+Browser (HashRouter)
+│
+├── DefaultLayout                  ← AppSidebar + AppHeader + AppContent + AppFooter
+│   ├── Payments (movements)       ← Google Apps Script + Firebase Firestore
+│   ├── Reports                    ← Firebase Firestore
+│   ├── Accounts                   ← Google Apps Script / DevExtreme DataGrid
+│   └── Tools / Visits             ← Firebase Firestore
+│
+└── Public pages (sin layout)
+    ├── /login
+    ├── /register
+    ├── /404
+    └── /about-me                  ← Portfolio público con Matrix rain + cursor glow
 ```
 
-or
+**Flujo de datos:**
 
-``` bash
-$ yarn install
+```
+Component
+  └─► dispatch(action)
+        └─► Redux Saga (side effect)
+              ├─► Google Apps Script API  (FormData POST)
+              └─► Firebase Firestore SDK
+                    └─► reducer update ─► component re-render
 ```
 
-### Basic usage
+---
 
-``` bash
-# dev server with hot reload at http://localhost:3000
-$ npm start 
+## Estructura del proyecto
+
+```
+src/
+├── actions/              # Creadores de acciones (redux-act)
+│   ├── authActions.js
+│   ├── accountActions.js
+│   ├── paymentActions.js
+│   └── paymentVaucherActions.js
+│
+├── reducers/             # Slices de estado (RTK createSlice)
+│   ├── loginReducer.js
+│   ├── accountReducer.js
+│   ├── paymentReducer.js
+│   ├── paymentVaucherReducer.js
+│   └── uiReducer.js      ← sidebarShow, appTheme
+│
+├── sagas/                # Efectos asíncronos (redux-saga)
+│   ├── accountSagas.js
+│   ├── paymentSagas.js
+│   └── paymentVaucherSagas.js   ← lógica de caché de vouchers
+│
+├── services/
+│   ├── providers/
+│   │   ├── api/          ← Google Apps Script (utilApi.js, payments.js, accounts.js)
+│   │   └── firebase/     ← Firestore (paymentVaucher.js, settings.js, pageVisits.js)
+│   └── voucherCache.js   ← Caché en localStorage con prefijo vchr_
+│
+├── components/           # Componentes de layout compartidos
+│   ├── AppHeader.js      ← Selector de tema, language switcher, banner de versión
+│   ├── AppSidebarNav.js
+│   ├── AppBreadcrumb.js
+│   └── LanguageSwitcher.js
+│
+├── views/
+│   ├── movements/payments/   ← Gestión de pagos + subida de vouchers
+│   ├── reports/payments/     ← Visor de comprobantes
+│   ├── managment/accounts/   ← CRUD de cuentas
+│   ├── tools/visits/         ← Registro de visitas
+│   └── pages/
+│       ├── login/
+│       └── aboutMe/          ← Portfolio público (Matrix rain, cursor glow)
+│
+├── scss/
+│   ├── _custom.scss      ← Mixin app-theme + temas Cash y Ocean
+│   └── _variables.scss
+│
+├── _nav.js               # Configuración del menú lateral
+├── routes.js             # Definición de rutas
+└── store/store.js        # Configuración del store Redux
 ```
 
-or 
+---
 
-``` bash
-# dev server with hot reload at http://localhost:3000
-$ yarn start
-```
-
-Navigate to [http://localhost:3000](http://localhost:3000). The app will automatically reload if you change any of the source files.
-
-#### Build
-
-Run `build` to build the project. The build artifacts will be stored in the `build/` directory.
+## Instalación y comandos
 
 ```bash
-# build for production with minification
-$ npm run build
+# Instalar dependencias
+npm install
+
+# Servidor de desarrollo (http://localhost:3000)
+npm start
+
+# Build de producción → /build
+npm run build
+
+# Preview del build
+npm run serve
+
+# Lint
+npm run lint
+
+# Deploy a GitHub Pages (build + gh-pages)
+npm run deploy
 ```
 
-or
+> **Nota:** Al iniciar la app se imprime en consola el hash del commit actual (`[app] commit: xxxxxxx`), útil para verificar la versión desplegada.
+
+---
+
+## Backend y fuentes de datos
+
+### Google Apps Script
+
+Todas las operaciones de cuentas y pagos van a un endpoint de Google Apps Script mediante `POST` con `FormData`:
+
+```js
+// src/services/providers/api/utilApi.js
+FormData {
+  action: 'getAccounts' | 'getPayments' | 'createPayment' | ...,
+  token:  localStorage.getItem('token'),
+  ...params
+}
+```
+
+La autenticación se basa en un token guardado en `localStorage`. Si no existe, el guard de `AppContent.js` redirige a `/login`.
+
+### Firebase Firestore
+
+Usado exclusivamente para vouchers de pago y registro de visitas:
+
+| Colección | Uso |
+|---|---|
+| `paymentVauchers` | Imágenes/PDF de comprobantes de pago (base64) |
+| `page_visits` | Registro de visitas a la página About Me |
+
+---
+
+## Sistema de temas
+
+El tema se aplica mediante el atributo `data-app-theme` en el `<body>` y se persiste en Redux (`uiReducer`). Los estilos están definidos en `src/scss/_custom.scss` con un mixin reutilizable:
+
+```scss
+@mixin app-theme($bg, $accent) { ... }
+
+body[data-app-theme="yellow"] { @include app-theme(#000000, #ffc107); } // Cash
+body[data-app-theme="blue"]   { @include app-theme(#1e3a5f, #10b981); } // Ocean
+```
+
+El mixin aplica el acento (`$accent`) a:
+- Sidebar: links activos, hover, ítem activo con borde izquierdo
+- Botones primarios de CoreUI
+- Botones default de DevExtreme (toolbar y standalone)
+
+El selector de tema está en el header (ícono de paleta).
+
+---
+
+## Estado global (Redux)
+
+```
+store
+├── login          → { fetching, token, isError, error }
+├── account        → { data, selectedAccount, fetching, isError, error }
+├── payment        → { fetching, isError, error }
+├── paymentVaucher → { data, fetching, isError, error }
+└── ui             → { sidebarShow, appTheme }
+```
+
+**Sagas registradas:**
+
+| Saga | Trigger | Acción |
+|---|---|---|
+| `fetchAccountsSaga` | `accountActions.fetchData` | GET cuentas desde Apps Script |
+| `addVauchersToAccountPayments` | `accountActions.loadVauchersToAccountPayment` | Carga vouchers con caché |
+| `createPaymentSaga` | `paymentActions.createRequest` | POST nuevo pago |
+| `createPaymentVaucher` | `paymentActions.successRequestCreate` | Guarda voucher en Firestore |
+
+---
+
+## Internacionalización
+
+Configurado con `i18next` + `i18next-http-backend`. Idioma por defecto: **español (`es`)**.
+
+Los archivos de traducción se cargan vía HTTP desde `public/locales/`. Para agregar un idioma nuevo, crea `public/locales/<lang>/translation.json` y agrégalo en `src/i18n.js`.
+
+---
+
+## Caché de vouchers
+
+Los vouchers se cachean en `localStorage` con el prefijo `vchr_<paymentId>` para evitar lecturas repetidas a Firestore.
+
+```
+Primera carga
+  └─► getCache(paymentId) → null
+        └─► fetchVaucherPaymentMultiple() → Firestore
+              └─► setCache(paymentId, base64)  ← guardado
+
+Cargas siguientes
+  └─► getCache(paymentId) → base64  ← sirve inmediatamente, sin Firestore
+```
+
+Para forzar recarga de un voucher individual existe el botón de refresh (⟳) en cada card de pago, que llama a `clearCache(paymentId)` antes de ir a Firestore.
+
+---
+
+## Despliegue
+
+El deploy es automático a **GitHub Pages** vía `npm run deploy` (usa `gh-pages`). El build genera un `build/version.json` con el hash del commit actual para trazabilidad de versiones.
 
 ```bash
-# build for production with minification
-$ yarn build
+npm run deploy
+# → npm run build → vite build → /build
+# → gh-pages -d build → publica en la rama gh-pages
 ```
 
-## What's included
+---
 
-Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
-
-```
-coreui-free-react-admin-template
-├── public/          # static files
-│   ├── favicon.ico
-│   └── manifest.json
-│
-├── src/             # project root
-│   ├── assets/      # images, icons, etc.
-│   ├── components/  # common components - header, footer, sidebar, etc.
-│   ├── layouts/     # layout containers
-│   ├── scss/        # scss styles
-│   ├── views/       # application views
-│   ├── _nav.js      # sidebar navigation config
-│   ├── App.js
-│   ├── index.js
-│   ├── routes.js    # routes config
-│   └── store.js     # template state example 
-│
-├── index.html       # html template
-├── ...
-├── package.json
-├── ...
-└── vite.config.mjs  # vite config
-```
-
-## Documentation
-
-The documentation for the CoreUI Admin Template is hosted at our website [CoreUI for React](https://coreui.io/react/docs/templates/installation/)
-
-## Versioning
-
-For transparency into our release cycle and in striving to maintain backward compatibility, CoreUI Free Admin Template is maintained under [the Semantic Versioning guidelines](http://semver.org/).
-
-See [the Releases section of our project](https://github.com/coreui/coreui-free-react-admin-template/releases) for changelogs for each release version.
-
-## Creators
-
-**Łukasz Holeczek**
-
-* <https://twitter.com/lukaszholeczek>
-* <https://github.com/mrholek>
-
-**Andrzej Kopański**
-
-* <https://github.com/xidedix>
-
-**CoreUI Team**
-
-* <https://twitter.com/core_ui>
-* <https://github.com/coreui>
-* <https://github.com/orgs/coreui/people>
-
-## Community
-
-Get updates on CoreUI's development and chat with the project maintainers and community members.
-
-- Follow [@core_ui on Twitter](https://twitter.com/core_ui).
-- Read and subscribe to [CoreUI Blog](https://coreui.ui/blog/).
-
-## Support CoreUI Development
-
-CoreUI is an MIT-licensed open source project and is completely free to use. However, the amount of effort needed to maintain and develop new features for the project is not sustainable without proper financial backing. You can support development by buying the [CoreUI PRO](https://coreui.io/pricing/?framework=react&src=github-coreui-free-react-admin-template) or by becoming a sponsor via [Open Collective](https://opencollective.com/coreui/).
-
-## Copyright and License
-
-copyright 2024 creativeLabs Łukasz Holeczek.   
-
-Code released under [the MIT license](https://github.com/coreui/coreui-free-react-admin-template/blob/main/LICENSE).
+*Desarrollado por [David Rios](https://www.linkedin.com/in/yefriddavid) · [@yefriddavid](https://github.com/yefriddavid)*
