@@ -19,8 +19,16 @@ function versionPlugin() {
 }
 
 export default defineConfig(() => {
+  let gitHash = 'dev'
+  try {
+    gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {}
+
   return {
     base: './',
+    define: {
+      __COMMIT_HASH__: JSON.stringify(gitHash),
+    },
     build: {
       outDir: 'build',
     },
