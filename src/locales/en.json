@@ -31,9 +31,11 @@
       "pending": "Pending"
     },
     "card": {
+      "payment": "Payment",
       "date": "Date",
       "method": "Method",
-      "voucher": "Voucher"
+      "voucher": "Voucher",
+      "confirmDelete": "Delete payment #{{id}}? This action cannot be undone."
     },
     "empty": "No payments yet..."
   },

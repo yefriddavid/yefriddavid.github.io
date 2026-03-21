@@ -67,7 +67,7 @@ const AppHeader = () => {
           </button>
         </div>
       )}
-      <CContainer className="border-bottom px-4" fluid>
+      <CContainer className="border-bottom px-4 py-0" fluid>
         <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
@@ -106,7 +106,7 @@ const AppHeader = () => {
           </CNavItem>*/}
         </CHeaderNav>
         <CHeaderNav>
-          <li className="nav-item py-1">
+          <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <CDropdown variant="nav-item" placement="bottom-end">
@@ -149,7 +149,7 @@ const AppHeader = () => {
               </CDropdownItem>
             </CDropdownMenu>
           </CDropdown>
-          <li className="nav-item py-1">
+          <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <CDropdown variant="nav-item" placement="bottom-end">
@@ -179,17 +179,17 @@ const AppHeader = () => {
               </CDropdownItem>
             </CDropdownMenu>
           </CDropdown>
-          <li className="nav-item py-1">
+          <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <LanguageSwitcher />
-          <li className="nav-item py-1">
+          <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>
       </CContainer>
-      <CContainer className="px-4" fluid>
+      <CContainer className="px-4 py-0" fluid>
         <AppBreadcrumb />
       </CContainer>
     </CHeader>

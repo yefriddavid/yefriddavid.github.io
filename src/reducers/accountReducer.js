@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import * as accountActions from '../actions/accountActions'
-import { successRequestCreate } from '../actions/paymentActions'
+import { successRequestCreate, successRequestDelete } from '../actions/paymentActions'
 
 const accountSlice = createSlice({
   name: 'account',
@@ -49,6 +49,18 @@ const accountSlice = createSlice({
       })
       .addCase(successRequestCreate, (state) => {
         state.selectedAccount = null
+      })
+      .addCase(successRequestDelete, (state, { payload }) => {
+        const items = state.data?.data?.items
+        if (!items) return
+        items.forEach((account) => {
+          if (account.payments?.items) {
+            account.payments.items = account.payments.items.filter(
+              (p) => p.paymentId !== payload.paymentId,
+            )
+            account.payments.total = account.payments.items.reduce((sum, p) => sum + (p.value || 0), 0)
+          }
+        })
       })
   },
 })

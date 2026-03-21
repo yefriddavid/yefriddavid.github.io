@@ -6,7 +6,7 @@ import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Servic
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
-import { CFormInput, CFormSelect } from '@coreui/react'
+import { CFormInput, CFormSelect, CSpinner } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
 import moment from 'moment'
 import { useTranslation, withTranslation } from 'react-i18next'
@@ -207,6 +207,126 @@ const VoucherUploader = ({ payment, onClose, onUploaded }) => {
   )
 }
 
+// ─── New Payment Card ─────────────────────────────────────────────
+const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
+  const { t } = useTranslation()
+  const [form, setForm] = React.useState({
+    value: account.value || '',
+    date: moment().format('YYYY-MM-DD'),
+    payment_method: account.paymentMethod || '',
+    comment: '',
+  })
+  const [vaucher, setVaucher] = React.useState(null)
+  const [converting, setConverting] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
+  const inputRef = React.useRef()
+
+  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
+
+  const readFile = async (file) => {
+    if (!file) return
+    if (file.type === 'application/pdf') {
+      setConverting(true)
+      try {
+        const blob = await pdfToBlob(file)
+        const reader = new FileReader()
+        reader.onload = (e) => setVaucher(e.target.result)
+        reader.readAsDataURL(blob)
+      } catch {} finally { setConverting(false) }
+      return
+    }
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = (e) => setVaucher(e.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  const handleSave = () => {
+    setSaving(true)
+    createPayment({
+      accountId: account.accountId,
+      deviceId: 'web',
+      month: account.monthId,
+      year: account.year,
+      value: Number(form.value),
+      date: moment(form.date).format('YYYY/MMM/DD'),
+      payment_method: form.payment_method,
+      comment: form.comment,
+      vaucher,
+    })
+    onSave()
+  }
+
+  return (
+    <div className="payment-form">
+      <div className="payment-form__header">
+        <span className="payment-form__title">{t('paymentForm.newTitle', 'Nuevo pago')}</span>
+        <span className="payment-form__id">{account.name}</span>
+      </div>
+      <div className="payment-form__body">
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('paymentForm.value')}</label>
+          <input className="payment-form__input" type="number" value={form.value} onChange={set('value')} placeholder="0" />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('paymentForm.date')}</label>
+          <input className="payment-form__input" type="date" value={form.date} onChange={set('date')} />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('paymentForm.method')}</label>
+          <select className="payment-form__input payment-form__input--select" value={form.payment_method} onChange={set('payment_method')}>
+            <option value="">{t('paymentForm.selectMethod')}</option>
+            {PAYMENT_METHOD_KEYS.map((m) => (
+              <option key={m.key} value={t(m.tKey)}>{t(m.tKey)}</option>
+            ))}
+          </select>
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('paymentForm.comment')}</label>
+          <textarea className="payment-form__input payment-form__input--textarea" value={form.comment} onChange={set('comment')} placeholder={t('paymentForm.commentPlaceholder')} rows={2} />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">{t('voucher.title')}</label>
+          <div
+            className="voucher-uploader__zone"
+            style={{ minHeight: 80 }}
+            onClick={() => inputRef.current.click()}
+          >
+            {converting ? (
+              <div className="voucher-uploader__placeholder">
+                <span className="voucher-uploader__spinner voucher-uploader__spinner--dark" />
+              </div>
+            ) : vaucher ? (
+              <img className="voucher-uploader__preview" src={vaucher} alt="voucher" style={{ maxHeight: 120 }} />
+            ) : (
+              <div className="voucher-uploader__placeholder">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span className="voucher-uploader__hint" style={{ fontSize: 11 }}>{t('voucher.dragOrClick')}</span>
+              </div>
+            )}
+            <input ref={inputRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => readFile(e.target.files[0])} />
+          </div>
+          {vaucher && (
+            <button className="voucher-uploader__change" onClick={() => inputRef.current.click()}>
+              {t('voucher.changeImage')}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="payment-form__actions">
+        <CButton className="payment-form__btn payment-form__btn--cancel" onClick={onCancel} disabled={saving}>{t('common.cancel')}</CButton>
+        <CButton className="payment-form__btn payment-form__btn--save" onClick={handleSave} disabled={saving}>
+          {saving ? <CSpinner size="sm" /> : t('common.save')}
+        </CButton>
+      </div>
+    </div>
+  )
+}
+
 // ─── Payment Edit Form ────────────────────────────────────────────
 const PAYMENT_METHOD_KEYS = [
   { key: 'cash',     tKey: 'paymentForm.methods.cash' },
@@ -217,7 +337,7 @@ const PAYMENT_METHOD_KEYS = [
   { key: 'other',    tKey: 'paymentForm.methods.other' },
 ]
 
-const PaymentEditForm = ({ payment, status, onCancel, onSave }) => {
+export const PaymentEditForm = ({ payment, status, onCancel, onSave }) => {
   const { t } = useTranslation()
   const [form, setForm] = React.useState({
     value: payment.value || '',
@@ -235,8 +355,7 @@ const PaymentEditForm = ({ payment, status, onCancel, onSave }) => {
   return (
     <div className="payment-form">
       <div className="payment-form__header">
-        <span className="payment-form__title">{t('paymentForm.title')}</span>
-        <span className="payment-form__id">#{payment.paymentId}</span>
+        <span className="payment-form__title">{t('paymentForm.title')} <span className="payment-form__id">#{payment.paymentId}</span></span>
       </div>
 
       <div className="payment-form__body">
@@ -425,7 +544,7 @@ class ItemDetail1 extends Component {
     const { t } = this.props
     const { formatValue, startEdit, cancelEdit, saveEdit, openVoucher, closeVoucher, onVoucherUploaded, openPreview, closePreview, refreshVoucher } = this;
     const { editingPayment, voucherPayment, previewVoucher } = this.state;
-    const { account } = this.props
+    const { account, showAddForm, onAddDone } = this.props
     const { selectedVaucher } = this.props.accounts
     //const { data: itemAccount } = account
     const { payments } = account;
@@ -448,7 +567,7 @@ class ItemDetail1 extends Component {
     }*/
 
     const myPayments = data || [];
-    if (!myPayments.length) {
+    if (!myPayments.length && !showAddForm) {
       return <div className="payment-detail__empty">{this.props.t('payments.empty')}</div>
     }
 
@@ -470,6 +589,16 @@ class ItemDetail1 extends Component {
           <VaucherModalViewer key={i.paymentId} vaucher={selectedVaucher} paymentId={i.paymentId} visible={!!selectedVaucher} setVisible={() => this.showVaucher(null)} />
         ))}
         <CRow className="g-3">
+          {showAddForm && (
+            <CCol xs={12} sm={6} md={4} lg={3}>
+              <NewPaymentCard
+                account={account}
+                onSave={onAddDone}
+                onCancel={onAddDone}
+                createPayment={this.props.actions.payments.createRequest}
+              />
+            </CCol>
+          )}
           {myPayments.map((i) => (
             <CCol key={i.paymentId} xs={12} sm={6} md={4} lg={3}>
               {voucherPayment?.paymentId === i.paymentId ? (
@@ -487,6 +616,9 @@ class ItemDetail1 extends Component {
                 />
               ) : (
                 <div className="payment-card">
+                  <div className="payment-card__header">
+                    <span className="payment-card__title">{t('payments.card.payment')} #{i.paymentId}</span>
+                  </div>
                   <div
                     className="payment-card__image"
                     onClick={() => i.vaucher && openPreview(i)}
@@ -509,11 +641,19 @@ class ItemDetail1 extends Component {
                     {i.comment && (
                       <div className="payment-card__comment">{i.comment}</div>
                     )}
-                    <div className="payment-card__id">#{i.paymentId}</div>
                   </div>
                   <div className="payment-card__actions">
                     <CButton color="light" size="sm" onClick={() => startEdit(i)}>{t('common.edit')}</CButton>
-                    <CButton color="light" size="sm" style={{ color: '#e03131' }}>{t('common.remove')}</CButton>
+                    <CButton
+                      color="light"
+                      size="sm"
+                      style={{ color: '#e03131' }}
+                      onClick={() => {
+                        if (window.confirm(t('payments.card.confirmDelete', { id: i.paymentId }))) {
+                          this.props.actions.payments.deleteRequest({ paymentId: i.paymentId })
+                        }
+                      }}
+                    >{t('common.remove')}</CButton>
                     <CButton color="info" size="sm" variant="outline" onClick={() => openVoucher(i)}>{t('payments.card.voucher')}</CButton>
                     <CButton
                       color="light"
@@ -558,9 +698,9 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-const ItemDetail = (account, year, month ) => {
+const ItemDetail = (account, year, month, extraProps = {}) => {
 
-  return (<ItemDetailControl account={account}/>)
+  return (<ItemDetailControl account={account} {...extraProps}/>)
 }
 
 const ItemDetailControl = connect(mapStateToProps, mapDispatchToProps)(withTranslation()(ItemDetail1))

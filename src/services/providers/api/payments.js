@@ -39,3 +39,17 @@ export const createPayment = async (params) => {
 
     return response.data
 }
+
+export const deletePayment = async ({ paymentId }) => {
+    var bodyFormData = new FormData()
+    bodyFormData.append('token', token)
+    bodyFormData.append('action', 'deletePayment')
+    bodyFormData.append('paymentId', paymentId)
+
+    const response = await axios({
+      'method': 'post',
+      'data': bodyFormData
+    })
+
+    return response.data
+}

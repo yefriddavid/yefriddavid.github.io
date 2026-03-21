@@ -56,6 +56,7 @@ class App extends Component {
     expandedRowKey: null,
     cachedData: null,
     isFetching: false,
+    addingPaymentAccountId: null,
   }
 
   // ── Cache helpers ───────────────────────────────────────────────
@@ -144,6 +145,15 @@ class App extends Component {
     this.setState(newState, () => this.loadCache())
   }
 
+  openAddPayment = (e) => {
+    const account = e.row.data
+    e.component.collapseAll(-1)
+    e.component.expandRow(account.accountId)
+    this.setState({ addingPaymentAccountId: account.accountId, expandedRowKey: account.accountId })
+  }
+
+  closeAddPayment = () => this.setState({ addingPaymentAccountId: null })
+
   addAccountPayment(item) {
 
     const { state, onChangeAnyState } = this
@@ -158,7 +168,7 @@ class App extends Component {
     const { t } = this.props
     const reduxData = this.props.accounts?.data?.data?.items;
     const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts;
-    const { cachedData, isFetching, year, month, monthNumber } = this.state;
+    const { cachedData, isFetching, year, month, monthNumber, addingPaymentAccountId } = this.state;
     const data = reduxData ?? cachedData;
 
     const { onChangeAnyState, refreshData } = this;
@@ -243,10 +253,7 @@ class App extends Component {
           />
 
           <Column type="buttons" caption={t('payments.columns.actions')} width={90}>
-            <GButton
-              name="add"
-              onClick={(e) => this.selectAccount(e.row.data)}
-            />
+            <GButton name="add" onClick={this.openAddPayment} />
             <GButton name="edit" />
             <GButton name="delete" />
           </Column>
@@ -254,7 +261,10 @@ class App extends Component {
           <MasterDetail
             key={crypto.randomUUID()}
             autoExpandAll="false"
-            enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)} />
+            enabled={false} render={(item) => ItemDetail(item.data, year, monthNumber, {
+              showAddForm: item.data.accountId === addingPaymentAccountId,
+              onAddDone: this.closeAddPayment,
+            })} />
 
         </DataGrid>}
       </div>

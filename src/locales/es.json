@@ -31,9 +31,11 @@
       "pending": "Pendiente"
     },
     "card": {
+      "payment": "Pago",
       "date": "Fecha",
       "method": "Método",
-      "voucher": "Comprobante"
+      "voucher": "Comprobante",
+      "confirmDelete": "¿Eliminar el pago #{{id}}? Esta acción no se puede deshacer."
     },
     "empty": "Sin pagos registrados"
   },

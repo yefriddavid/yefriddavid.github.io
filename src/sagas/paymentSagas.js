@@ -22,9 +22,20 @@ function* createPayment({ payload }) {
   }
 }
 
+function* deletePayment({ payload }) {
+  try {
+    yield put(paymentActions.beginRequestDelete())
+    yield call(apiServices.deletePayment, payload)
+    yield put(paymentActions.successRequestDelete(payload))
+  } catch (e) {
+    yield put(paymentActions.errorRequestDelete(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(paymentActions.fetchRequest, fetchPayments),
     takeLatest(paymentActions.createRequest, createPayment),
+    takeLatest(paymentActions.deleteRequest, deletePayment),
   ])
 }
