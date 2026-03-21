@@ -2,6 +2,21 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import autoprefixer from 'autoprefixer'
+import { writeFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
+
+function versionPlugin() {
+  return {
+    name: 'version-plugin',
+    writeBundle() {
+      let gitHash = 'dev'
+      try {
+        gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+      } catch {}
+      writeFileSync('./build/version.json', JSON.stringify({ version: gitHash }))
+    },
+  }
+}
 
 export default defineConfig(() => {
   return {
@@ -35,7 +50,7 @@ export default defineConfig(() => {
         },
       },
     },
-    plugins: [react()],
+    plugins: [react(), versionPlugin()],
     resolve: {
       alias: [
         /*{

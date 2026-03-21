@@ -29,6 +29,7 @@ import {
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
 import LanguageSwitcher from './LanguageSwitcher'
+import useVersionCheck from '../hooks/useVersionCheck'
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -37,6 +38,7 @@ const AppHeader = () => {
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   const appTheme = useSelector((state) => state.ui.appTheme)
+  const hasUpdate = useVersionCheck()
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
@@ -47,6 +49,24 @@ const AppHeader = () => {
 
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
+      {hasUpdate && (
+        <div style={{
+          background: '#2f9e44', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          padding: '6px 16px', fontSize: 13, fontWeight: 500,
+        }}>
+          <span>Nueva versión disponible</span>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: '#fff', color: '#2f9e44', border: 'none', borderRadius: 4,
+              padding: '2px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 12,
+            }}
+          >
+            Actualizar
+          </button>
+        </div>
+      )}
       <CContainer className="border-bottom px-4" fluid>
         <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
