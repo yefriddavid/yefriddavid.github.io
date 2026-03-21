@@ -2,7 +2,7 @@ const PREFIX = 'vchr_'
 
 export const getCache = (paymentId) => {
   try {
-    return sessionStorage.getItem(PREFIX + paymentId)
+    return localStorage.getItem(PREFIX + paymentId)
   } catch {
     return null
   }
@@ -10,7 +10,7 @@ export const getCache = (paymentId) => {
 
 export const setCache = (paymentId, value) => {
   try {
-    sessionStorage.setItem(PREFIX + paymentId, value)
+    localStorage.setItem(PREFIX + paymentId, value)
   } catch {
     // Quota exceeded — ignorar silenciosamente
   }
@@ -18,6 +18,6 @@ export const setCache = (paymentId, value) => {
 
 export const clearCache = (paymentId) => {
   try {
-    sessionStorage.removeItem(PREFIX + paymentId)
+    localStorage.removeItem(PREFIX + paymentId)
   } catch {}
 }
