@@ -257,11 +257,26 @@ Para forzar recarga de un voucher individual existe el botón de refresh (⟳) e
 
 El deploy es automático a **GitHub Pages** vía `npm run deploy` (usa `gh-pages`). El build genera un `build/version.json` con el hash del commit actual para trazabilidad de versiones.
 
-```bash
-npm run deploy
-# → npm run build → vite build → /build
-# → gh-pages -d build → publica en la rama gh-pages
-```
+### Proceso paso a paso
+
+1. **Hacer PR de la rama de trabajo a `main`** y mergear.
+
+2. **Cambiar a `main` y actualizar:**
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+3. **Publicar:**
+   ```bash
+   npm run deploy
+   # → npm run build  (vite build → /build)
+   # → gh-pages -d build  (publica en la rama gh-pages)
+   ```
+
+La app queda publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
+
+> **Nota:** GitHub Pages puede tardar 1–2 minutos en reflejar los cambios. Verifica la versión desplegada revisando el hash en la consola del navegador (`[app] commit: xxxxxxx`).
 
 ---
 

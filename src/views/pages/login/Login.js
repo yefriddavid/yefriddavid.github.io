@@ -1,187 +1,213 @@
-//import React from 'react'
 import React, { useState, useEffect } from 'react'
-import { deleteCookie, getCookie, hasCookie, setCookie } from 'cookies-next'
+import { deleteCookie, getCookie, setCookie } from 'cookies-next'
 import axios from 'axios'
-import { CSpinner } from '@coreui/react'
-import { Link } from 'react-router-dom'
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardGroup,
-  CCol,
-  CContainer,
-  CForm,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
-  CFormSwitch,
-  CRow,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+import { Link, useNavigate } from 'react-router-dom'
 import withRouter from '../../../context/searchParamsContext'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import './Login.scss'
 
-const Login = (props) => {
+// ── Icons ──────────────────────────────────────────────────────────
+const IconUser = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+)
+
+const IconLock = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+)
+
+const IconCash = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23"/>
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  </svg>
+)
+
+const IconArrow = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+)
+
+const Spinner = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+      <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+    </path>
+  </svg>
+)
+
+// ── Component ──────────────────────────────────────────────────────
+const Login = () => {
   const cookieUsername = getCookie('username') || ''
   const cookiePassword = getCookie('password') || ''
-  const [LoginFormData, setFormdata] = useState({
-    username: cookieUsername,
-    password: cookiePassword,
-    disabledButton: false,
-    rememberMeChecked: cookieUsername == '' ? false : true,
-    defaultChecked: cookieUsername == '' ? false : true
+  const navigate       = useNavigate()
+
+  const [form, setForm] = useState({
+    username:   cookieUsername,
+    password:   cookiePassword,
+    rememberMe: !!cookieUsername,
+    loading:    false,
+    error:      null,
+    shake:      false,
   })
-  const navigate = useNavigate()
-  document.title = `yefriddavid`
 
-  const token = localStorage.getItem('token')
-  if (token) {
-    setTimeout(() => {
-      navigate('/managment/payments')
-    }, 1)
-  }
+  document.title = 'yefriddavid'
 
-  const rememberMe = (event) => {
-    const { checked } = event.target
+  useEffect(() => {
+    if (localStorage.getItem('token')) navigate('/managment/payments')
+  }, [])
 
-    handleChange({ target: { name: 'rememberMeChecked', value: checked } })
+  const set = (name) => (e) =>
+    setForm((prev) => ({ ...prev, [name]: e.target.value, error: null }))
 
-    if (checked === true) {
-      const { username, password } = LoginFormData
-      console.log(username);
-      console.log(password);
-      setCookie('username', username)
-      setCookie('password', password)
+  const toggleRemember = (e) => {
+    const checked = e.target.checked
+    setForm((prev) => ({ ...prev, rememberMe: checked }))
+    if (checked) {
+      setCookie('username', form.username)
+      setCookie('password', form.password)
     } else {
       deleteCookie('username')
       deleteCookie('password')
     }
   }
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      handleSubmit()
-    } else {
-      //const { rememberMeChecked } = LoginFormData
-      rememberMe({ target: { checked: LoginFormData.rememberMeChecked } })
-    }
-  }
-
   const handleSubmit = async () => {
-    handleChange({ target: { name: 'disabledButton', value: true } })
-    const { username, password } = LoginFormData
-    const bodyFormData = new FormData()
-    bodyFormData.append('action', 'login')
-    bodyFormData.append('username', username)
-    bodyFormData.append('password', password)
+    if (form.loading) return
+    setForm((prev) => ({ ...prev, loading: true, error: null }))
 
-    const response = await axios({
-      method: 'post',
-      url: 'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec',
-      data: bodyFormData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    try {
+      const body = new FormData()
+      body.append('action',   'login')
+      body.append('username', form.username)
+      body.append('password', form.password)
 
-    if (response.data.status == 'ok' && response.data.data.token) {
-      localStorage.setItem('token', response.data.data.token)
+      const { data } = await axios.post(
+        'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec',
+        body,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )
 
-      navigate('/managment/payments')
-    } else {
-      handleChange({ target: { name: 'disabledButton', value: false } })
-      alert(response.data.message)
+      if (data.status === 'ok' && data.data?.token) {
+        localStorage.setItem('token', data.data.token)
+        if (form.rememberMe) {
+          setCookie('username', form.username)
+          setCookie('password', form.password)
+        }
+        navigate('/managment/payments')
+      } else {
+        setForm((prev) => ({ ...prev, loading: false, error: data.message || 'Credenciales incorrectas', shake: true }))
+        setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
+      }
+    } catch {
+      setForm((prev) => ({ ...prev, loading: false, error: 'Error de conexión', shake: true }))
+      setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
     }
   }
 
-  const handleChange = (event) => {
-    setFormdata({ ...LoginFormData, [event.target.name]: event.target.value })
-  }
+  const handleKeyDown = (e) => { if (e.key === 'Enter') handleSubmit() }
 
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
-      <CContainer>
-        <CRow className="justify-content-center">
-          <CCol md={8}>
-            <CCardGroup>
-              <CCard className="p-4" style={{ backgroundColor: '#ffc107' }}>
-                <CCardBody>
-                  <CForm>
-                    <h1>Login</h1>
-                    <p className="text-body-secondary">Sign In to your account</p>
-                    <CInputGroup className="mb-3">
-                      {/*}
-                      <CInputGroupText>
-                        <CIcon icon={cilUser} />
-                      </CInputGroupText>
-                      */}
-                      <CFormInput
-                      name="username"
-                      value={LoginFormData.username}
-                      onChange={handleChange}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Username" autoComplete="username" />
-                    </CInputGroup>
-                    <CInputGroup className="mb-4">
-                      {/*
-                      <CInputGroupText>
-                        <CIcon icon={cilLockLocked} />
-                      </CInputGroupText>
-                      */}
-                      <CFormInput
-                        name="password"
-                        value={LoginFormData.password}
-                        onChange={handleChange}
-                      onKeyDown={handleKeyDown}
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="current-password"
-                      />
+    <div className="login-page">
+      <div className="login-page__bg" />
+      <div className="login-page__grid" />
+      <div className="login-page__scanline" />
+      <div className="login-page__orb login-page__orb--1" />
+      <div className="login-page__orb login-page__orb--2" />
 
+      <div className="login-page__content">
 
+        {/* Brand */}
+        <div className="login-page__brand">
+          <div className="login-page__logo">
+            <IconCash />
+          </div>
+          <h1 className="login-page__title">
+            Cash<span>Flow</span>
+          </h1>
+          <p className="login-page__subtitle">
+            Management Dashboard<span className="login-page__cursor" />
+          </p>
+        </div>
 
+        {/* Card */}
+        <div className={`login-page__card${form.shake ? ' login-page__card--error' : ''}`}>
 
+          <div className="login-page__field">
+            <label className="login-page__label">Usuario</label>
+            <div className="login-page__input-wrap">
+              <span className="login-page__icon"><IconUser /></span>
+              <input
+                className="login-page__input"
+                type="text"
+                placeholder="username"
+                autoComplete="username"
+                value={form.username}
+                onChange={set('username')}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+          </div>
 
-                    </CInputGroup>
-                    <CInputGroup className="mb-4">
-                      <CFormSwitch
-                        onChange={rememberMe}
-                        label="Remember me"
-                        id="formSwitchCheckChecked"
-                        defaultChecked={LoginFormData.defaultChecked}
-                      />
+          <div className="login-page__field">
+            <label className="login-page__label">Contraseña</label>
+            <div className="login-page__input-wrap">
+              <span className="login-page__icon"><IconLock /></span>
+              <input
+                className="login-page__input"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                value={form.password}
+                onChange={set('password')}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+          </div>
 
-                    </CInputGroup>
+          {form.error && (
+            <div style={{
+              fontSize: 12, color: '#ff6b6b',
+              background: 'rgba(255,107,107,0.08)',
+              border: '1px solid rgba(255,107,107,0.2)',
+              borderRadius: 8, padding: '8px 12px', marginBottom: 16,
+            }}>
+              {form.error}
+            </div>
+          )}
 
-                    <CRow>
-                      <CCol xs={12}>
-                        <CButton disabled={LoginFormData.disabledButton} onClick={ handleSubmit } color1="primary" className="px-4" style={{backgroundColor: "black", color: "white", width: "100%"}}>
-                          { LoginFormData.disabledButton == true ? <CSpinner as="span" size="sm" aria-hidden="true" /> : <CIcon icon={cilUser} /> }
-                           {' '}
-                          Login
-                        </CButton>
-                      </CCol>
-                    </CRow>
-                  </CForm>
-                </CCardBody>
-              </CCard>
-              <CCard className="text-white bg-primary1 py-5 d-none d-sm-flex" style={{ backgroundColor: '#000' }}>
-                <CCardBody className="text-center">
-                  <div>
-                    <h2>Managment Software</h2>
-                    <p>
-                      Powered by {' '}
-                      <Link to="https://yefriddavid.github.io">
-                        @yefriddavid
-                      </Link>
-                    </p>
-                  </div>
-                </CCardBody>
-              </CCard>
-            </CCardGroup>
-          </CCol>
-        </CRow>
-      </CContainer>
+          <label className="login-page__remember">
+            <input
+              className="login-page__remember-check"
+              type="checkbox"
+              checked={form.rememberMe}
+              onChange={toggleRemember}
+            />
+            <span className="login-page__remember-label">Recordar sesión</span>
+          </label>
+
+          <button
+            className="login-page__btn"
+            onClick={handleSubmit}
+            disabled={form.loading}
+          >
+            {form.loading ? <Spinner /> : <IconArrow />}
+            {form.loading ? 'Ingresando...' : 'Ingresar'}
+          </button>
+        </div>
+
+        <div className="login-page__footer">
+          Powered by{' '}
+          <Link to="https://yefriddavid.github.io">@yefriddavid</Link>
+        </div>
+
+      </div>
     </div>
   )
 }
