@@ -12,4 +12,3 @@ const combinedReducers = combineReducers({
 })
 
 export default combinedReducers
-

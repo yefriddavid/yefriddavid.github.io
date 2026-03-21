@@ -234,7 +234,7 @@ class ModalPaymentComponent extends PureComponent {
 
 const mapStateToProps = (state) => {
     return {
-      payments: state.payment.state
+      payments: state.payment
     }
 }
 

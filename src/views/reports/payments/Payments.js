@@ -245,7 +245,7 @@ const mapStateToProps = (state) => {
   //console.log(state)
     return {
       //isFetchingJunior: state.login.rest.fetching,
-      accounts: state.account.state
+      accounts: state.account
     }
 }
 

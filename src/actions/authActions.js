@@ -1,8 +1,6 @@
-import { createAction } from 'redux-act'
+import { createAction } from '@reduxjs/toolkit'
 
-export const login = createAction("login form")
-export const errorRequest = createAction("login error request")
-export const beginLoginRequest = createAction("login begin request")
-export const successRequest = createAction("login success request")
-
-
+export const login = createAction('login form')
+export const errorRequest = createAction('login error request')
+export const beginLoginRequest = createAction('login begin request')
+export const successRequest = createAction('login success request')

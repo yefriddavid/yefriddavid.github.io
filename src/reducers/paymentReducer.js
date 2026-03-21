@@ -1,65 +1,51 @@
-import { fetchRequest, beginRequestFetch,
+import { createSlice } from '@reduxjs/toolkit'
+import {
+  fetchRequest,
+  beginRequestFetch,
+  successRequestFetch,
+  createRequest,
+  beginRequestCreate,
   successRequestCreate,
-  createRequest, errorRequestCreate }
-from '../actions/paymentActions'
-import { createReducer } from 'redux-act'
-import { combineReducers } from 'redux'
+  errorRequestCreate,
+} from '../actions/paymentActions'
 
-const initial = {
-  data: null,
+const paymentSlice = createSlice({
+  name: 'payment',
+  initialState: {
+    data: null,
     error: {},
     fetching: false,
-    isError: false
-}
-
-const state = createReducer({
-    [fetchRequest]: (state, payload) => {
-        console.log(payload)
-        return {
-            ...state,
-            filters: payload
-            // username: payload.username,
-            // password: payload.password
-        }
-    },
-  [errorRequestCreate]: (state, payload) => {
-    //alert("Aca hay un gravisimo error")
-        return {
-            ...state,
-            error: payload,
-          data: [],
-            fetching: false,
-            isError: true
-        }
+    isError: false,
   },
-    [createRequest]: (state, payload) => {
-        return {
-            ...state,
-            fetching: true
-        }
-    },
-    [beginRequestFetch]: (state, payload) => {
-        return {
-            ...state,
-            fetching: true
-        }
-    },
-    [successRequestCreate]: (state, payload) => {
-
-      return {
-            ...state,
-        fetching: false//,
-        //saved: true
-        }
-    },
-  /*[successRequest]: (state, payload) => {
-        return {
-            ...state,
-            fetching: false
-        }
-    }*/
-}, initial)
-
-export default combineReducers({
-    state
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchRequest, (state, { payload }) => {
+        state.filters = payload
+      })
+      .addCase(beginRequestFetch, (state) => {
+        state.fetching = true
+      })
+      .addCase(successRequestFetch, (state, { payload }) => {
+        state.data = payload
+        state.fetching = false
+      })
+      .addCase(createRequest, (state) => {
+        state.fetching = true
+      })
+      .addCase(beginRequestCreate, (state) => {
+        state.fetching = true
+      })
+      .addCase(successRequestCreate, (state) => {
+        state.fetching = false
+      })
+      .addCase(errorRequestCreate, (state, { payload }) => {
+        state.error = payload
+        state.data = []
+        state.fetching = false
+        state.isError = true
+      })
+  },
 })
+
+export default paymentSlice.reducer
