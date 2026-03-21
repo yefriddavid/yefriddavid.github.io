@@ -17,6 +17,8 @@ import store from './store/store'
 
 // const store = configureStore()
 
+console.log(`[app] commit: ${__COMMIT_HASH__}`)
+
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <App />
