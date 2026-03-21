@@ -84,7 +84,10 @@
     "reports": "Reports",
     "home": "Home",
     "visits": "Visits",
-    "taxis": "Taxis"
+    "taxis": "Taxis",
+    "liquidaciones": "Settlements",
+    "conductores": "Drivers",
+    "vehiculos": "Vehicles"
   },
   "auth": {
     "login": "Login",

@@ -84,7 +84,10 @@
     "reports": "Reportes",
     "home": "Inicio",
     "visits": "Visitas",
-    "taxis": "Taxis"
+    "taxis": "Taxis",
+    "liquidaciones": "Liquidaciones",
+    "conductores": "Conductores",
+    "vehiculos": "Vehículos"
   },
   "auth": {
     "login": "Iniciar sesión",

@@ -15,6 +15,7 @@ import {
   CForm,
   CFormInput,
   CFormLabel,
+  CFormSelect,
   CRow,
   CCol,
   CCollapse,
@@ -22,6 +23,8 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX } from '@coreui/icons'
 import { getLiquidaciones, addLiquidacion, deleteLiquidacion } from 'src/services/providers/firebase/taxis'
+import { getConductores } from 'src/services/providers/firebase/taxiConductores'
+import { getVehiculos } from 'src/services/providers/firebase/taxiVehiculos'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
@@ -32,6 +35,8 @@ const EMPTY = { conductor: '', placa: '', valor: '', fecha: today() }
 
 const Taxis = () => {
   const [records, setRecords] = useState([])
+  const [conductores, setConductores] = useState([])
+  const [vehiculos, setVehiculos] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
@@ -39,12 +44,26 @@ const Taxis = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    getLiquidaciones()
-      .then(setRecords)
-      .finally(() => setLoading(false))
+    Promise.all([getLiquidaciones(), getConductores(), getVehiculos()]).then(
+      ([liq, cond, veh]) => {
+        setRecords(liq)
+        setConductores(cond)
+        setVehiculos(veh)
+      },
+    ).finally(() => setLoading(false))
   }, [])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+
+  const handleConductorChange = (e) => {
+    const nombre = e.target.value
+    const conductor = conductores.find((c) => c.nombre === nombre)
+    setForm((p) => ({
+      ...p,
+      conductor: nombre,
+      valor: conductor?.defaultAmount ? String(conductor.defaultAmount) : p.valor,
+    }))
+  }
 
   const handleAdd = async (e) => {
     e.preventDefault()
@@ -159,21 +178,21 @@ const Taxis = () => {
               <CRow className="g-2 align-items-end">
                 <CCol sm={3}>
                   <CFormLabel style={{ fontSize: 12 }}>Conductor</CFormLabel>
-                  <CFormInput
-                    size="sm"
-                    placeholder="Nombre"
-                    value={form.conductor}
-                    onChange={set('conductor')}
-                  />
+                  <CFormSelect size="sm" value={form.conductor} onChange={handleConductorChange}>
+                    <option value="">— Seleccionar —</option>
+                    {conductores.map((c) => (
+                      <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                    ))}
+                  </CFormSelect>
                 </CCol>
                 <CCol sm={2}>
                   <CFormLabel style={{ fontSize: 12 }}>Placa</CFormLabel>
-                  <CFormInput
-                    size="sm"
-                    placeholder="ABC-123"
-                    value={form.placa}
-                    onChange={set('placa')}
-                  />
+                  <CFormSelect size="sm" value={form.placa} onChange={set('placa')}>
+                    <option value="">— Seleccionar —</option>
+                    {vehiculos.map((v) => (
+                      <option key={v.id} value={v.placa}>{v.placa}{v.marca ? ` · ${v.marca}` : ''}</option>
+                    ))}
+                  </CFormSelect>
                 </CCol>
                 <CCol sm={2}>
                   <CFormLabel style={{ fontSize: 12 }}>Valor</CFormLabel>
