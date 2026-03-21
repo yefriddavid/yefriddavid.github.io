@@ -22,6 +22,7 @@ import {
   cilList,
   cilMenu,
   cilMoon,
+  cilPaint,
   cilSun,
 } from '@coreui/icons'
 
@@ -35,6 +36,7 @@ const AppHeader = () => {
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
+  const appTheme = useSelector((state) => state.ui.appTheme)
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
@@ -124,6 +126,36 @@ const AppHeader = () => {
                 onClick={() => setColorMode('auto')}
               >
                 <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
+              </CDropdownItem>
+            </CDropdownMenu>
+          </CDropdown>
+          <li className="nav-item py-1">
+            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+          </li>
+          <CDropdown variant="nav-item" placement="bottom-end">
+            <CDropdownToggle caret={false} title="Tema">
+              <CIcon icon={cilPaint} size="lg" />
+            </CDropdownToggle>
+            <CDropdownMenu>
+              <CDropdownItem
+                active={appTheme === 'yellow'}
+                className="d-flex align-items-center gap-2"
+                as="button"
+                type="button"
+                onClick={() => dispatch({ type: 'set', appTheme: 'yellow' })}
+              >
+                <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, backgroundColor: '#ffc107', border: '1px solid #0002' }} />
+                Cash (Amarillo)
+              </CDropdownItem>
+              <CDropdownItem
+                active={appTheme === 'blue'}
+                className="d-flex align-items-center gap-2"
+                as="button"
+                type="button"
+                onClick={() => dispatch({ type: 'set', appTheme: 'blue' })}
+              >
+                <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, backgroundColor: '#1e3a5f', border: '1px solid #0002' }} />
+                Ocean (Azul)
               </CDropdownItem>
             </CDropdownMenu>
           </CDropdown>

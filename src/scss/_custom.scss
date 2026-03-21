@@ -1,87 +1,133 @@
 // Here you can add other styles
 
-// ─── Design tokens ────────────────────────────────────────────────
-$sidebar-bg:       #1e3a5f;   // azul marino medio — claro pero profundo
-$sidebar-accent:   #10b981;   // emerald-500 — acento "cash flow"
-$sidebar-accent-dim: rgba(16, 185, 129, 0.18);
-$sidebar-divider:  rgba(255, 255, 255, 0.08);
-$sidebar-text:     rgba(255, 255, 255, 0.70);
-$sidebar-text-hi:  #ffffff;
+// ─── Mixin de tema ────────────────────────────────────────────────
+@mixin app-theme($bg, $accent) {
+  $accent-dim: rgba($accent, 0.15);
+  $divider:    rgba(255, 255, 255, 0.08);
+  $text:       rgba(255, 255, 255, 0.70);
+  $text-hi:    #ffffff;
 
-// ─── Sidebar ──────────────────────────────────────────────────────
-.sidebar {
-  --cui-sidebar-bg:                        #{$sidebar-bg};
-  --cui-sidebar-brand-color:               #{$sidebar-text-hi};
-  --cui-sidebar-header-border-color:       #{$sidebar-divider};
+  // ── Sidebar ──────────────────────────────────────────────────────
+  .sidebar {
+    --cui-sidebar-bg:                          #{$bg};
+    --cui-sidebar-brand-color:                 #{$text-hi};
+    --cui-sidebar-header-border-color:         #{$divider};
+    --cui-sidebar-nav-link-color:              #{$text};
+    --cui-sidebar-nav-link-icon-color:         rgba(255, 255, 255, 0.40);
+    --cui-sidebar-nav-link-hover-color:        #{$accent};
+    --cui-sidebar-nav-link-hover-icon-color:   #{$accent};
+    --cui-sidebar-nav-link-hover-bg:           #{$accent-dim};
+    --cui-sidebar-nav-link-active-color:       #{$accent};
+    --cui-sidebar-nav-link-active-icon-color:  #{$accent};
+    --cui-sidebar-nav-link-active-bg:          #{$accent-dim};
+    --cui-sidebar-nav-title-color:             rgba(255, 255, 255, 0.35);
+    --cui-sidebar-nav-group-bg:                rgba(255, 255, 255, 0.04);
+    --cui-sidebar-nav-group-toggle-show-color: #{$text-hi};
+    --cui-sidebar-footer-border-color:         #{$divider};
+    --cui-sidebar-toggler-bg:                  rgba(255, 255, 255, 0.06);
+    --cui-sidebar-toggler-hover-bg:            #{$accent-dim};
+    --cui-sidebar-toggler-indicator-color:     rgba(255, 255, 255, 0.50);
+    --cui-sidebar-toggler-indicator-hover-color: #{$accent};
 
-  // Nav links
-  --cui-sidebar-nav-link-color:            #{$sidebar-text};
-  --cui-sidebar-nav-link-icon-color:       rgba(255, 255, 255, 0.40);
-  --cui-sidebar-nav-link-hover-color:      #{$sidebar-text-hi};
-  --cui-sidebar-nav-link-hover-icon-color: #{$sidebar-accent};
-  --cui-sidebar-nav-link-hover-bg:         #{$sidebar-accent-dim};
-  --cui-sidebar-nav-link-active-color:     #{$sidebar-accent};
-  --cui-sidebar-nav-link-active-icon-color:#{$sidebar-accent};
-  --cui-sidebar-nav-link-active-bg:        #{$sidebar-accent-dim};
+    border-right: 1px solid #{$divider} !important;
 
-  // Group titles & submenus
-  --cui-sidebar-nav-title-color:           rgba(255, 255, 255, 0.35);
-  --cui-sidebar-nav-group-bg:              rgba(0, 0, 0, 0.15);
-  --cui-sidebar-nav-group-toggle-show-color: #{$sidebar-text-hi};
+    .nav-link.active {
+      border-left: 3px solid $accent;
+      padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
+    }
 
-  // Footer / toggler
-  --cui-sidebar-footer-border-color:       #{$sidebar-divider};
-  --cui-sidebar-toggler-bg:                rgba(255, 255, 255, 0.06);
-  --cui-sidebar-toggler-hover-bg:          #{$sidebar-accent-dim};
-  --cui-sidebar-toggler-indicator-color:   rgba(255, 255, 255, 0.50);
-  --cui-sidebar-toggler-indicator-hover-color: #{$sidebar-accent};
-
-  border-right: 1px solid #{$sidebar-divider} !important;
-
-  // En mobile, el sidebar ocupa toda la altura como overlay
-  @media (max-width: 991.98px) {
-    position: fixed !important;
-    z-index: 1050;
-  }
-
-  // Línea de acento en el ítem activo
-  .nav-link.active {
-    border-left: 3px solid $sidebar-accent;
-    padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
-  }
-
-  // Brand — "Cash Flow" con acento
-  .sidebar-brand,
-  h3 {
-    color: $sidebar-text-hi;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-
-    span { color: $sidebar-accent; }
-  }
-}
-
-// ─── Responsive global ────────────────────────────────────────────
-@media (max-width: 767.98px) {
-  // Evitar desbordamiento horizontal en la app
-  body {
-    overflow-x: hidden;
-  }
-
-  // Áreas de toque mínimas (44px recomendado por WCAG)
-  .btn,
-  .dx-button {
-    min-height: 40px;
-  }
-
-  // Header más compacto en mobile
-  .header {
-    .breadcrumb {
-      font-size: 12px;
+    .sidebar-brand, h3 {
+      color: $text-hi;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      span { color: $accent; }
     }
   }
 
-  // Contenido principal sin padding lateral excesivo
+  // ── Botones primarios ─────────────────────────────────────────────
+  .btn-primary,
+  .btn.btn-primary {
+    background-color: $accent !important;
+    border-color:     $accent !important;
+    color:            $bg    !important;
+    font-weight:      600;
+
+    &:hover, &:focus, &:active {
+      filter: brightness(0.88);
+      color:  $bg !important;
+    }
+  }
+
+  // ── DevExtreme toolbar ────────────────────────────────────────────
+  .dx-toolbar .dx-button.dx-button-default,
+  .dx-toolbar .dx-button-mode-contained.dx-button-default {
+    background-color: $accent;
+    border-color:     $accent;
+    color:            $bg;
+    font-weight:      600;
+
+    .dx-button-text { color: $bg; }
+    .dx-icon        { color: $bg; }
+
+    &:hover { filter: brightness(0.88); }
+  }
+
+  .dx-toolbar .dx-button:not(.dx-button-default) {
+    &:hover {
+      background-color: $accent-dim;
+      border-color:     $accent;
+      color:            $accent;
+      .dx-icon { color: $accent; }
+    }
+  }
+}
+
+// ─── Tema Yellow/Black (Cash) ─────────────────────────────────────
+body[data-app-theme="yellow"] {
+  @include app-theme(#000000, #ffc107);
+
+  // Header queda claro (default CoreUI), solo el borde inferior es amarillo
+  .header {
+    background-color: unset !important;
+    color: unset;
+
+    .nav-link,
+    .header-toggler {
+      color: unset !important;
+      &:hover { color: #ffc107 !important; }
+    }
+
+    .breadcrumb-item,
+    .breadcrumb-item a {
+      color: unset;
+      &.active { color: #ffc107; }
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before { color: unset; }
+  }
+}
+
+// ─── Tema Blue/Emerald (Ocean) ────────────────────────────────────
+body[data-app-theme="blue"] {
+  @include app-theme(#1e3a5f, #10b981);
+}
+
+// ─── Responsive global ────────────────────────────────────────────
+@media (max-width: 991.98px) {
+  .sidebar {
+    position: fixed !important;
+    z-index: 1050;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body { overflow-x: hidden; }
+
+  .btn,
+  .dx-button { min-height: 40px; }
+
+  .header .breadcrumb { font-size: 12px; }
+
   .wrapper > .body {
     padding-left: 0;
     padding-right: 0;
@@ -89,7 +135,6 @@ $sidebar-text-hi:  #ffffff;
 }
 
 // ─── DevExtreme adaptive detail row ───────────────────────────────
-// Estilos para la fila expandida que muestra columnas ocultas
 .dx-adaptive-detail-row {
   .dx-field-item-label {
     font-size: 11px;
