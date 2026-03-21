@@ -18,7 +18,8 @@ import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/paymentActions'
 import * as accountActions from '../../../actions/accountActions'
 import { bindActionCreators } from 'redux'
-import { CreatePaymentVaucher, UpdatePaymentVaucher } from '../../../services/providers/firebase/paymentVaucher'
+import { CreatePaymentVaucher, UpdatePaymentVaucher, fetchVaucherPayment } from '../../../services/providers/firebase/paymentVaucher'
+import { getCache, setCache, clearCache } from '../../../services/voucherCache'
 
 
 const currencyCode = "COP";
@@ -346,14 +347,39 @@ class ItemDetail1 extends Component {
   closeVoucher   = () => this.setState({ voucherPayment: null })
   openPreview    = (payment) => this.setState({ previewVoucher: payment })
   closePreview   = () => this.setState({ previewVoucher: null })
-  onVoucherUploaded = (paymentId, voucherBase64) => {
+  onVoucherUploaded = (paymentId, voucherData) => {
+    setCache(paymentId, voucherData)
     const { account } = this.props
     const updatedItems = account.payments.items.map((p) =>
-      p.paymentId === paymentId ? { ...p, vaucher: voucherBase64 } : p
+      p.paymentId === paymentId ? { ...p, vaucher: voucherData } : p
     )
     const updatedAccount = { ...account, payments: { ...account.payments, items: updatedItems } }
     this.props.actions.accounts.appendVauchersToAccount(updatedAccount)
     this.closeVoucher()
+  }
+
+  refreshVoucher = async (payment) => {
+    clearCache(payment.paymentId)
+    const { account } = this.props
+    // poner en estado loading
+    const loadingItems = account.payments.items.map((p) =>
+      p.paymentId === payment.paymentId ? { ...p, vaucher: false } : p
+    )
+    this.props.actions.accounts.appendVauchersToAccount({
+      ...account,
+      payments: { ...account.payments, items: loadingItems },
+    })
+    // traer de Firestore y cachear
+    const result = await fetchVaucherPayment(payment.paymentId)
+    const freshVaucher = result.vaucher || ''
+    setCache(payment.paymentId, freshVaucher)
+    const freshItems = account.payments.items.map((p) =>
+      p.paymentId === payment.paymentId ? { ...p, vaucher: freshVaucher } : p
+    )
+    this.props.actions.accounts.appendVauchersToAccount({
+      ...account,
+      payments: { ...account.payments, items: freshItems },
+    })
   }
   saveEdit = (updated) => {
     // TODO: dispatch update action
@@ -397,7 +423,7 @@ class ItemDetail1 extends Component {
     //const load = false
 
     const { t } = this.props
-    const { formatValue, startEdit, cancelEdit, saveEdit, openVoucher, closeVoucher, onVoucherUploaded, openPreview, closePreview } = this;
+    const { formatValue, startEdit, cancelEdit, saveEdit, openVoucher, closeVoucher, onVoucherUploaded, openPreview, closePreview, refreshVoucher } = this;
     const { editingPayment, voucherPayment, previewVoucher } = this.state;
     const { account } = this.props
     const { selectedVaucher } = this.props.accounts
@@ -489,6 +515,19 @@ class ItemDetail1 extends Component {
                     <CButton color="light" size="sm" onClick={() => startEdit(i)}>{t('common.edit')}</CButton>
                     <CButton color="light" size="sm" style={{ color: '#e03131' }}>{t('common.remove')}</CButton>
                     <CButton color="info" size="sm" variant="outline" onClick={() => openVoucher(i)}>{t('payments.card.voucher')}</CButton>
+                    <CButton
+                      color="light"
+                      size="sm"
+                      title="Refresh"
+                      disabled={i.vaucher === false}
+                      onClick={() => refreshVoucher(i)}
+                      style={{ padding: '2px 7px' }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                      </svg>
+                    </CButton>
                   </div>
                 </div>
               )}

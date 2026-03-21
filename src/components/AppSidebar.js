@@ -23,8 +23,8 @@ import getNav from '../_nav'
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const { t } = useTranslation()
-  const unfoldable = useSelector((state) => state.sidebarUnfoldable)
-  const sidebarShow = useSelector((state) => state.sidebarShow)
+  const unfoldable = useSelector((state) => state.ui.sidebarUnfoldable)
+  const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   const navigation = getNav(t)
 
   return (
