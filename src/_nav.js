@@ -4,6 +4,7 @@ import {
   cilCalculator,
   cilChartPie,
   cilNotes,
+  cilPeople,
   cilSpeedometer,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
@@ -53,6 +54,12 @@ const getNav = (t) => [
     name: t('nav.increaseDecrease'),
     to: '/tools/increase-decrease',
     icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: t('nav.visits'),
+    to: '/tools/visits',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
   },
 ]
 

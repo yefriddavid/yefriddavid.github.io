@@ -82,7 +82,8 @@
     "tools": "Herramientas",
     "increaseDecrease": "Aumento / Disminución",
     "reports": "Reportes",
-    "home": "Inicio"
+    "home": "Inicio",
+    "visits": "Visitas"
   },
   "auth": {
     "login": "Iniciar sesión",

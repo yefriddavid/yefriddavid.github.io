@@ -51,7 +51,7 @@ const AppHeader = () => {
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
       {hasUpdate && (
         <div style={{
-          background: '#2f9e44', color: '#fff',
+          background: '#ffc107', color: '#000',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
           padding: '6px 16px', fontSize: 13, fontWeight: 500,
         }}>
@@ -59,7 +59,7 @@ const AppHeader = () => {
           <button
             onClick={() => window.location.reload()}
             style={{
-              background: '#fff', color: '#2f9e44', border: 'none', borderRadius: 4,
+              background: '#000', color: '#ffc107', border: 'none', borderRadius: 4,
               padding: '2px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 12,
             }}
           >

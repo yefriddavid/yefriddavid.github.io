@@ -15,6 +15,7 @@ const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
 // Tools
 const IncreaseDecrease = React.lazy(() => import('./views/tools/increase-decrease/IncreaseDecrease'))
+const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -74,6 +75,7 @@ const routes = [
   { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 
   { path: '/tools/increase-decrease', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
+  { path: '/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },

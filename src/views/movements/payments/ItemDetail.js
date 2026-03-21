@@ -654,7 +654,7 @@ class ItemDetail1 extends Component {
                         }
                       }}
                     >{t('common.remove')}</CButton>
-                    <CButton color="info" size="sm" variant="outline" onClick={() => openVoucher(i)}>{t('payments.card.voucher')}</CButton>
+                    <CButton color="warning" size="sm" variant="outline" onClick={() => openVoucher(i)}>{t('payments.card.voucher')}</CButton>
                     <CButton
                       color="light"
                       size="sm"

@@ -58,9 +58,9 @@
     }
   }
 
-  // ── DevExtreme toolbar ────────────────────────────────────────────
-  .dx-toolbar .dx-button.dx-button-default,
-  .dx-toolbar .dx-button-mode-contained.dx-button-default {
+  // ── DevExtreme buttons (toolbar + standalone) ────────────────────
+  .dx-button.dx-button-default,
+  .dx-button-mode-contained.dx-button-default {
     background-color: $accent;
     border-color:     $accent;
     color:            $bg;

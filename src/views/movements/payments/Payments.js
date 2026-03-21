@@ -189,7 +189,7 @@ class App extends Component {
         <div className="payments-filters">
           <SelectControl title={t('payments.filters.month')} name="month" onChange={onChangeAnyState} value={month} options={months} />
           <SelectControl title={t('payments.filters.year')} name="year" onChange={onChangeAnyState} value={year} options={years} />
-          <Button text={t('common.refresh')} onClick={refreshData} type="default" stylingMode="contained" />
+          <CButton color="warning" size="sm" onClick={refreshData}>{t('common.refresh')}</CButton>
           {isFetching && data && (
             <div className="payments-fetching">
               <CSpinner size="sm" color="primary" />

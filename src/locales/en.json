@@ -82,7 +82,8 @@
     "tools": "Tools",
     "increaseDecrease": "Increase / Decrease",
     "reports": "Reports",
-    "home": "Home"
+    "home": "Home",
+    "visits": "Visits"
   },
   "auth": {
     "login": "Login",
