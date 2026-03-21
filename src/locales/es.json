@@ -83,7 +83,8 @@
     "increaseDecrease": "Aumento / Disminución",
     "reports": "Reportes",
     "home": "Inicio",
-    "visits": "Visitas"
+    "visits": "Visitas",
+    "taxis": "Taxis"
   },
   "auth": {
     "login": "Iniciar sesión",

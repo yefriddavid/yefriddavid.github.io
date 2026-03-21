@@ -6,6 +6,7 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 
 // Managment
 const Accounts = React.lazy(() => import('./views/managment/accounts/Accounts'))
+const Taxis = React.lazy(() => import('./views/managment/taxis/Taxis'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
@@ -71,6 +72,7 @@ const routes = [
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
+  { path: '/managment/taxis', name: 'Taxis', tKey: 'nav.taxis', element: Taxis },
   { path: '/managment/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
   { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 
