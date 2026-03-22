@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { DataGrid, Column, Editing, MasterDetail } from 'devextreme-react/data-grid'
+import { useSelector, useDispatch } from 'react-redux'
+import { DataGrid, Column, Editing, MasterDetail, Lookup } from 'devextreme-react/data-grid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX } from '@coreui/icons'
-import { getSettlements, addSettlement, updateSettlement, deleteSettlement } from 'src/services/providers/firebase/taxis'
-import { getDrivers } from 'src/services/providers/firebase/taxiConductores'
-import { getVehicles } from 'src/services/providers/firebase/taxiVehiculos'
+import * as taxiSettlementActions from 'src/actions/taxiSettlementActions'
+import * as taxiDriverActions from 'src/actions/taxiDriverActions'
+import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import '../../../views/movements/payments/Payments.scss'
+import './Taxis.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
@@ -84,25 +86,28 @@ const SettlementDetail = ({ data, drivers, vehicles }) => {
 }
 
 const Taxis = () => {
+  const dispatch = useDispatch()
+  const { data: settlementsData, fetching: loadingSettlements } = useSelector((s) => s.taxiSettlement)
+  const { data: driversData } = useSelector((s) => s.taxiDriver)
+  const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
+
   const now = new Date()
-  const [records, setRecords] = useState([])
-  const [drivers, setDrivers] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [driverFilter, setDriverFilter] = useState('')
 
+  const records = settlementsData ?? []
+  const drivers = driversData ?? []
+  const vehicles = vehiclesData ?? []
+  const loading = loadingSettlements && !settlementsData
+
   useEffect(() => {
-    Promise.all([getSettlements(), getDrivers(), getVehicles()]).then(([settlements, driverList, vehicleList]) => {
-      setRecords(settlements)
-      setDrivers(driverList)
-      setVehicles(vehicleList)
-    }).finally(() => setLoading(false))
-  }, [])
+    dispatch(taxiSettlementActions.fetchRequest())
+    dispatch(taxiDriverActions.fetchRequest())
+    dispatch(taxiVehicleActions.fetchRequest())
+  }, [dispatch])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -130,40 +135,30 @@ const Taxis = () => {
     return null
   })()
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault()
     if (!form.driver || !form.plate || !form.amount || !form.date) {
       setError('Todos los campos son requeridos')
       return
     }
     if (picoPlacaWarning) return
-    setSaving(true)
     setError(null)
-    try {
-      const id = await addSettlement(form)
-      const newRecord = { id, driver: form.driver, plate: form.plate.toUpperCase(), amount: Number(form.amount), date: form.date }
-      setRecords((prev) => [newRecord, ...prev])
-      setForm(EMPTY)
-      setShowForm(false)
-    } catch {
-      setError('Error al guardar')
-    } finally {
-      setSaving(false)
-    }
+    dispatch(taxiSettlementActions.createRequest(form))
+    setForm(EMPTY)
+    setShowForm(false)
   }
 
   const handleRowUpdating = (e) => {
     const merged = { ...e.oldData, ...e.newData }
-    e.cancel = updateSettlement(e.key, merged).then(() => {
-      setRecords((prev) => prev.map((r) => r.id === e.key ? { ...r, ...merged } : r))
-      return false
+    e.cancel = new Promise((resolve) => {
+      dispatch(taxiSettlementActions.updateRequest({ id: e.key, ...merged }))
+      resolve(false)
     })
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('¿Eliminar esta liquidación?')) return
-    await deleteSettlement(id)
-    setRecords((prev) => prev.filter((r) => r.id !== id))
+    dispatch(taxiSettlementActions.deleteRequest({ id }))
   }
 
   const availableYears = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
@@ -199,7 +194,7 @@ const Taxis = () => {
     <>
       {/* Summary */}
       <CRow className="mb-3">
-        <CCol sm={3}>
+        <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total liquidado</div>
@@ -207,7 +202,7 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={3}>
+        <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
@@ -221,6 +216,23 @@ const Taxis = () => {
               <div style={{ fontSize: 22, fontWeight: 700, color: projection ? 'var(--cui-primary)' : 'var(--cui-secondary-color)' }}>
                 {projection !== null ? fmt(projection) : '—'}
               </div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol sm={2}>
+          <CCard className="text-center">
+            <CCardBody>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Falta / Sobra</div>
+              {projection !== null ? (() => {
+                const diff = projection - total
+                return (
+                  <div style={{ fontSize: 22, fontWeight: 700, color: diff > 0 ? '#e03131' : '#2f9e44' }}>
+                    {diff > 0 ? '-' : '+'}{fmt(Math.abs(diff))}
+                  </div>
+                )
+              })() : (
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--cui-secondary-color)' }}>—</div>
+              )}
             </CCardBody>
           </CCard>
         </CCol>
@@ -348,8 +360,8 @@ const Taxis = () => {
                   <CFormInput size="sm" placeholder="Observaciones..." value={form.comment} onChange={set('comment')} />
                 </CCol>
                 <CCol sm={2}>
-                  <CButton type="submit" size="sm" color="primary" disabled={saving || !!picoPlacaWarning} style={{ width: '100%' }}>
-                    {saving ? <CSpinner size="sm" /> : 'Guardar'}
+                  <CButton type="submit" size="sm" color="primary" disabled={loadingSettlements || !!picoPlacaWarning} style={{ width: '100%' }}>
+                    {loadingSettlements ? <CSpinner size="sm" /> : 'Guardar'}
                   </CButton>
                 </CCol>
               </CRow>
@@ -379,8 +391,7 @@ const Taxis = () => {
                 const [y, m, d] = (e.data.date ?? '').split('-').map(Number)
                 if (!y) return
                 if (new Date(y, m - 1, d).getDay() === 0) {
-                  e.rowElement.style.background = '#fff0f0'
-                  e.rowElement.style.color = '#c0392b'
+                  e.rowElement.classList.add('dx-row-sunday')
                 }
               }}
             >
