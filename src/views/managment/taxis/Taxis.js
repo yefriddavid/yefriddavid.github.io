@@ -97,6 +97,7 @@ const Taxis = () => {
   const [error, setError] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [driverFilter, setDriverFilter] = useState('')
+  const [viewMode, setViewMode] = useState('detail')
 
   const records = settlementsData ?? []
   const drivers = driversData ?? []
@@ -183,9 +184,10 @@ const Taxis = () => {
   const byDriver = Object.values(
     filtered.reduce((acc, r) => {
       const k = r.driver
-      if (!acc[k]) acc[k] = { driver: k, count: 0, total: 0 }
+      if (!acc[k]) acc[k] = { id: k, driver: k, count: 0, total: 0, rows: [] }
       acc[k].count += 1
       acc[k].total += r.amount || 0
+      acc[k].rows.push(r)
       return acc
     }, {}),
   ).sort((a, b) => b.total - a.total)
@@ -290,18 +292,42 @@ const Taxis = () => {
                 <option key={y} value={y}>{y}</option>
               ))}
             </CFormSelect>
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Conductor</span>
-            <CFormSelect
+            {viewMode === 'detail' && (
+              <>
+                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Conductor</span>
+                <CFormSelect
+                  size="sm"
+                  style={{ width: 150 }}
+                  value={driverFilter}
+                  onChange={(e) => setDriverFilter(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {drivers.map((d) => (
+                    <option key={d.id} value={d.name}>{d.name}</option>
+                  ))}
+                </CFormSelect>
+              </>
+            )}
+          </div>
+          <div className="d-flex align-items-center gap-1">
+            <CButton
               size="sm"
-              style={{ width: 150 }}
-              value={driverFilter}
-              onChange={(e) => setDriverFilter(e.target.value)}
+              color="secondary"
+              variant={viewMode === 'detail' ? undefined : 'outline'}
+              onClick={() => setViewMode('detail')}
+              style={{ fontSize: 12 }}
             >
-              <option value="">Todos</option>
-              {drivers.map((d) => (
-                <option key={d.id} value={d.name}>{d.name}</option>
-              ))}
-            </CFormSelect>
+              Detallado
+            </CButton>
+            <CButton
+              size="sm"
+              color="secondary"
+              variant={viewMode === 'byDriver' ? undefined : 'outline'}
+              onClick={() => setViewMode('byDriver')}
+              style={{ fontSize: 12 }}
+            >
+              Por conductor
+            </CButton>
           </div>
           <CButton
             size="sm"
@@ -373,7 +399,7 @@ const Taxis = () => {
         <CCardBody style={{ padding: 0 }}>
           {loading ? (
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
-          ) : (
+          ) : viewMode === 'detail' ? (
             <DataGrid
               id="paymentsGrid"
               style={{ margin: 16 }}
@@ -437,6 +463,71 @@ const Taxis = () => {
                 enabled={true}
                 render={({ data }) => (
                   <SettlementDetail data={data} drivers={drivers} vehicles={vehicles} />
+                )}
+              />
+            </DataGrid>
+          ) : (
+            <DataGrid
+              style={{ margin: 16 }}
+              keyExpr="id"
+              dataSource={byDriver}
+              showBorders={true}
+              columnAutoWidth={true}
+              allowColumnResizing={true}
+              rowAlternationEnabled={true}
+              hoverStateEnabled={true}
+              noDataText="Sin liquidaciones para este periodo."
+            >
+              <Column dataField="driver" caption="Conductor" minWidth={180} />
+              <Column
+                dataField="count"
+                caption="# Liquidaciones"
+                width={140}
+                cellRender={({ value }) => (
+                  <span style={{ fontWeight: 600 }}>{value}</span>
+                )}
+              />
+              <Column
+                dataField="total"
+                caption="Total consignado"
+                width={170}
+                cellRender={({ value }) => (
+                  <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
+                )}
+              />
+              <MasterDetail
+                enabled={true}
+                render={({ data }) => (
+                  <div style={{ margin: '8px 8px 12px 32px' }}>
+                    <DataGrid
+                      dataSource={data.rows}
+                      keyExpr="id"
+                      showBorders={true}
+                      columnAutoWidth={true}
+                      rowAlternationEnabled={true}
+                      hoverStateEnabled={true}
+                      noDataText="Sin registros."
+                    >
+                      <Column dataField="date" caption="Fecha" width={110} sortOrder="asc" defaultSortIndex={0} />
+                      <Column
+                        dataField="plate"
+                        caption="Placa"
+                        width={100}
+                        cellRender={({ value }) => (
+                          <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
+                        )}
+                      />
+                      <Column
+                        dataField="amount"
+                        caption="Valor"
+                        width={130}
+                        cellRender={({ value }) => (
+                          <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
+                        )}
+                      />
+                      <Column dataField="comment" caption="Comentario" minWidth={120} />
+                    </DataGrid>
+                  </div>
                 )}
               />
             </DataGrid>
