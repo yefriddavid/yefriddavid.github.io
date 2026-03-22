@@ -88,7 +88,9 @@
     "liquidaciones": "Settlements",
     "conductores": "Drivers",
     "vehiculos": "Vehicles",
-    "taxiExpenses": "Taxi Expenses"
+    "taxiExpenses": "Taxi Expenses",
+    "taxiResumen": "Taxi Summary",
+    "taxiManagement": "Taxi Management"
   },
   "auth": {
     "login": "Login",

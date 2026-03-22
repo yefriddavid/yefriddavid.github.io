@@ -10,6 +10,7 @@ import {
   cilUser,
   cilCarAlt,
   cilMoney,
+  cilDescription,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -40,12 +41,6 @@ const getNav = (t) => [
     icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
   },
   {
-    component: CNavItem,
-    name: t('nav.taxis'),
-    to: '/managment/taxis',
-    icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
-  },
-  {
     component: CNavTitle,
     name: t('nav.movements'),
   },
@@ -72,6 +67,16 @@ const getNav = (t) => [
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
   },
   {
+    component: CNavTitle,
+    name: t('nav.taxiManagement'),
+  },
+  {
+    component: CNavItem,
+    name: t('nav.liquidaciones'),
+    to: '/managment/taxis',
+    icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
+  },
+  {
     component: CNavItem,
     name: t('nav.conductores'),
     to: '/managment/taxis/conductores',
@@ -88,6 +93,12 @@ const getNav = (t) => [
     name: t('nav.taxiExpenses'),
     to: '/managment/taxis/gastos',
     icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: t('nav.taxiResumen'),
+    to: '/managment/taxis/resumen',
+    icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
 ]
 

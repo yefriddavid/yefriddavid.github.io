@@ -88,7 +88,9 @@
     "liquidaciones": "Liquidaciones",
     "conductores": "Conductores",
     "vehiculos": "Vehículos",
-    "taxiExpenses": "Gastos Taxis"
+    "taxiExpenses": "Gastos Taxis",
+    "taxiResumen": "Resumen Taxis",
+    "taxiManagement": "Gestión de Taxis"
   },
   "auth": {
     "login": "Iniciar sesión",

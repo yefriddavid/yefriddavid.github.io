@@ -10,6 +10,7 @@ const Taxis = React.lazy(() => import('./views/managment/taxis/Taxis'))
 const Conductores = React.lazy(() => import('./views/managment/taxis/Conductores'))
 const Vehiculos = React.lazy(() => import('./views/managment/taxis/Vehiculos'))
 const Gastos = React.lazy(() => import('./views/managment/taxis/Gastos'))
+const Resumen = React.lazy(() => import('./views/managment/taxis/Resumen'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
@@ -79,6 +80,7 @@ const routes = [
   { path: '/managment/taxis/conductores', name: 'Conductores', tKey: 'nav.conductores', element: Conductores },
   { path: '/managment/taxis/vehiculos', name: 'Vehículos', tKey: 'nav.vehiculos', element: Vehiculos },
   { path: '/managment/taxis/gastos', name: 'Gastos', tKey: 'nav.taxiExpenses', element: Gastos },
+  { path: '/managment/taxis/resumen', name: 'Resumen', tKey: 'nav.taxiResumen', element: Resumen },
   { path: '/managment/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
   { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 

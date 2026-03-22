@@ -374,6 +374,15 @@ const Taxis = () => {
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
               onRowUpdating={handleRowUpdating}
+              onRowPrepared={(e) => {
+                if (e.rowType !== 'data') return
+                const [y, m, d] = (e.data.date ?? '').split('-').map(Number)
+                if (!y) return
+                if (new Date(y, m - 1, d).getDay() === 0) {
+                  e.rowElement.style.background = '#fff0f0'
+                  e.rowElement.style.color = '#c0392b'
+                }
+              }}
             >
               <Editing allowUpdating={true} mode="row" />
               <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} sortOrder="asc" defaultSortIndex={0} />
