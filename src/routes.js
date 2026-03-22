@@ -76,7 +76,7 @@ const routes = [
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
-  { path: '/managment/taxis', name: 'Taxis', tKey: 'nav.taxis', element: Taxis },
+  { path: '/managment/taxis/settlements', name: 'Taxis', tKey: 'nav.taxis', element: Taxis },
   { path: '/managment/taxis/conductores', name: 'Conductores', tKey: 'nav.conductores', element: Conductores },
   { path: '/managment/taxis/vehiculos', name: 'Vehículos', tKey: 'nav.vehiculos', element: Vehiculos },
   { path: '/managment/taxis/gastos', name: 'Gastos', tKey: 'nav.taxiExpenses', element: Gastos },

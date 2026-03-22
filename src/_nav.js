@@ -73,7 +73,7 @@ const getNav = (t) => [
   {
     component: CNavItem,
     name: t('nav.liquidaciones'),
-    to: '/managment/taxis',
+    to: '/managment/taxis/settlements',
     icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
   },
   {
