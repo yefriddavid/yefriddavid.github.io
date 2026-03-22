@@ -337,7 +337,7 @@ const Taxis = () => {
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
             >
-              <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} />
+              <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} sortOrder="asc" defaultSortIndex={0} />
               <Column dataField="driver" caption="Conductor" minWidth={150} hidingPriority={4} />
               <Column
                 dataField="plate"
