@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
+import { DataGrid, Column, Editing, MasterDetail } from 'devextreme-react/data-grid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX } from '@coreui/icons'
-import { getSettlements, addSettlement, deleteSettlement } from 'src/services/providers/firebase/taxis'
+import { getSettlements, addSettlement, updateSettlement, deleteSettlement } from 'src/services/providers/firebase/taxis'
 import { getDrivers } from 'src/services/providers/firebase/taxiConductores'
 import { getVehicles } from 'src/services/providers/firebase/taxiVehiculos'
 import '../../../views/movements/payments/Payments.scss'
@@ -21,7 +21,7 @@ const MONTHS = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
-const EMPTY = { driver: '', plate: '', amount: '', date: today() }
+const EMPTY = { driver: '', plate: '', amount: '', date: today(), comment: '' }
 
 const DetailField = ({ label, value, mono }) =>
   value != null && value !== '' ? (
@@ -117,12 +117,26 @@ const Taxis = () => {
     }))
   }
 
+  const picoPlacaWarning = (() => {
+    if (!form.plate || !form.date) return null
+    const [, monthStr, dayStr] = form.date.split('-')
+    const month = parseInt(monthStr, 10)
+    const day = parseInt(dayStr, 10)
+    const vehicle = vehicles.find((v) => v.plate === form.plate)
+    const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
+    if (restr && [restr.d1, restr.d2].filter(Boolean).map(Number).includes(day)) {
+      return `${form.plate} tiene pico y placa el día ${day}`
+    }
+    return null
+  })()
+
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!form.driver || !form.plate || !form.amount || !form.date) {
       setError('Todos los campos son requeridos')
       return
     }
+    if (picoPlacaWarning) return
     setSaving(true)
     setError(null)
     try {
@@ -136,6 +150,14 @@ const Taxis = () => {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleRowUpdating = (e) => {
+    const merged = { ...e.oldData, ...e.newData }
+    e.cancel = updateSettlement(e.key, merged).then(() => {
+      setRecords((prev) => prev.map((r) => r.id === e.key ? { ...r, ...merged } : r))
+      return false
+    })
   }
 
   const handleDelete = async (id) => {
@@ -308,10 +330,25 @@ const Taxis = () => {
                 </CCol>
                 <CCol sm={2}>
                   <CFormLabel style={{ fontSize: 12 }}>Fecha</CFormLabel>
-                  <CFormInput size="sm" type="date" value={form.date} onChange={set('date')} />
+                  <CFormInput
+                    size="sm"
+                    type="date"
+                    value={form.date}
+                    onChange={set('date')}
+                    invalid={!!picoPlacaWarning}
+                  />
+                  {picoPlacaWarning && (
+                    <div style={{ fontSize: 11, color: '#e03131', marginTop: 3 }}>
+                      ⚠ {picoPlacaWarning}
+                    </div>
+                  )}
                 </CCol>
                 <CCol sm={2}>
-                  <CButton type="submit" size="sm" color="primary" disabled={saving} style={{ width: '100%' }}>
+                  <CFormLabel style={{ fontSize: 12 }}>Comentario</CFormLabel>
+                  <CFormInput size="sm" placeholder="Observaciones..." value={form.comment} onChange={set('comment')} />
+                </CCol>
+                <CCol sm={2}>
+                  <CButton type="submit" size="sm" color="primary" disabled={saving || !!picoPlacaWarning} style={{ width: '100%' }}>
                     {saving ? <CSpinner size="sm" /> : 'Guardar'}
                   </CButton>
                 </CCol>
@@ -336,7 +373,9 @@ const Taxis = () => {
               rowAlternationEnabled={true}
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
+              onRowUpdating={handleRowUpdating}
             >
+              <Editing allowUpdating={true} mode="row" />
               <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} sortOrder="asc" defaultSortIndex={0} />
               <Column dataField="driver" caption="Conductor" minWidth={150} hidingPriority={4} />
               <Column
@@ -356,12 +395,13 @@ const Taxis = () => {
                   <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
                 )}
               />
+              <Column dataField="comment" caption="Comentario" minWidth={120} hidingPriority={5} />
               <Column
                 caption=""
                 width={50}
                 allowSorting={false}
                 allowResizing={false}
-                hidingPriority={5}
+                hidingPriority={6}
                 cellRender={({ data }) => (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(data.id) }}
