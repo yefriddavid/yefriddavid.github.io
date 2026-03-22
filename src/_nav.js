@@ -83,6 +83,12 @@ const getNav = (t) => [
     to: '/managment/taxis/vehiculos',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
   },
+  {
+    component: CNavItem,
+    name: t('nav.taxiExpenses'),
+    to: '/managment/taxis/gastos',
+    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+  },
 ]
 
 export default getNav

@@ -1,19 +1,39 @@
 import React, { useEffect, useState } from 'react'
+import { DataGrid, Editing, Column, Button as GButton } from 'devextreme-react/data-grid'
 import {
-  CCard, CCardBody, CCardHeader, CSpinner, CBadge,
+  CCard, CCardHeader, CSpinner, CBadge,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, CForm, CFormInput, CFormLabel, CRow, CCol, CCollapse,
+  CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTrash, cilPlus, cilX, cilPencil, cilCheck } from '@coreui/icons'
+import { cilPlus, cilX, cilCalendar } from '@coreui/icons'
+import './masters.scss'
 import {
-  getVehiculos,
-  addVehiculo,
-  updateVehiculo,
-  deleteVehiculo,
+  getVehicles,
+  addVehicle,
+  updateVehicle,
+  updateRestrictions,
+  deleteVehicle,
 } from 'src/services/providers/firebase/taxiVehiculos'
 
-const EMPTY = { placa: '', marca: '', modelo: '', anio: '' }
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
+
+const EMPTY = { plate: '', brand: '', model: '', year: '' }
+
+const emptyRestrictions = () =>
+  Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { d1: '', d2: '' }]))
+
+const currentMonthSummary = (restrictions) => {
+  if (!restrictions) return '—'
+  const month = new Date().getMonth() + 1
+  const entry = restrictions[month]
+  if (!entry || (!entry.d1 && !entry.d2)) return '—'
+  return [entry.d1, entry.d2].filter(Boolean).map((d) => `día ${d}`).join(', ')
+}
 
 const Vehiculos = () => {
   const [records, setRecords] = useState([])
@@ -22,30 +42,30 @@ const Vehiculos = () => {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  const [editingId, setEditingId] = useState(null)
-  const [editForm, setEditForm] = useState(EMPTY)
-  const [editSaving, setEditSaving] = useState(false)
+
+  const [restrictModal, setRestrictModal] = useState(null)
+  const [restrictForm, setRestrictForm] = useState(emptyRestrictions())
+  const [restrictSaving, setRestrictSaving] = useState(false)
 
   useEffect(() => {
-    getVehiculos().then(setRecords).finally(() => setLoading(false))
+    getVehicles().then(setRecords).finally(() => setLoading(false))
   }, [])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-  const setEdit = (field) => (e) => setEditForm((p) => ({ ...p, [field]: e.target.value }))
 
   const handleAdd = async (e) => {
     e.preventDefault()
-    if (!form.placa || !form.marca) {
+    if (!form.plate || !form.brand) {
       setError('Placa y marca son requeridas')
       return
     }
     setSaving(true)
     setError(null)
     try {
-      const id = await addVehiculo(form)
-      const newRecord = { id, ...form, placa: form.placa.toUpperCase() }
+      const id = await addVehicle(form)
       setRecords((prev) =>
-        [...prev, newRecord].sort((a, b) => a.placa.localeCompare(b.placa)),
+        [...prev, { id, ...form, plate: form.plate.toUpperCase(), restrictions: {} }]
+          .sort((a, b) => a.plate.localeCompare(b.plate)),
       )
       setForm(EMPTY)
       setShowForm(false)
@@ -56,177 +76,206 @@ const Vehiculos = () => {
     }
   }
 
-  const startEdit = (r) => {
-    setEditingId(r.id)
-    setEditForm({
-      placa: r.placa || '',
-      marca: r.marca || '',
-      modelo: r.modelo || '',
-      anio: r.anio ? String(r.anio) : '',
+  const handleRowUpdating = async (e) => {
+    const merged = { ...e.oldData, ...e.newData }
+    e.cancel = updateVehicle(e.key, merged).then(() => {
+      setRecords((prev) =>
+        prev
+          .map((r) => r.id === e.key ? { ...r, ...merged, plate: merged.plate?.toUpperCase() ?? r.plate } : r)
+          .sort((a, b) => a.plate.localeCompare(b.plate)),
+      )
+      return false // don't cancel
     })
   }
 
-  const cancelEdit = () => {
-    setEditingId(null)
-    setEditForm(EMPTY)
+  const handleRowRemoving = (e) => {
+    e.cancel = deleteVehicle(e.key).then(() => false)
   }
 
-  const handleUpdate = async (id) => {
-    if (!editForm.placa || !editForm.marca) return
-    setEditSaving(true)
+  const openRestrictModal = (data) => {
+    const base = emptyRestrictions()
+    if (data.restrictions) {
+      Object.entries(data.restrictions).forEach(([m, v]) => {
+        base[m] = { d1: v?.d1 ?? '', d2: v?.d2 ?? '' }
+      })
+    }
+    setRestrictForm(base)
+    setRestrictModal({ id: data.id, plate: data.plate })
+  }
+
+  const setRestrictDay = (month, field) => (e) =>
+    setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: e.target.value } }))
+
+  const handleSaveRestrictions = async () => {
+    setRestrictSaving(true)
     try {
-      await updateVehiculo(id, editForm)
-      setRecords((prev) =>
-        prev
-          .map((r) =>
-            r.id === id ? { ...r, ...editForm, placa: editForm.placa.toUpperCase() } : r,
-          )
-          .sort((a, b) => a.placa.localeCompare(b.placa)),
+      const clean = Object.fromEntries(
+        Object.entries(restrictForm).map(([m, v]) => [
+          m,
+          { d1: v.d1 ? Number(v.d1) : null, d2: v.d2 ? Number(v.d2) : null },
+        ]),
       )
-      setEditingId(null)
+      await updateRestrictions(restrictModal.id, clean)
+      setRecords((prev) =>
+        prev.map((r) => r.id === restrictModal.id ? { ...r, restrictions: clean } : r),
+      )
+      setRestrictModal(null)
     } catch {
-      // keep editing open on error
+      // stay open on error
     } finally {
-      setEditSaving(false)
+      setRestrictSaving(false)
     }
   }
 
-  const handleDelete = async (id, e) => {
-    e.stopPropagation()
-    if (!window.confirm('¿Eliminar este vehículo?')) return
-    await deleteVehiculo(id)
-    setRecords((prev) => prev.filter((r) => r.id !== id))
-  }
-
   return (
-    <CCard>
-      <CCardHeader className="d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center gap-2">
-          <strong>Vehículos</strong>
-          <CBadge color="secondary">{records.length}</CBadge>
-        </div>
-        <CButton
-          size="sm"
-          color={showForm ? 'danger' : 'primary'}
-          variant="outline"
-          onClick={() => { setShowForm((p) => !p); setError(null) }}
-        >
-          <CIcon icon={showForm ? cilX : cilPlus} size="sm" />
-          {' '}{showForm ? 'Cancelar' : 'Nuevo vehículo'}
-        </CButton>
-      </CCardHeader>
+    <>
+      <CCard>
+        <CCardHeader className="d-flex align-items-center justify-content-between">
+          <div className="d-flex align-items-center gap-2">
+            <strong>Vehículos</strong>
+            <CBadge color="secondary">{records.length}</CBadge>
+          </div>
+          <CButton
+            size="sm"
+            color={showForm ? 'danger' : 'primary'}
+            variant="outline"
+            onClick={() => { setShowForm((p) => !p); setError(null) }}
+          >
+            <CIcon icon={showForm ? cilX : cilPlus} size="sm" />
+            {' '}{showForm ? 'Cancelar' : 'Nuevo vehículo'}
+          </CButton>
+        </CCardHeader>
 
-      <CCollapse visible={showForm}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cui-border-color)' }}>
-          <CForm onSubmit={handleAdd}>
-            <CRow className="g-2 align-items-end">
-              <CCol sm={2}>
-                <CFormLabel style={{ fontSize: 12 }}>Placa</CFormLabel>
-                <CFormInput size="sm" placeholder="ABC-123" value={form.placa} onChange={set('placa')} />
-              </CCol>
-              <CCol sm={3}>
-                <CFormLabel style={{ fontSize: 12 }}>Marca</CFormLabel>
-                <CFormInput size="sm" placeholder="Renault" value={form.marca} onChange={set('marca')} />
-              </CCol>
-              <CCol sm={3}>
-                <CFormLabel style={{ fontSize: 12 }}>Modelo</CFormLabel>
-                <CFormInput size="sm" placeholder="Logan" value={form.modelo} onChange={set('modelo')} />
-              </CCol>
-              <CCol sm={2}>
-                <CFormLabel style={{ fontSize: 12 }}>Año</CFormLabel>
-                <CFormInput size="sm" type="number" placeholder="2020" value={form.anio} onChange={set('anio')} />
-              </CCol>
-              <CCol sm={2}>
-                <CButton type="submit" size="sm" color="primary" disabled={saving} style={{ width: '100%' }}>
-                  {saving ? <CSpinner size="sm" /> : 'Guardar'}
-                </CButton>
-              </CCol>
-            </CRow>
-            {error && <div style={{ marginTop: 8, fontSize: 12, color: '#e03131' }}>{error}</div>}
-          </CForm>
-        </div>
-      </CCollapse>
+        <CCollapse visible={showForm}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cui-border-color)' }}>
+            <CForm onSubmit={handleAdd}>
+              <CRow className="g-2 align-items-end">
+                <CCol sm={2}>
+                  <CFormLabel style={{ fontSize: 12 }}>Placa</CFormLabel>
+                  <CFormInput size="sm" placeholder="ABC-123" value={form.plate} onChange={set('plate')} />
+                </CCol>
+                <CCol sm={3}>
+                  <CFormLabel style={{ fontSize: 12 }}>Marca</CFormLabel>
+                  <CFormInput size="sm" placeholder="Renault" value={form.brand} onChange={set('brand')} />
+                </CCol>
+                <CCol sm={3}>
+                  <CFormLabel style={{ fontSize: 12 }}>Modelo</CFormLabel>
+                  <CFormInput size="sm" placeholder="Logan" value={form.model} onChange={set('model')} />
+                </CCol>
+                <CCol sm={2}>
+                  <CFormLabel style={{ fontSize: 12 }}>Año</CFormLabel>
+                  <CFormInput size="sm" type="number" placeholder="2020" value={form.year} onChange={set('year')} />
+                </CCol>
+                <CCol sm={2}>
+                  <CButton type="submit" size="sm" color="primary" disabled={saving} style={{ width: '100%' }}>
+                    {saving ? <CSpinner size="sm" /> : 'Guardar'}
+                  </CButton>
+                </CCol>
+              </CRow>
+              {error && <div style={{ marginTop: 8, fontSize: 12, color: '#e03131' }}>{error}</div>}
+            </CForm>
+          </div>
+        </CCollapse>
 
-      <CCardBody style={{ overflowX: 'auto', padding: 0 }}>
         {loading ? (
           <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
-        ) : records.length === 0 ? (
-          <p className="text-body-secondary text-center py-4">Sin vehículos aún.</p>
         ) : (
-          <CTable small hover responsive style={{ marginBottom: 0 }}>
+          <DataGrid
+            className="masters-grid"
+            dataSource={records}
+            keyExpr="id"
+            showBorders={true}
+            columnAutoWidth={true}
+            columnHidingEnabled={true}
+            allowColumnResizing={true}
+            rowAlternationEnabled={true}
+            hoverStateEnabled={true}
+            onRowUpdating={handleRowUpdating}
+            onRowRemoving={handleRowRemoving}
+          >
+            <Editing allowUpdating={true} allowDeleting={true} mode="row" />
+            <Column dataField="plate" caption="Placa" />
+            <Column dataField="brand" caption="Marca" />
+            <Column dataField="model" caption="Modelo" />
+            <Column dataField="year" caption="Año" dataType="number" width={80} />
+            <Column
+              caption="P&P este mes"
+              allowEditing={false}
+              hidingPriority={1}
+              cellRender={({ data }) => currentMonthSummary(data.restrictions)}
+            />
+            <Column type="buttons" width={100}>
+              <GButton
+                hint="Pico y placa"
+                icon="event"
+                onClick={(e) => openRestrictModal(e.row.data)}
+              />
+              <GButton name="edit" />
+              <GButton name="delete" />
+            </Column>
+          </DataGrid>
+        )}
+      </CCard>
+
+      <CModal visible={!!restrictModal} onClose={() => setRestrictModal(null)} size="lg">
+        <CModalHeader>
+          <CModalTitle>Pico y placa — {restrictModal?.plate}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CTable small bordered style={{ marginBottom: 0 }}>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>Placa</CTableHeaderCell>
-                <CTableHeaderCell>Marca</CTableHeaderCell>
-                <CTableHeaderCell>Modelo</CTableHeaderCell>
-                <CTableHeaderCell>Año</CTableHeaderCell>
-                <CTableHeaderCell />
+                <CTableHeaderCell style={{ width: 140 }}>Mes</CTableHeaderCell>
+                <CTableHeaderCell>Día 1</CTableHeaderCell>
+                <CTableHeaderCell>Día 2</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {records.map((r) =>
-                editingId === r.id ? (
-                  <CTableRow key={r.id} style={{ background: 'var(--cui-primary-bg-subtle, #e7f1ff)' }}>
+              {MONTHS.map((name, i) => {
+                const m = i + 1
+                return (
+                  <CTableRow key={m}>
+                    <CTableDataCell style={{ fontWeight: 500 }}>{name}</CTableDataCell>
                     <CTableDataCell>
-                      <CFormInput size="sm" value={editForm.placa} onChange={setEdit('placa')} />
+                      <CFormInput
+                        size="sm"
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="—"
+                        value={restrictForm[m]?.d1 ?? ''}
+                        onChange={setRestrictDay(m, 'd1')}
+                        style={{ width: 80 }}
+                      />
                     </CTableDataCell>
                     <CTableDataCell>
-                      <CFormInput size="sm" value={editForm.marca} onChange={setEdit('marca')} />
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CFormInput size="sm" value={editForm.modelo} onChange={setEdit('modelo')} />
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CFormInput size="sm" type="number" value={editForm.anio} onChange={setEdit('anio')} />
-                    </CTableDataCell>
-                    <CTableDataCell style={{ whiteSpace: 'nowrap' }}>
-                      <button
-                        onClick={() => handleUpdate(r.id)}
-                        disabled={editSaving}
-                        style={{ background: 'none', border: 'none', color: '#2f9e44', cursor: 'pointer', padding: '2px 6px' }}
-                        title="Guardar"
-                      >
-                        {editSaving ? <CSpinner size="sm" /> : <CIcon icon={cilCheck} size="sm" />}
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer', padding: '2px 6px' }}
-                        title="Cancelar"
-                      >
-                        <CIcon icon={cilX} size="sm" />
-                      </button>
+                      <CFormInput
+                        size="sm"
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="—"
+                        value={restrictForm[m]?.d2 ?? ''}
+                        onChange={setRestrictDay(m, 'd2')}
+                        style={{ width: 80 }}
+                      />
                     </CTableDataCell>
                   </CTableRow>
-                ) : (
-                  <CTableRow key={r.id}>
-                    <CTableDataCell style={{ fontFamily: 'monospace', fontWeight: 600 }}>{r.placa}</CTableDataCell>
-                    <CTableDataCell>{r.marca}</CTableDataCell>
-                    <CTableDataCell>{r.modelo || '—'}</CTableDataCell>
-                    <CTableDataCell>{r.anio || '—'}</CTableDataCell>
-                    <CTableDataCell style={{ whiteSpace: 'nowrap' }}>
-                      <button
-                        onClick={() => startEdit(r)}
-                        style={{ background: 'none', border: 'none', color: '#1971c2', cursor: 'pointer', padding: '2px 6px' }}
-                        title="Editar"
-                      >
-                        <CIcon icon={cilPencil} size="sm" />
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(r.id, e)}
-                        style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                        title="Eliminar"
-                      >
-                        <CIcon icon={cilTrash} size="sm" />
-                      </button>
-                    </CTableDataCell>
-                  </CTableRow>
-                ),
-              )}
+                )
+              })}
             </CTableBody>
           </CTable>
-        )}
-      </CCardBody>
-    </CCard>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" variant="outline" size="sm" onClick={() => setRestrictModal(null)}>
+            Cancelar
+          </CButton>
+          <CButton color="primary" size="sm" disabled={restrictSaving} onClick={handleSaveRestrictions}>
+            {restrictSaving ? <CSpinner size="sm" /> : 'Guardar'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </>
   )
 }
 

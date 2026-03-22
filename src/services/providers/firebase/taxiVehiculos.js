@@ -5,32 +5,47 @@ import {
 
 const COL = 'taxi_vehiculos'
 
-export const getVehiculos = async () => {
+export const getVehicles = async () => {
   const q = query(collection(db, COL), orderBy('placa', 'asc'))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      plate: data.placa,
+      brand: data.marca,
+      model: data.modelo,
+      year: data.anio,
+      restrictions: data.restrictions ?? {},
+    }
+  })
 }
 
-export const addVehiculo = async ({ placa, marca, modelo, anio }) => {
+export const addVehicle = async ({ plate, brand, model, year }) => {
   const ref = await addDoc(collection(db, COL), {
-    placa: placa.toUpperCase(),
-    marca,
-    modelo,
-    anio,
+    placa: plate.toUpperCase(),
+    marca: brand,
+    modelo: model,
+    anio: year,
+    restrictions: {},
     createdAt: serverTimestamp(),
   })
   return ref.id
 }
 
-export const updateVehiculo = async (id, { placa, marca, modelo, anio }) => {
+export const updateVehicle = async (id, { plate, brand, model, year }) => {
   await updateDoc(doc(db, COL, id), {
-    placa: placa.toUpperCase(),
-    marca,
-    modelo,
-    anio,
+    placa: plate.toUpperCase(),
+    marca: brand,
+    modelo: model,
+    anio: year,
   })
 }
 
-export const deleteVehiculo = async (id) => {
+export const updateRestrictions = async (id, restrictions) => {
+  await updateDoc(doc(db, COL, id), { restrictions })
+}
+
+export const deleteVehicle = async (id) => {
   await deleteDoc(doc(db, COL, id))
 }

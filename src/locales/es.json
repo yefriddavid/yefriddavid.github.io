@@ -84,10 +84,11 @@
     "reports": "Reportes",
     "home": "Inicio",
     "visits": "Visitas",
-    "taxis": "Taxis",
+    "taxis": "Liquidacion Taxis",
     "liquidaciones": "Liquidaciones",
     "conductores": "Conductores",
-    "vehiculos": "Vehículos"
+    "vehiculos": "Vehículos",
+    "taxiExpenses": "Gastos Taxis"
   },
   "auth": {
     "login": "Iniciar sesión",
