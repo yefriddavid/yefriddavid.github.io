@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { DataGrid, Column, Selection } from 'devextreme-react/data-grid'
+import { DataGrid, Column, Editing, Selection } from 'devextreme-react/data-grid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
@@ -8,6 +8,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
+import { updateExpense } from 'src/services/providers/firebase/taxiExpenses'
 import { getVehicles } from 'src/services/providers/firebase/taxiVehiculos'
 import '../../../views/movements/payments/Payments.scss'
 
@@ -23,7 +24,7 @@ const fmt = (n) =>
 
 const today = () => new Date().toISOString().split('T')[0]
 
-const EMPTY = { description: '', category: CATEGORIES[0], amount: '', date: today(), plate: '' }
+const EMPTY = { description: '', category: CATEGORIES[0], amount: '', date: today(), plate: '', comment: '' }
 
 const Gastos = () => {
   const dispatch = useDispatch()
@@ -54,6 +55,14 @@ const Gastos = () => {
     dispatch(taxiExpenseActions.createRequest(form))
     setForm(EMPTY)
     setShowForm(false)
+  }
+
+  const handleRowUpdating = (e) => {
+    const merged = { ...e.oldData, ...e.newData }
+    e.cancel = updateExpense(e.key, merged).then(() => {
+      dispatch(taxiExpenseActions.fetchRequest())
+      return false
+    })
   }
 
   const handleDelete = (id) => {
@@ -210,6 +219,10 @@ const Gastos = () => {
                   <CFormLabel style={{ fontSize: 12 }}>Fecha</CFormLabel>
                   <CFormInput size="sm" type="date" value={form.date} onChange={set('date')} />
                 </CCol>
+                <CCol sm={2}>
+                  <CFormLabel style={{ fontSize: 12 }}>Comentario</CFormLabel>
+                  <CFormInput size="sm" placeholder="Observaciones..." value={form.comment} onChange={set('comment')} />
+                </CCol>
                 <CCol sm={1}>
                   <CButton type="submit" size="sm" color="primary" disabled={fetching} style={{ width: '100%' }}>
                     {fetching ? <CSpinner size="sm" /> : 'Guardar'}
@@ -227,8 +240,10 @@ const Gastos = () => {
         ) : (
           <DataGrid
               id="paymentsGrid"
+              style={{ margin: 16 }}
               keyExpr="id"
               dataSource={filtered}
+              onRowUpdating={handleRowUpdating}
               showBorders={true}
               columnAutoWidth={true}
               columnHidingEnabled={true}
@@ -237,7 +252,7 @@ const Gastos = () => {
               hoverStateEnabled={true}
               noDataText="Sin gastos para este periodo."
             >
-              <Selection mode="single" />
+              <Editing allowUpdating={true} mode="row" />
               <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} />
               <Column dataField="category" caption="Categoría" width={130} hidingPriority={3} />
               <Column dataField="description" caption="Descripción" minWidth={160} hidingPriority={5} />
@@ -250,6 +265,7 @@ const Gastos = () => {
                   value ? <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span> : '—'
                 }
               />
+              <Column dataField="comment" caption="Comentario" minWidth={140} hidingPriority={6} />
               <Column
                 dataField="amount"
                 caption="Valor"
@@ -264,7 +280,7 @@ const Gastos = () => {
                 width={50}
                 allowSorting={false}
                 allowResizing={false}
-                hidingPriority={6}
+                hidingPriority={7}
                 cellRender={({ data }) => (
                   <button
                     onClick={() => handleDelete(data.id)}

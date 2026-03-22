@@ -376,6 +376,7 @@ const Taxis = () => {
           ) : (
             <DataGrid
               id="paymentsGrid"
+              style={{ margin: 16 }}
               keyExpr="id"
               dataSource={filtered}
               showBorders={true}

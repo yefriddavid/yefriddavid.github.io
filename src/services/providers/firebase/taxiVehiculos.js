@@ -6,16 +6,16 @@ import {
 const COL = 'taxi_vehiculos'
 
 export const getVehicles = async () => {
-  const q = query(collection(db, COL), orderBy('placa', 'asc'))
+  const q = query(collection(db, COL), orderBy('plate', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
     return {
       id: d.id,
-      plate: data.placa,
-      brand: data.marca,
-      model: data.modelo,
-      year: data.anio,
+      plate: data.plate,
+      brand: data.brand,
+      model: data.model,
+      year: data.year,
       restrictions: data.restrictions ?? {},
     }
   })
@@ -23,10 +23,10 @@ export const getVehicles = async () => {
 
 export const addVehicle = async ({ plate, brand, model, year }) => {
   const ref = await addDoc(collection(db, COL), {
-    placa: plate.toUpperCase(),
-    marca: brand,
-    modelo: model,
-    anio: year,
+    plate: plate.toUpperCase(),
+    brand,
+    model,
+    year,
     restrictions: {},
     createdAt: serverTimestamp(),
   })
@@ -35,10 +35,10 @@ export const addVehicle = async ({ plate, brand, model, year }) => {
 
 export const updateVehicle = async (id, { plate, brand, model, year }) => {
   await updateDoc(doc(db, COL, id), {
-    placa: plate.toUpperCase(),
-    marca: brand,
-    modelo: model,
-    anio: year,
+    plate: plate.toUpperCase(),
+    brand,
+    model,
+    year,
   })
 }
 

@@ -1,6 +1,6 @@
 import { db } from './settings'
 import {
-  collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp,
+  collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, serverTimestamp,
 } from 'firebase/firestore'
 
 const COL = 'taxi_gastos'
@@ -17,6 +17,7 @@ export const fetchExpenses = async () => {
       amount: data.amount,
       date: data.date,
       plate: data.plate ?? null,
+      comment: data.comment ?? null,
     }
   })
 }
@@ -31,6 +32,17 @@ export const createExpense = async ({ description, category, amount, date, plate
     createdAt: serverTimestamp(),
   })
   return ref.id
+}
+
+export const updateExpense = async (id, data) => {
+  await updateDoc(doc(db, COL, id), {
+    description: data.description,
+    category: data.category,
+    amount: Number(data.amount),
+    date: data.date,
+    plate: data.plate || null,
+    comment: data.comment || null,
+  })
 }
 
 export const deleteExpense = async (id) => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { DataGrid, Editing, Column, Lookup } from 'devextreme-react/data-grid'
 import {
   CCard, CCardHeader, CSpinner, CBadge,
@@ -6,13 +7,8 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX } from '@coreui/icons'
-import {
-  getDrivers,
-  addDriver,
-  updateDriver,
-  deleteDriver,
-} from 'src/services/providers/firebase/taxiConductores'
-import { getVehicles } from 'src/services/providers/firebase/taxiVehiculos'
+import * as taxiDriverActions from 'src/actions/taxiDriverActions'
+import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import './masters.scss'
 
 const fmt = (n) =>
@@ -21,77 +17,61 @@ const fmt = (n) =>
 const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '' }
 
 const Conductores = () => {
-  const [records, setRecords] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data: records, fetching } = useSelector((s) => s.taxiDriver)
+  const { data: vehicles } = useSelector((s) => s.taxiVehicle)
+
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    Promise.all([getDrivers(), getVehicles()]).then(([drivers, veh]) => {
-      setRecords(drivers)
-      setVehicles(veh)
-    }).finally(() => setLoading(false))
-  }, [])
+    dispatch(taxiDriverActions.fetchRequest())
+    dispatch(taxiVehicleActions.fetchRequest())
+  }, [dispatch])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault()
     if (!form.name || !form.idNumber) {
       setError('Nombre y cédula son requeridos')
       return
     }
-    setSaving(true)
     setError(null)
-    try {
-      const id = await addDriver(form)
-      setRecords((prev) =>
-        [...prev, {
-          id, ...form,
-          defaultAmount: form.defaultAmount ? Number(form.defaultAmount) : null,
-          defaultAmountSunday: form.defaultAmountSunday ? Number(form.defaultAmountSunday) : null,
-          defaultVehicle: form.defaultVehicle || null,
-        }].sort((a, b) => a.name.localeCompare(b.name)),
-      )
-      setForm(EMPTY)
-      setShowForm(false)
-    } catch {
-      setError('Error al guardar')
-    } finally {
-      setSaving(false)
-    }
+    dispatch(taxiDriverActions.createRequest(form))
+    setForm(EMPTY)
+    setShowForm(false)
   }
 
-  const handleRowUpdating = async (e) => {
+  const handleRowUpdating = (e) => {
     const merged = { ...e.oldData, ...e.newData }
-    e.cancel = updateDriver(e.key, merged).then(() => {
-      setRecords((prev) =>
-        prev
-          .map((r) => r.id === e.key ? { ...r, ...merged } : r)
-          .sort((a, b) => a.name.localeCompare(b.name)),
-      )
-      return false
+    e.cancel = new Promise((resolve) => {
+      dispatch(taxiDriverActions.updateRequest({ id: e.key, ...merged }))
+      resolve(false)
     })
   }
 
   const handleRowRemoving = (e) => {
-    e.cancel = deleteDriver(e.key).then(() => false)
+    e.cancel = new Promise((resolve) => {
+      dispatch(taxiDriverActions.deleteRequest({ id: e.key }))
+      resolve(false)
+    })
   }
 
   const vehicleOptions = [
     { plate: '', label: '— Ninguno —' },
-    ...vehicles.map((v) => ({ plate: v.plate, label: v.plate + (v.brand ? ` · ${v.brand}` : '') })),
+    ...(vehicles ?? []).map((v) => ({ plate: v.plate, label: v.plate + (v.brand ? ` · ${v.brand}` : '') })),
   ]
+
+  const rows = records ?? []
 
   return (
     <CCard>
       <CCardHeader className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
           <strong>Conductores</strong>
-          <CBadge color="secondary">{records.length}</CBadge>
+          <CBadge color="secondary">{rows.length}</CBadge>
         </div>
         <CButton
           size="sm"
@@ -132,14 +112,14 @@ const Conductores = () => {
                 <CFormLabel style={{ fontSize: 12 }}>Taxi por defecto</CFormLabel>
                 <CFormSelect size="sm" value={form.defaultVehicle} onChange={set('defaultVehicle')}>
                   <option value="">— Ninguno —</option>
-                  {vehicles.map((v) => (
+                  {(vehicles ?? []).map((v) => (
                     <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>
                   ))}
                 </CFormSelect>
               </CCol>
               <CCol sm={2}>
-                <CButton type="submit" size="sm" color="primary" disabled={saving} style={{ width: '100%' }}>
-                  {saving ? <CSpinner size="sm" /> : 'Guardar'}
+                <CButton type="submit" size="sm" color="primary" disabled={fetching} style={{ width: '100%' }}>
+                  {fetching ? <CSpinner size="sm" /> : 'Guardar'}
                 </CButton>
               </CCol>
             </CRow>
@@ -148,13 +128,14 @@ const Conductores = () => {
         </div>
       </CCollapse>
 
-      {loading ? (
+      {fetching && !records ? (
         <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
       ) : (
         <DataGrid
           className="masters-grid"
+          style={{ margin: 16 }}
           keyExpr="id"
-          dataSource={records}
+          dataSource={rows}
           showBorders={true}
           columnAutoWidth={true}
           columnHidingEnabled={true}

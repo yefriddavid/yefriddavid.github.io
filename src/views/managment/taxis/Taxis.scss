@@ -1,3 +1,15 @@
+// ─── Sunday row highlight ─────────────────────────────────────────
+#paymentsGrid .dx-row-sunday > td,
+#paymentsGrid .dx-row-sunday.dx-row-alt > td {
+  background-color: #fff0f0 !important;
+  color: #c0392b !important;
+}
+
+#paymentsGrid .dx-state-hover.dx-row-sunday > td {
+  background-color: #ffd6d6 !important;
+  color: #c0392b !important;
+}
+
 // ─── Taxis Grid ───────────────────────────────────────────────────
 #taxisGrid {
   border-radius: 10px;

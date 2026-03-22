@@ -5,6 +5,9 @@ import paymentVaucher from './paymentVaucherReducer'
 import account from './accountReducer'
 import ui from './uiReducer'
 import taxiExpense from './taxiExpenseReducer'
+import taxiDriver from './taxiDriverReducer'
+import taxiVehicle from './taxiVehicleReducer'
+import taxiSettlement from './taxiSettlementReducer'
 
 const combinedReducers = combineReducers({
   login,
@@ -13,6 +16,9 @@ const combinedReducers = combineReducers({
   account,
   ui,
   taxiExpense,
+  taxiDriver,
+  taxiVehicle,
+  taxiSettlement,
 })
 
 export default combinedReducers

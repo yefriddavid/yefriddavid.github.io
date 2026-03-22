@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { DataGrid, Editing, Column, Button as GButton } from 'devextreme-react/data-grid'
 import {
   CCard, CCardHeader, CSpinner, CBadge,
@@ -7,15 +8,9 @@ import {
   CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX, cilCalendar } from '@coreui/icons'
+import { cilPlus, cilX } from '@coreui/icons'
 import './masters.scss'
-import {
-  getVehicles,
-  addVehicle,
-  updateVehicle,
-  updateRestrictions,
-  deleteVehicle,
-} from 'src/services/providers/firebase/taxiVehiculos'
+import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -36,11 +31,11 @@ const currentMonthSummary = (restrictions) => {
 }
 
 const Vehiculos = () => {
-  const [records, setRecords] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data: records, fetching } = useSelector((s) => s.taxiVehicle)
+
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   const [restrictModal, setRestrictModal] = useState(null)
@@ -48,48 +43,36 @@ const Vehiculos = () => {
   const [restrictSaving, setRestrictSaving] = useState(false)
 
   useEffect(() => {
-    getVehicles().then(setRecords).finally(() => setLoading(false))
-  }, [])
+    dispatch(taxiVehicleActions.fetchRequest())
+  }, [dispatch])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault()
     if (!form.plate || !form.brand) {
       setError('Placa y marca son requeridas')
       return
     }
-    setSaving(true)
     setError(null)
-    try {
-      const id = await addVehicle(form)
-      setRecords((prev) =>
-        [...prev, { id, ...form, plate: form.plate.toUpperCase(), restrictions: {} }]
-          .sort((a, b) => a.plate.localeCompare(b.plate)),
-      )
-      setForm(EMPTY)
-      setShowForm(false)
-    } catch {
-      setError('Error al guardar')
-    } finally {
-      setSaving(false)
-    }
+    dispatch(taxiVehicleActions.createRequest(form))
+    setForm(EMPTY)
+    setShowForm(false)
   }
 
-  const handleRowUpdating = async (e) => {
+  const handleRowUpdating = (e) => {
     const merged = { ...e.oldData, ...e.newData }
-    e.cancel = updateVehicle(e.key, merged).then(() => {
-      setRecords((prev) =>
-        prev
-          .map((r) => r.id === e.key ? { ...r, ...merged, plate: merged.plate?.toUpperCase() ?? r.plate } : r)
-          .sort((a, b) => a.plate.localeCompare(b.plate)),
-      )
-      return false // don't cancel
+    e.cancel = new Promise((resolve) => {
+      dispatch(taxiVehicleActions.updateRequest({ id: e.key, ...merged }))
+      resolve(false)
     })
   }
 
   const handleRowRemoving = (e) => {
-    e.cancel = deleteVehicle(e.key).then(() => false)
+    e.cancel = new Promise((resolve) => {
+      dispatch(taxiVehicleActions.deleteRequest({ id: e.key }))
+      resolve(false)
+    })
   }
 
   const openRestrictModal = (data) => {
@@ -106,26 +89,20 @@ const Vehiculos = () => {
   const setRestrictDay = (month, field) => (e) =>
     setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: e.target.value } }))
 
-  const handleSaveRestrictions = async () => {
+  const handleSaveRestrictions = () => {
     setRestrictSaving(true)
-    try {
-      const clean = Object.fromEntries(
-        Object.entries(restrictForm).map(([m, v]) => [
-          m,
-          { d1: v.d1 ? Number(v.d1) : null, d2: v.d2 ? Number(v.d2) : null },
-        ]),
-      )
-      await updateRestrictions(restrictModal.id, clean)
-      setRecords((prev) =>
-        prev.map((r) => r.id === restrictModal.id ? { ...r, restrictions: clean } : r),
-      )
-      setRestrictModal(null)
-    } catch {
-      // stay open on error
-    } finally {
-      setRestrictSaving(false)
-    }
+    const clean = Object.fromEntries(
+      Object.entries(restrictForm).map(([m, v]) => [
+        m,
+        { d1: v.d1 ? Number(v.d1) : null, d2: v.d2 ? Number(v.d2) : null },
+      ]),
+    )
+    dispatch(taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: clean }))
+    setRestrictSaving(false)
+    setRestrictModal(null)
   }
+
+  const rows = records ?? []
 
   return (
     <>
@@ -133,7 +110,7 @@ const Vehiculos = () => {
         <CCardHeader className="d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center gap-2">
             <strong>Vehículos</strong>
-            <CBadge color="secondary">{records.length}</CBadge>
+            <CBadge color="secondary">{rows.length}</CBadge>
           </div>
           <CButton
             size="sm"
@@ -167,8 +144,8 @@ const Vehiculos = () => {
                   <CFormInput size="sm" type="number" placeholder="2020" value={form.year} onChange={set('year')} />
                 </CCol>
                 <CCol sm={2}>
-                  <CButton type="submit" size="sm" color="primary" disabled={saving} style={{ width: '100%' }}>
-                    {saving ? <CSpinner size="sm" /> : 'Guardar'}
+                  <CButton type="submit" size="sm" color="primary" disabled={fetching} style={{ width: '100%' }}>
+                    {fetching ? <CSpinner size="sm" /> : 'Guardar'}
                   </CButton>
                 </CCol>
               </CRow>
@@ -177,12 +154,13 @@ const Vehiculos = () => {
           </div>
         </CCollapse>
 
-        {loading ? (
+        {fetching && !records ? (
           <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
         ) : (
           <DataGrid
             className="masters-grid"
-            dataSource={records}
+            style={{ margin: 16 }}
+            dataSource={rows}
             keyExpr="id"
             showBorders={true}
             columnAutoWidth={true}

@@ -6,15 +6,15 @@ import {
 const COL = 'taxi_conductores'
 
 export const getDrivers = async () => {
-  const q = query(collection(db, COL), orderBy('nombre', 'asc'))
+  const q = query(collection(db, COL), orderBy('name', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
     return {
       id: d.id,
-      name: data.nombre,
-      idNumber: data.cedula,
-      phone: data.telefono,
+      name: data.name,
+      idNumber: data.idNumber,
+      phone: data.phone,
       defaultAmount: data.defaultAmount,
       defaultAmountSunday: data.defaultAmountSunday,
       defaultVehicle: data.defaultVehicle,
@@ -24,9 +24,9 @@ export const getDrivers = async () => {
 
 export const addDriver = async ({ name, idNumber, phone, defaultAmount, defaultAmountSunday, defaultVehicle }) => {
   const ref = await addDoc(collection(db, COL), {
-    nombre: name,
-    cedula: idNumber,
-    telefono: phone,
+    name,
+    idNumber,
+    phone: phone || null,
     defaultAmount: defaultAmount ? Number(defaultAmount) : null,
     defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
     defaultVehicle: defaultVehicle || null,
@@ -37,9 +37,9 @@ export const addDriver = async ({ name, idNumber, phone, defaultAmount, defaultA
 
 export const updateDriver = async (id, { name, idNumber, phone, defaultAmount, defaultAmountSunday, defaultVehicle }) => {
   await updateDoc(doc(db, COL, id), {
-    nombre: name,
-    cedula: idNumber,
-    telefono: phone,
+    name,
+    idNumber,
+    phone: phone || null,
     defaultAmount: defaultAmount ? Number(defaultAmount) : null,
     defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
     defaultVehicle: defaultVehicle || null,
