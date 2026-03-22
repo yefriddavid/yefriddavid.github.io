@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { DataGrid, Column, Selection, MasterDetail } from 'devextreme-react/data-grid'
+import React, { useEffect, useState } from 'react'
+import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
@@ -9,7 +9,7 @@ import { cilTrash, cilPlus, cilX } from '@coreui/icons'
 import { getSettlements, addSettlement, deleteSettlement } from 'src/services/providers/firebase/taxis'
 import { getDrivers } from 'src/services/providers/firebase/taxiConductores'
 import { getVehicles } from 'src/services/providers/firebase/taxiVehiculos'
-import './Taxis.scss'
+import '../../../views/movements/payments/Payments.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
@@ -95,8 +95,6 @@ const Taxis = () => {
   const [error, setError] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [driverFilter, setDriverFilter] = useState('')
-  const [expandedRowKey, setExpandedRowKey] = useState(null)
-  const gridRef = useRef(null)
 
   useEffect(() => {
     Promise.all([getSettlements(), getDrivers(), getVehicles()]).then(([settlements, driverList, vehicleList]) => {
@@ -137,21 +135,6 @@ const Taxis = () => {
       setError('Error al guardar')
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleRowClick = (e) => {
-    if (e.rowType !== 'data') return
-    const key = e.key
-    const grid = gridRef.current?.instance
-    if (!grid) return
-    if (expandedRowKey === key) {
-      grid.collapseRow(key)
-      setExpandedRowKey(null)
-    } else {
-      if (expandedRowKey !== null) grid.collapseRow(expandedRowKey)
-      grid.expandRow(key)
-      setExpandedRowKey(key)
     }
   }
 
@@ -338,14 +321,12 @@ const Taxis = () => {
           </div>
         </CCollapse>
 
-        <CCardBody style={{ padding: '16px' }}>
+        <CCardBody style={{ padding: 0 }}>
           {loading ? (
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
           ) : (
             <DataGrid
-              ref={gridRef}
-              id="taxisGrid"
-              className="payments-grid"
+              id="paymentsGrid"
               keyExpr="id"
               dataSource={filtered}
               showBorders={true}
@@ -355,9 +336,7 @@ const Taxis = () => {
               rowAlternationEnabled={true}
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
-              onRowClick={handleRowClick}
             >
-              <Selection mode="single" />
               <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} />
               <Column dataField="driver" caption="Conductor" minWidth={150} hidingPriority={4} />
               <Column
@@ -394,7 +373,7 @@ const Taxis = () => {
                 )}
               />
               <MasterDetail
-                enabled={false}
+                enabled={true}
                 render={({ data }) => (
                   <SettlementDetail data={data} drivers={drivers} vehicles={vehicles} />
                 )}

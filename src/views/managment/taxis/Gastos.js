@@ -222,13 +222,11 @@ const Gastos = () => {
           </div>
         </CCollapse>
 
-        <CCardBody style={{ padding: '16px' }}>
-          {fetching && !expenses ? (
-            <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
-          ) : (
-            <DataGrid
-              id="taxiExpensesGrid"
-              className="payments-grid"
+        {fetching && !expenses ? (
+          <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
+        ) : (
+          <DataGrid
+              id="paymentsGrid"
               keyExpr="id"
               dataSource={filtered}
               showBorders={true}
@@ -277,9 +275,8 @@ const Gastos = () => {
                   </button>
                 )}
               />
-            </DataGrid>
-          )}
-        </CCardBody>
+          </DataGrid>
+        )}
       </CCard>
     </>
   )

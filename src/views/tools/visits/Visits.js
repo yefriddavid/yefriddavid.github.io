@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react'
+import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
 import {
   CCard,
   CCardBody,
   CCardHeader,
   CSpinner,
   CBadge,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash } from '@coreui/icons'
 import { db } from 'src/services/providers/firebase/settings'
 import { collection, getDocs, orderBy, query, limit, deleteDoc, doc } from 'firebase/firestore'
+import './Visits.scss'
 
 const parseUA = (ua = '') => {
   if (!ua) return ''
@@ -101,17 +96,13 @@ const VisitDetail = ({ v }) => (
 const Visits = () => {
   const [visits, setVisits] = useState([])
   const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState(null)
 
   const handleDelete = async (id, e) => {
     e.stopPropagation()
     if (!window.confirm('¿Eliminar este registro?')) return
     await deleteDoc(doc(db, 'page_visits', id))
     setVisits((prev) => prev.filter((v) => v.id !== id))
-    if (expandedId === id) setExpandedId(null)
   }
-
-  const toggleRow = (id) => setExpandedId((prev) => (prev === id ? null : id))
 
   useEffect(() => {
     const fetch = async () => {
@@ -132,68 +123,92 @@ const Visits = () => {
         <strong>Visitas — About Me</strong>
         <CBadge color="secondary">{visits.length}</CBadge>
       </CCardHeader>
-      <CCardBody style={{ overflowX: 'auto', padding: 0 }}>
+      <CCardBody style={{ padding: '16px' }}>
         {loading ? (
           <div className="d-flex justify-content-center py-5">
             <CSpinner color="primary" />
           </div>
-        ) : visits.length === 0 ? (
-          <p className="text-body-secondary text-center py-4">Sin registros aún.</p>
         ) : (
-          <CTable small hover responsive style={{ marginBottom: 0 }}>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell style={{ width: 28 }} />
-                <CTableHeaderCell>Fecha</CTableHeaderCell>
-                <CTableHeaderCell>IP</CTableHeaderCell>
-                <CTableHeaderCell>Ubicación</CTableHeaderCell>
-                <CTableHeaderCell>OS</CTableHeaderCell>
-                <CTableHeaderCell>Navegador</CTableHeaderCell>
-                <CTableHeaderCell>Referrer</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {visits.map((v) => (
-                <React.Fragment key={v.id}>
-                  <CTableRow
-                    onClick={() => toggleRow(v.id)}
-                    style={{ cursor: 'pointer', background: expandedId === v.id ? 'var(--cui-primary-bg-subtle, #e7f1ff)' : undefined }}
-                  >
-                    <CTableDataCell style={{ textAlign: 'center', color: 'var(--cui-secondary-color, #6c757d)', fontSize: 11 }}>
-                      {expandedId === v.id ? '▼' : '▶'}
-                    </CTableDataCell>
-                    <CTableDataCell style={{ whiteSpace: 'nowrap' }}>{formatDate(v.createdAt)}</CTableDataCell>
-                    <CTableDataCell style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.ip || '—'}</CTableDataCell>
-                    <CTableDataCell style={{ whiteSpace: 'nowrap' }}>
-                      {[v.city, v.country].filter(Boolean).join(', ') || '—'}
-                    </CTableDataCell>
-                    <CTableDataCell>{parseUA(v.userAgent)}</CTableDataCell>
-                    <CTableDataCell>{parseBrowser(v.userAgent)}</CTableDataCell>
-                    <CTableDataCell style={{ fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {v.referrer || 'direct'}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <button
-                        onClick={(e) => handleDelete(v.id, e)}
-                        style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                        title="Eliminar"
-                      >
-                        <CIcon icon={cilTrash} size="sm" />
-                      </button>
-                    </CTableDataCell>
-                  </CTableRow>
-                  {expandedId === v.id && (
-                    <CTableRow style={{ background: 'transparent' }}>
-                      <CTableDataCell colSpan={8} style={{ padding: 0, border: 'none' }}>
-                        <VisitDetail v={v} />
-                      </CTableDataCell>
-                    </CTableRow>
-                  )}
-                </React.Fragment>
-              ))}
-            </CTableBody>
-          </CTable>
+          <DataGrid
+            id="visitsGrid"
+            keyExpr="id"
+            dataSource={visits}
+            showBorders={true}
+            columnAutoWidth={true}
+            columnHidingEnabled={true}
+            allowColumnResizing={true}
+            rowAlternationEnabled={true}
+            hoverStateEnabled={true}
+            noDataText="Sin registros aún."
+          >
+            <Column
+              dataField="createdAt"
+              caption="Fecha"
+              minWidth={160}
+              cellRender={({ value }) => (
+                <span style={{ whiteSpace: 'nowrap' }}>{formatDate(value)}</span>
+              )}
+            />
+            <Column
+              dataField="ip"
+              caption="IP"
+              width={130}
+              cellRender={({ value }) => (
+                <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{value || '—'}</span>
+              )}
+            />
+            <Column
+              caption="Ubicación"
+              width={160}
+              hidingPriority={3}
+              cellRender={({ data }) => (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {[data.city, data.country].filter(Boolean).join(', ') || '—'}
+                </span>
+              )}
+            />
+            <Column
+              caption="OS"
+              width={120}
+              hidingPriority={2}
+              cellRender={({ data }) => parseUA(data.userAgent)}
+            />
+            <Column
+              caption="Navegador"
+              width={100}
+              hidingPriority={1}
+              cellRender={({ data }) => parseBrowser(data.userAgent)}
+            />
+            <Column
+              dataField="referrer"
+              caption="Referrer"
+              hidingPriority={4}
+              cellRender={({ value }) => (
+                <span style={{ fontSize: 12, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                  {value || 'direct'}
+                </span>
+              )}
+            />
+            <Column
+              caption=""
+              width={50}
+              allowSorting={false}
+              allowResizing={false}
+              cellRender={({ data }) => (
+                <button
+                  onClick={(e) => handleDelete(data.id, e)}
+                  style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
+                  title="Eliminar"
+                >
+                  <CIcon icon={cilTrash} size="sm" />
+                </button>
+              )}
+            />
+            <MasterDetail
+              enabled={true}
+              render={({ data }) => <VisitDetail v={data} />}
+            />
+          </DataGrid>
         )}
       </CCardBody>
     </CCard>
