@@ -79,25 +79,25 @@ const getNav = (t) => [
   {
     component: CNavItem,
     name: t('nav.conductores'),
-    to: '/managment/taxis/conductores',
+    to: '/managment/taxis/drivers',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.vehiculos'),
-    to: '/managment/taxis/vehiculos',
+    to: '/managment/taxis/vehicles',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.taxiExpenses'),
-    to: '/managment/taxis/gastos',
+    to: '/managment/taxis/expenses',
     icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.taxiResumen'),
-    to: '/managment/taxis/resumen',
+    to: '/managment/taxis/summary',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
 ]

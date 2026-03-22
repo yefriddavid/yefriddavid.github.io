@@ -4,7 +4,7 @@ import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CFormSelect, CRow, CCol,
 } from '@coreui/react'
-import { getSettlements } from 'src/services/providers/firebase/taxis'
+import { getSettlements } from 'src/services/providers/firebase/taxiSettlements'
 import { fetchExpenses } from 'src/services/providers/firebase/taxiExpenses'
 import './masters.scss'
 

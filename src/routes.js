@@ -6,11 +6,11 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 
 // Managment
 const Accounts = React.lazy(() => import('./views/managment/accounts/Accounts'))
-const Taxis = React.lazy(() => import('./views/managment/taxis/Taxis'))
-const Conductores = React.lazy(() => import('./views/managment/taxis/Conductores'))
-const Vehiculos = React.lazy(() => import('./views/managment/taxis/Vehiculos'))
-const Gastos = React.lazy(() => import('./views/managment/taxis/Gastos'))
-const Resumen = React.lazy(() => import('./views/managment/taxis/Resumen'))
+const Settlements = React.lazy(() => import('./views/managment/taxis/Settlements'))
+const Drivers = React.lazy(() => import('./views/managment/taxis/Drivers'))
+const Vehicles = React.lazy(() => import('./views/managment/taxis/Vehicles'))
+const Expenses = React.lazy(() => import('./views/managment/taxis/Expenses'))
+const Summary = React.lazy(() => import('./views/managment/taxis/Summary'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
@@ -76,11 +76,11 @@ const routes = [
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/managment/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
-  { path: '/managment/taxis/settlements', name: 'Taxis', tKey: 'nav.taxis', element: Taxis },
-  { path: '/managment/taxis/conductores', name: 'Conductores', tKey: 'nav.conductores', element: Conductores },
-  { path: '/managment/taxis/vehiculos', name: 'Vehículos', tKey: 'nav.vehiculos', element: Vehiculos },
-  { path: '/managment/taxis/gastos', name: 'Gastos', tKey: 'nav.taxiExpenses', element: Gastos },
-  { path: '/managment/taxis/resumen', name: 'Resumen', tKey: 'nav.taxiResumen', element: Resumen },
+  { path: '/managment/taxis/settlements', name: 'Settlements', tKey: 'nav.liquidaciones', element: Settlements },
+  { path: '/managment/taxis/drivers', name: 'Drivers', tKey: 'nav.conductores', element: Drivers },
+  { path: '/managment/taxis/vehicles', name: 'Vehicles', tKey: 'nav.vehiculos', element: Vehicles },
+  { path: '/managment/taxis/expenses', name: 'Expenses', tKey: 'nav.taxiExpenses', element: Expenses },
+  { path: '/managment/taxis/summary', name: 'Summary', tKey: 'nav.taxiResumen', element: Summary },
   { path: '/managment/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
   { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 
