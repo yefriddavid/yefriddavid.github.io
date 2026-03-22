@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { DataGrid, Editing, Column, Lookup } from 'devextreme-react/data-grid'
 import {
-  CCard, CCardHeader, CSpinner, CBadge,
+  CCard, CCardHeader, CSpinner, CBadge, CAlert,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -24,6 +24,7 @@ const Conductores = () => {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState(null)
+  const [savedMsg, setSavedMsg] = useState(null)
 
   useEffect(() => {
     dispatch(taxiDriverActions.fetchRequest())
@@ -46,17 +47,13 @@ const Conductores = () => {
 
   const handleRowUpdating = (e) => {
     const merged = { ...e.oldData, ...e.newData }
-    e.cancel = new Promise((resolve) => {
-      dispatch(taxiDriverActions.updateRequest({ id: e.key, ...merged }))
-      resolve(false)
-    })
+    dispatch(taxiDriverActions.updateRequest({ id: e.key, ...merged }))
+    setSavedMsg(`Conductor "${merged.name}" actualizado`)
+    setTimeout(() => setSavedMsg(null), 3500)
   }
 
   const handleRowRemoving = (e) => {
-    e.cancel = new Promise((resolve) => {
-      dispatch(taxiDriverActions.deleteRequest({ id: e.key }))
-      resolve(false)
-    })
+    dispatch(taxiDriverActions.deleteRequest({ id: e.key }))
   }
 
   const vehicleOptions = [
@@ -128,6 +125,11 @@ const Conductores = () => {
         </div>
       </CCollapse>
 
+      {savedMsg && (
+        <CAlert color="success" style={{ margin: '12px 16px 0', fontSize: 13 }}>
+          ✓ {savedMsg}
+        </CAlert>
+      )}
       {fetching && !records ? (
         <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
       ) : (
