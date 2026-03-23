@@ -358,7 +358,8 @@ const Taxis = () => {
 
   // ── Audit data ──────────────────────────────────────────────────────────────
   // All taxis have a single shift, so coverage is per vehicle (not per driver).
-  // A day is "full" when every active vehicle has at least one settlement that day.
+  // A day is "full" when every active vehicle settled its full expected amount.
+  // A day is "partial" when some vehicles are missing OR settled less than expected.
   const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
   const auditMonthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
   const auditPeriodRecords = records.filter((r) => r.date?.startsWith(auditMonthStr))
@@ -372,20 +373,33 @@ const Taxis = () => {
     const dayRecords = auditPeriodRecords.filter((r) => r.date === dateStr)
     const settled = new Set(dayRecords.map((r) => r.driver).filter(Boolean))
     const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
+    const dow = new Date(period.year, period.month - 1, d).getDay()
+    const isSunday = dow === 0
     const missingVehicles = auditVehicles.filter((pl) => !settledVehicles.has(pl))
+    // Vehicles that settled but paid less than the driver's expected amount
+    const underpaidVehicles = auditVehicles.filter((pl) => {
+      if (!settledVehicles.has(pl)) return false
+      const driver = drivers.find((dr) => dr.defaultVehicle === pl && activeDriverNames.has(dr.name))
+      if (!driver) return false
+      const expected = isSunday
+        ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
+        : (driver.defaultAmount || 0)
+      if (!expected) return false
+      const paidTotal = dayRecords.filter((r) => r.plate === pl).reduce((s, r) => s + (r.amount || 0), 0)
+      return paidTotal < expected
+    })
     const missing = auditDrivers.filter((dr) => {
       const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
       return plate ? missingVehicles.includes(plate) : !settled.has(dr)
     })
     const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
-    const dow = new Date(period.year, period.month - 1, d).getDay()
     const isFuture = auditToday !== null
       ? d > auditToday
       : period.year > now.getFullYear() || (period.year === now.getFullYear() && period.month > now.getMonth() + 1)
     const isToday = d === auditToday
-    const isSunday = dow === 0
-    const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : missingVehicles.length === 0 ? 'full' : 'partial'
-    return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, total, dow, isFuture, isToday, isSunday, status }
+    const hasIssue = missingVehicles.length > 0 || underpaidVehicles.length > 0
+    const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : hasIssue ? 'partial' : 'full'
+    return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, underpaidVehicles, total, dow, isFuture, isToday, isSunday, status }
   })
   const auditFilteredDays = auditDays.filter((day) => {
     if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
@@ -983,13 +997,34 @@ const Taxis = () => {
                         </td>
                         <td style={{ padding: '8px 6px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {day.settled.map((dr) => (
-                              <span key={dr} style={{ fontSize: 11, background: '#dbeafe', color: '#1e40af', borderRadius: 4, padding: '2px 7px', fontWeight: 500 }}>{dr.split(' ')[0]}</span>
-                            ))}
+                            {day.settled.map((dr) => {
+                              const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
+                              const underpaid = plate ? day.underpaidVehicles.includes(plate) : false
+                              return (
+                                <span key={dr} style={{ fontSize: 11, background: underpaid ? '#fff3cd' : '#dbeafe', color: underpaid ? '#7c5e00' : '#1e40af', borderRadius: 4, padding: '2px 7px', fontWeight: 500 }}>
+                                  {underpaid ? '◐ ' : ''}{dr.split(' ')[0]}
+                                </span>
+                              )
+                            })}
                           </div>
                         </td>
                         <td style={{ padding: '8px 6px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {!day.isFuture && day.underpaidVehicles.map((pl) => {
+                              const driver = drivers.find((d) => d.defaultVehicle === pl && activeDriverNames.has(d.name))
+                              if (!driver) return null
+                              const expected = day.isSunday
+                                ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
+                                : (driver.defaultAmount || 0)
+                              const paid = day.dayRecords.filter((r) => r.plate === pl).reduce((s, r) => s + (r.amount || 0), 0)
+                              return (
+                                <div key={pl} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  <span style={{ fontSize: 11, background: '#fff3cd', color: '#7c5e00', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
+                                    ◐ {driver.name.split(' ')[0]} · {fmt(paid)}/{fmt(expected)}
+                                  </span>
+                                </div>
+                              )
+                            })}
                             {!day.isFuture && day.missing.map((dr) => {
                               const note = getNote(day.dateStr, dr)
                               const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === dr
