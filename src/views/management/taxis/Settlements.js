@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
@@ -130,6 +130,46 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
       </DetailPanel>
     </div>
   )
+}
+
+// ── Colombian public holidays ────────────────────────────────────────────────
+const getEaster = (year) => {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(year, month - 1, day)
+}
+const toYMD = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+const nextMonday = (date) => {
+  const d = new Date(date)
+  const dow = d.getDay()
+  if (dow === 1) return d
+  d.setDate(d.getDate() + (dow === 0 ? 1 : 8 - dow))
+  return d
+}
+const getColombianHolidays = (year) => {
+  const h = new Set()
+  const add = (date) => h.add(toYMD(date))
+  const fixed = (m, d) => add(new Date(year, m - 1, d))
+  const emiliani = (m, d) => add(nextMonday(new Date(year, m - 1, d)))
+  // Fixed
+  fixed(1, 1); fixed(5, 1); fixed(7, 20); fixed(8, 7); fixed(12, 8); fixed(12, 25)
+  // Ley Emiliani
+  emiliani(1, 6); emiliani(3, 19); emiliani(6, 29)
+  emiliani(8, 15); emiliani(10, 12); emiliani(11, 1); emiliani(11, 11)
+  // Easter-based
+  const easter = getEaster(year)
+  const easterOffset = (n) => { const d = new Date(easter); d.setDate(d.getDate() + n); return d }
+  add(easterOffset(-3)); add(easterOffset(-2))           // Jueves y Viernes Santo
+  add(nextMonday(easterOffset(39)))                       // Ascensión
+  add(nextMonday(easterOffset(60)))                       // Corpus Christi
+  add(nextMonday(easterOffset(68)))                       // Sagrado Corazón
+  return h
 }
 
 const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) => {
@@ -451,6 +491,7 @@ const Taxis = () => {
   const auditDrivers = periodDrivers.map((d) => d.name).sort()
   const auditVehicles = [...new Set(periodDrivers.map((d) => d.defaultVehicle).filter(Boolean))].sort()
   const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
+  const colombianHolidays = useMemo(() => getColombianHolidays(period.year), [period.year])
   const auditDays = Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
     const dateStr = `${auditMonthStr}-${String(d).padStart(2, '0')}`
@@ -459,6 +500,7 @@ const Taxis = () => {
     const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
     const dow = new Date(period.year, period.month - 1, d).getDay()
     const isSunday = dow === 0
+    const isHoliday = colombianHolidays.has(dateStr)
     // Find the driver responsible for a vehicle on a specific day (respects startDate/endDate)
     const driverOnDay = (pl) => periodDrivers.find((dr) => {
       if (dr.defaultVehicle !== pl) return false
@@ -474,7 +516,7 @@ const Taxis = () => {
       if (!settledVehicles.has(pl)) return false
       const driver = driverOnDay(pl)
       if (!driver) return false
-      const expected = isSunday
+      const expected = (isSunday || isHoliday)
         ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
         : (driver.defaultAmount || 0)
       if (!expected) return false
@@ -496,7 +538,7 @@ const Taxis = () => {
     const isToday = d === auditToday
     const hasIssue = missingVehicles.length > 0 || underpaidVehicles.length > 0
     const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : hasIssue ? 'partial' : 'full'
-    return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, underpaidVehicles, total, dow, isFuture, isToday, isSunday, status }
+    return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, underpaidVehicles, total, dow, isFuture, isToday, isSunday, isHoliday, status }
   })
   const auditFilteredDays = auditDays.filter((day) => {
     if (dayFilter && day.d !== Number(dayFilter)) return false
@@ -1100,8 +1142,9 @@ const Taxis = () => {
                           {String(day.d).padStart(2, '0')}
                           {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>{t('taxis.settlements.audit.today')}</span>}
                         </td>
-                        <td style={{ padding: '8px 12px', color: day.isSunday ? '#7c5e00' : day.isFuture ? '#adb5bd' : '#64748b', fontWeight: day.isSunday ? 700 : 400 }}>
+                        <td style={{ padding: '8px 12px', color: (day.isSunday || day.isHoliday) ? '#7c5e00' : day.isFuture ? '#adb5bd' : '#64748b', fontWeight: (day.isSunday || day.isHoliday) ? 700 : 400 }}>
                           {DAY_NAMES[day.dow]}
+                          {day.isHoliday && <span style={{ fontSize: 10, background: '#fff3cd', color: '#7c5e00', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 5px', marginLeft: 5 }}>Festivo</span>}
                         </td>
                         <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
                           {day.status === 'none' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ {t('taxis.settlements.audit.statusNone')}</span>}
