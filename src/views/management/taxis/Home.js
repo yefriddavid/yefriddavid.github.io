@@ -91,7 +91,8 @@ const TaxisHome = () => {
   const totalSettled = monthSettlements.reduce((s, r) => s + (r.amount || 0), 0)
   const totalExp = monthExpenses.reduce((s, r) => s + (r.amount || 0), 0)
   const netBalance = totalSettled - totalExp
-  const activeDrivers = new Set(monthSettlements.map((r) => r.driver).filter(Boolean)).size
+  const activeDriverNames = new Set(drivers.filter((d) => d.active !== false).map((d) => d.name))
+  const activeDrivers = new Set(monthSettlements.map((r) => r.driver).filter((dr) => dr && activeDriverNames.has(dr))).size
   const activeVehicles = new Set(monthSettlements.map((r) => r.plate).filter(Boolean)).size
   const activeDays = new Set(monthSettlements.map((r) => r.date)).size
   const avgPerDay = activeDays > 0 ? totalSettled / activeDays : 0
