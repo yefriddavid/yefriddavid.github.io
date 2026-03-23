@@ -18,7 +18,7 @@ import './masters.scss'
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
-const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '' }
+const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '', active: true }
 
 const DriverDetail = ({ data, vehicles }) => {
   const vehicle = (vehicles ?? []).find((v) => v.plate === data.defaultVehicle)
@@ -32,6 +32,7 @@ const DriverDetail = ({ data, vehicles }) => {
         <DetailRow label="Nombre" value={data.name} />
         <DetailRow label="Cédula" value={data.idNumber} mono />
         <DetailRow label="Teléfono" value={data.phone} />
+        <DetailRow label="Estado" value={data.active !== false ? 'Activo' : 'Inactivo'} />
       </DetailSection>
       <DetailSection title="Liquidación por defecto">
         <DetailRow label="Liq. normal" value={data.defaultAmount ? fmt(data.defaultAmount) : null} />
@@ -45,6 +46,7 @@ const DriverDetail = ({ data, vehicles }) => {
 const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
   const [form, setForm] = useState(initial)
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+  const toggle = (field) => () => setForm((p) => ({ ...p, [field]: !p[field] }))
 
   return (
     <StandardForm
@@ -76,6 +78,19 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
             <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>
           ))}
         </select>
+      </StandardField>
+      <StandardField label="Estado">
+        <button
+          type="button"
+          onClick={toggle('active')}
+          style={{
+            padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none',
+            background: form.active !== false ? '#d1fae5' : '#fee2e2',
+            color: form.active !== false ? '#065f46' : '#991b1b',
+          }}
+        >
+          {form.active !== false ? '✓ Activo' : '✗ Inactivo'}
+        </button>
       </StandardField>
     </StandardForm>
   )
@@ -212,6 +227,21 @@ const Conductores = () => {
             >
               <Lookup dataSource={vehicleOptions} valueExpr="plate" displayExpr="label" />
             </Column>
+            <Column
+              dataField="active"
+              caption="Estado"
+              width={100}
+              allowSorting={true}
+              cellRender={({ data }) => (
+                <span style={{
+                  fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  background: data.active !== false ? '#d1fae5' : '#fee2e2',
+                  color: data.active !== false ? '#065f46' : '#991b1b',
+                }}>
+                  {data.active !== false ? '✓ Activo' : '✗ Inactivo'}
+                </span>
+              )}
+            />
             <Column
               caption=""
               width={70}

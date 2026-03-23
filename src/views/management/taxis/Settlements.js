@@ -349,8 +349,9 @@ const Taxis = () => {
   const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
   const auditMonthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
   const auditPeriodRecords = records.filter((r) => r.date?.startsWith(auditMonthStr))
-  const auditDrivers = [...new Set(auditPeriodRecords.map((r) => r.driver).filter(Boolean))].sort()
-  const auditVehicles = [...new Set(auditPeriodRecords.map((r) => r.plate).filter(Boolean))].sort()
+  const activeDriverNames = new Set(drivers.filter((d) => d.active !== false).map((d) => d.name))
+  const auditDrivers = [...new Set(auditPeriodRecords.map((r) => r.driver).filter((dr) => dr && activeDriverNames.has(dr)))].sort()
+  const auditVehicles = [...new Set(auditPeriodRecords.filter((r) => r.driver && activeDriverNames.has(r.driver)).map((r) => r.plate).filter(Boolean))].sort()
   const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
   const auditDays = Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
