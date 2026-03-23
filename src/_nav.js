@@ -72,6 +72,12 @@ const getNav = (t) => [
   },
   {
     component: CNavItem,
+    name: t('nav.taxiHome'),
+    to: '/management/taxis/home',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: t('nav.liquidaciones'),
     to: '/management/taxis/settlements',
     icon: <CIcon icon={cilTask} customClassName="nav-icon" />,

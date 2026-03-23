@@ -90,7 +90,8 @@
     "vehiculos": "Vehicles",
     "taxiExpenses": "Taxi Expenses",
     "taxiResumen": "Taxi Summary",
-    "taxiManagement": "Taxi Management"
+    "taxiManagement": "Taxi Management",
+    "taxiHome": "Taxis Home"
   },
   "auth": {
     "login": "Login",
@@ -149,6 +150,7 @@
       }
     },
     "settlements": {
+      "accept": "Accept",
       "title": "Taxi settlements",
       "newSettlement": "New settlement",
       "editSettlement": "Edit settlement",

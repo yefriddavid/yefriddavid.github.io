@@ -90,7 +90,8 @@
     "vehiculos": "Vehículos",
     "taxiExpenses": "Gastos Taxis",
     "taxiResumen": "Resumen Taxis",
-    "taxiManagement": "Gestión de Taxis"
+    "taxiManagement": "Gestión de Taxis",
+    "taxiHome": "Inicio Taxis"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -149,6 +150,7 @@
       }
     },
     "settlements": {
+      "accept": "Aceptar",
       "title": "Liquidaciones de taxis",
       "newSettlement": "Nueva liquidación",
       "editSettlement": "Editar liquidación",

@@ -11,6 +11,7 @@ const Drivers = React.lazy(() => import('./views/management/taxis/Drivers'))
 const Vehicles = React.lazy(() => import('./views/management/taxis/Vehicles'))
 const Expenses = React.lazy(() => import('./views/management/taxis/Expenses'))
 const Summary = React.lazy(() => import('./views/management/taxis/Summary'))
+const TaxisHome = React.lazy(() => import('./views/management/taxis/Home'))
 const Partners = React.lazy(() => import('./views/management/taxis/Partners'))
 const Distributions = React.lazy(() => import('./views/management/taxis/Distributions'))
 
@@ -78,6 +79,8 @@ const routes = [
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/management/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
+  { path: '/management/taxis', name: 'Taxis', tKey: 'nav.taxiManagement', element: TaxisHome },
+  { path: '/management/taxis/home', name: 'Home', tKey: 'nav.taxiHome', element: TaxisHome },
   { path: '/management/taxis/settlements', name: 'Settlements', tKey: 'nav.liquidaciones', element: Settlements },
   { path: '/management/taxis/drivers', name: 'Drivers', tKey: 'nav.conductores', element: Drivers },
   { path: '/management/taxis/vehicles', name: 'Vehicles', tKey: 'nav.vehiculos', element: Vehicles },

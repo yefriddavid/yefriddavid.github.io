@@ -6,7 +6,6 @@ import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
-  CDropdown, CDropdownToggle, CDropdownMenu,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilReload, cilPencil } from '@coreui/icons'
@@ -35,15 +34,10 @@ const fmtDate = (dateStr) => {
 
 const today = () => new Date().toISOString().split('T')[0]
 
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
-
 const EMPTY = { driver: '', plate: '', amount: '', date: today(), comment: '' }
 
-// Self-contained master detail: handles view ↔ edit toggle internally
 const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editingRowIdRef }) => {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(() => editingRowIdRef?.current === data.id)
   const [form, setForm] = useState({
     date: data.date || '',
@@ -61,31 +55,31 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
     return (
       <div style={{ width: '50%', padding: 16 }}>
         <StandardForm
-          title="Editar liquidación"
+          title={t('taxis.settlements.editSettlement')}
           subtitle={data.date}
           onCancel={() => setEditing(false)}
           onSave={() => { onSave({ ...data, ...form, amount: Number(form.amount) }); setEditing(false) }}
           saving={saving}
         >
-          <StandardField label="Fecha">
+          <StandardField label={t('taxis.settlements.fields.date')}>
             <input className={SF.input} type="date" value={form.date} onChange={set('date')} />
           </StandardField>
-          <StandardField label="Conductor">
+          <StandardField label={t('taxis.settlements.fields.driver')}>
             <select className={SF.select} value={form.driver} onChange={set('driver')}>
-              <option value="">— Seleccionar —</option>
+              <option value="">{t('taxis.settlements.selectOption')}</option>
               {drivers.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
             </select>
           </StandardField>
-          <StandardField label="Placa">
+          <StandardField label={t('taxis.settlements.fields.plate')}>
             <select className={SF.select} value={form.plate} onChange={set('plate')}>
-              <option value="">— Seleccionar —</option>
+              <option value="">{t('taxis.settlements.selectOption')}</option>
               {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>)}
             </select>
           </StandardField>
-          <StandardField label="Valor">
+          <StandardField label={t('taxis.settlements.fields.value')}>
             <input className={SF.input} type="number" value={form.amount} onChange={set('amount')} placeholder="0" />
           </StandardField>
-          <StandardField label="Comentario">
+          <StandardField label={t('taxis.settlements.fields.comment')}>
             <textarea className={SF.textarea} value={form.comment || ''} onChange={set('comment')} rows={3} />
           </StandardField>
         </StandardForm>
@@ -97,39 +91,39 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px 0' }}>
         <CButton size="sm" color="primary" variant="outline" onClick={() => setEditing(true)}>
-          <CIcon icon={cilPencil} size="sm" /> Editar
+          <CIcon icon={cilPencil} size="sm" /> {t('common.edit')}
         </CButton>
       </div>
       <DetailPanel columns={3}>
-        <DetailSection title="Liquidación">
-          <DetailRow label="Fecha" value={data.date} />
-          <DetailRow label="Valor" value={fmt(data.amount)} />
-          <DetailRow label="Conductor" value={data.driver} />
-          <DetailRow label="Placa" value={data.plate} mono />
-          <DetailRow label="Comentario" value={data.comment} />
+        <DetailSection title={t('taxis.settlements.fields.settlement')}>
+          <DetailRow label={t('taxis.settlements.fields.date')} value={data.date} />
+          <DetailRow label={t('taxis.settlements.fields.value')} value={fmt(data.amount)} />
+          <DetailRow label={t('taxis.settlements.fields.driver')} value={data.driver} />
+          <DetailRow label={t('taxis.settlements.fields.plate')} value={data.plate} mono />
+          <DetailRow label={t('taxis.settlements.fields.comment')} value={data.comment} />
         </DetailSection>
-        <DetailSection title="Conductor">
+        <DetailSection title={t('taxis.settlements.fields.driver')}>
           {driver ? (
             <>
-              <DetailRow label="Cédula" value={driver.idNumber} mono />
-              <DetailRow label="Teléfono" value={driver.phone} />
-              <DetailRow label="Liq. normal" value={driver.defaultAmount ? fmt(driver.defaultAmount) : null} />
-              <DetailRow label="Liq. domingo" value={driver.defaultAmountSunday ? fmt(driver.defaultAmountSunday) : null} />
+              <DetailRow label={t('taxis.settlements.fields.idNumber')} value={driver.idNumber} mono />
+              <DetailRow label={t('taxis.settlements.fields.phone')} value={driver.phone} />
+              <DetailRow label={t('taxis.settlements.fields.defaultAmount')} value={driver.defaultAmount ? fmt(driver.defaultAmount) : null} />
+              <DetailRow label={t('taxis.settlements.fields.defaultAmountSunday')} value={driver.defaultAmountSunday ? fmt(driver.defaultAmountSunday) : null} />
             </>
           ) : (
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Sin datos</span>
+            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>{t('taxis.settlements.noDataInfo')}</span>
           )}
         </DetailSection>
-        <DetailSection title="Vehículo">
+        <DetailSection title={t('taxis.settlements.fields.vehicle')}>
           {vehicle ? (
             <>
-              <DetailRow label="Placa" value={vehicle.plate} mono />
-              <DetailRow label="Marca" value={vehicle.brand} />
-              <DetailRow label="Modelo" value={vehicle.model} />
-              <DetailRow label="Año" value={vehicle.year} />
+              <DetailRow label={t('taxis.settlements.fields.plate')} value={vehicle.plate} mono />
+              <DetailRow label={t('taxis.settlements.fields.brand')} value={vehicle.brand} />
+              <DetailRow label={t('taxis.settlements.fields.model')} value={vehicle.model} />
+              <DetailRow label={t('taxis.settlements.fields.year')} value={vehicle.year} />
             </>
           ) : (
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Sin datos</span>
+            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>{t('taxis.settlements.noDataInfo')}</span>
           )}
         </DetailSection>
       </DetailPanel>
@@ -145,6 +139,8 @@ const Taxis = () => {
   const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
   const { data: expensesData } = useSelector((s) => s.taxiExpense)
 
+  const months = t('taxis.months', { returnObjects: true })
+
   const now = new Date()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
@@ -152,10 +148,12 @@ const Taxis = () => {
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [driverFilter, setDriverFilter] = useState(new Set())
   const [plateFilter, setPlateFilter] = useState('')
+  const [dayFilter, setDayFilter] = useState('')
   const [driverDropOpen, setDriverDropOpen] = useState(false)
+  const driverDropRef = useRef(null)
   const [viewMode, setViewMode] = useState('detail')
   const [editingRow, setEditingRow] = useState(null)
-  const [toast, setToast] = useState(null) // { type: 'success'|'error', msg: string }
+  const [toast, setToast] = useState(null)
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
@@ -180,12 +178,21 @@ const Taxis = () => {
   }, [dispatch])
 
   useEffect(() => {
+    if (!driverDropOpen) return
+    const handler = (e) => {
+      if (!driverDropRef.current?.contains(e.target)) setDriverDropOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [driverDropOpen])
+
+  useEffect(() => {
     if (!savingRef.current) return
     if (loadingSettlements) return
     const wasCreate = savingRef.current === 'create'
     savingRef.current = false
     if (settlementError) {
-      setToast({ type: 'error', msg: 'Error al guardar los cambios' })
+      setToast({ type: 'error', msg: t('taxis.settlements.errors.saveError') })
     } else {
       if (wasCreate) {
         setForm(EMPTY)
@@ -196,10 +203,10 @@ const Taxis = () => {
         setEditingRow(null)
       }
       dispatch(taxiSettlementActions.fetchRequest())
-      setToast({ type: 'success', msg: 'Cambios guardados correctamente' })
+      setToast({ type: 'success', msg: t('taxis.settlements.errors.saveSuccess') })
     }
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(timer)
   }, [loadingSettlements, settlementError])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
@@ -223,7 +230,7 @@ const Taxis = () => {
     const vehicle = vehicles.find((v) => v.plate === form.plate)
     const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
     if (restr && [restr.d1, restr.d2].filter(Boolean).map(Number).includes(day)) {
-      return `${form.plate} tiene pico y placa el día ${day}`
+      return t('taxis.settlements.errors.picoPlaca', { plate: form.plate, day })
     }
     return null
   })()
@@ -231,7 +238,7 @@ const Taxis = () => {
   const handleAdd = (e) => {
     e.preventDefault()
     if (!form.driver || !form.plate || !form.amount || !form.date) {
-      setError('Todos los campos son requeridos')
+      setError(t('taxis.settlements.errors.allRequired'))
       return
     }
     if (picoPlacaWarning) return
@@ -253,7 +260,7 @@ const Taxis = () => {
   }
 
   const handleDelete = (id) => {
-    if (!window.confirm('¿Eliminar esta liquidación?')) return
+    if (!window.confirm(t('taxis.settlements.confirmDelete'))) return
     dispatch(taxiSettlementActions.deleteRequest({ id }))
   }
 
@@ -267,6 +274,7 @@ const Taxis = () => {
     if (y !== period.year || m !== period.month) return false
     if (driverFilter.size > 0 && !driverFilter.has(r.driver)) return false
     if (plateFilter && r.plate !== plateFilter) return false
+    if (dayFilter && r.date?.split('-')[2] !== String(dayFilter).padStart(2, '0')) return false
     return true
   })
 
@@ -301,6 +309,8 @@ const Taxis = () => {
     return remaining
   }
 
+  const settlementAbbr = t('taxis.settlements.settlementAbbr')
+
   const byDriver = Object.values(
     filtered.reduce((acc, r) => {
       const k = r.driver
@@ -331,7 +341,6 @@ const Taxis = () => {
 
   return (
     <>
-      {/* Full-screen saving overlay */}
       {loadingSettlements && savingRef.current && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -342,7 +351,6 @@ const Taxis = () => {
         </div>
       )}
 
-      {/* Toast notification */}
       {toast && (
         <div style={{
           position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
@@ -355,12 +363,11 @@ const Taxis = () => {
         </div>
       )}
 
-      {/* Summary */}
       <CRow className="mb-3 d-none d-sm-flex">
         <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total liquidado</div>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.totalSettled')}</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
             </CCardBody>
           </CCard>
@@ -369,10 +376,10 @@ const Taxis = () => {
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                Proyección del mes
+                {t('taxis.settlements.summary.monthProjection')}
                 {isCurrentPeriod && daysElapsed && (
                   <span style={{ marginLeft: 6, fontStyle: 'italic' }}>
-                    (día {daysElapsed}/{daysInMonth})
+                    {t('taxis.settlements.summary.dayProgress', { daysElapsed, daysInMonth })}
                   </span>
                 )}
               </div>
@@ -385,7 +392,7 @@ const Taxis = () => {
         <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Falta / Sobra</div>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.deficit')}</div>
               {projection !== null ? (() => {
                 const diff = projection - total
                 return (
@@ -402,7 +409,7 @@ const Taxis = () => {
         <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total gastos</div>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.totalExpenses')}</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: '#e67700' }}>{fmt(totalExpenses)}</div>
             </CCardBody>
           </CCard>
@@ -410,18 +417,18 @@ const Taxis = () => {
         <CCol sm={4}>
           <CCard>
             <CCardBody style={{ padding: '12px 16px' }}>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>Por conductor</div>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>{t('taxis.settlements.summary.byDriver')}</div>
               {loading ? (
                 <CSpinner size="sm" />
               ) : byDriver.length === 0 ? (
-                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>Sin registros</span>
+                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>{t('taxis.settlements.summary.noRecords')}</span>
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {byDriver.map((d) => (
                     <div key={d.driver} style={{ background: 'var(--cui-primary-bg-subtle, #e7f1ff)', borderRadius: 8, padding: '4px 12px', fontSize: 13 }}>
                       <strong>{d.driver}</strong>
                       <span style={{ color: 'var(--cui-secondary-color)', marginLeft: 8 }}>
-                        {d.count} liq · {fmt(d.total)}
+                        {d.count} {settlementAbbr} · {fmt(d.total)}
                       </span>
                     </div>
                   ))}
@@ -432,22 +439,21 @@ const Taxis = () => {
         </CCol>
       </CRow>
 
-      {/* Table */}
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div className="d-flex align-items-center gap-2">
-            <strong>Liquidaciones de taxis</strong>
+            <strong>{t('taxis.settlements.title')}</strong>
             <CBadge color="secondary">{filtered.length}</CBadge>
           </div>
           <div className="d-flex align-items-center gap-2">
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Periodo</span>
+            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.period')}</span>
             <CFormSelect
               size="sm"
               style={{ width: 120 }}
               value={period.month}
-              onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
+              onChange={(e) => { setPeriod((p) => ({ ...p, month: Number(e.target.value) })); setDayFilter('') }}
             >
-              {MONTHS.map((name, i) => (
+              {months.map((name, i) => (
                 <option key={i + 1} value={i + 1}>{name}</option>
               ))}
             </CFormSelect>
@@ -455,35 +461,40 @@ const Taxis = () => {
               size="sm"
               style={{ width: 90 }}
               value={period.year}
-              onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
+              onChange={(e) => { setPeriod((p) => ({ ...p, year: Number(e.target.value) })); setDayFilter('') }}
             >
               {availableYears.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </CFormSelect>
             {(viewMode === 'detail' || viewMode === 'byDriver') && (
-              <>
-                <CDropdown
-                  visible={driverDropOpen}
-                  onHide={() => setDriverDropOpen(false)}
+              <div ref={driverDropRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setDriverDropOpen((v) => !v)}
+                  style={{
+                    fontSize: 12, minWidth: 130, padding: '4px 10px',
+                    borderRadius: 6, border: '1px solid var(--cui-secondary)',
+                    background: driverFilter.size > 0 ? '#e8f0fb' : '#fff',
+                    color: driverFilter.size > 0 ? '#1e3a5f' : 'var(--cui-secondary)',
+                    cursor: 'pointer', fontWeight: driverFilter.size > 0 ? 600 : 400,
+                  }}
                 >
-                  <CDropdownToggle
-                    size="sm"
-                    color="secondary"
-                    variant="outline"
-                    style={{ fontSize: 12, minWidth: 130 }}
-                    onClick={() => setDriverDropOpen((v) => !v)}
-                  >
-                    Conductor{driverFilter.size > 0 ? ` (${driverFilter.size})` : ''}
-                  </CDropdownToggle>
-                  <CDropdownMenu style={{ padding: '8px 12px', minWidth: 180 }}>
+                  {t('taxis.settlements.fields.driver')}{driverFilter.size > 0 ? ` (${driverFilter.size})` : ''} ▾
+                </button>
+                {driverDropOpen && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 1050,
+                    background: '#fff', border: '1px solid var(--cui-border-color)',
+                    borderRadius: 8, padding: '8px 12px', minWidth: 180,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                  }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', paddingBottom: 6, borderBottom: '1px solid var(--cui-border-color)', marginBottom: 6 }}>
                       <input
                         type="checkbox"
                         checked={driverFilter.size === 0}
                         onChange={() => setDriverFilter(new Set())}
                       />
-                      Todos
+                      {t('taxis.settlements.all')}
                     </label>
                     {drivers.map((d) => (
                       <label key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '3px 0' }}>
@@ -500,19 +511,45 @@ const Taxis = () => {
                         onClick={() => setDriverDropOpen(false)}
                         style={{ fontSize: 11, fontWeight: 600, padding: '3px 12px', borderRadius: 4, border: '1px solid #1e3a5f', background: '#1e3a5f', color: '#fff', cursor: 'pointer' }}
                       >
-                        Aceptar
+                        {t('taxis.settlements.accept')}
                       </button>
                     </div>
-                  </CDropdownMenu>
-                </CDropdown>
-                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {viewMode === 'detail' && (
+              <>
+                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Día</span>
+                <CFormSelect
+                  size="sm"
+                  style={{ width: 75 }}
+                  value={dayFilter}
+                  onChange={(e) => setDayFilter(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {Array.from(
+                    new Set(
+                      records
+                        .filter((r) => {
+                          const [y, m] = (r.date || '').split('-').map(Number)
+                          return y === period.year && m === period.month
+                        })
+                        .map((r) => Number(r.date?.split('-')[2]))
+                        .filter(Boolean),
+                    ),
+                  ).sort((a, b) => a - b).map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </CFormSelect>
+                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.fields.vehicle')}</span>
                 <CFormSelect
                   size="sm"
                   style={{ width: 110 }}
                   value={plateFilter}
                   onChange={(e) => setPlateFilter(e.target.value)}
                 >
-                  <option value="">Todos</option>
+                  <option value="">{t('taxis.settlements.all')}</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.plate}>{v.plate}</option>
                   ))}
@@ -521,51 +558,22 @@ const Taxis = () => {
             )}
           </div>
           <div className="d-flex align-items-center gap-1">
-            <CButton
-              size="sm"
-              color="secondary"
-              variant={viewMode === 'detail' ? undefined : 'outline'}
-              onClick={() => setViewMode('detail')}
-              style={{ fontSize: 12 }}
-            >
-              Detallado
+            <CButton size="sm" color="secondary" variant={viewMode === 'detail' ? undefined : 'outline'} onClick={() => setViewMode('detail')} style={{ fontSize: 12 }}>
+              {t('taxis.settlements.viewDetail')}
             </CButton>
-            <CButton
-              size="sm"
-              color="secondary"
-              variant={viewMode === 'byDriver' ? undefined : 'outline'}
-              onClick={() => setViewMode('byDriver')}
-              style={{ fontSize: 12 }}
-            >
-              Por conductor
+            <CButton size="sm" color="secondary" variant={viewMode === 'byDriver' ? undefined : 'outline'} onClick={() => setViewMode('byDriver')} style={{ fontSize: 12 }}>
+              {t('taxis.settlements.viewByDriver')}
             </CButton>
-            <CButton
-              size="sm"
-              color="secondary"
-              variant={viewMode === 'byVehicle' ? undefined : 'outline'}
-              onClick={() => setViewMode('byVehicle')}
-              style={{ fontSize: 12 }}
-            >
-              Por vehículo
+            <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => setViewMode('byVehicle')} style={{ fontSize: 12 }}>
+              {t('taxis.settlements.viewByVehicle')}
             </CButton>
           </div>
-          <CButton
-            size="sm"
-            color="secondary"
-            variant="outline"
-            onClick={() => dispatch(taxiSettlementActions.fetchRequest())}
-            title="Refrescar"
-          >
+          <CButton size="sm" color="secondary" variant="outline" onClick={() => dispatch(taxiSettlementActions.fetchRequest())} title={t('common.refresh')}>
             <CIcon icon={cilReload} size="sm" />
           </CButton>
-          <CButton
-            size="sm"
-            color={showForm ? 'danger' : 'primary'}
-            variant="outline"
-            onClick={() => { setShowForm((p) => !p); setError(null) }}
-          >
+          <CButton size="sm" color={showForm ? 'danger' : 'primary'} variant="outline" onClick={() => { setShowForm((p) => !p); setError(null) }}>
             <CIcon icon={showForm ? cilX : cilPlus} size="sm" />
-            {' '}{showForm ? 'Cancelar' : 'Nueva liquidación'}
+            {' '}{showForm ? t('common.cancel') : t('taxis.settlements.newSettlement')}
           </CButton>
         </CCardHeader>
 
@@ -574,49 +582,37 @@ const Taxis = () => {
             <CForm onSubmit={handleAdd}>
               <CRow className="g-2 align-items-end">
                 <CCol sm={3}>
-                  <CFormLabel style={{ fontSize: 12 }}>Conductor</CFormLabel>
+                  <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.driver')}</CFormLabel>
                   <CFormSelect size="sm" value={form.driver} onChange={handleDriverChange}>
-                    <option value="">— Seleccionar —</option>
-                    {drivers.map((d) => (
-                      <option key={d.id} value={d.name}>{d.name}</option>
-                    ))}
+                    <option value="">{t('taxis.settlements.selectOption')}</option>
+                    {drivers.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
                   </CFormSelect>
                 </CCol>
                 <CCol sm={2}>
-                  <CFormLabel style={{ fontSize: 12 }}>Placa</CFormLabel>
+                  <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.plate')}</CFormLabel>
                   <CFormSelect size="sm" value={form.plate} onChange={set('plate')}>
-                    <option value="">— Seleccionar —</option>
-                    {vehicles.map((v) => (
-                      <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>
-                    ))}
+                    <option value="">{t('taxis.settlements.selectOption')}</option>
+                    {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>)}
                   </CFormSelect>
                 </CCol>
                 <CCol sm={2}>
-                  <CFormLabel style={{ fontSize: 12 }}>Valor</CFormLabel>
+                  <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.value')}</CFormLabel>
                   <CFormInput size="sm" type="number" placeholder="0" value={form.amount} onChange={set('amount')} />
                 </CCol>
                 <CCol sm={2}>
-                  <CFormLabel style={{ fontSize: 12 }}>Fecha</CFormLabel>
-                  <CFormInput
-                    size="sm"
-                    type="date"
-                    value={form.date}
-                    onChange={set('date')}
-                    invalid={!!picoPlacaWarning}
-                  />
+                  <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.date')}</CFormLabel>
+                  <CFormInput size="sm" type="date" value={form.date} onChange={set('date')} invalid={!!picoPlacaWarning} />
                   {picoPlacaWarning && (
-                    <div style={{ fontSize: 11, color: '#e03131', marginTop: 3 }}>
-                      ⚠ {picoPlacaWarning}
-                    </div>
+                    <div style={{ fontSize: 11, color: '#e03131', marginTop: 3 }}>⚠ {picoPlacaWarning}</div>
                   )}
                 </CCol>
                 <CCol sm={2}>
-                  <CFormLabel style={{ fontSize: 12 }}>Comentario</CFormLabel>
-                  <CFormInput size="sm" placeholder="Observaciones..." value={form.comment} onChange={set('comment')} />
+                  <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.comment')}</CFormLabel>
+                  <CFormInput size="sm" placeholder={t('taxis.settlements.notes')} value={form.comment} onChange={set('comment')} />
                 </CCol>
                 <CCol sm={2}>
                   <CButton type="submit" size="sm" color="primary" disabled={loadingSettlements || !!picoPlacaWarning} style={{ width: '100%' }}>
-                    {loadingSettlements ? <CSpinner size="sm" /> : 'Guardar'}
+                    {loadingSettlements ? <CSpinner size="sm" /> : t('common.save')}
                   </CButton>
                 </CCol>
               </CRow>
@@ -634,56 +630,28 @@ const Taxis = () => {
               id="paymentsGrid"
               keyExpr="id"
               dataSource={filtered}
-              noDataText="Sin liquidaciones para este periodo."
-              summary={{
-                totalItems: [{ column: 'amount', summaryType: 'sum', customizeText: (e) => fmt(e.value) }],
-              }}
+              noDataText={t('taxis.settlements.noData')}
+              summary={{ totalItems: [{ column: 'amount', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] }}
               onRowUpdating={handleRowUpdating}
               onRowPrepared={(e) => {
                 if (e.rowType !== 'data') return
                 const [y, m, d] = (e.data.date ?? '').split('-').map(Number)
                 if (!y) return
-                if (new Date(y, m - 1, d).getDay() === 0) {
-                  e.rowElement.classList.add('dx-row-sunday')
-                }
+                if (new Date(y, m - 1, d).getDay() === 0) e.rowElement.classList.add('dx-row-sunday')
               }}
             >
-              <Column
-                dataField="date"
-                caption={t('taxis.settlements.fields.date')}
-                width={110}
-                hidingPriority={5}
-                sortOrder="asc"
-                defaultSortIndex={0}
-                cellRender={({ value }) => (
-                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtDate(value)}</span>
-                )}
+              <Column dataField="date" caption={t('taxis.settlements.fields.date')} width={110} hidingPriority={5} sortOrder="asc" defaultSortIndex={0}
+                cellRender={({ value }) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtDate(value)}</span>}
               />
               <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={150} hidingPriority={3} />
-              <Column
-                dataField="plate"
-                caption={t('taxis.settlements.fields.plate')}
-                width={110}
-                hidingPriority={2}
-                cellRender={({ value }) => (
-                  <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
-                )}
+              <Column dataField="plate" caption={t('taxis.settlements.fields.plate')} width={110} hidingPriority={2}
+                cellRender={({ value }) => <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>}
               />
-              <Column
-                dataField="amount"
-                caption={t('taxis.settlements.fields.value')}
-                hidingPriority={4}
-                cellRender={({ value }) => (
-                  <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
-                )}
+              <Column dataField="amount" caption={t('taxis.settlements.fields.value')} hidingPriority={4}
+                cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
               />
               <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} hidingPriority={1} />
-              <Column
-                caption=""
-                width={80}
-                allowSorting={false}
-                allowResizing={false}
-                hidingPriority={6}
+              <Column caption="" width={80} allowSorting={false} allowResizing={false} hidingPriority={6}
                 cellRender={({ data }) => (
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button
@@ -694,177 +662,87 @@ const Taxis = () => {
                         setTimeout(() => dataGridRef.current?.instance?.expandRow(data.id), 0)
                       }}
                       style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '2px 6px' }}
-                      title="Editar"
+                      title={t('common.edit')}
                     >
                       <CIcon icon={cilPencil} size="sm" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(data.id) }}
                       style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                      title="Eliminar"
+                      title={t('common.remove')}
                     >
                       <CIcon icon={cilTrash} size="sm" />
                     </button>
                   </div>
                 )}
               />
-              <MasterDetail
-                enabled={true}
-                render={({ data }) => (
-                  <SettlementMasterDetail
-                    data={data}
-                    drivers={drivers}
-                    vehicles={vehicles}
-                    saving={loadingSettlements}
-                    onSave={handleEditSave}
-                    editingRowIdRef={editingRowIdRef}
-                  />
-                )}
-              />
+              <MasterDetail enabled={true} render={({ data }) => (
+                <SettlementMasterDetail data={data} drivers={drivers} vehicles={vehicles} saving={loadingSettlements} onSave={handleEditSave} editingRowIdRef={editingRowIdRef} />
+              )} />
             </StandardGrid>
           ) : viewMode === 'byDriver' ? (
-            <StandardGrid
-              keyExpr="id"
-              dataSource={byDriver}
-              noDataText="Sin liquidaciones para este periodo."
-              summary={{
-                totalItems: [
-                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
-                  ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
-                ],
-              }}
+            <StandardGrid keyExpr="id" dataSource={byDriver} noDataText={t('taxis.settlements.noData')}
+              summary={{ totalItems: [
+                { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
+              ]}}
             >
               <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={180} />
-              <Column
-                dataField="count"
-                caption={t('taxis.settlements.columns.countSettlements')}
-                width={140}
-                cellRender={({ value }) => (
-                  <span style={{ fontWeight: 600 }}>{value}</span>
-                )}
+              <Column dataField="count" caption={t('taxis.settlements.columns.countSettlements')} width={140}
+                cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{value}</span>}
               />
-              <Column
-                dataField="total"
-                caption={t('taxis.settlements.columns.totalDeposited')}
-                width={170}
-                cellRender={({ value }) => (
-                  <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
-                )}
+              <Column dataField="total" caption={t('taxis.settlements.columns.totalDeposited')} width={170}
+                cellRender={({ value }) => <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>}
               />
-              <Column
-                dataField="remaining"
-                caption={t('taxis.settlements.columns.remaining')}
-                width={170}
-                visible={isCurrentPeriod}
-                cellRender={({ data }) => (
-                  <span style={{ fontWeight: 700, color: data.remaining > 0 ? '#e67700' : '#2f9e44' }}>{fmt(data.remaining)}</span>
-                )}
+              <Column dataField="remaining" caption={t('taxis.settlements.columns.remaining')} width={170} visible={isCurrentPeriod}
+                cellRender={({ data }) => <span style={{ fontWeight: 700, color: data.remaining > 0 ? '#e67700' : '#2f9e44' }}>{fmt(data.remaining)}</span>}
               />
-              <MasterDetail
-                enabled={true}
-                render={({ data }) => (
-                  <div style={{ margin: '8px 8px 12px 32px' }}>
-                    <StandardGrid
-                      dataSource={data.rows}
-                      keyExpr="id"
-                      style={{ margin: 0 }}
-                      noDataText="Sin registros."
-                    >
-                      <Column dataField="date" caption={t('taxis.settlements.fields.date')} width={110} sortOrder="asc" defaultSortIndex={0} />
-                      <Column
-                        dataField="plate"
-                        caption={t('taxis.settlements.fields.plate')}
-                        width={100}
-                        cellRender={({ value }) => (
-                          <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
-                        )}
-                      />
-                      <Column
-                        dataField="amount"
-                        caption={t('taxis.settlements.fields.value')}
-                        width={130}
-                        cellRender={({ value }) => (
-                          <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
-                        )}
-                      />
-                      <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} />
-                    </StandardGrid>
-                  </div>
-                )}
-              />
+              <MasterDetail enabled={true} render={({ data }) => (
+                <div style={{ margin: '8px 8px 12px 32px' }}>
+                  <StandardGrid dataSource={data.rows} keyExpr="id" style={{ margin: 0 }} noDataText={t('taxis.settlements.noRecords')}>
+                    <Column dataField="date" caption={t('taxis.settlements.fields.date')} width={110} sortOrder="asc" defaultSortIndex={0} />
+                    <Column dataField="plate" caption={t('taxis.settlements.fields.plate')} width={100}
+                      cellRender={({ value }) => <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>}
+                    />
+                    <Column dataField="amount" caption={t('taxis.settlements.fields.value')} width={130}
+                      cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
+                    />
+                    <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} />
+                  </StandardGrid>
+                </div>
+              )} />
             </StandardGrid>
           ) : (
-            <StandardGrid
-              keyExpr="id"
-              dataSource={byVehicle}
-              noDataText="Sin liquidaciones para este periodo."
-              summary={{
-                totalItems: [
-                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
-                  ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
-                ],
-              }}
+            <StandardGrid keyExpr="id" dataSource={byVehicle} noDataText={t('taxis.settlements.noData')}
+              summary={{ totalItems: [
+                { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
+              ]}}
             >
-              <Column
-                dataField="plate"
-                caption={t('taxis.settlements.fields.plate')}
-                minWidth={130}
-                cellRender={({ value }) => (
-                  <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
-                )}
+              <Column dataField="plate" caption={t('taxis.settlements.fields.plate')} minWidth={130}
+                cellRender={({ value }) => <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>}
               />
-              <Column
-                dataField="count"
-                caption={t('taxis.settlements.columns.countSettlements')}
-                width={140}
-                cellRender={({ value }) => (
-                  <span style={{ fontWeight: 600 }}>{value}</span>
-                )}
+              <Column dataField="count" caption={t('taxis.settlements.columns.countSettlements')} width={140}
+                cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{value}</span>}
               />
-              <Column
-                dataField="total"
-                caption={t('taxis.settlements.columns.totalDeposited')}
-                width={170}
-                cellRender={({ value }) => (
-                  <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
-                )}
+              <Column dataField="total" caption={t('taxis.settlements.columns.totalDeposited')} width={170}
+                cellRender={({ value }) => <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>}
               />
-              <Column
-                dataField="remaining"
-                caption={t('taxis.settlements.columns.remaining')}
-                width={170}
-                visible={isCurrentPeriod}
-                cellRender={({ data }) => (
-                  <span style={{ fontWeight: 700, color: data.remaining > 0 ? '#e67700' : '#2f9e44' }}>
-                    {fmt(data.remaining)}
-                  </span>
-                )}
+              <Column dataField="remaining" caption={t('taxis.settlements.columns.remaining')} width={170} visible={isCurrentPeriod}
+                cellRender={({ data }) => <span style={{ fontWeight: 700, color: data.remaining > 0 ? '#e67700' : '#2f9e44' }}>{fmt(data.remaining)}</span>}
               />
-              <MasterDetail
-                enabled={true}
-                render={({ data }) => (
-                  <div style={{ margin: '8px 8px 12px 32px' }}>
-                    <StandardGrid
-                      dataSource={data.rows}
-                      keyExpr="id"
-                      style={{ margin: 0 }}
-                      noDataText="Sin registros."
-                    >
-                      <Column dataField="date" caption={t('taxis.settlements.fields.date')} width={110} sortOrder="asc" defaultSortIndex={0} />
-                      <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={150} />
-                      <Column
-                        dataField="amount"
-                        caption={t('taxis.settlements.fields.value')}
-                        width={130}
-                        cellRender={({ value }) => (
-                          <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
-                        )}
-                      />
-                      <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} />
-                    </StandardGrid>
-                  </div>
-                )}
-              />
+              <MasterDetail enabled={true} render={({ data }) => (
+                <div style={{ margin: '8px 8px 12px 32px' }}>
+                  <StandardGrid dataSource={data.rows} keyExpr="id" style={{ margin: 0 }} noDataText={t('taxis.settlements.noRecords')}>
+                    <Column dataField="date" caption={t('taxis.settlements.fields.date')} width={110} sortOrder="asc" defaultSortIndex={0} />
+                    <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={150} />
+                    <Column dataField="amount" caption={t('taxis.settlements.fields.value')} width={130}
+                      cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
+                    />
+                    <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} />
+                  </StandardGrid>
+                </div>
+              )} />
             </StandardGrid>
           )}
         </CCardBody>
