@@ -18,7 +18,7 @@ import './masters.scss'
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
-const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '', active: true, startDate: '' }
+const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '', active: true, startDate: '', endDate: '' }
 
 const DriverDetail = ({ data, vehicles }) => {
   const vehicle = (vehicles ?? []).find((v) => v.plate === data.defaultVehicle)
@@ -34,6 +34,7 @@ const DriverDetail = ({ data, vehicles }) => {
         <DetailRow label="Teléfono" value={data.phone} />
         <DetailRow label="Estado" value={data.active !== false ? 'Activo' : 'Inactivo'} />
         <DetailRow label="Fecha inicio" value={data.startDate || null} />
+        <DetailRow label="Fecha fin" value={data.endDate || null} />
       </DetailSection>
       <DetailSection title="Liquidación por defecto">
         <DetailRow label="Liq. normal" value={data.defaultAmount ? fmt(data.defaultAmount) : null} />
@@ -82,6 +83,9 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
       </StandardField>
       <StandardField label="Fecha inicio">
         <input className={SF.input} type="date" value={form.startDate || ''} onChange={set('startDate')} />
+      </StandardField>
+      <StandardField label="Fecha fin">
+        <input className={SF.input} type="date" value={form.endDate || ''} onChange={set('endDate')} />
       </StandardField>
       <StandardField label="Estado">
         <button

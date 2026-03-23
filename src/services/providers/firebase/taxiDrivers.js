@@ -20,6 +20,7 @@ export const getDrivers = async () => {
       defaultVehicle: data.defaultVehicle,
       active: data.active !== false,
       startDate: data.startDate ?? null,
+      endDate: data.endDate ?? null,
     }
   })
 }
@@ -34,12 +35,13 @@ export const addDriver = async ({ name, idNumber, phone, defaultAmount, defaultA
     defaultVehicle: defaultVehicle || null,
     active: active !== false,
     startDate: startDate || null,
+    endDate: null,
     createdAt: serverTimestamp(),
   })
   return ref.id
 }
 
-export const updateDriver = async (id, { name, idNumber, phone, defaultAmount, defaultAmountSunday, defaultVehicle, active, startDate }) => {
+export const updateDriver = async (id, { name, idNumber, phone, defaultAmount, defaultAmountSunday, defaultVehicle, active, startDate, endDate }) => {
   await updateDoc(doc(db, COL, id), {
     name,
     idNumber,
@@ -49,6 +51,7 @@ export const updateDriver = async (id, { name, idNumber, phone, defaultAmount, d
     defaultVehicle: defaultVehicle || null,
     active: active !== false,
     startDate: startDate || null,
+    endDate: endDate || null,
   })
 }
 

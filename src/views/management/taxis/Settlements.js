@@ -366,8 +366,17 @@ const Taxis = () => {
   const auditMonthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
   const auditPeriodRecords = records.filter((r) => r.date?.startsWith(auditMonthStr))
   const activeDriverNames = new Set(drivers.filter((d) => d.active !== false).map((d) => d.name))
-  const auditDrivers = [...new Set(auditPeriodRecords.map((r) => r.driver).filter((dr) => dr && activeDriverNames.has(dr)))].sort()
-  const auditVehicles = [...new Set(auditPeriodRecords.filter((r) => r.driver && activeDriverNames.has(r.driver)).map((r) => r.plate).filter(Boolean))].sort()
+  // Derive expected drivers/vehicles from the drivers master, not from records.
+  // A driver is relevant to the period if they were active at some point during the month.
+  const auditMonthEnd = `${auditMonthStr}-${String(daysInMonth).padStart(2, '0')}`
+  const periodDrivers = drivers.filter((d) => {
+    if (d.active === false) return false
+    if (d.startDate && d.startDate > auditMonthEnd) return false
+    if (d.endDate && d.endDate < `${auditMonthStr}-01`) return false
+    return true
+  })
+  const auditDrivers = periodDrivers.map((d) => d.name).sort()
+  const auditVehicles = [...new Set(periodDrivers.map((d) => d.defaultVehicle).filter(Boolean))].sort()
   const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
   const auditDays = Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
@@ -377,11 +386,13 @@ const Taxis = () => {
     const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
     const dow = new Date(period.year, period.month - 1, d).getDay()
     const isSunday = dow === 0
-    // Only expect vehicles whose driver had already started by this day
+    // Only expect a vehicle if its driver was responsible on this specific day
     const expectedVehicles = auditVehicles.filter((pl) => {
-      const driver = drivers.find((dr) => dr.defaultVehicle === pl && activeDriverNames.has(dr.name))
-      if (!driver?.startDate) return true
-      return driver.startDate <= dateStr
+      const driver = periodDrivers.find((dr) => dr.defaultVehicle === pl)
+      if (!driver) return false
+      if (driver.startDate && driver.startDate > dateStr) return false
+      if (driver.endDate && driver.endDate < dateStr) return false
+      return true
     })
     const missingVehicles = expectedVehicles.filter((pl) => !settledVehicles.has(pl))
     // Vehicles that settled but paid less than the driver's expected amount
@@ -397,9 +408,11 @@ const Taxis = () => {
       return paidTotal < expected
     })
     const missing = auditDrivers.filter((dr) => {
-      const driverObj = drivers.find((d) => d.name === dr)
-      if (driverObj?.startDate && driverObj.startDate > dateStr) return false
-      const plate = driverObj?.defaultVehicle
+      const driverObj = periodDrivers.find((d) => d.name === dr)
+      if (!driverObj) return false
+      if (driverObj.startDate && driverObj.startDate > dateStr) return false
+      if (driverObj.endDate && driverObj.endDate < dateStr) return false
+      const plate = driverObj.defaultVehicle
       return plate ? missingVehicles.includes(plate) : !settled.has(dr)
     })
     const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
