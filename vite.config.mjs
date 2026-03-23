@@ -34,14 +34,12 @@ export default defineConfig(() => {
       outDir: 'build',
       rollupOptions: {
         output: {
+          // Only isolate heavy packages with no React peer deps.
+          // Do NOT chunk react/react-dom/coreui/devextreme separately — it creates
+          // duplicate React instances and breaks __SECRET_INTERNALS at runtime.
           manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-redux': ['@reduxjs/toolkit', 'redux-saga', 'react-redux'],
-            'vendor-coreui': ['@coreui/react', '@coreui/coreui'],
-            'vendor-devextreme': ['devextreme-react/data-grid', 'devextreme-react/button'],
             'vendor-firebase': ['firebase/app', 'firebase/firestore'],
             'vendor-pdfjs': ['pdfjs-dist'],
-            'vendor-charts': ['chart.js', '@coreui/chartjs'],
           },
         },
       },
@@ -94,6 +92,11 @@ export default defineConfig(() => {
       proxy: {
         // https://vitejs.dev/config/server-options.html
       },
+    },
+    test: {
+      globals: true,
+      environment: 'node',
+      include: ['src/**/*.test.js'],
     },
   }
 })
