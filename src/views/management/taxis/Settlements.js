@@ -370,7 +370,9 @@ const Taxis = () => {
   // A driver is relevant to the period if they were active at some point during the month.
   const auditMonthEnd = `${auditMonthStr}-${String(daysInMonth).padStart(2, '0')}`
   const periodDrivers = drivers.filter((d) => {
-    if (d.active === false) return false
+    // Always include drivers with a vehicle and endDate that overlaps the period (historical coverage)
+    const hasHistoricalCoverage = d.defaultVehicle && d.endDate
+    if (d.active === false && !hasHistoricalCoverage) return false
     if (d.startDate && d.startDate > auditMonthEnd) return false
     if (d.endDate && d.endDate < `${auditMonthStr}-01`) return false
     return true
