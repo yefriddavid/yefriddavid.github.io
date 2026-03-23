@@ -8,6 +8,7 @@ import sagaTaxiVehicles from './taxiVehicleSagas'
 import sagaTaxiSettlements from './taxiSettlementSagas'
 import sagaTaxiPartners from './taxiPartnerSagas'
 import sagaTaxiDistributions from './taxiDistributionSagas'
+import sagaTaxiAuditNotes from './taxiAuditNoteSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -20,5 +21,6 @@ export default function* rootSagas() {
     sagaTaxiSettlements(),
     sagaTaxiPartners(),
     sagaTaxiDistributions(),
+    sagaTaxiAuditNotes(),
   ])
 }

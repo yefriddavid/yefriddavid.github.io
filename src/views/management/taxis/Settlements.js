@@ -15,6 +15,7 @@ import * as taxiSettlementActions from 'src/actions/taxiSettlementActions'
 import * as taxiDriverActions from 'src/actions/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
+import * as taxiAuditNoteActions from 'src/actions/taxiAuditNoteActions'
 import '../../../views/movements/payments/Payments.scss'
 import '../../../views/movements/payments/ItemDetail.scss'
 import './Taxis.scss'
@@ -138,6 +139,7 @@ const Taxis = () => {
   const { data: driversData } = useSelector((s) => s.taxiDriver)
   const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
   const { data: expensesData } = useSelector((s) => s.taxiExpense)
+  const { notes: auditNotes } = useSelector((s) => s.taxiAuditNote)
 
   const months = t('taxis.months', { returnObjects: true })
 
@@ -154,6 +156,7 @@ const Taxis = () => {
   const [viewMode, setViewMode] = useState('detail')
   const [editingRow, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null)
+  const [editingNote, setEditingNote] = useState(null) // { date, driver }
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
@@ -175,6 +178,7 @@ const Taxis = () => {
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
     dispatch(taxiExpenseActions.fetchRequest())
+    dispatch(taxiAuditNoteActions.fetchRequest())
   }, [dispatch])
 
   useEffect(() => {
@@ -340,17 +344,25 @@ const Taxis = () => {
   })
 
   // ── Audit data ──────────────────────────────────────────────────────────────
+  // All taxis have a single shift, so coverage is per vehicle (not per driver).
+  // A day is "full" when every active vehicle has at least one settlement that day.
   const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
   const auditMonthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
   const auditPeriodRecords = records.filter((r) => r.date?.startsWith(auditMonthStr))
   const auditDrivers = [...new Set(auditPeriodRecords.map((r) => r.driver).filter(Boolean))].sort()
+  const auditVehicles = [...new Set(auditPeriodRecords.map((r) => r.plate).filter(Boolean))].sort()
   const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
   const auditDays = Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
     const dateStr = `${auditMonthStr}-${String(d).padStart(2, '0')}`
     const dayRecords = auditPeriodRecords.filter((r) => r.date === dateStr)
     const settled = new Set(dayRecords.map((r) => r.driver).filter(Boolean))
-    const missing = auditDrivers.filter((dr) => !settled.has(dr))
+    const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
+    const missingVehicles = auditVehicles.filter((pl) => !settledVehicles.has(pl))
+    const missing = auditDrivers.filter((dr) => {
+      const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
+      return plate ? missingVehicles.includes(plate) : !settled.has(dr)
+    })
     const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
     const dow = new Date(period.year, period.month - 1, d).getDay()
     const isFuture = auditToday !== null
@@ -358,9 +370,20 @@ const Taxis = () => {
       : period.year > now.getFullYear() || (period.year === now.getFullYear() && period.month > now.getMonth() + 1)
     const isToday = d === auditToday
     const isSunday = dow === 0
-    const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : missing.length === 0 ? 'full' : 'partial'
-    return { d, dateStr, dayRecords, settled: [...settled], missing, total, dow, isFuture, isToday, isSunday, status }
+    const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : missingVehicles.length === 0 ? 'full' : 'partial'
+    return { d, dateStr, dayRecords, settled: [...settled], missing, missingVehicles, total, dow, isFuture, isToday, isSunday, status }
   })
+  const auditNoteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
+  const getNote = (date, driver) => auditNotes[auditNoteId(date, driver)]?.note ?? ''
+  const handleNoteSave = (date, driver, note) => {
+    if (note.trim()) {
+      dispatch(taxiAuditNoteActions.upsertRequest({ date, driver, note: note.trim() }))
+    } else {
+      dispatch(taxiAuditNoteActions.deleteRequest({ date, driver }))
+    }
+    setEditingNote(null)
+  }
+
   const auditRowBg = (day) => {
     if (day.isToday) return '#e8f0fb'
     if (day.status === 'future') return '#f8fafc'
@@ -445,7 +468,17 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={4}>
+        <CCol sm={2}>
+          <CCard className="text-center">
+            <CCardBody>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Neto</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: (total - totalExpenses) >= 0 ? '#1e40af' : '#e03131' }}>
+                {fmt(total - totalExpenses)}
+              </div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol sm={2}>
           <CCard>
             <CCardBody style={{ padding: '12px 16px' }}>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>{t('taxis.settlements.summary.byDriver')}</div>
@@ -716,10 +749,14 @@ const Taxis = () => {
             </StandardGrid>
           ) : viewMode === 'byDriver' ? (
             <StandardGrid keyExpr="id" dataSource={byDriver} noDataText={t('taxis.settlements.noData')}
-              summary={{ totalItems: [
-                { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
-                ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
-              ]}}
+              summary={{
+                totalItems: [
+                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                  ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
+                  ...(isCurrentPeriod ? [{ column: 'count', summaryType: 'custom', name: 'grandTotal', showInColumn: 'count', customizeText: () => `Gran total: ${fmt(byDriver.reduce((s, r) => s + r.total + r.remaining, 0))}` }] : []),
+                ],
+                calculateCustomSummary: () => {},
+              }}
             >
               <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={180} />
               <Column dataField="count" caption={t('taxis.settlements.columns.countSettlements')} width={140}
@@ -748,10 +785,14 @@ const Taxis = () => {
             </StandardGrid>
           ) : viewMode === 'byVehicle' ? (
             <StandardGrid keyExpr="id" dataSource={byVehicle} noDataText={t('taxis.settlements.noData')}
-              summary={{ totalItems: [
-                { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
-                ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
-              ]}}
+              summary={{
+                totalItems: [
+                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                  ...(isCurrentPeriod ? [{ column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) }] : []),
+                  ...(isCurrentPeriod ? [{ column: 'count', summaryType: 'custom', name: 'grandTotal', showInColumn: 'count', customizeText: () => `Gran total: ${fmt(byVehicle.reduce((s, r) => s + r.total + r.remaining, 0))}` }] : []),
+                ],
+                calculateCustomSummary: () => {},
+              }}
             >
               <Column dataField="plate" caption={t('taxis.settlements.fields.plate')} minWidth={130}
                 cellRender={({ value }) => <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>}
@@ -841,10 +882,39 @@ const Taxis = () => {
                           </div>
                         </td>
                         <td style={{ padding: '8px 6px' }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {!day.isFuture && day.missing.map((dr) => (
-                              <span key={dr} style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
-                            ))}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {!day.isFuture && day.missing.map((dr) => {
+                              const note = getNote(day.dateStr, dr)
+                              const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === dr
+                              return (
+                                <div key={dr} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
+                                    <button
+                                      onClick={() => setEditingNote(isEditing ? null : { date: day.dateStr, driver: dr })}
+                                      title={note ? 'Editar nota' : 'Agregar nota'}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
+                                    >✎</button>
+                                  </div>
+                                  {isEditing && (
+                                    <input
+                                      autoFocus
+                                      defaultValue={note}
+                                      placeholder="Motivo..."
+                                      onBlur={(e) => handleNoteSave(day.dateStr, dr, e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleNoteSave(day.dateStr, dr, e.target.value)
+                                        if (e.key === 'Escape') setEditingNote(null)
+                                      }}
+                                      style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, border: '1px solid #fed7aa', outline: 'none', width: 140 }}
+                                    />
+                                  )}
+                                  {!isEditing && note && (
+                                    <span style={{ fontSize: 10, color: '#92400e', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 3, padding: '1px 5px', maxWidth: 160, wordBreak: 'break-word' }}>{note}</span>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
                         </td>
                       </tr>

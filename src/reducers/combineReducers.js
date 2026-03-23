@@ -10,6 +10,7 @@ import taxiVehicle from './taxiVehicleReducer'
 import taxiSettlement from './taxiSettlementReducer'
 import taxiPartner from './taxiPartnerReducer'
 import taxiDistribution from './taxiDistributionReducer'
+import taxiAuditNote from './taxiAuditNoteReducer'
 
 const combinedReducers = combineReducers({
   login,
@@ -23,6 +24,7 @@ const combinedReducers = combineReducers({
   taxiSettlement,
   taxiPartner,
   taxiDistribution,
+  taxiAuditNote,
 })
 
 export default combinedReducers

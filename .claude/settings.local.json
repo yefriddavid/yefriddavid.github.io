@@ -5,7 +5,11 @@
       "Bash(find /mnt/Zeus/Workspace/verdeex/sources/Verdeex2.0/webapp/src/components/layout -type f -name *.jsx)",
       "Bash(find /mnt/Zeus/Workspace/verdeex/sources/Verdeex2.0/webapp/src/store -type f -name *.js)",
       "Bash(grep -E \"\\\\.\\(jsx|js|scss\\)$\")",
-      "Bash(grep -r \"color\" /mnt/Zeus/Workspace/me/sources/My-Admin/src/scss/*.scss --color=never)"
+      "Bash(grep -r \"color\" /mnt/Zeus/Workspace/me/sources/My-Admin/src/scss/*.scss --color=never)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
