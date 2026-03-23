@@ -1023,11 +1023,17 @@ const Taxis = () => {
                             {day.settled.map((dr) => {
                               const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
                               const underpaid = plate ? day.underpaidVehicles.includes(plate) : false
-                              return (
-                                <span key={dr} style={{ fontSize: 11, background: underpaid ? '#fff3cd' : '#dbeafe', color: underpaid ? '#7c5e00' : '#1e40af', borderRadius: 4, padding: '2px 7px', fontWeight: 500 }}>
-                                  {underpaid ? '◐ ' : ''}{dr.split(' ')[0]}
+                              const driverRecords = day.dayRecords.filter((r) => r.driver === dr)
+                              return driverRecords.map((rec) => (
+                                <span key={rec.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, background: underpaid ? '#fff3cd' : '#dbeafe', color: underpaid ? '#7c5e00' : '#1e40af', borderRadius: 4, padding: '2px 7px', fontWeight: 500 }}>
+                                  {underpaid ? '◐ ' : ''}{dr.split(' ')[0]}{driverRecords.length > 1 ? ` · ${fmt(rec.amount)}` : ''}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); if (window.confirm(`¿Eliminar liquidación de ${dr} (${fmt(rec.amount)}) del ${day.dateStr}?`)) dispatch(taxiSettlementActions.deleteRequest({ id: rec.id })) }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e03131', fontSize: 12, lineHeight: 1, padding: 0, marginLeft: 1 }}
+                                    title="Eliminar liquidación"
+                                  >×</button>
                                 </span>
-                              )
+                              ))
                             })}
                           </div>
                         </td>
