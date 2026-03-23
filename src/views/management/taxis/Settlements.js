@@ -402,6 +402,7 @@ const Taxis = () => {
     return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, underpaidVehicles, total, dow, isFuture, isToday, isSunday, status }
   })
   const auditFilteredDays = auditDays.filter((day) => {
+    if (dayFilter && day.d !== Number(dayFilter)) return false
     if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
     if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
     return true
@@ -616,16 +617,16 @@ const Taxis = () => {
                 )}
               </div>
             )}
-            {viewMode === 'detail' && (
+            {(viewMode === 'detail' || viewMode === 'audit') && (
               <>
-                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Día</span>
+                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.audit.colDay')}</span>
                 <CFormSelect
                   size="sm"
                   style={{ width: 75 }}
                   value={dayFilter}
                   onChange={(e) => setDayFilter(e.target.value)}
                 >
-                  <option value="">Todos</option>
+                  <option value="">{t('taxis.settlements.all')}</option>
                   {Array.from(
                     new Set(
                       records
@@ -1017,11 +1018,36 @@ const Taxis = () => {
                                 ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
                                 : (driver.defaultAmount || 0)
                               const paid = day.dayRecords.filter((r) => r.plate === pl).reduce((s, r) => s + (r.amount || 0), 0)
+                              const note = getNote(day.dateStr, driver.name)
+                              const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === driver.name
                               return (
                                 <div key={pl} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                  <span style={{ fontSize: 11, background: '#fff3cd', color: '#7c5e00', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
-                                    ◐ {driver.name.split(' ')[0]} · {fmt(paid)}/{fmt(expected)}
-                                  </span>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ fontSize: 11, background: '#fff3cd', color: '#7c5e00', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
+                                      ◐ {driver.name.split(' ')[0]} · {fmt(paid)}/{fmt(expected)}
+                                    </span>
+                                    <button
+                                      onClick={() => setEditingNote(isEditing ? null : { date: day.dateStr, driver: driver.name })}
+                                      title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
+                                    >✎</button>
+                                  </div>
+                                  {isEditing && (
+                                    <input
+                                      autoFocus
+                                      defaultValue={note}
+                                      placeholder={t('taxis.settlements.audit.notePlaceholder')}
+                                      onBlur={(e) => handleNoteSave(day.dateStr, driver.name, e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleNoteSave(day.dateStr, driver.name, e.target.value)
+                                        if (e.key === 'Escape') setEditingNote(null)
+                                      }}
+                                      style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, border: '1px solid #fed7aa', outline: 'none', width: 140 }}
+                                    />
+                                  )}
+                                  {!isEditing && note && (
+                                    <span style={{ fontSize: 10, color: '#92400e', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 3, padding: '1px 5px', maxWidth: 160, wordBreak: 'break-word' }}>{note}</span>
+                                  )}
                                 </div>
                               )
                             })}
