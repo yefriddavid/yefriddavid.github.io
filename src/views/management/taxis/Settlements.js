@@ -1169,7 +1169,7 @@ const Taxis = () => {
                                   <DetailRow
                                     key={r.id}
                                     label={[r.driver, r.plate].filter(Boolean).join(' · ')}
-                                    value={fmt(r.amount)}
+                                    value={`${fmt(r.amount)}${r.comment ? ` — ${r.comment}` : ''}`}
                                   />
                                 )) : day.missing.map((dr) => (
                                   <DetailRow key={dr} label={dr} value={getNote(day.dateStr, dr) || '—'} />
