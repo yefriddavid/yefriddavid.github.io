@@ -11,7 +11,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run build 2>&1)",
-      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run build 2>&1)"
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run build 2>&1)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run build)"
     ]
   }
 }
