@@ -90,6 +90,7 @@ const TaxisHome = () => {
   // ── KPIs ───────────────────────────────────────────────────────────────────
   const totalSettled = monthSettlements.reduce((s, r) => s + (r.amount || 0), 0)
   const totalExp = monthExpenses.reduce((s, r) => s + (r.amount || 0), 0)
+  const totalExpPending = monthExpenses.filter((r) => !r.paid).reduce((s, r) => s + (r.amount || 0), 0)
   const netBalance = totalSettled - totalExp
   const activeDriverNames = new Set(drivers.filter((d) => d.active !== false).map((d) => d.name))
   const activeDrivers = new Set(monthSettlements.map((r) => r.driver).filter((dr) => dr && activeDriverNames.has(dr))).size
@@ -213,7 +214,7 @@ const TaxisHome = () => {
           <KpiCard
             label="Total gastos"
             value={fmtM(totalExp)}
-            sub={`${monthExpenses.length} registros`}
+            sub={totalExpPending > 0 ? `⏳ ${fmtM(totalExpPending)} pendiente` : `${monthExpenses.length} registros`}
             accent="#e03131"
           />
         </CCol>

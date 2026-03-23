@@ -58,9 +58,10 @@ const Distributions = () => {
     .filter((r) => r.date?.startsWith(periodStr))
     .reduce((acc, r) => acc + (r.amount || 0), 0)
 
-  const totalExpenses = (expensesData ?? [])
-    .filter((r) => r.date?.startsWith(periodStr))
-    .reduce((acc, r) => acc + (r.amount || 0), 0)
+  const periodExpenses = (expensesData ?? []).filter((r) => r.date?.startsWith(periodStr))
+  const totalExpenses = periodExpenses.reduce((acc, r) => acc + (r.amount || 0), 0)
+  const totalExpensesPaid = periodExpenses.filter((r) => r.paid).reduce((acc, r) => acc + (r.amount || 0), 0)
+  const totalExpensesPending = totalExpenses - totalExpensesPaid
 
   const net = totalIncome - totalExpenses
 
@@ -199,6 +200,9 @@ const Distributions = () => {
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total gastos</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#e03131' }}>{fmt(totalExpenses)}</div>
+              {totalExpensesPending > 0 && (
+                <div style={{ fontSize: 11, color: '#e67700', marginTop: 4, fontWeight: 600 }}>⏳ {fmt(totalExpensesPending)} pendiente</div>
+              )}
             </CCardBody>
           </CCard>
         </CCol>

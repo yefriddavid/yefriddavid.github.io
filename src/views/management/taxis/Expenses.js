@@ -78,6 +78,7 @@ const Gastos = () => {
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [categoryFilter, setCategoryFilter] = useState('')
   const [plateFilter, setPlateFilter] = useState('')
+  const [paidFilter, setPaidFilter] = useState('')
   const [cloneSource, setCloneSource] = useState(null)
   const [cloneForm, setCloneForm] = useState({ date: today(), plate: '' })
 
@@ -145,10 +146,13 @@ const Gastos = () => {
     if (period.month !== 0 && m !== period.month) return false
     if (categoryFilter && r.category !== categoryFilter) return false
     if (plateFilter && r.plate !== plateFilter) return false
+    if (paidFilter === 'paid' && !r.paid) return false
+    if (paidFilter === 'unpaid' && r.paid) return false
     return true
   })
 
   const total = filtered.reduce((acc, r) => acc + (r.amount || 0), 0)
+  const totalPending = filtered.filter((r) => !r.paid).reduce((acc, r) => acc + (r.amount || 0), 0)
 
   const byCategory = Object.values(
     filtered.reduce((acc, r) => {
@@ -169,6 +173,11 @@ const Gastos = () => {
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total gastos</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{fmt(total)}</div>
+              {totalPending > 0 && (
+                <div style={{ fontSize: 12, color: '#e67700', marginTop: 4, fontWeight: 600 }}>
+                  ⏳ {fmt(totalPending)} pendiente
+                </div>
+              )}
             </CCardBody>
           </CCard>
         </CCol>
@@ -227,6 +236,12 @@ const Gastos = () => {
               <option value="">Todos</option>
               {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}</option>)}
             </CFormSelect>
+            <CFormSelect size="sm" style={{ width: 120 }} value={paidFilter}
+              onChange={(e) => setPaidFilter(e.target.value)}>
+              <option value="">Estado: Todos</option>
+              <option value="paid">Pagados</option>
+              <option value="unpaid">Pendientes</option>
+            </CFormSelect>
           </div>
           <CButton size="sm" color={showCreate ? 'danger' : 'primary'} variant="outline"
             onClick={() => setShowCreate((p) => !p)}>
@@ -271,6 +286,22 @@ const Gastos = () => {
               <Column
                 dataField="amount" caption={t('taxis.expenses.columns.amount')} width={130} hidingPriority={4}
                 cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
+              />
+              <Column
+                dataField="paid" caption="Estado" width={110} allowSorting={true} hidingPriority={8}
+                cellRender={({ data }) => (
+                  <button
+                    onClick={() => dispatch(taxiExpenseActions.togglePaidRequest({ id: data.id, paid: !data.paid }))}
+                    style={{
+                      fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                      border: 'none', cursor: 'pointer',
+                      background: data.paid ? '#d1fae5' : '#fff3cd',
+                      color: data.paid ? '#065f46' : '#7c5e00',
+                    }}
+                  >
+                    {data.paid ? '✓ Pagado' : '⏳ Pendiente'}
+                  </button>
+                )}
               />
               <Column caption="" width={90} allowSorting={false} allowResizing={false} hidingPriority={7}
                 cellRender={({ data }) => (
