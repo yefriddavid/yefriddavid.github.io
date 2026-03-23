@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import legacy from '@vitejs/plugin-legacy'
 import path from 'node:path'
 import autoprefixer from 'autoprefixer'
 import { writeFileSync } from 'node:fs'
@@ -58,7 +59,11 @@ export default defineConfig(() => {
         },
       },
     },
-    plugins: [react(), versionPlugin()],
+    plugins: [
+      react(),
+      legacy({ targets: ['defaults', 'not IE 11'] }),
+      versionPlugin(),
+    ],
     resolve: {
       alias: [
         /*{

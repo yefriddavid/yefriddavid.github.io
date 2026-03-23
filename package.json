@@ -63,6 +63,7 @@
     "simplebar-react": "^3.2.6"
   },
   "devDependencies": {
+    "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
@@ -73,6 +74,7 @@
     "postcss": "^8.4.49",
     "prettier": "3.3.3",
     "sass": "^1.81.0",
+    "terser": "^5.46.1",
     "vite": "^5.4.11"
   }
 }
