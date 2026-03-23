@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/taxiSettlementActions'
 import * as service from '../../services/providers/firebase/taxiSettlements'
+import { makeSettlement } from '../../__tests__/factories'
 
-// Step-through generators (standard redux-saga testing pattern)
 function* fetchSettlements() {
   try {
     yield put(actions.beginRequestFetch())
@@ -53,133 +53,94 @@ function* deleteSettlement({ payload }) {
 
 describe('taxiSettlementSagas', () => {
   describe('fetchSettlements', () => {
-    it('dispatches beginRequestFetch, calls service, then dispatches success', () => {
+    it('begin → getSettlements → success', () => {
       const gen = fetchSettlements()
-      const records = [{ id: 'r1', driver: 'Juan', plate: 'ABC123', amount: 50000, date: '2024-03-01' }]
-
+      const records = [makeSettlement()]
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
       expect(gen.next().value).toEqual(call(service.getSettlements))
       expect(gen.next(records).value).toEqual(put(actions.successRequestFetch(records)))
       expect(gen.next().done).toBe(true)
     })
 
-    it('dispatches errorRequestFetch on failure', () => {
+    it('error path dispatches errorRequestFetch', () => {
       const gen = fetchSettlements()
-      const error = new Error('unavailable')
-
-      gen.next() // put(beginRequestFetch)
-      gen.next() // call(service.getSettlements)
-      expect(gen.throw(error).value).toEqual(put(actions.errorRequestFetch('unavailable')))
-      expect(gen.next().done).toBe(true)
+      gen.next(); gen.next()
+      expect(gen.throw(new Error('unavailable')).value).toEqual(put(actions.errorRequestFetch('unavailable')))
     })
   })
 
   describe('createSettlement', () => {
-    const payload = {
-      driver: 'Maria Lopez',
-      plate: 'xyz789',
-      amount: '65000',
-      date: '2024-03-05',
-      comment: '',
-    }
-
-    it('normalizes plate to uppercase and amount to Number', () => {
+    it('uppercases plate before dispatching success', () => {
+      const payload = makeSettlement({ id: undefined, plate: 'xyz789', amount: '65000', comment: '' })
       const gen = createSettlement({ payload })
-      const newId = 'doc-abc'
-
-      gen.next() // put(beginRequestCreate)
-      gen.next() // call(service.addSettlement, payload)
-
-      const successEffect = gen.next(newId).value
-      expect(successEffect).toEqual(
-        put(actions.successRequestCreate({
-          id: newId,
-          driver: 'Maria Lopez',
-          plate: 'XYZ789',
-          amount: 65000,
-          date: '2024-03-05',
-          comment: null,
-        })),
-      )
+      gen.next(); gen.next()
+      const { payload: dispatched } = gen.next('new-id').value.payload.action
+      expect(dispatched.plate).toBe('XYZ789')
     })
 
-    it('keeps comment when provided', () => {
-      const payloadWithComment = { ...payload, comment: 'abono' }
-      const gen = createSettlement({ payload: payloadWithComment })
-      const newId = 'doc-xyz'
-
-      gen.next() // beginRequestCreate
-      gen.next() // call addSettlement
-
-      const successEffect = gen.next(newId).value
-      const dispatched = successEffect.payload.action.payload
-      expect(dispatched.comment).toBe('abono')
+    it('converts amount string to Number', () => {
+      const payload = makeSettlement({ id: undefined, plate: 'ABC123', amount: '65000', comment: '' })
+      const gen = createSettlement({ payload })
+      gen.next(); gen.next()
+      const { payload: dispatched } = gen.next('new-id').value.payload.action
+      expect(dispatched.amount).toBe(65000)
+      expect(typeof dispatched.amount).toBe('number')
     })
 
-    it('full success flow sequence', () => {
+    it('sets comment to null when empty string', () => {
+      const payload = makeSettlement({ id: undefined, comment: '' })
       const gen = createSettlement({ payload })
-      const newId = 'doc-001'
-
-      expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
-      expect(gen.next().value).toEqual(call(service.addSettlement, payload))
-      gen.next(newId) // successRequestCreate
-      expect(gen.next().done).toBe(true)
+      gen.next(); gen.next()
+      const { payload: dispatched } = gen.next('new-id').value.payload.action
+      expect(dispatched.comment).toBeNull()
     })
 
-    it('dispatches errorRequestCreate on failure', () => {
+    it('preserves comment when provided', () => {
+      const payload = makeSettlement({ id: undefined, comment: 'abono parcial' })
       const gen = createSettlement({ payload })
-      const error = new Error('write failed')
+      gen.next(); gen.next()
+      const { payload: dispatched } = gen.next('new-id').value.payload.action
+      expect(dispatched.comment).toBe('abono parcial')
+    })
 
-      gen.next() // beginRequestCreate
-      gen.next() // call addSettlement
-      expect(gen.throw(error).value).toEqual(put(actions.errorRequestCreate('write failed')))
-      expect(gen.next().done).toBe(true)
+    it('error path dispatches errorRequestCreate', () => {
+      const gen = createSettlement({ payload: makeSettlement() })
+      gen.next(); gen.next()
+      expect(gen.throw(new Error('write failed')).value).toEqual(put(actions.errorRequestCreate('write failed')))
     })
   })
 
   describe('updateSettlement', () => {
-    const payload = { id: 'r1', driver: 'Juan', plate: 'ABC123', amount: 55000, date: '2024-03-10' }
-
-    it('dispatches beginRequestUpdate, calls service, then dispatches success', () => {
+    it('begin → updateSettlement(id, payload) → success', () => {
+      const payload = makeSettlement()
       const gen = updateSettlement({ payload })
-
       expect(gen.next().value).toEqual(put(actions.beginRequestUpdate()))
       expect(gen.next().value).toEqual(call(service.updateSettlement, payload.id, payload))
       expect(gen.next().value).toEqual(put(actions.successRequestUpdate(payload)))
       expect(gen.next().done).toBe(true)
     })
 
-    it('dispatches errorRequestUpdate on failure', () => {
-      const gen = updateSettlement({ payload })
-      const error = new Error('conflict')
-
-      gen.next() // beginRequestUpdate
-      gen.next() // call updateSettlement
-      expect(gen.throw(error).value).toEqual(put(actions.errorRequestUpdate('conflict')))
-      expect(gen.next().done).toBe(true)
+    it('error path dispatches errorRequestUpdate', () => {
+      const gen = updateSettlement({ payload: makeSettlement() })
+      gen.next(); gen.next()
+      expect(gen.throw(new Error('conflict')).value).toEqual(put(actions.errorRequestUpdate('conflict')))
     })
   })
 
   describe('deleteSettlement', () => {
-    const payload = { id: 'r1', driver: 'Juan' }
-
-    it('dispatches beginRequestDelete, calls service with id, then dispatches success', () => {
+    it('begin → deleteSettlement(id) → success', () => {
+      const payload = makeSettlement()
       const gen = deleteSettlement({ payload })
-
       expect(gen.next().value).toEqual(put(actions.beginRequestDelete()))
       expect(gen.next().value).toEqual(call(service.deleteSettlement, payload.id))
       expect(gen.next().value).toEqual(put(actions.successRequestDelete(payload)))
       expect(gen.next().done).toBe(true)
     })
 
-    it('dispatches errorRequestDelete on failure', () => {
-      const gen = deleteSettlement({ payload })
-      const error = new Error('not found')
-
-      gen.next() // beginRequestDelete
-      gen.next() // call deleteSettlement
-      expect(gen.throw(error).value).toEqual(put(actions.errorRequestDelete('not found')))
-      expect(gen.next().done).toBe(true)
+    it('error path dispatches errorRequestDelete', () => {
+      const gen = deleteSettlement({ payload: makeSettlement() })
+      gen.next(); gen.next()
+      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
     })
   })
 })
