@@ -339,6 +339,37 @@ const Taxis = () => {
     return { ...item, remaining: driver ? (calcRemaining(driver.name) ?? 0) : 0 }
   })
 
+  // ── Audit data ──────────────────────────────────────────────────────────────
+  const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const auditMonthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
+  const auditPeriodRecords = records.filter((r) => r.date?.startsWith(auditMonthStr))
+  const auditDrivers = [...new Set(auditPeriodRecords.map((r) => r.driver).filter(Boolean))].sort()
+  const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
+  const auditDays = Array.from({ length: daysInMonth }, (_, i) => {
+    const d = i + 1
+    const dateStr = `${auditMonthStr}-${String(d).padStart(2, '0')}`
+    const dayRecords = auditPeriodRecords.filter((r) => r.date === dateStr)
+    const settled = new Set(dayRecords.map((r) => r.driver).filter(Boolean))
+    const missing = auditDrivers.filter((dr) => !settled.has(dr))
+    const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
+    const dow = new Date(period.year, period.month - 1, d).getDay()
+    const isFuture = auditToday !== null
+      ? d > auditToday
+      : period.year > now.getFullYear() || (period.year === now.getFullYear() && period.month > now.getMonth() + 1)
+    const isToday = d === auditToday
+    const isSunday = dow === 0
+    const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : missing.length === 0 ? 'full' : 'partial'
+    return { d, dateStr, dayRecords, settled: [...settled], missing, total, dow, isFuture, isToday, isSunday, status }
+  })
+  const auditRowBg = (day) => {
+    if (day.isToday) return '#e8f0fb'
+    if (day.status === 'future') return '#f8fafc'
+    if (day.status === 'none') return '#fff5f5'
+    if (day.status === 'partial') return '#fffbeb'
+    return '#f8fff8'
+  }
+  const auditAccent = { none: '#e03131', partial: '#e67700', full: '#2f9e44', future: '#cbd5e1' }
+
   return (
     <>
       {loadingSettlements && savingRef.current && (
@@ -567,6 +598,9 @@ const Taxis = () => {
             <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => setViewMode('byVehicle')} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewByVehicle')}
             </CButton>
+            <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => setViewMode('audit')} style={{ fontSize: 12 }}>
+              Auditoría
+            </CButton>
           </div>
           <CButton size="sm" color="secondary" variant="outline" onClick={() => dispatch(taxiSettlementActions.fetchRequest())} title={t('common.refresh')}>
             <CIcon icon={cilReload} size="sm" />
@@ -712,7 +746,7 @@ const Taxis = () => {
                 </div>
               )} />
             </StandardGrid>
-          ) : (
+          ) : viewMode === 'byVehicle' ? (
             <StandardGrid keyExpr="id" dataSource={byVehicle} noDataText={t('taxis.settlements.noData')}
               summary={{ totalItems: [
                 { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
@@ -744,7 +778,82 @@ const Taxis = () => {
                 </div>
               )} />
             </StandardGrid>
-          )}
+          ) : viewMode === 'audit' ? (
+            <div style={{ padding: 16 }}>
+              {/* Summary strip */}
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                {[
+                  { label: 'Sin actividad', count: auditDays.filter((d) => d.status === 'none').length, color: '#e03131', bg: '#fff5f5' },
+                  { label: 'Parcial', count: auditDays.filter((d) => d.status === 'partial').length, color: '#e67700', bg: '#fffbeb' },
+                  { label: 'Completo', count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
+                  { label: 'Futuros', count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
+                ].map(({ label, count, color, bg }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, background: bg, border: `1px solid ${color}33`, borderRadius: 8, padding: '6px 14px' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color }}>{count}</span>
+                    <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>{label}</span>
+                  </div>
+                ))}
+                <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--cui-secondary-color)', alignSelf: 'center' }}>
+                  {auditDrivers.length} conductor{auditDrivers.length !== 1 ? 'es' : ''} activo{auditDrivers.length !== 1 ? 's' : ''} en el periodo
+                </div>
+              </div>
+
+              {/* Table */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#1e3a5f' }}>
+                      {['Día', 'Sem', 'Estado', 'Liq.', 'Total', 'Liquidaron', 'Sin liquidar'].map((h) => (
+                        <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditDays.map((day) => (
+                      <tr key={day.d} style={{ background: auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}` }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
+                          {String(day.d).padStart(2, '0')}
+                          {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>hoy</span>}
+                        </td>
+                        <td style={{ padding: '8px 12px', color: day.isSunday ? '#7c5e00' : day.isFuture ? '#adb5bd' : '#64748b', fontWeight: day.isSunday ? 700 : 400 }}>
+                          {DAY_NAMES[day.dow]}
+                        </td>
+                        <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
+                          {day.status === 'none' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ Sin actividad</span>}
+                          {day.status === 'partial' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e67700', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 4, padding: '2px 8px' }}>◐ Parcial</span>}
+                          {day.status === 'full' && <span style={{ fontSize: 11, fontWeight: 700, color: '#2f9e44', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 4, padding: '2px 8px' }}>✓ Completo</span>}
+                          {day.status === 'future' && <span style={{ fontSize: 11, color: '#adb5bd', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px' }}>— Futuro</span>}
+                        </td>
+                        <td style={{ padding: '8px 12px', fontWeight: 600, color: day.isFuture ? '#adb5bd' : '#334155' }}>
+                          {day.isFuture ? '—' : day.dayRecords.length}
+                        </td>
+                        <td style={{ padding: '8px 12px', fontWeight: 700, color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
+                          {day.isFuture ? '—' : day.total > 0 ? fmt(day.total) : <span style={{ color: '#adb5bd' }}>—</span>}
+                        </td>
+                        <td style={{ padding: '8px 6px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {day.settled.map((dr) => (
+                              <span key={dr} style={{ fontSize: 11, background: '#dbeafe', color: '#1e40af', borderRadius: 4, padding: '2px 7px', fontWeight: 500 }}>{dr.split(' ')[0]}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td style={{ padding: '8px 6px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {!day.isFuture && day.missing.map((dr) => (
+                              <span key={dr} style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
         </CCardBody>
       </CCard>
     </>
