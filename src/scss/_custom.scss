@@ -112,6 +112,11 @@ body[data-app-theme="blue"] {
   @include app-theme(#1e3a5f, #10b981);
 }
 
+// ─── Sidebar sub-item indentation ─────────────────────────────────
+.sidebar .nav-group-items .nav-link {
+  padding-left: 3.5rem;
+}
+
 // ─── Responsive global ────────────────────────────────────────────
 @media (max-width: 991.98px) {
   .sidebar {
