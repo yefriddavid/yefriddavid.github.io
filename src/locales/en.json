@@ -91,7 +91,9 @@
     "taxiExpenses": "Taxi Expenses",
     "taxiResumen": "Taxi Summary",
     "taxiManagement": "Taxi Management",
-    "taxiHome": "Taxis Home"
+    "taxiHome": "Taxis Home",
+    "partners": "Partners",
+    "distributions": "Profit Sharing"
   },
   "auth": {
     "login": "Login",
@@ -210,7 +212,8 @@
         "colMissing": "Missing",
         "editNote": "Edit note",
         "addNote": "Add note",
-        "notePlaceholder": "Reason..."
+        "notePlaceholder": "Reason...",
+        "total": "Total"
       },
       "columns": {
         "countSettlements": "# Settlements",

@@ -91,7 +91,9 @@
     "taxiExpenses": "Gastos Taxis",
     "taxiResumen": "Resumen Taxis",
     "taxiManagement": "Gestión de Taxis",
-    "taxiHome": "Inicio Taxis"
+    "taxiHome": "Inicio Taxis",
+    "partners": "Socios",
+    "distributions": "Repartición"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -210,7 +212,8 @@
         "colMissing": "Sin liquidar",
         "editNote": "Editar nota",
         "addNote": "Agregar nota",
-        "notePlaceholder": "Motivo..."
+        "notePlaceholder": "Motivo...",
+        "total": "Total"
       },
       "columns": {
         "countSettlements": "# Liquidaciones",

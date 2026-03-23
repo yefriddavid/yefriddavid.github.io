@@ -11,8 +11,9 @@ import {
   cilCarAlt,
   cilMoney,
   cilDescription,
+  cilSettings,
 } from '@coreui/icons'
-import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { CNavGroup, CNavItem } from '@coreui/react'
 
 const getNav = (t) => [
   {
@@ -20,103 +21,99 @@ const getNav = (t) => [
     name: t('nav.dashboard'),
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-    },
   },
   {
-    component: CNavTitle,
+    component: CNavGroup,
     name: t('nav.management'),
-  },
-  {
-    component: CNavItem,
-    name: t('nav.accounts'),
-    to: '/management/accounts',
     icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: t('nav.accounts'),
+        to: '/management/accounts',
+        icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.payments'),
+        to: '/management/payments',
+        icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+      },
+    ],
   },
   {
-    component: CNavItem,
-    name: t('nav.payments'),
-    to: '/management/payments',
-    icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavTitle,
-    name: t('nav.movements'),
-  },
-  {
-    component: CNavItem,
-    name: t('nav.accounts'),
-    to: '/movements/accounts',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavTitle,
+    component: CNavGroup,
     name: t('nav.tools'),
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: t('nav.increaseDecrease'),
+        to: '/tools/adjustments',
+        icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.visits'),
+        to: '/tools/visits',
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+      },
+    ],
   },
   {
-    component: CNavItem,
-    name: t('nav.increaseDecrease'),
-    to: '/tools/adjustments',
-    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.visits'),
-    to: '/tools/visits',
-    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavTitle,
+    component: CNavGroup,
     name: t('nav.taxiManagement'),
-  },
-  {
-    component: CNavItem,
-    name: t('nav.taxiHome'),
-    to: '/management/taxis/home',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.liquidaciones'),
-    to: '/management/taxis/settlements',
-    icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.conductores'),
-    to: '/management/taxis/drivers',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.vehiculos'),
-    to: '/management/taxis/vehicles',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.taxiExpenses'),
-    to: '/management/taxis/expenses',
-    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: t('nav.taxiResumen'),
-    to: '/management/taxis/summary',
-    icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Socios',
-    to: '/management/taxis/partners',
-    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Repartición',
-    to: '/management/taxis/profit-sharing',
-    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: t('nav.taxiHome'),
+        to: '/management/taxis/home',
+        icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.liquidaciones'),
+        to: '/management/taxis/settlements',
+        icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.conductores'),
+        to: '/management/taxis/drivers',
+        icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.vehiculos'),
+        to: '/management/taxis/vehicles',
+        icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.taxiExpenses'),
+        to: '/management/taxis/expenses',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.taxiResumen'),
+        to: '/management/taxis/summary',
+        icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.partners'),
+        to: '/management/taxis/partners',
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: t('nav.distributions'),
+        to: '/management/taxis/profit-sharing',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+    ],
   },
 ]
 

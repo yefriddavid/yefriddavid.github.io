@@ -159,6 +159,8 @@ const Taxis = () => {
   const [editingNote, setEditingNote] = useState(null) // { date, driver }
   const [auditPlateFilter, setAuditPlateFilter] = useState('')
   const [auditDriverFilter, setAuditDriverFilter] = useState(new Set())
+  const [auditStatusFilter, setAuditStatusFilter] = useState(null)
+  const [selectedAuditDay, setSelectedAuditDay] = useState(null)
   const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
   const auditDriverDropRef = useRef(null)
   const savingRef = useRef(false)
@@ -403,6 +405,7 @@ const Taxis = () => {
   })
   const auditFilteredDays = auditDays.filter((day) => {
     if (dayFilter && day.d !== Number(dayFilter)) return false
+    if (auditStatusFilter && day.status !== auditStatusFilter) return false
     if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
     if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
     return true
@@ -749,7 +752,7 @@ const Taxis = () => {
               <Column dataField="plate" caption={t('taxis.settlements.fields.plate')} width={110} hidingPriority={2}
                 cellRender={({ value }) => <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>}
               />
-              <Column dataField="amount" caption={t('taxis.settlements.fields.value')} hidingPriority={4}
+              <Column dataField="amount" caption={t('taxis.settlements.fields.value')}
                 cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
               />
               <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} hidingPriority={1} />
@@ -859,17 +862,32 @@ const Taxis = () => {
               {/* Summary strip */}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
                 {[
-                  { label: t('taxis.settlements.audit.statusNone'), count: auditDays.filter((d) => d.status === 'none').length, color: '#e03131', bg: '#fff5f5' },
-                  { label: t('taxis.settlements.audit.statusPartial'), count: auditDays.filter((d) => d.status === 'partial').length, color: '#e67700', bg: '#fffbeb' },
-                  { label: t('taxis.settlements.audit.statusFull'), count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
-                  { label: t('taxis.settlements.audit.statusFuture'), count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
-                ].map(({ label, count, color, bg }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, background: bg, border: `1px solid ${color}33`, borderRadius: 8, padding: '6px 14px' }}>
-                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, fontWeight: 700, color }}>{count}</span>
-                    <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>{label}</span>
-                  </div>
-                ))}
+                  { key: 'none', label: t('taxis.settlements.audit.statusNone'), count: auditDays.filter((d) => d.status === 'none').length, color: '#e03131', bg: '#fff5f5' },
+                  { key: 'partial', label: t('taxis.settlements.audit.statusPartial'), count: auditDays.filter((d) => d.status === 'partial').length, color: '#e67700', bg: '#fffbeb' },
+                  { key: 'full', label: t('taxis.settlements.audit.statusFull'), count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
+                  { key: 'future', label: t('taxis.settlements.audit.statusFuture'), count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
+                ].map(({ key, label, count, color, bg }) => {
+                  const active = auditStatusFilter === key
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => setAuditStatusFilter(active ? null : key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        background: active ? color : bg,
+                        border: `1px solid ${active ? color : color + '33'}`,
+                        borderRadius: 8, padding: '6px 14px',
+                        cursor: 'pointer',
+                        boxShadow: active ? `0 0 0 2px ${color}55` : 'none',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: active ? '#fff' : color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: active ? '#fff' : color }}>{count}</span>
+                      <span style={{ fontSize: 12, color: active ? 'rgba(255,255,255,0.85)' : 'var(--cui-secondary-color)' }}>{label}</span>
+                    </div>
+                  )
+                })}
                 <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--cui-secondary-color)', alignSelf: 'center' }}>
                   {t('taxis.settlements.audit.activeDrivers' + (auditDrivers.length !== 1 ? '_plural' : ''), { count: auditDrivers.length })}
                 </div>
@@ -944,9 +962,9 @@ const Taxis = () => {
                   )}
                 </div>
 
-                {(auditPlateFilter || auditDriverFilter.size > 0) && (
+                {(auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter) && (
                   <button
-                    onClick={() => { setAuditPlateFilter(''); setAuditDriverFilter(new Set()) }}
+                    onClick={() => { setAuditPlateFilter(''); setAuditDriverFilter(new Set()); setAuditStatusFilter(null) }}
                     style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e03131', background: 'none', color: '#e03131', cursor: 'pointer' }}
                   >
                     ✕ Limpiar
@@ -976,7 +994,11 @@ const Taxis = () => {
                   </thead>
                   <tbody>
                     {auditFilteredDays.map((day) => (
-                      <tr key={day.d} style={{ background: auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}` }}>
+                      <React.Fragment key={day.d}>
+                      <tr
+                        onClick={() => setSelectedAuditDay((prev) => prev === day.d ? null : day.d)}
+                        style={{ background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}`, cursor: 'pointer' }}
+                      >
                         <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
                           {String(day.d).padStart(2, '0')}
                           {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>{t('taxis.settlements.audit.today')}</span>}
@@ -1027,7 +1049,7 @@ const Taxis = () => {
                                       ◐ {driver.name.split(' ')[0]} · {fmt(paid)}/{fmt(expected)}
                                     </span>
                                     <button
-                                      onClick={() => setEditingNote(isEditing ? null : { date: day.dateStr, driver: driver.name })}
+                                      onClick={(e) => { e.stopPropagation(); setEditingNote(isEditing ? null : { date: day.dateStr, driver: driver.name }) }}
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
                                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
                                     >✎</button>
@@ -1059,7 +1081,7 @@ const Taxis = () => {
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <span style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
                                     <button
-                                      onClick={() => setEditingNote(isEditing ? null : { date: day.dateStr, driver: dr })}
+                                      onClick={(e) => { e.stopPropagation(); setEditingNote(isEditing ? null : { date: day.dateStr, driver: dr }) }}
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
                                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
                                     >✎</button>
@@ -1086,8 +1108,53 @@ const Taxis = () => {
                           </div>
                         </td>
                       </tr>
+                      {selectedAuditDay === day.d && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: 0, background: 'var(--cui-card-bg, #fff)' }}>
+                            <DetailPanel columns={2}>
+                              <DetailSection title={t('taxis.settlements.audit.colDay')}>
+                                <DetailRow label={t('taxis.settlements.fields.date')} value={day.dateStr} />
+                                <DetailRow label={t('taxis.settlements.audit.colStatus')} value={
+                                  day.status === 'none' ? t('taxis.settlements.audit.statusNone')
+                                  : day.status === 'partial' ? t('taxis.settlements.audit.statusPartial')
+                                  : day.status === 'full' ? t('taxis.settlements.audit.statusFull')
+                                  : t('taxis.settlements.audit.statusFuture')
+                                } />
+                                <DetailRow label={t('taxis.settlements.audit.colCount')} value={day.dayRecords.length} />
+                                <DetailRow label={t('taxis.settlements.audit.colTotal')} value={day.total > 0 ? fmt(day.total) : null} />
+                              </DetailSection>
+                              <DetailSection title={day.dayRecords.length > 0 ? t('taxis.settlements.audit.colSettled') : t('taxis.settlements.audit.colMissing')}>
+                                {day.dayRecords.length > 0 ? day.dayRecords.map((r) => (
+                                  <DetailRow
+                                    key={r.id}
+                                    label={[r.driver, r.plate].filter(Boolean).join(' · ')}
+                                    value={fmt(r.amount)}
+                                  />
+                                )) : day.missing.map((dr) => (
+                                  <DetailRow key={dr} label={dr} value={getNote(day.dateStr, dr) || '—'} />
+                                ))}
+                              </DetailSection>
+                            </DetailPanel>
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr style={{ background: '#1e3a5f', borderTop: '2px solid #1e3a5f' }}>
+                      <td colSpan={3} style={{ padding: '9px 12px', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {t('taxis.settlements.audit.total')}
+                      </td>
+                      <td style={{ padding: '9px 12px', fontWeight: 700, color: '#fff', fontSize: 13 }}>
+                        {auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => s + d.dayRecords.length, 0)}
+                      </td>
+                      <td style={{ padding: '9px 12px', fontWeight: 700, color: '#fff', fontSize: 13, whiteSpace: 'nowrap' }}>
+                        {fmt(auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => s + d.total, 0))}
+                      </td>
+                      <td colSpan={2} />
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
