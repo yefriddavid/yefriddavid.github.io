@@ -153,10 +153,14 @@ const Taxis = () => {
   const [dayFilter, setDayFilter] = useState('')
   const [driverDropOpen, setDriverDropOpen] = useState(false)
   const driverDropRef = useRef(null)
-  const [viewMode, setViewMode] = useState('detail')
+  const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('settlements_viewMode') || 'detail')
   const [editingRow, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null)
   const [editingNote, setEditingNote] = useState(null) // { date, driver }
+  const [auditPlateFilter, setAuditPlateFilter] = useState('')
+  const [auditDriverFilter, setAuditDriverFilter] = useState(new Set())
+  const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
+  const auditDriverDropRef = useRef(null)
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
@@ -189,6 +193,15 @@ const Taxis = () => {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [driverDropOpen])
+
+  useEffect(() => {
+    if (!auditDriverDropOpen) return
+    const handler = (e) => {
+      if (!auditDriverDropRef.current?.contains(e.target)) setAuditDriverDropOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [auditDriverDropOpen])
 
   useEffect(() => {
     if (!savingRef.current) return
@@ -372,8 +385,14 @@ const Taxis = () => {
     const isToday = d === auditToday
     const isSunday = dow === 0
     const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : missingVehicles.length === 0 ? 'full' : 'partial'
-    return { d, dateStr, dayRecords, settled: [...settled], missing, missingVehicles, total, dow, isFuture, isToday, isSunday, status }
+    return { d, dateStr, dayRecords, settled: [...settled], settledVehicles: [...settledVehicles], missing, missingVehicles, total, dow, isFuture, isToday, isSunday, status }
   })
+  const auditFilteredDays = auditDays.filter((day) => {
+    if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
+    if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
+    return true
+  })
+
   const auditNoteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
   const getNote = (date, driver) => auditNotes[auditNoteId(date, driver)]?.note ?? ''
   const handleNoteSave = (date, driver, note) => {
@@ -623,16 +642,16 @@ const Taxis = () => {
             )}
           </div>
           <div className="d-flex align-items-center gap-1">
-            <CButton size="sm" color="secondary" variant={viewMode === 'detail' ? undefined : 'outline'} onClick={() => setViewMode('detail')} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'detail' ? undefined : 'outline'} onClick={() => { setViewMode('detail'); sessionStorage.setItem('settlements_viewMode', 'detail') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewDetail')}
             </CButton>
-            <CButton size="sm" color="secondary" variant={viewMode === 'byDriver' ? undefined : 'outline'} onClick={() => setViewMode('byDriver')} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'byDriver' ? undefined : 'outline'} onClick={() => { setViewMode('byDriver'); sessionStorage.setItem('settlements_viewMode', 'byDriver') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewByDriver')}
             </CButton>
-            <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => setViewMode('byVehicle')} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => { setViewMode('byVehicle'); sessionStorage.setItem('settlements_viewMode', 'byVehicle') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewByVehicle')}
             </CButton>
-            <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => setViewMode('audit')} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => { setViewMode('audit'); sessionStorage.setItem('settlements_viewMode', 'audit') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewAudit')}
             </CButton>
           </div>
@@ -841,6 +860,85 @@ const Taxis = () => {
                 </div>
               </div>
 
+              {/* Audit filters */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
+                <select
+                  value={auditPlateFilter}
+                  onChange={(e) => setAuditPlateFilter(e.target.value)}
+                  style={{
+                    fontSize: 12, padding: '4px 10px', borderRadius: 6,
+                    border: '1px solid var(--cui-secondary)',
+                    background: auditPlateFilter ? '#e8f0fb' : '#fff',
+                    color: auditPlateFilter ? '#1e3a5f' : 'var(--cui-secondary)',
+                    fontWeight: auditPlateFilter ? 600 : 400, cursor: 'pointer',
+                  }}
+                >
+                  <option value="">Vehículo: Todos</option>
+                  {auditVehicles.map((pl) => (
+                    <option key={pl} value={pl}>{pl}</option>
+                  ))}
+                </select>
+
+                <div ref={auditDriverDropRef} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setAuditDriverDropOpen((v) => !v)}
+                    style={{
+                      fontSize: 12, minWidth: 130, padding: '4px 10px',
+                      borderRadius: 6, border: '1px solid var(--cui-secondary)',
+                      background: auditDriverFilter.size > 0 ? '#e8f0fb' : '#fff',
+                      color: auditDriverFilter.size > 0 ? '#1e3a5f' : 'var(--cui-secondary)',
+                      cursor: 'pointer', fontWeight: auditDriverFilter.size > 0 ? 600 : 400,
+                    }}
+                  >
+                    Conductor{auditDriverFilter.size > 0 ? ` (${auditDriverFilter.size})` : ': Todos'} ▾
+                  </button>
+                  {auditDriverDropOpen && (
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 1050,
+                      background: '#fff', border: '1px solid var(--cui-border-color)',
+                      borderRadius: 8, padding: '8px 12px', minWidth: 180,
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                    }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', paddingBottom: 6, borderBottom: '1px solid var(--cui-border-color)', marginBottom: 6 }}>
+                        <input type="checkbox" checked={auditDriverFilter.size === 0} onChange={() => setAuditDriverFilter(new Set())} />
+                        Todos
+                      </label>
+                      {auditDrivers.map((dr) => (
+                        <label key={dr} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '3px 0' }}>
+                          <input
+                            type="checkbox"
+                            checked={auditDriverFilter.has(dr)}
+                            onChange={() => setAuditDriverFilter((prev) => {
+                              const next = new Set(prev)
+                              if (next.has(dr)) next.delete(dr); else next.add(dr)
+                              return next
+                            })}
+                          />
+                          {dr}
+                        </label>
+                      ))}
+                      <div style={{ paddingTop: 8, marginTop: 6, borderTop: '1px solid var(--cui-border-color)', textAlign: 'right' }}>
+                        <button
+                          onClick={() => setAuditDriverDropOpen(false)}
+                          style={{ fontSize: 11, fontWeight: 600, padding: '3px 12px', borderRadius: 4, border: '1px solid #1e3a5f', background: '#1e3a5f', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Aceptar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {(auditPlateFilter || auditDriverFilter.size > 0) && (
+                  <button
+                    onClick={() => { setAuditPlateFilter(''); setAuditDriverFilter(new Set()) }}
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e03131', background: 'none', color: '#e03131', cursor: 'pointer' }}
+                  >
+                    ✕ Limpiar
+                  </button>
+                )}
+              </div>
+
               {/* Table */}
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -862,7 +960,7 @@ const Taxis = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {auditDays.map((day) => (
+                    {auditFilteredDays.map((day) => (
                       <tr key={day.d} style={{ background: auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}` }}>
                         <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
                           {String(day.d).padStart(2, '0')}
