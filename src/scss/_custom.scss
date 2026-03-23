@@ -36,6 +36,10 @@
       padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
     }
 
+    .nav-group-items .nav-link.active {
+      padding-left: calc(3.5rem - 3px);
+    }
+
     .sidebar-brand, h3 {
       color: $text-hi;
       font-weight: 700;
