@@ -132,6 +132,75 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
   )
 }
 
+const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) => {
+  const defaultDriver = (() => {
+    const vehicles = [...(day.missingVehicles || []), ...(day.underpaidVehicles || [])]
+    for (const pl of vehicles) {
+      const d = periodDrivers.find((dr) => {
+        if (dr.defaultVehicle !== pl) return false
+        if (dr.startDate && dr.startDate > day.dateStr) return false
+        if (dr.endDate && dr.endDate < day.dateStr) return false
+        return true
+      })
+      if (d && d.active !== false) return d
+    }
+    return activeDrivers[0] || null
+  })()
+
+  const getDefaultAmount = (driver) => {
+    if (!driver) return ''
+    const amt = day.isSunday
+      ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
+      : (driver.defaultAmount || 0)
+    return amt ? String(amt) : ''
+  }
+
+  const [driverName, setDriverName] = useState(defaultDriver?.name || '')
+  const [amount, setAmount] = useState(getDefaultAmount(defaultDriver))
+
+  const handleDriverChange = (name) => {
+    setDriverName(name)
+    const d = activeDrivers.find((dr) => dr.name === name)
+    setAmount(getDefaultAmount(d))
+  }
+
+  const handleSave = () => {
+    if (!driverName || !amount) return
+    const driver = activeDrivers.find((d) => d.name === driverName)
+    onSave({ driver: driverName, plate: driver?.defaultVehicle || '', amount: Number(amount), date: day.dateStr })
+  }
+
+  return (
+    <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+      <select
+        value={driverName}
+        onChange={(e) => handleDriverChange(e.target.value)}
+        style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, border: '1px solid #cbd5e1', outline: 'none', maxWidth: 150 }}
+      >
+        {activeDrivers.map((d) => (
+          <option key={d.id} value={d.name}>{d.name}</option>
+        ))}
+      </select>
+      <input
+        type="number"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, border: '1px solid #cbd5e1', outline: 'none', width: 100 }}
+      />
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button
+          onClick={handleSave}
+          style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#1e3a5f', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+        >✓</button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onCancel() }}
+          style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer' }}
+        >✕</button>
+      </div>
+    </div>
+  )
+}
+
 const Taxis = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
@@ -163,6 +232,7 @@ const Taxis = () => {
   const [selectedAuditDay, setSelectedAuditDay] = useState(null)
   const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
   const auditDriverDropRef = useRef(null)
+  const [addingSettlementDay, setAddingSettlementDay] = useState(null)
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
@@ -1043,7 +1113,7 @@ const Taxis = () => {
                           {day.isFuture ? '—' : day.total > 0 ? fmt(day.total) : <span style={{ color: '#adb5bd' }}>—</span>}
                         </td>
                         <td style={{ padding: '8px 6px' }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
                             {day.settled.map((dr) => {
                               const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
                               const underpaid = plate ? day.underpaidVehicles.includes(plate) : false
@@ -1059,7 +1129,26 @@ const Taxis = () => {
                                 </span>
                               ))
                             })}
+                            {!day.isFuture && addingSettlementDay !== day.dateStr && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setAddingSettlementDay(day.dateStr) }}
+                                style={{ background: 'none', border: '1px dashed #93c5fd', color: '#3b82f6', borderRadius: 4, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '1px 7px' }}
+                                title="Agregar liquidación"
+                              >+</button>
+                            )}
                           </div>
+                          {!day.isFuture && addingSettlementDay === day.dateStr && (
+                            <AuditAddForm
+                              day={day}
+                              activeDrivers={drivers.filter((d) => d.active !== false)}
+                              periodDrivers={periodDrivers}
+                              onSave={(payload) => {
+                                dispatch(taxiSettlementActions.createRequest(payload))
+                                setAddingSettlementDay(null)
+                              }}
+                              onCancel={() => setAddingSettlementDay(null)}
+                            />
+                          )}
                         </td>
                         <td style={{ padding: '8px 6px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
