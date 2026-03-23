@@ -1053,6 +1053,13 @@ const Taxis = () => {
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
                                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
                                     >✎</button>
+                                    {note && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleNoteSave(day.dateStr, driver.name, '') }}
+                                        title={t('common.remove')}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: '#e03131', fontSize: 11, lineHeight: 1 }}
+                                      >×</button>
+                                    )}
                                   </div>
                                   {isEditing && (
                                     <input
@@ -1085,6 +1092,13 @@ const Taxis = () => {
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
                                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
                                     >✎</button>
+                                    {note && (
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleNoteSave(day.dateStr, dr, '') }}
+                                        title={t('common.remove')}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: '#e03131', fontSize: 11, lineHeight: 1 }}
+                                      >×</button>
+                                    )}
                                   </div>
                                   {isEditing && (
                                     <input
