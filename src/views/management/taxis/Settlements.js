@@ -472,7 +472,7 @@ const Taxis = () => {
         <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Neto</div>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.net')}</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: (total - totalExpenses) >= 0 ? '#1e40af' : '#e03131' }}>
                 {fmt(total - totalExpenses)}
               </div>
@@ -633,7 +633,7 @@ const Taxis = () => {
               {t('taxis.settlements.viewByVehicle')}
             </CButton>
             <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => setViewMode('audit')} style={{ fontSize: 12 }}>
-              Auditoría
+              {t('taxis.settlements.viewAudit')}
             </CButton>
           </div>
           <CButton size="sm" color="secondary" variant="outline" onClick={() => dispatch(taxiSettlementActions.fetchRequest())} title={t('common.refresh')}>
@@ -825,10 +825,10 @@ const Taxis = () => {
               {/* Summary strip */}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
                 {[
-                  { label: 'Sin actividad', count: auditDays.filter((d) => d.status === 'none').length, color: '#e03131', bg: '#fff5f5' },
-                  { label: 'Parcial', count: auditDays.filter((d) => d.status === 'partial').length, color: '#e67700', bg: '#fffbeb' },
-                  { label: 'Completo', count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
-                  { label: 'Futuros', count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
+                  { label: t('taxis.settlements.audit.statusNone'), count: auditDays.filter((d) => d.status === 'none').length, color: '#e03131', bg: '#fff5f5' },
+                  { label: t('taxis.settlements.audit.statusPartial'), count: auditDays.filter((d) => d.status === 'partial').length, color: '#e67700', bg: '#fffbeb' },
+                  { label: t('taxis.settlements.audit.statusFull'), count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
+                  { label: t('taxis.settlements.audit.statusFuture'), count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
                 ].map(({ label, count, color, bg }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, background: bg, border: `1px solid ${color}33`, borderRadius: 8, padding: '6px 14px' }}>
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
@@ -837,7 +837,7 @@ const Taxis = () => {
                   </div>
                 ))}
                 <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--cui-secondary-color)', alignSelf: 'center' }}>
-                  {auditDrivers.length} conductor{auditDrivers.length !== 1 ? 'es' : ''} activo{auditDrivers.length !== 1 ? 's' : ''} en el periodo
+                  {t('taxis.settlements.audit.activeDrivers' + (auditDrivers.length !== 1 ? '_plural' : ''), { count: auditDrivers.length })}
                 </div>
               </div>
 
@@ -846,7 +846,15 @@ const Taxis = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: '#1e3a5f' }}>
-                      {['Día', 'Sem', 'Estado', 'Liq.', 'Total', 'Liquidaron', 'Sin liquidar'].map((h) => (
+                      {[
+                        t('taxis.settlements.audit.colDay'),
+                        t('taxis.settlements.audit.colWeekday'),
+                        t('taxis.settlements.audit.colStatus'),
+                        t('taxis.settlements.audit.colCount'),
+                        t('taxis.settlements.audit.colTotal'),
+                        t('taxis.settlements.audit.colSettled'),
+                        t('taxis.settlements.audit.colMissing'),
+                      ].map((h) => (
                         <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
                           {h}
                         </th>
@@ -858,16 +866,16 @@ const Taxis = () => {
                       <tr key={day.d} style={{ background: auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}` }}>
                         <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
                           {String(day.d).padStart(2, '0')}
-                          {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>hoy</span>}
+                          {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>{t('taxis.settlements.audit.today')}</span>}
                         </td>
                         <td style={{ padding: '8px 12px', color: day.isSunday ? '#7c5e00' : day.isFuture ? '#adb5bd' : '#64748b', fontWeight: day.isSunday ? 700 : 400 }}>
                           {DAY_NAMES[day.dow]}
                         </td>
                         <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
-                          {day.status === 'none' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ Sin actividad</span>}
-                          {day.status === 'partial' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e67700', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 4, padding: '2px 8px' }}>◐ Parcial</span>}
-                          {day.status === 'full' && <span style={{ fontSize: 11, fontWeight: 700, color: '#2f9e44', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 4, padding: '2px 8px' }}>✓ Completo</span>}
-                          {day.status === 'future' && <span style={{ fontSize: 11, color: '#adb5bd', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px' }}>— Futuro</span>}
+                          {day.status === 'none' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ {t('taxis.settlements.audit.statusNone')}</span>}
+                          {day.status === 'partial' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e67700', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 4, padding: '2px 8px' }}>◐ {t('taxis.settlements.audit.statusPartial')}</span>}
+                          {day.status === 'full' && <span style={{ fontSize: 11, fontWeight: 700, color: '#2f9e44', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 4, padding: '2px 8px' }}>✓ {t('taxis.settlements.audit.statusFull')}</span>}
+                          {day.status === 'future' && <span style={{ fontSize: 11, color: '#adb5bd', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px' }}>— {t('taxis.settlements.audit.statusFuture')}</span>}
                         </td>
                         <td style={{ padding: '8px 12px', fontWeight: 600, color: day.isFuture ? '#adb5bd' : '#334155' }}>
                           {day.isFuture ? '—' : day.dayRecords.length}
@@ -893,7 +901,7 @@ const Taxis = () => {
                                     <span style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
                                     <button
                                       onClick={() => setEditingNote(isEditing ? null : { date: day.dateStr, driver: dr })}
-                                      title={note ? 'Editar nota' : 'Agregar nota'}
+                                      title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
                                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: note ? '#e67700' : '#adb5bd', fontSize: 12, lineHeight: 1 }}
                                     >✎</button>
                                   </div>
@@ -901,7 +909,7 @@ const Taxis = () => {
                                     <input
                                       autoFocus
                                       defaultValue={note}
-                                      placeholder="Motivo..."
+                                      placeholder={t('taxis.settlements.audit.notePlaceholder')}
                                       onBlur={(e) => handleNoteSave(day.dateStr, dr, e.target.value)}
                                       onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleNoteSave(day.dateStr, dr, e.target.value)
