@@ -6,6 +6,7 @@ import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
+  CDropdown, CDropdownToggle, CDropdownMenu,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilReload, cilPencil } from '@coreui/icons'
@@ -149,14 +150,22 @@ const Taxis = () => {
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
-  const [driverFilter, setDriverFilter] = useState('')
+  const [driverFilter, setDriverFilter] = useState(new Set())
   const [plateFilter, setPlateFilter] = useState('')
+  const [driverDropOpen, setDriverDropOpen] = useState(false)
   const [viewMode, setViewMode] = useState('detail')
   const [editingRow, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null) // { type: 'success'|'error', msg: string }
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
+
+  const toggleDriverFilter = (name) => setDriverFilter((prev) => {
+    const next = new Set(prev)
+    if (next.has(name)) next.delete(name)
+    else next.add(name)
+    return next
+  })
 
   const records = settlementsData ?? []
   const drivers = driversData ?? []
@@ -256,7 +265,7 @@ const Taxis = () => {
     if (!r.date) return false
     const [y, m] = r.date.split('-').map(Number)
     if (y !== period.year || m !== period.month) return false
-    if (driverFilter && r.driver !== driverFilter) return false
+    if (driverFilter.size > 0 && !driverFilter.has(r.driver)) return false
     if (plateFilter && r.plate !== plateFilter) return false
     return true
   })
@@ -452,20 +461,50 @@ const Taxis = () => {
                 <option key={y} value={y}>{y}</option>
               ))}
             </CFormSelect>
-            {viewMode === 'detail' && (
+            {(viewMode === 'detail' || viewMode === 'byDriver') && (
               <>
-                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Conductor</span>
-                <CFormSelect
-                  size="sm"
-                  style={{ width: 150 }}
-                  value={driverFilter}
-                  onChange={(e) => setDriverFilter(e.target.value)}
+                <CDropdown
+                  visible={driverDropOpen}
+                  onHide={() => setDriverDropOpen(false)}
                 >
-                  <option value="">Todos</option>
-                  {drivers.map((d) => (
-                    <option key={d.id} value={d.name}>{d.name}</option>
-                  ))}
-                </CFormSelect>
+                  <CDropdownToggle
+                    size="sm"
+                    color="secondary"
+                    variant="outline"
+                    style={{ fontSize: 12, minWidth: 130 }}
+                    onClick={() => setDriverDropOpen((v) => !v)}
+                  >
+                    Conductor{driverFilter.size > 0 ? ` (${driverFilter.size})` : ''}
+                  </CDropdownToggle>
+                  <CDropdownMenu style={{ padding: '8px 12px', minWidth: 180 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', paddingBottom: 6, borderBottom: '1px solid var(--cui-border-color)', marginBottom: 6 }}>
+                      <input
+                        type="checkbox"
+                        checked={driverFilter.size === 0}
+                        onChange={() => setDriverFilter(new Set())}
+                      />
+                      Todos
+                    </label>
+                    {drivers.map((d) => (
+                      <label key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '3px 0' }}>
+                        <input
+                          type="checkbox"
+                          checked={driverFilter.has(d.name)}
+                          onChange={() => toggleDriverFilter(d.name)}
+                        />
+                        {d.name}
+                      </label>
+                    ))}
+                    <div style={{ paddingTop: 8, marginTop: 6, borderTop: '1px solid var(--cui-border-color)', textAlign: 'right' }}>
+                      <button
+                        onClick={() => setDriverDropOpen(false)}
+                        style={{ fontSize: 11, fontWeight: 600, padding: '3px 12px', borderRadius: 4, border: '1px solid #1e3a5f', background: '#1e3a5f', color: '#fff', cursor: 'pointer' }}
+                      >
+                        Aceptar
+                      </button>
+                    </div>
+                  </CDropdownMenu>
+                </CDropdown>
                 <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
                 <CFormSelect
                   size="sm"
@@ -613,14 +652,14 @@ const Taxis = () => {
                 dataField="date"
                 caption={t('taxis.settlements.fields.date')}
                 width={110}
-                hidingPriority={1}
+                hidingPriority={5}
                 sortOrder="asc"
                 defaultSortIndex={0}
                 cellRender={({ value }) => (
                   <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtDate(value)}</span>
                 )}
               />
-              <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={150} hidingPriority={4} />
+              <Column dataField="driver" caption={t('taxis.settlements.fields.driver')} minWidth={150} hidingPriority={3} />
               <Column
                 dataField="plate"
                 caption={t('taxis.settlements.fields.plate')}
@@ -633,12 +672,12 @@ const Taxis = () => {
               <Column
                 dataField="amount"
                 caption={t('taxis.settlements.fields.value')}
-                hidingPriority={3}
+                hidingPriority={4}
                 cellRender={({ value }) => (
                   <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
                 )}
               />
-              <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} hidingPriority={5} />
+              <Column dataField="comment" caption={t('taxis.settlements.fields.comment')} minWidth={120} hidingPriority={1} />
               <Column
                 caption=""
                 width={80}

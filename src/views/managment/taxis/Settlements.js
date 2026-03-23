@@ -442,7 +442,7 @@ const Taxis = () => {
                 <option key={y} value={y}>{y}</option>
               ))}
             </CFormSelect>
-            {viewMode === 'detail' && (
+            {(viewMode === 'detail' || viewMode === 'byDriver') && (
               <>
                 <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.fields.driver')}</span>
                 <CFormSelect
@@ -456,6 +456,10 @@ const Taxis = () => {
                     <option key={d.id} value={d.name}>{d.name}</option>
                   ))}
                 </CFormSelect>
+              </>
+            )}
+            {viewMode === 'detail' && (
+              <>
                 <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.fields.vehicle')}</span>
                 <CFormSelect
                   size="sm"
