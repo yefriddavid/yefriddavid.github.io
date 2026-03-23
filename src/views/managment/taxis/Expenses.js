@@ -256,7 +256,7 @@ const Gastos = () => {
               <Editing allowUpdating={true} mode="form">
                 <Form colCount={3}>
                   <GroupItem caption="Gasto" colCount={3} colSpan={3}>
-                    <SimpleItem dataField="date" label={{ text: 'Fecha' }} editorType="dxDateBox" editorOptions={{ displayFormat: 'yyyy-MM-dd' }} />
+                    <SimpleItem dataField="date" label={{ text: 'Fecha' }} editorType="dxDateBox" editorOptions={{ displayFormat: 'dd/MM/yyyy', dateSerializationFormat: 'yyyy-MM-dd' }} />
                     <SimpleItem dataField="category" label={{ text: 'Categoría' }} editorType="dxSelectBox" editorOptions={{ dataSource: CATEGORIES }} />
                     <SimpleItem dataField="plate" label={{ text: 'Vehículo' }} editorType="dxSelectBox" editorOptions={{ dataSource: [{ plate: '', label: '— Ninguno —' }, ...vehicles.map((v) => ({ plate: v.plate, label: `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` }))], valueExpr: 'plate', displayExpr: 'label' }} />
                     <SimpleItem dataField="description" label={{ text: 'Descripción' }} colSpan={2} />

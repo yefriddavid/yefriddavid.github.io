@@ -7,10 +7,11 @@ import {
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTrash, cilPlus, cilX } from '@coreui/icons'
+import { cilTrash, cilPlus, cilX, cilReload } from '@coreui/icons'
 import * as taxiSettlementActions from 'src/actions/taxiSettlementActions'
 import * as taxiDriverActions from 'src/actions/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
+import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
 import '../../../views/movements/payments/Payments.scss'
 import './Taxis.scss'
 
@@ -91,6 +92,7 @@ const Taxis = () => {
   const { data: settlementsData, fetching: loadingSettlements } = useSelector((s) => s.taxiSettlement)
   const { data: driversData } = useSelector((s) => s.taxiDriver)
   const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
+  const { data: expensesData } = useSelector((s) => s.taxiExpense)
 
   const now = new Date()
   const [showForm, setShowForm] = useState(false)
@@ -109,6 +111,7 @@ const Taxis = () => {
     dispatch(taxiSettlementActions.fetchRequest())
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
+    dispatch(taxiExpenseActions.fetchRequest())
   }, [dispatch])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
@@ -177,10 +180,34 @@ const Taxis = () => {
 
   const total = filtered.reduce((acc, r) => acc + (r.amount || 0), 0)
 
+  const totalExpenses = (expensesData ?? [])
+    .filter((r) => {
+      if (!r.date) return false
+      const [y, m] = r.date.split('-').map(Number)
+      return y === period.year && m === period.month
+    })
+    .reduce((acc, r) => acc + (r.amount || 0), 0)
+
   const isCurrentPeriod = period.year === now.getFullYear() && period.month === (now.getMonth() + 1)
   const daysElapsed = isCurrentPeriod ? now.getDate() : null
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
   const projection = daysElapsed && daysElapsed > 0 ? Math.round((total / daysElapsed) * daysInMonth) : null
+
+  const calcRemaining = (driverName) => {
+    if (!isCurrentPeriod) return null
+    const driver = drivers.find((d) => d.name === driverName)
+    if (!driver) return null
+    const vehicle = vehicles.find((v) => v.plate === driver.defaultVehicle)
+    const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
+    const restrictedDays = [restr.d1, restr.d2].filter(Boolean).map(Number)
+    let remaining = 0
+    for (let day = now.getDate() + 1; day <= daysInMonth; day++) {
+      if (restrictedDays.includes(day)) continue
+      const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
+      remaining += isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+    }
+    return remaining
+  }
 
   const byDriver = Object.values(
     filtered.reduce((acc, r) => {
@@ -196,12 +223,12 @@ const Taxis = () => {
   return (
     <>
       {/* Summary */}
-      <CRow className="mb-3">
+      <CRow className="mb-3 d-none d-sm-flex">
         <CCol sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total liquidado</div>
-              <div style={{ fontSize: 22, fontWeight: 700 }}>{fmt(total)}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
             </CCardBody>
           </CCard>
         </CCol>
@@ -239,7 +266,15 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={6}>
+        <CCol sm={2}>
+          <CCard className="text-center">
+            <CCardBody>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total gastos</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#e67700' }}>{fmt(totalExpenses)}</div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol sm={4}>
           <CCard>
             <CCardBody style={{ padding: '12px 16px' }}>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>Por conductor</div>
@@ -330,6 +365,15 @@ const Taxis = () => {
               Por conductor
             </CButton>
           </div>
+          <CButton
+            size="sm"
+            color="secondary"
+            variant="outline"
+            onClick={() => dispatch(taxiSettlementActions.fetchRequest())}
+            title="Refrescar"
+          >
+            <CIcon icon={cilReload} size="sm" />
+          </CButton>
           <CButton
             size="sm"
             color={showForm ? 'danger' : 'primary'}
@@ -426,7 +470,7 @@ const Taxis = () => {
               <Editing allowUpdating={true} mode="form">
                 <Form colCount={4}>
                   <GroupItem caption="Liquidación" colCount={4} colSpan={4}>
-                    <SimpleItem dataField="date" label={{ text: 'Fecha' }} editorType="dxDateBox" editorOptions={{ displayFormat: 'yyyy-MM-dd' }} />
+                    <SimpleItem dataField="date" label={{ text: 'Fecha' }} editorType="dxDateBox" editorOptions={{ displayFormat: 'dd/MM/yyyy', dateSerializationFormat: 'yyyy-MM-dd' }} />
                     <SimpleItem dataField="driver" label={{ text: 'Conductor' }} editorType="dxSelectBox" editorOptions={{ dataSource: drivers, valueExpr: 'name', displayExpr: 'name' }} />
                     <SimpleItem dataField="plate" label={{ text: 'Placa' }} editorType="dxSelectBox" editorOptions={{ dataSource: vehicles, valueExpr: 'plate', displayExpr: (v) => v ? `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` : '' }} />
                     <SimpleItem dataField="amount" label={{ text: 'Valor' }} editorType="dxNumberBox" />
@@ -512,6 +556,18 @@ const Taxis = () => {
                   <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
                 )}
               />
+              {isCurrentPeriod && (
+                <Column
+                  caption="Falta por liquidar"
+                  width={170}
+                  allowSorting={false}
+                  cellRender={({ data }) => {
+                    const remaining = calcRemaining(data.driver)
+                    if (remaining === null) return <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
+                    return <span style={{ fontWeight: 700, color: remaining > 0 ? '#e67700' : '#2f9e44' }}>{fmt(remaining)}</span>
+                  }}
+                />
+              )}
               <MasterDetail
                 enabled={true}
                 render={({ data }) => (
