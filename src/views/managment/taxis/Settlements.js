@@ -596,6 +596,9 @@ const Taxis = () => {
               rowAlternationEnabled={true}
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
+              summary={{
+                totalItems: [{ column: 'amount', summaryType: 'sum', customizeText: (e) => fmt(e.value) }],
+              }}
               onRowUpdating={handleRowUpdating}
               onRowPrepared={(e) => {
                 if (e.rowType !== 'data') return
@@ -684,6 +687,12 @@ const Taxis = () => {
               rowAlternationEnabled={true}
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
+              summary={{
+                totalItems: [
+                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                  { column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                ],
+              }}
             >
               <Column dataField="driver" caption="Conductor" minWidth={180} />
               <Column
@@ -761,6 +770,12 @@ const Taxis = () => {
               rowAlternationEnabled={true}
               hoverStateEnabled={true}
               noDataText="Sin liquidaciones para este periodo."
+              summary={{
+                totalItems: [
+                  { column: 'total', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                  { column: 'remaining', summaryType: 'sum', customizeText: (e) => fmt(e.value) },
+                ],
+              }}
             >
               <Column
                 dataField="plate"
