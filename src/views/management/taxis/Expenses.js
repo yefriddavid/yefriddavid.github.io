@@ -6,16 +6,17 @@ import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CCollapse, CFormSelect, CRow, CCol,
+  CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTrash, cilPlus, cilX } from '@coreui/icons'
+import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
 import { updateExpense } from 'src/services/providers/firebase/taxiExpenses'
 import { getVehicles } from 'src/services/providers/firebase/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 
-const CATEGORIES = ['Combustible', 'Mantenimiento', 'Repuestos', 'Lavado', 'Multa', 'Otro']
+const CATEGORIES = ['Administración', 'Combustible', 'Mantenimiento', 'Préstamos', 'Repuestos', 'Lavado', 'Multa', 'Otro']
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -76,6 +77,9 @@ const Gastos = () => {
   const [editingRow, setEditingRow] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [plateFilter, setPlateFilter] = useState('')
+  const [cloneSource, setCloneSource] = useState(null)
+  const [cloneForm, setCloneForm] = useState({ date: today(), plate: '' })
 
   useEffect(() => {
     dispatch(taxiExpenseActions.fetchRequest())
@@ -111,6 +115,18 @@ const Gastos = () => {
     setEditingRow(null)
   }
 
+  const openClone = (row) => {
+    setCloneForm({ date: today(), plate: row.plate || '', category: row.category || CATEGORIES[0] })
+    setCloneSource(row)
+  }
+
+  const handleCloneConfirm = () => {
+    if (!cloneForm.date) return
+    const { id, ...rest } = cloneSource
+    dispatch(taxiExpenseActions.createRequest({ ...rest, date: cloneForm.date, plate: cloneForm.plate, category: cloneForm.category }))
+    setCloneSource(null)
+  }
+
   const handleDelete = (id) => {
     if (!window.confirm('¿Eliminar este gasto?')) return
     dispatch(taxiExpenseActions.deleteRequest({ id }))
@@ -125,8 +141,10 @@ const Gastos = () => {
   const filtered = records.filter((r) => {
     if (!r.date) return false
     const [y, m] = r.date.split('-').map(Number)
-    if (y !== period.year || m !== period.month) return false
+    if (y !== period.year) return false
+    if (period.month !== 0 && m !== period.month) return false
     if (categoryFilter && r.category !== categoryFilter) return false
+    if (plateFilter && r.plate !== plateFilter) return false
     return true
   })
 
@@ -190,6 +208,7 @@ const Gastos = () => {
             <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Periodo</span>
             <CFormSelect size="sm" style={{ width: 120 }} value={period.month}
               onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}>
+              <option value={0}>Todos</option>
               {MONTHS.map((name, i) => <option key={i + 1} value={i + 1}>{name}</option>)}
             </CFormSelect>
             <CFormSelect size="sm" style={{ width: 90 }} value={period.year}
@@ -201,6 +220,12 @@ const Gastos = () => {
               onChange={(e) => setCategoryFilter(e.target.value)}>
               <option value="">Todas</option>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </CFormSelect>
+            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
+            <CFormSelect size="sm" style={{ width: 110 }} value={plateFilter}
+              onChange={(e) => setPlateFilter(e.target.value)}>
+              <option value="">Todos</option>
+              {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}</option>)}
             </CFormSelect>
           </div>
           <CButton size="sm" color={showCreate ? 'danger' : 'primary'} variant="outline"
@@ -247,7 +272,7 @@ const Gastos = () => {
                 dataField="amount" caption={t('taxis.expenses.columns.amount')} width={130} hidingPriority={4}
                 cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
               />
-              <Column caption="" width={70} allowSorting={false} allowResizing={false} hidingPriority={7}
+              <Column caption="" width={90} allowSorting={false} allowResizing={false} hidingPriority={7}
                 cellRender={({ data }) => (
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button
@@ -255,6 +280,13 @@ const Gastos = () => {
                       style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '2px 6px' }}
                       title="Editar"
                     >✎</button>
+                    <button
+                      onClick={() => openClone(data)}
+                      style={{ background: 'none', border: 'none', color: '#1971c2', cursor: 'pointer', padding: '2px 6px' }}
+                      title="Clonar"
+                    >
+                      <CIcon icon={cilCopy} size="sm" />
+                    </button>
                     <button
                       onClick={() => handleDelete(data.id)}
                       style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
@@ -302,6 +334,61 @@ const Gastos = () => {
           )}
         </CCardBody>
       </CCard>
+      {/* Clone modal */}
+      <CModal visible={!!cloneSource} onClose={() => setCloneSource(null)} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Clonar gasto</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {cloneSource && (
+            <div style={{ marginBottom: 12, padding: '10px 14px', background: 'var(--cui-secondary-bg)', borderRadius: 8, fontSize: 13 }}>
+              <strong>{cloneSource.description}</strong>
+              <span style={{ marginLeft: 8, color: 'var(--cui-secondary-color)' }}>{cloneSource.category} · {fmt(cloneSource.amount)}</span>
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Fecha</label>
+              <input
+                className={SF.input}
+                type="date"
+                value={cloneForm.date}
+                onChange={(e) => setCloneForm((p) => ({ ...p, date: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Categoría</label>
+              <select
+                className={SF.select}
+                value={cloneForm.category}
+                onChange={(e) => setCloneForm((p) => ({ ...p, category: e.target.value }))}
+              >
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Placa</label>
+              <select
+                className={SF.select}
+                value={cloneForm.plate}
+                onChange={(e) => setCloneForm((p) => ({ ...p, plate: e.target.value }))}
+              >
+                <option value="">— Ninguno —</option>
+                {vehicles.map((v) => (
+                  <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" variant="outline" onClick={() => setCloneSource(null)}>Cancelar</CButton>
+          <CButton color="primary" onClick={handleCloneConfirm} disabled={!cloneForm.date}>
+            <CIcon icon={cilCopy} size="sm" className="me-1" />
+            Clonar
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </>
   )
 }
