@@ -377,9 +377,15 @@ const Taxis = () => {
     const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
     const dow = new Date(period.year, period.month - 1, d).getDay()
     const isSunday = dow === 0
-    const missingVehicles = auditVehicles.filter((pl) => !settledVehicles.has(pl))
+    // Only expect vehicles whose driver had already started by this day
+    const expectedVehicles = auditVehicles.filter((pl) => {
+      const driver = drivers.find((dr) => dr.defaultVehicle === pl && activeDriverNames.has(dr.name))
+      if (!driver?.startDate) return true
+      return driver.startDate <= dateStr
+    })
+    const missingVehicles = expectedVehicles.filter((pl) => !settledVehicles.has(pl))
     // Vehicles that settled but paid less than the driver's expected amount
-    const underpaidVehicles = auditVehicles.filter((pl) => {
+    const underpaidVehicles = expectedVehicles.filter((pl) => {
       if (!settledVehicles.has(pl)) return false
       const driver = drivers.find((dr) => dr.defaultVehicle === pl && activeDriverNames.has(dr.name))
       if (!driver) return false
@@ -391,7 +397,9 @@ const Taxis = () => {
       return paidTotal < expected
     })
     const missing = auditDrivers.filter((dr) => {
-      const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
+      const driverObj = drivers.find((d) => d.name === dr)
+      if (driverObj?.startDate && driverObj.startDate > dateStr) return false
+      const plate = driverObj?.defaultVehicle
       return plate ? missingVehicles.includes(plate) : !settled.has(dr)
     })
     const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
