@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Component } from 'react'
-import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
+import { Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import { Button } from 'devextreme-react/button'
 import { SelectControl, NewPaymentComponent } from './Controls'
 import ItemDetail from './ItemDetail'
@@ -163,14 +164,12 @@ class App extends Component {
         <br />
 
         <Button text="Refresh Data" onClick={refreshData} />
-        <DataGrid
-          id="gridContainer"
+        <StandardGrid
           keyExpr="accountId"
           onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
           dataSource={data}
-        onRowExpanded={ (e) => this.loadVauchers(e) }
-          showBorders={true}
+          onRowExpanded={(e) => this.loadVauchers(e)}
         >
           <Selection mode="single" />
           <Editing
@@ -231,7 +230,7 @@ class App extends Component {
             indicatorSrc1="https://js.devexpress.com/Content/data/loadingIcons/rolling.svg"
           />
 
-        </DataGrid>
+        </StandardGrid>
       </div>
     );
   }

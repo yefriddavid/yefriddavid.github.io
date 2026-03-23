@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Component } from 'react'
-import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
+import { Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import { Button } from 'devextreme-react/button'
 import { SelectControl, NewPaymentComponent } from './Controls'
 import ItemDetail from './ItemDetail'
@@ -203,20 +204,12 @@ class App extends Component {
             <CSpinner color="primary" />
             <span>{t('common.loading')}</span>
           </div>
-        ) : <DataGrid
-          id="paymentsGrid"
-          className="payments-grid"
+        ) : <StandardGrid
           keyExpr="accountId"
           onContentReady={onContentReady}
           onRowClick={this.onRowClick}
           dataSource={data}
           onRowExpanded={(e) => this.loadVauchers(e)}
-          showBorders={true}
-          columnAutoWidth={true}
-          columnHidingEnabled={true}
-          allowColumnResizing={true}
-          rowAlternationEnabled={true}
-          hoverStateEnabled={true}
         >
           <Selection mode="single" />
           <Editing
@@ -266,7 +259,7 @@ class App extends Component {
               onAddDone: this.closeAddPayment,
             })} />
 
-        </DataGrid>}
+        </StandardGrid>}
       </div>
     );
   }

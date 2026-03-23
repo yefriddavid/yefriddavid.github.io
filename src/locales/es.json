@@ -99,5 +99,180 @@
     "password": "Contraseña",
     "rememberMe": "Recordarme",
     "logout": "Cerrar sesión"
+  },
+  "taxis": {
+    "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+    "drivers": {
+      "title": "Conductores",
+      "newDriver": "Nuevo conductor",
+      "editDriver": "Editar conductor",
+      "noData": "Sin conductores aún.",
+      "confirmDelete": "¿Eliminar este conductor?",
+      "updated": "Conductor \"{{name}}\" actualizado",
+      "none": "— Ninguno —",
+      "fields": {
+        "name": "Nombre",
+        "idNumber": "Cédula",
+        "phone": "Teléfono",
+        "defaultAmount": "Liq. normal",
+        "defaultAmountSunday": "Liq. domingo",
+        "defaultVehicle": "Taxi por defecto",
+        "personalData": "Datos personales",
+        "defaultSettlement": "Liquidación por defecto"
+      },
+      "placeholders": {
+        "name": "Nombre completo",
+        "phone": "300 000 0000",
+        "defaultAmount": "85000",
+        "defaultAmountSunday": "0"
+      }
+    },
+    "vehicles": {
+      "title": "Vehículos",
+      "newVehicle": "Nuevo vehículo",
+      "editVehicle": "Editar vehículo",
+      "confirmDelete": "¿Eliminar este vehículo?",
+      "dayLabel": "día {{day}}",
+      "fields": {
+        "plate": "Placa",
+        "brand": "Marca",
+        "model": "Modelo",
+        "year": "Año",
+        "drivers": "Conductores",
+        "ppThisMonth": "P&P este mes"
+      },
+      "restrictions": {
+        "title": "Pico y placa — {{plate}}",
+        "month": "Mes",
+        "day1": "Día 1",
+        "day2": "Día 2"
+      }
+    },
+    "settlements": {
+      "title": "Liquidaciones de taxis",
+      "newSettlement": "Nueva liquidación",
+      "editSettlement": "Editar liquidación",
+      "noData": "Sin liquidaciones para este periodo.",
+      "noRecords": "Sin registros.",
+      "confirmDelete": "¿Eliminar esta liquidación?",
+      "period": "Periodo",
+      "all": "Todos",
+      "viewDetail": "Detallado",
+      "viewByDriver": "Por conductor",
+      "viewByVehicle": "Por vehículo",
+      "selectOption": "— Seleccionar —",
+      "noDataInfo": "Sin datos",
+      "notes": "Observaciones...",
+      "settlementAbbr": "liq",
+      "fields": {
+        "date": "Fecha",
+        "driver": "Conductor",
+        "plate": "Placa",
+        "value": "Valor",
+        "comment": "Comentario",
+        "settlement": "Liquidación",
+        "vehicle": "Vehículo",
+        "idNumber": "Cédula",
+        "phone": "Teléfono",
+        "defaultAmount": "Liq. normal",
+        "defaultAmountSunday": "Liq. domingo",
+        "brand": "Marca",
+        "model": "Modelo",
+        "year": "Año"
+      },
+      "summary": {
+        "totalSettled": "Total liquidado",
+        "monthProjection": "Proyección del mes",
+        "dayProgress": "(día {{daysElapsed}}/{{daysInMonth}})",
+        "deficit": "Falta / Sobra",
+        "totalExpenses": "Total gastos",
+        "byDriver": "Por conductor",
+        "noRecords": "Sin registros"
+      },
+      "columns": {
+        "countSettlements": "# Liquidaciones",
+        "totalDeposited": "Total consignado",
+        "remaining": "Falta por liquidar"
+      },
+      "errors": {
+        "saveError": "Error al guardar los cambios",
+        "saveSuccess": "Cambios guardados correctamente",
+        "allRequired": "Todos los campos son requeridos",
+        "picoPlaca": "{{plate}} tiene pico y placa el día {{day}}"
+      }
+    },
+    "partners": {
+      "title": "Socios",
+      "newPartner": "Nuevo socio",
+      "editPartner": "Editar socio",
+      "noData": "Sin socios registrados.",
+      "confirmDelete": "¿Eliminar este socio?",
+      "fields": {
+        "name": "Nombre",
+        "percentage": "Porcentaje (%)"
+      },
+      "placeholders": {
+        "name": "Nombre completo",
+        "percentage": "0"
+      }
+    },
+    "expenses": {
+      "columns": {
+        "date": "Fecha",
+        "category": "Categoría",
+        "description": "Descripción",
+        "vehicle": "Vehículo",
+        "comment": "Comentario",
+        "amount": "Valor"
+      }
+    },
+    "resumen": {
+      "columns": {
+        "date": "Fecha",
+        "type": "Tipo",
+        "concept": "Concepto",
+        "plate": "Placa",
+        "category": "Categoría",
+        "amount": "Valor",
+        "comment": "Comentario"
+      }
+    },
+    "distributions": {
+      "title": "Repartición de ganancias",
+      "partners": "socios",
+      "period": "Periodo",
+      "generate": "Generar repartición",
+      "deleteDistribution": "Eliminar repartición",
+      "noPartners": "No hay socios registrados. Agrega socios primero.",
+      "previewHintStart": "Vista previa — presiona",
+      "previewHintEnd": "para guardar.",
+      "noData": "Sin datos.",
+      "confirmGenerate": "¿Generar repartición para {{month}} {{year}}?",
+      "confirmDelete": "¿Eliminar esta repartición? Los datos de pago se perderán.",
+      "summary": {
+        "totalSettlements": "Total liquidaciones",
+        "totalExpenses": "Total gastos",
+        "netAvailable": "Neto disponible",
+        "pendingPayment": "Pendiente de pago",
+        "assignedPercentage": "% asignado ({{percentage}}%)"
+      },
+      "pay": {
+        "title": "Registrar pago — {{partnerName}}",
+        "calculatedAmount": "Monto calculado:",
+        "paidAmount": "Monto pagado",
+        "paymentDate": "Fecha de pago",
+        "confirm": "Confirmar pago"
+      },
+      "columns": {
+        "partner": "Socio",
+        "percentage": "%",
+        "calculatedAmount": "Monto calculado",
+        "paidAmount": "Monto pagado",
+        "paymentDate": "Fecha pago",
+        "status": "Estado"
+      },
+      "markPaid": "Marcar pagado",
+      "totalPaid": "Total pagado:"
+    }
   }
 }

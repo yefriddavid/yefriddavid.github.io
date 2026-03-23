@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
+import { Column, MasterDetail } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard,
   CCardBody,
@@ -129,16 +130,9 @@ const Visits = () => {
             <CSpinner color="primary" />
           </div>
         ) : (
-          <DataGrid
-            id="visitsGrid"
+          <StandardGrid
             keyExpr="id"
             dataSource={visits}
-            showBorders={true}
-            columnAutoWidth={true}
-            columnHidingEnabled={true}
-            allowColumnResizing={true}
-            rowAlternationEnabled={true}
-            hoverStateEnabled={true}
             noDataText="Sin registros aún."
           >
             <Column
@@ -208,7 +202,7 @@ const Visits = () => {
               enabled={true}
               render={({ data }) => <VisitDetail v={data} />}
             />
-          </DataGrid>
+          </StandardGrid>
         )}
       </CCardBody>
     </CCard>

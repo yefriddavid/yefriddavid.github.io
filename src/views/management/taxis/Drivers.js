@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { DataGrid, Column, Lookup, MasterDetail } from 'devextreme-react/data-grid'
+import { Column, Lookup, MasterDetail } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardHeader, CCardBody, CSpinner, CBadge, CAlert,
   CButton, CCollapse,
@@ -20,7 +21,6 @@ const fmt = (n) =>
 const EMPTY = { name: '', idNumber: '', phone: '', defaultAmount: '', defaultAmountSunday: '', defaultVehicle: '' }
 
 const DriverDetail = ({ data, vehicles }) => {
-  const { t } = useTranslation()
   const vehicle = (vehicles ?? []).find((v) => v.plate === data.defaultVehicle)
   const vehicleLabel = vehicle
     ? `${vehicle.plate}${vehicle.brand ? ` · ${vehicle.brand}` : ''}`
@@ -28,22 +28,21 @@ const DriverDetail = ({ data, vehicles }) => {
 
   return (
     <DetailPanel columns={2}>
-      <DetailSection title={t('taxis.drivers.fields.personalData')}>
-        <DetailRow label={t('taxis.drivers.fields.name')} value={data.name} />
-        <DetailRow label={t('taxis.drivers.fields.idNumber')} value={data.idNumber} mono />
-        <DetailRow label={t('taxis.drivers.fields.phone')} value={data.phone} />
+      <DetailSection title="Datos personales">
+        <DetailRow label="Nombre" value={data.name} />
+        <DetailRow label="Cédula" value={data.idNumber} mono />
+        <DetailRow label="Teléfono" value={data.phone} />
       </DetailSection>
-      <DetailSection title={t('taxis.drivers.fields.defaultSettlement')}>
-        <DetailRow label={t('taxis.drivers.fields.defaultAmount')} value={data.defaultAmount ? fmt(data.defaultAmount) : null} />
-        <DetailRow label={t('taxis.drivers.fields.defaultAmountSunday')} value={data.defaultAmountSunday ? fmt(data.defaultAmountSunday) : null} />
-        <DetailRow label={t('taxis.drivers.fields.defaultVehicle')} value={vehicleLabel} mono />
+      <DetailSection title="Liquidación por defecto">
+        <DetailRow label="Liq. normal" value={data.defaultAmount ? fmt(data.defaultAmount) : null} />
+        <DetailRow label="Liq. domingo" value={data.defaultAmountSunday ? fmt(data.defaultAmountSunday) : null} />
+        <DetailRow label="Taxi por defecto" value={vehicleLabel} mono />
       </DetailSection>
     </DetailPanel>
   )
 }
 
 const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
-  const { t } = useTranslation()
   const [form, setForm] = useState(initial)
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -55,24 +54,24 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
       onSave={() => onSave(form)}
       saving={saving}
     >
-      <StandardField label={t('taxis.drivers.fields.name')}>
-        <input className={SF.input} placeholder={t('taxis.drivers.placeholders.name')} value={form.name} onChange={set('name')} />
+      <StandardField label="Nombre">
+        <input className={SF.input} placeholder="Nombre completo" value={form.name} onChange={set('name')} />
       </StandardField>
-      <StandardField label={t('taxis.drivers.fields.idNumber')}>
+      <StandardField label="Cédula">
         <input className={SF.input} placeholder="123456789" value={form.idNumber} onChange={set('idNumber')} />
       </StandardField>
-      <StandardField label={t('taxis.drivers.fields.phone')}>
-        <input className={SF.input} placeholder={t('taxis.drivers.placeholders.phone')} value={form.phone} onChange={set('phone')} />
+      <StandardField label="Teléfono">
+        <input className={SF.input} placeholder="300 000 0000" value={form.phone} onChange={set('phone')} />
       </StandardField>
-      <StandardField label={t('taxis.drivers.fields.defaultAmount')}>
-        <input className={SF.input} type="number" placeholder={t('taxis.drivers.placeholders.defaultAmount')} value={form.defaultAmount} onChange={set('defaultAmount')} />
+      <StandardField label="Liq. normal">
+        <input className={SF.input} type="number" placeholder="85000" value={form.defaultAmount} onChange={set('defaultAmount')} />
       </StandardField>
-      <StandardField label={t('taxis.drivers.fields.defaultAmountSunday')}>
-        <input className={SF.input} type="number" placeholder={t('taxis.drivers.placeholders.defaultAmountSunday')} value={form.defaultAmountSunday} onChange={set('defaultAmountSunday')} />
+      <StandardField label="Liq. domingo">
+        <input className={SF.input} type="number" placeholder="0" value={form.defaultAmountSunday} onChange={set('defaultAmountSunday')} />
       </StandardField>
-      <StandardField label={t('taxis.drivers.fields.defaultVehicle')}>
+      <StandardField label="Taxi por defecto">
         <select className={SF.select} value={form.defaultVehicle} onChange={set('defaultVehicle')}>
-          <option value="">{t('taxis.drivers.none')}</option>
+          <option value="">— Ninguno —</option>
           {(vehicles ?? []).map((v) => (
             <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>
           ))}
@@ -99,7 +98,7 @@ const Conductores = () => {
   }, [dispatch])
 
   const vehicleOptions = [
-    { plate: '', label: t('taxis.drivers.none') },
+    { plate: '', label: '— Ninguno —' },
     ...(vehicles ?? []).map((v) => ({ plate: v.plate, label: v.plate + (v.brand ? ` · ${v.brand}` : '') })),
   ]
 
@@ -121,7 +120,7 @@ const Conductores = () => {
 
   const handleEditSave = (form) => {
     dispatch(taxiDriverActions.updateRequest({ id: editingRow.id, ...form }))
-    setSavedMsg(t('taxis.drivers.updated', { name: form.name }))
+    setSavedMsg(`Conductor "${form.name}" actualizado`)
     setTimeout(() => setSavedMsg(null), 3500)
     gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
@@ -133,7 +132,7 @@ const Conductores = () => {
   }
 
   const handleDelete = (id) => {
-    if (!window.confirm(t('taxis.drivers.confirmDelete'))) return
+    if (!window.confirm('¿Eliminar este conductor?')) return
     dispatch(taxiDriverActions.deleteRequest({ id }))
   }
 
@@ -143,7 +142,7 @@ const Conductores = () => {
     <CCard>
       <CCardHeader className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
-          <strong>{t('taxis.drivers.title')}</strong>
+          <strong>Conductores</strong>
           <CBadge color="secondary">{rows.length}</CBadge>
         </div>
         <CButton
@@ -153,7 +152,7 @@ const Conductores = () => {
           onClick={() => setShowCreate((p) => !p)}
         >
           <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
-          {' '}{showCreate ? t('common.cancel') : t('taxis.drivers.newDriver')}
+          {' '}{showCreate ? 'Cancelar' : 'Nuevo conductor'}
         </CButton>
       </CCardHeader>
 
@@ -162,7 +161,7 @@ const Conductores = () => {
           <DriverForm
             initial={EMPTY}
             vehicles={vehicles}
-            title={t('taxis.drivers.newDriver')}
+            title="Nuevo conductor"
             onSave={handleCreate}
             onCancel={() => setShowCreate(false)}
             saving={fetching}
@@ -177,18 +176,11 @@ const Conductores = () => {
         {fetching && !records ? (
           <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
         ) : (
-          <DataGrid
+          <StandardGrid
             ref={gridRef}
-            className="masters-grid"
             keyExpr="id"
             dataSource={rows}
-            showBorders={true}
-            columnAutoWidth={true}
-            columnHidingEnabled={true}
-            allowColumnResizing={true}
-            rowAlternationEnabled={true}
-            hoverStateEnabled={true}
-            noDataText={t('taxis.drivers.noData')}
+            noDataText="Sin conductores aún."
           >
             <Column dataField="name" caption={t('taxis.drivers.fields.name')} minWidth={150} />
             <Column dataField="idNumber" caption={t('taxis.drivers.fields.idNumber')} width={130}
@@ -230,12 +222,12 @@ const Conductores = () => {
                   <button
                     onClick={() => handleEdit(data)}
                     style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '2px 6px' }}
-                    title={t('common.edit')}
+                    title="Editar"
                   >✎</button>
                   <button
                     onClick={() => handleDelete(data.id)}
                     style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                    title={t('common.remove')}
+                    title="Eliminar"
                   >
                     <CIcon icon={cilTrash} size="sm" />
                   </button>
@@ -251,7 +243,7 @@ const Conductores = () => {
                       <DriverForm
                         initial={data}
                         vehicles={vehicles}
-                        title={t('taxis.drivers.editDriver')}
+                        title="Editar conductor"
                         subtitle={data.name}
                         onSave={handleEditSave}
                         onCancel={handleEditCancel}
@@ -262,7 +254,7 @@ const Conductores = () => {
                   : <DriverDetail data={data} vehicles={vehicles} />
               )}
             />
-          </DataGrid>
+          </StandardGrid>
         )}
       </CCardBody>
     </CCard>

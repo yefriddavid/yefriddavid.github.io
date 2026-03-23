@@ -31,13 +31,13 @@ const getNav = (t) => [
   {
     component: CNavItem,
     name: t('nav.accounts'),
-    to: '/managment/accounts',
+    to: '/management/accounts',
     icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.payments'),
-    to: '/managment/payments',
+    to: '/management/payments',
     icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
   },
   {
@@ -57,7 +57,7 @@ const getNav = (t) => [
   {
     component: CNavItem,
     name: t('nav.increaseDecrease'),
-    to: '/tools/increase-decrease',
+    to: '/tools/adjustments',
     icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
   },
   {
@@ -73,32 +73,44 @@ const getNav = (t) => [
   {
     component: CNavItem,
     name: t('nav.liquidaciones'),
-    to: '/managment/taxis/settlements',
+    to: '/management/taxis/settlements',
     icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.conductores'),
-    to: '/managment/taxis/drivers',
+    to: '/management/taxis/drivers',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.vehiculos'),
-    to: '/managment/taxis/vehicles',
+    to: '/management/taxis/vehicles',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.taxiExpenses'),
-    to: '/managment/taxis/expenses',
+    to: '/management/taxis/expenses',
     icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: t('nav.taxiResumen'),
-    to: '/managment/taxis/summary',
+    to: '/management/taxis/summary',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Socios',
+    to: '/management/taxis/partners',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Repartición',
+    to: '/management/taxis/profit-sharing',
+    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
   },
 ]
 

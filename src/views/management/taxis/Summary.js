@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { DataGrid, Column } from 'devextreme-react/data-grid'
+import { useTranslation } from 'react-i18next'
+import { Column } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CFormSelect, CRow, CCol,
@@ -26,6 +28,7 @@ const SummaryCard = ({ label, value, color }) => (
 )
 
 const Resumen = () => {
+  const { t } = useTranslation()
   const now = new Date()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -135,23 +138,17 @@ const Resumen = () => {
           {loading ? (
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
           ) : (
-            <DataGrid
-              className="masters-grid"
+            <StandardGrid
               keyExpr="id"
               dataSource={filtered}
-              showBorders={true}
-              columnAutoWidth={true}
-              columnHidingEnabled={true}
-              allowColumnResizing={true}
               rowAlternationEnabled={false}
-              hoverStateEnabled={true}
               noDataText="Sin registros para este periodo."
               onRowPrepared={onRowPrepared}
             >
-              <Column dataField="date" caption="Fecha" width={110} />
+              <Column dataField="date" caption={t('taxis.resumen.columns.date')} width={110} />
               <Column
                 dataField="type"
-                caption="Tipo"
+                caption={t('taxis.resumen.columns.type')}
                 width={110}
                 cellRender={({ value }) => (
                   <span style={{
@@ -166,19 +163,19 @@ const Resumen = () => {
                   </span>
                 )}
               />
-              <Column dataField="concept" caption="Concepto" minWidth={140} />
+              <Column dataField="concept" caption={t('taxis.resumen.columns.concept')} minWidth={140} />
               <Column
                 dataField="plate"
-                caption="Placa"
+                caption={t('taxis.resumen.columns.plate')}
                 width={100}
                 cellRender={({ value }) => (
                   <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value || '—'}</span>
                 )}
               />
-              <Column dataField="category" caption="Categoría" width={120} hidingPriority={2} />
+              <Column dataField="category" caption={t('taxis.resumen.columns.category')} width={120} hidingPriority={2} />
               <Column
                 dataField="amount"
-                caption="Valor"
+                caption={t('taxis.resumen.columns.amount')}
                 width={130}
                 cellRender={({ data }) => (
                   <span style={{ fontWeight: 700, color: data._sign === 1 ? '#1e40af' : '#b91c1c' }}>
@@ -186,8 +183,8 @@ const Resumen = () => {
                   </span>
                 )}
               />
-              <Column dataField="comment" caption="Comentario" minWidth={120} hidingPriority={3} />
-            </DataGrid>
+              <Column dataField="comment" caption={t('taxis.resumen.columns.comment')} minWidth={120} hidingPriority={3} />
+            </StandardGrid>
           )}
         </CCardBody>
       </CCard>

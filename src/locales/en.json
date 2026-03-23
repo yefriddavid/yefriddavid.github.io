@@ -99,5 +99,180 @@
     "password": "Password",
     "rememberMe": "Remember me",
     "logout": "Logout"
+  },
+  "taxis": {
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "drivers": {
+      "title": "Drivers",
+      "newDriver": "New driver",
+      "editDriver": "Edit driver",
+      "noData": "No drivers yet.",
+      "confirmDelete": "Delete this driver?",
+      "updated": "Driver \"{{name}}\" updated",
+      "none": "— None —",
+      "fields": {
+        "name": "Name",
+        "idNumber": "ID Number",
+        "phone": "Phone",
+        "defaultAmount": "Default amount",
+        "defaultAmountSunday": "Sunday amount",
+        "defaultVehicle": "Default taxi",
+        "personalData": "Personal data",
+        "defaultSettlement": "Default settlement"
+      },
+      "placeholders": {
+        "name": "Full name",
+        "phone": "300 000 0000",
+        "defaultAmount": "85000",
+        "defaultAmountSunday": "0"
+      }
+    },
+    "vehicles": {
+      "title": "Vehicles",
+      "newVehicle": "New vehicle",
+      "editVehicle": "Edit vehicle",
+      "confirmDelete": "Delete this vehicle?",
+      "dayLabel": "day {{day}}",
+      "fields": {
+        "plate": "Plate",
+        "brand": "Brand",
+        "model": "Model",
+        "year": "Year",
+        "drivers": "Drivers",
+        "ppThisMonth": "P&P this month"
+      },
+      "restrictions": {
+        "title": "Traffic restriction — {{plate}}",
+        "month": "Month",
+        "day1": "Day 1",
+        "day2": "Day 2"
+      }
+    },
+    "settlements": {
+      "title": "Taxi settlements",
+      "newSettlement": "New settlement",
+      "editSettlement": "Edit settlement",
+      "noData": "No settlements for this period.",
+      "noRecords": "No records.",
+      "confirmDelete": "Delete this settlement?",
+      "period": "Period",
+      "all": "All",
+      "viewDetail": "Detailed",
+      "viewByDriver": "By driver",
+      "viewByVehicle": "By vehicle",
+      "selectOption": "— Select —",
+      "noDataInfo": "No data",
+      "notes": "Notes...",
+      "settlementAbbr": "sett.",
+      "fields": {
+        "date": "Date",
+        "driver": "Driver",
+        "plate": "Plate",
+        "value": "Value",
+        "comment": "Comment",
+        "settlement": "Settlement",
+        "vehicle": "Vehicle",
+        "idNumber": "ID Number",
+        "phone": "Phone",
+        "defaultAmount": "Default amount",
+        "defaultAmountSunday": "Sunday amount",
+        "brand": "Brand",
+        "model": "Model",
+        "year": "Year"
+      },
+      "summary": {
+        "totalSettled": "Total settled",
+        "monthProjection": "Month projection",
+        "dayProgress": "(day {{daysElapsed}}/{{daysInMonth}})",
+        "deficit": "Deficit / Surplus",
+        "totalExpenses": "Total expenses",
+        "byDriver": "By driver",
+        "noRecords": "No records"
+      },
+      "columns": {
+        "countSettlements": "# Settlements",
+        "totalDeposited": "Total deposited",
+        "remaining": "Pending to settle"
+      },
+      "errors": {
+        "saveError": "Error saving changes",
+        "saveSuccess": "Changes saved successfully",
+        "allRequired": "All fields are required",
+        "picoPlaca": "{{plate}} has traffic restriction on day {{day}}"
+      }
+    },
+    "partners": {
+      "title": "Partners",
+      "newPartner": "New partner",
+      "editPartner": "Edit partner",
+      "noData": "No partners registered.",
+      "confirmDelete": "Delete this partner?",
+      "fields": {
+        "name": "Name",
+        "percentage": "Percentage (%)"
+      },
+      "placeholders": {
+        "name": "Full name",
+        "percentage": "0"
+      }
+    },
+    "expenses": {
+      "columns": {
+        "date": "Date",
+        "category": "Category",
+        "description": "Description",
+        "vehicle": "Vehicle",
+        "comment": "Comment",
+        "amount": "Value"
+      }
+    },
+    "resumen": {
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "concept": "Concept",
+        "plate": "Plate",
+        "category": "Category",
+        "amount": "Value",
+        "comment": "Comment"
+      }
+    },
+    "distributions": {
+      "title": "Profit distribution",
+      "partners": "partners",
+      "period": "Period",
+      "generate": "Generate distribution",
+      "deleteDistribution": "Delete distribution",
+      "noPartners": "No partners registered. Add partners first.",
+      "previewHintStart": "Preview — press",
+      "previewHintEnd": "to save.",
+      "noData": "No data.",
+      "confirmGenerate": "Generate distribution for {{month}} {{year}}?",
+      "confirmDelete": "Delete this distribution? Payment data will be lost.",
+      "summary": {
+        "totalSettlements": "Total settlements",
+        "totalExpenses": "Total expenses",
+        "netAvailable": "Net available",
+        "pendingPayment": "Pending payment",
+        "assignedPercentage": "% assigned ({{percentage}}%)"
+      },
+      "pay": {
+        "title": "Register payment — {{partnerName}}",
+        "calculatedAmount": "Calculated amount:",
+        "paidAmount": "Paid amount",
+        "paymentDate": "Payment date",
+        "confirm": "Confirm payment"
+      },
+      "columns": {
+        "partner": "Partner",
+        "percentage": "%",
+        "calculatedAmount": "Calculated amount",
+        "paidAmount": "Paid amount",
+        "paymentDate": "Payment date",
+        "status": "Status"
+      },
+      "markPaid": "Mark as paid",
+      "totalPaid": "Total paid:"
+    }
   }
 }

@@ -60,7 +60,7 @@ const Login = () => {
   document.title = 'yefriddavid'
 
   useEffect(() => {
-    if (localStorage.getItem('token')) navigate('/managment/payments')
+    if (localStorage.getItem('token')) navigate('/management/payments')
   }, [])
 
   const set = (name) => (e) =>
@@ -100,7 +100,7 @@ const Login = () => {
           setCookie('username', form.username)
           setCookie('password', form.password)
         }
-        navigate('/managment/payments')
+        navigate('/management/payments')
       } else {
         setForm((prev) => ({ ...prev, loading: false, error: data.message || 'Credenciales incorrectas', shake: true }))
         setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)

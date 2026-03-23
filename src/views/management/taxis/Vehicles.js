@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
+import { Column, MasterDetail } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardHeader, CCardBody, CSpinner, CBadge,
   CButton, CCollapse, CModal, CModalHeader, CModalTitle,
@@ -13,23 +14,28 @@ import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
+import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 import './masters.scss'
+
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
 
 const EMPTY = { plate: '', brand: '', model: '', year: '' }
 
 const emptyRestrictions = () =>
   Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { d1: '', d2: '' }]))
 
-const currentMonthSummary = (restrictions, t) => {
+const currentMonthSummary = (restrictions) => {
   if (!restrictions) return '—'
   const month = new Date().getMonth() + 1
   const entry = restrictions[month]
   if (!entry || (!entry.d1 && !entry.d2)) return '—'
-  return [entry.d1, entry.d2].filter(Boolean).map((d) => t('taxis.vehicles.dayLabel', { day: d })).join(', ')
+  return [entry.d1, entry.d2].filter(Boolean).map((d) => `día ${d}`).join(', ')
 }
 
 const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => {
-  const { t } = useTranslation()
   const [form, setForm] = useState(initial)
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -41,16 +47,16 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
       onSave={() => onSave(form)}
       saving={saving}
     >
-      <StandardField label={t('taxis.vehicles.fields.plate')}>
+      <StandardField label="Placa">
         <input className={SF.input} placeholder="ABC-123" value={form.plate} onChange={set('plate')} />
       </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.brand')}>
+      <StandardField label="Marca">
         <input className={SF.input} placeholder="Renault" value={form.brand} onChange={set('brand')} />
       </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.model')}>
+      <StandardField label="Modelo">
         <input className={SF.input} placeholder="Logan" value={form.model} onChange={set('model')} />
       </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.year')}>
+      <StandardField label="Año">
         <input className={SF.input} type="number" placeholder="2020" value={form.year} onChange={set('year')} />
       </StandardField>
     </StandardForm>
@@ -69,8 +75,6 @@ const Vehiculos = () => {
   const [restrictModal, setRestrictModal] = useState(null)
   const [restrictForm, setRestrictForm] = useState(emptyRestrictions())
   const [restrictSaving, setRestrictSaving] = useState(false)
-
-  const months = t('taxis.months', { returnObjects: true })
 
   useEffect(() => {
     dispatch(taxiVehicleActions.fetchRequest())
@@ -105,7 +109,7 @@ const Vehiculos = () => {
   }
 
   const handleDelete = (id) => {
-    if (!window.confirm(t('taxis.vehicles.confirmDelete'))) return
+    if (!window.confirm('¿Eliminar este vehículo?')) return
     dispatch(taxiVehicleActions.deleteRequest({ id }))
   }
 
@@ -145,7 +149,7 @@ const Vehiculos = () => {
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center gap-2">
-            <strong>{t('taxis.vehicles.title')}</strong>
+            <strong>Vehículos</strong>
             <CBadge color="secondary">{rows.length}</CBadge>
           </div>
           <CButton
@@ -155,7 +159,7 @@ const Vehiculos = () => {
             onClick={() => setShowCreate((p) => !p)}
           >
             <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
-            {' '}{showCreate ? t('common.cancel') : t('taxis.vehicles.newVehicle')}
+            {' '}{showCreate ? 'Cancelar' : 'Nuevo vehículo'}
           </CButton>
         </CCardHeader>
 
@@ -163,7 +167,7 @@ const Vehiculos = () => {
           <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--cui-border-color)', maxWidth: 380 }}>
             <VehicleForm
               initial={EMPTY}
-              title={t('taxis.vehicles.newVehicle')}
+              title="Nuevo vehículo"
               onSave={handleCreate}
               onCancel={() => setShowCreate(false)}
               saving={fetching}
@@ -175,17 +179,10 @@ const Vehiculos = () => {
           {fetching && !records ? (
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
           ) : (
-            <DataGrid
+            <StandardGrid
               ref={gridRef}
-              className="masters-grid"
               keyExpr="id"
               dataSource={rows}
-              showBorders={true}
-              columnAutoWidth={true}
-              columnHidingEnabled={true}
-              allowColumnResizing={true}
-              rowAlternationEnabled={true}
-              hoverStateEnabled={true}
             >
               <Column dataField="plate" caption={t('taxis.vehicles.fields.plate')} />
               <Column dataField="brand" caption={t('taxis.vehicles.fields.brand')} />
@@ -207,7 +204,7 @@ const Vehiculos = () => {
                 caption={t('taxis.vehicles.fields.ppThisMonth')}
                 allowEditing={false}
                 hidingPriority={1}
-                cellRender={({ data }) => currentMonthSummary(data.restrictions, t)}
+                cellRender={({ data }) => currentMonthSummary(data.restrictions)}
               />
               <Column
                 caption=""
@@ -219,17 +216,17 @@ const Vehiculos = () => {
                     <button
                       onClick={() => openRestrictModal(data)}
                       style={{ background: 'none', border: 'none', color: '#e67700', cursor: 'pointer', padding: '2px 6px', fontSize: 14 }}
-                      title={t('taxis.vehicles.restrictions.title', { plate: data.plate })}
+                      title="Pico y placa"
                     >📅</button>
                     <button
                       onClick={() => handleEdit(data)}
                       style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '2px 6px' }}
-                      title={t('common.edit')}
+                      title="Editar"
                     >✎</button>
                     <button
                       onClick={() => handleDelete(data.id)}
                       style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                      title={t('common.remove')}
+                      title="Eliminar"
                     >
                       <CIcon icon={cilTrash} size="sm" />
                     </button>
@@ -244,7 +241,7 @@ const Vehiculos = () => {
                       <div style={{ padding: '16px 24px', maxWidth: 380 }}>
                         <VehicleForm
                           initial={data}
-                          title={t('taxis.vehicles.editVehicle')}
+                          title="Editar vehículo"
                           subtitle={data.plate}
                           onSave={handleEditSave}
                           onCancel={handleEditCancel}
@@ -252,29 +249,46 @@ const Vehiculos = () => {
                         />
                       </div>
                     )
-                    : null
+                    : (
+                      <DetailPanel columns={2}>
+                        <DetailSection title="Datos del vehículo">
+                          <DetailRow label="Placa" value={data.plate} mono />
+                          <DetailRow label="Marca" value={data.brand} />
+                          <DetailRow label="Modelo" value={data.model} />
+                          <DetailRow label="Año" value={data.year} />
+                        </DetailSection>
+                        <DetailSection title="Conductores asignados">
+                          {driversByPlate(data.plate).length > 0
+                            ? driversByPlate(data.plate).map((name) => (
+                                <DetailRow key={name} label="Conductor" value={name} />
+                              ))
+                            : <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Sin conductores asignados</span>
+                          }
+                        </DetailSection>
+                      </DetailPanel>
+                    )
                 )}
               />
-            </DataGrid>
+            </StandardGrid>
           )}
         </CCardBody>
       </CCard>
 
       <CModal visible={!!restrictModal} onClose={() => setRestrictModal(null)} size="lg">
         <CModalHeader>
-          <CModalTitle>{t('taxis.vehicles.restrictions.title', { plate: restrictModal?.plate })}</CModalTitle>
+          <CModalTitle>Pico y placa — {restrictModal?.plate}</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <CTable small bordered style={{ marginBottom: 0 }}>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell style={{ width: 140 }}>{t('taxis.vehicles.restrictions.month')}</CTableHeaderCell>
-                <CTableHeaderCell>{t('taxis.vehicles.restrictions.day1')}</CTableHeaderCell>
-                <CTableHeaderCell>{t('taxis.vehicles.restrictions.day2')}</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: 140 }}>Mes</CTableHeaderCell>
+                <CTableHeaderCell>Día 1</CTableHeaderCell>
+                <CTableHeaderCell>Día 2</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {months.map((name, i) => {
+              {MONTHS.map((name, i) => {
                 const m = i + 1
                 return (
                   <CTableRow key={m}>
@@ -301,10 +315,10 @@ const Vehiculos = () => {
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" variant="outline" size="sm" onClick={() => setRestrictModal(null)}>
-            {t('common.cancel')}
+            Cancelar
           </CButton>
           <CButton color="primary" size="sm" disabled={restrictSaving} onClick={handleSaveRestrictions}>
-            {restrictSaving ? <CSpinner size="sm" /> : t('common.save')}
+            {restrictSaving ? <CSpinner size="sm" /> : 'Guardar'}
           </CButton>
         </CModalFooter>
       </CModal>

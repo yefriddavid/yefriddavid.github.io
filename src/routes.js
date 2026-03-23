@@ -5,12 +5,14 @@ const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
 // Managment
-const Accounts = React.lazy(() => import('./views/managment/accounts/Accounts'))
-const Settlements = React.lazy(() => import('./views/managment/taxis/Settlements'))
-const Drivers = React.lazy(() => import('./views/managment/taxis/Drivers'))
-const Vehicles = React.lazy(() => import('./views/managment/taxis/Vehicles'))
-const Expenses = React.lazy(() => import('./views/managment/taxis/Expenses'))
-const Summary = React.lazy(() => import('./views/managment/taxis/Summary'))
+const Accounts = React.lazy(() => import('./views/management/accounts/Accounts'))
+const Settlements = React.lazy(() => import('./views/management/taxis/Settlements'))
+const Drivers = React.lazy(() => import('./views/management/taxis/Drivers'))
+const Vehicles = React.lazy(() => import('./views/management/taxis/Vehicles'))
+const Expenses = React.lazy(() => import('./views/management/taxis/Expenses'))
+const Summary = React.lazy(() => import('./views/management/taxis/Summary'))
+const Partners = React.lazy(() => import('./views/management/taxis/Partners'))
+const Distributions = React.lazy(() => import('./views/management/taxis/Distributions'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
@@ -75,16 +77,18 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', tKey: 'nav.dashboard', element: Dashboard },
   //{ path: '/theme', name: 'Theme', element: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', element: Colors },
-  { path: '/managment/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
-  { path: '/managment/taxis/settlements', name: 'Settlements', tKey: 'nav.liquidaciones', element: Settlements },
-  { path: '/managment/taxis/drivers', name: 'Drivers', tKey: 'nav.conductores', element: Drivers },
-  { path: '/managment/taxis/vehicles', name: 'Vehicles', tKey: 'nav.vehiculos', element: Vehicles },
-  { path: '/managment/taxis/expenses', name: 'Expenses', tKey: 'nav.taxiExpenses', element: Expenses },
-  { path: '/managment/taxis/summary', name: 'Summary', tKey: 'nav.taxiResumen', element: Summary },
-  { path: '/managment/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
-  { path: '/managment/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
+  { path: '/management/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
+  { path: '/management/taxis/settlements', name: 'Settlements', tKey: 'nav.liquidaciones', element: Settlements },
+  { path: '/management/taxis/drivers', name: 'Drivers', tKey: 'nav.conductores', element: Drivers },
+  { path: '/management/taxis/vehicles', name: 'Vehicles', tKey: 'nav.vehiculos', element: Vehicles },
+  { path: '/management/taxis/expenses', name: 'Expenses', tKey: 'nav.taxiExpenses', element: Expenses },
+  { path: '/management/taxis/summary', name: 'Summary', tKey: 'nav.taxiResumen', element: Summary },
+  { path: '/management/taxis/partners', name: 'Partners', element: Partners },
+  { path: '/management/taxis/profit-sharing', name: 'Distributions', element: Distributions },
+  { path: '/management/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
+  { path: '/management/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
 
-  { path: '/tools/increase-decrease', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
+  { path: '/tools/adjustments', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
   { path: '/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { DataGrid, Column } from 'devextreme-react/data-grid';
+import { Column } from 'devextreme-react/data-grid';
 import { Button } from 'devextreme-react/button';
+import StandardGrid from 'src/components/StandardGrid'
 import axios from 'axios'
 
 const App = () => {
@@ -33,19 +34,15 @@ const App = () => {
   return (
     <div>
       <Button text="Refresh Data" onClick={fetchData} />
-      <DataGrid
-        id="gridContainer"
+      <StandardGrid
         dataSource={data}
-        showBorders={true}
-        columnAutoWidth={true}
-        columnHidingEnabled={true}
       >
         <Column dataField="accountId" width={60} caption="#" hidingPriority={3} />
         <Column dataField="name" minWidth={120} hidingPriority={5} />
         <Column dataField="type" hidingPriority={2} />
         <Column dataField="paymentMethod" hidingPriority={1} />
         <Column dataField="period" caption="Period" hidingPriority={4} />
-      </DataGrid>
+      </StandardGrid>
     </div>
   );
 };
