@@ -233,6 +233,7 @@ const Taxis = () => {
   const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
   const auditDriverDropRef = useRef(null)
   const [addingSettlementDay, setAddingSettlementDay] = useState(null)
+  const [hoveredAuditDay, setHoveredAuditDay] = useState(null)
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
   const editingRowIdRef = useRef(null)
@@ -1091,7 +1092,9 @@ const Taxis = () => {
                       <React.Fragment key={day.d}>
                       <tr
                         onClick={() => setSelectedAuditDay((prev) => prev === day.d ? null : day.d)}
-                        style={{ background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}`, cursor: 'pointer' }}
+                        onMouseEnter={() => setHoveredAuditDay(day.d)}
+                        onMouseLeave={() => setHoveredAuditDay(null)}
+                        style={{ background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}`, cursor: 'pointer', boxShadow: hoveredAuditDay === day.d ? 'inset 0 0 0 9999px rgba(0,0,0,0.04)' : 'none', transition: 'box-shadow 0.1s' }}
                       >
                         <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
                           {String(day.d).padStart(2, '0')}
