@@ -32,6 +32,19 @@ export default defineConfig(() => {
     },
     build: {
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-redux': ['@reduxjs/toolkit', 'redux-saga', 'react-redux'],
+            'vendor-coreui': ['@coreui/react', '@coreui/coreui'],
+            'vendor-devextreme': ['devextreme-react/data-grid', 'devextreme-react/button'],
+            'vendor-firebase': ['firebase/app', 'firebase/firestore'],
+            'vendor-pdfjs': ['pdfjs-dist'],
+            'vendor-charts': ['chart.js', '@coreui/chartjs'],
+          },
+        },
+      },
     },
     css: {
       postcss: {

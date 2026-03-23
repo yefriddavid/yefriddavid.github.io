@@ -19,7 +19,7 @@ const IncreaseDecrease = () => {
 
   inversionIncreaseValue = inversionValue * increaseValue / 100
 
-  const newItem = ItemRow({initialValue, finalValue, increaseValue, decreaseValue, inversionValue, inversionValue, inversionIncreaseValue})
+  const newItem = ItemRow({initialValue, finalValue, increaseValue, decreaseValue, inversionValue, inversionIncreaseValue})
   items.push(newItem)
 
   return (

@@ -2,6 +2,24 @@ import { axios } from './utilApi'
 
 const token = localStorage.getItem('token')
 
+export const fetchPayments = async (params) => {
+    var bodyFormData = new FormData()
+    bodyFormData.append('token', token)
+    bodyFormData.append('action', 'getAccountPayments')
+
+    const keys = Object.keys(params)
+    for(let key of keys){
+      bodyFormData.append(key, params[key])
+    }
+
+    const response = await axios({
+      'method': 'post',
+      'data': bodyFormData
+    })
+
+    return response.data
+}
+
 export const fetchAccounts = async (params) => {
 
     var bodyFormData = new FormData()
