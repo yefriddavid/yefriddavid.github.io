@@ -388,19 +388,20 @@ const Taxis = () => {
     const settledVehicles = new Set(dayRecords.map((r) => r.plate).filter(Boolean))
     const dow = new Date(period.year, period.month - 1, d).getDay()
     const isSunday = dow === 0
-    // Only expect a vehicle if its driver was responsible on this specific day
-    const expectedVehicles = auditVehicles.filter((pl) => {
-      const driver = periodDrivers.find((dr) => dr.defaultVehicle === pl)
-      if (!driver) return false
-      if (driver.startDate && driver.startDate > dateStr) return false
-      if (driver.endDate && driver.endDate < dateStr) return false
+    // Find the driver responsible for a vehicle on a specific day (respects startDate/endDate)
+    const driverOnDay = (pl) => periodDrivers.find((dr) => {
+      if (dr.defaultVehicle !== pl) return false
+      if (dr.startDate && dr.startDate > dateStr) return false
+      if (dr.endDate && dr.endDate < dateStr) return false
       return true
     })
+    // Only expect a vehicle if some driver was responsible on this specific day
+    const expectedVehicles = auditVehicles.filter((pl) => !!driverOnDay(pl))
     const missingVehicles = expectedVehicles.filter((pl) => !settledVehicles.has(pl))
     // Vehicles that settled but paid less than the driver's expected amount
     const underpaidVehicles = expectedVehicles.filter((pl) => {
       if (!settledVehicles.has(pl)) return false
-      const driver = drivers.find((dr) => dr.defaultVehicle === pl && activeDriverNames.has(dr.name))
+      const driver = driverOnDay(pl)
       if (!driver) return false
       const expected = isSunday
         ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
@@ -1063,7 +1064,12 @@ const Taxis = () => {
                         <td style={{ padding: '8px 6px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {!day.isFuture && day.underpaidVehicles.map((pl) => {
-                              const driver = drivers.find((d) => d.defaultVehicle === pl && activeDriverNames.has(d.name))
+                              const driver = periodDrivers.find((d) => {
+                                if (d.defaultVehicle !== pl) return false
+                                if (d.startDate && d.startDate > day.dateStr) return false
+                                if (d.endDate && d.endDate < day.dateStr) return false
+                                return true
+                              })
                               if (!driver) return null
                               const expected = day.isSunday
                                 ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
