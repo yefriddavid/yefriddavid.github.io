@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 import autoprefixer from 'autoprefixer'
 import { writeFileSync } from 'node:fs'
@@ -73,6 +74,70 @@ export default defineConfig(() => {
     plugins: [
       react(),
       legacy({ targets: ['defaults', 'not IE 11'] }),
+      VitePWA({
+        registerType: 'autoUpdate',
+        injectRegister: 'auto',
+        includeAssets: ['favicon.ico', 'icons/icon.svg'],
+        manifest: {
+          name: 'Mi Admin — Gestión de Taxis',
+          short_name: 'Mi Admin',
+          description: 'Panel de gestión de flota de taxis: liquidaciones, conductores, vehículos y auditoría',
+          theme_color: '#1e3a5f',
+          background_color: '#ffffff',
+          display: 'standalone',
+          orientation: 'portrait-primary',
+          start_url: './',
+          scope: './',
+          icons: [
+            {
+              src: 'icons/icon.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'any',
+            },
+            {
+              src: 'icons/icon.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'maskable',
+            },
+          ],
+        },
+        workbox: {
+          // Cache app shell — exclude heavy reporting/flags bundles (>2MB)
+          globPatterns: ['**/*.{js,css,html,ico,svg,woff,woff2}'],
+          globIgnores: [
+            '**/Reports*',
+            '**/Flags*',
+            '**/Brands*',
+            '**/pdf.worker*',
+          ],
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+          navigateFallback: 'index.html',
+          navigateFallbackDenylist: [/^\/api/],
+          runtimeCaching: [
+            {
+              // Google Fonts
+              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts',
+                expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+            {
+              // Firebase Firestore — always go to network (real-time data)
+              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+              handler: 'NetworkOnly',
+            },
+            {
+              // Google Apps Script API — always go to network
+              urlPattern: /^https:\/\/script\.google\.com\/.*/i,
+              handler: 'NetworkOnly',
+            },
+          ],
+        },
+      }),
       versionPlugin(),
     ],
     resolve: {

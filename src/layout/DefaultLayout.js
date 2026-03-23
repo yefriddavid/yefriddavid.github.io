@@ -1,5 +1,6 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
+import InstallBanner from '../components/InstallBanner'
 
 const DefaultLayout = () => {
   document.title = `Cash Flow`
@@ -14,6 +15,7 @@ const DefaultLayout = () => {
         </div>
         <AppFooter />
       </div>
+      <InstallBanner />
     </div>
   )
 }
