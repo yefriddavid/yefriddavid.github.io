@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { DataGrid, Column, Editing, MasterDetail, Lookup, Form } from 'devextreme-react/data-grid'
-import { GroupItem, SimpleItem } from 'devextreme-react/form'
+import { DataGrid, Column, MasterDetail } from 'devextreme-react/data-grid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
@@ -13,6 +12,7 @@ import * as taxiDriverActions from 'src/actions/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
 import '../../../views/movements/payments/Payments.scss'
+import '../../../views/movements/payments/ItemDetail.scss'
 import './Taxis.scss'
 
 const fmt = (n) =>
@@ -26,6 +26,57 @@ const MONTHS = [
 ]
 
 const EMPTY = { driver: '', plate: '', amount: '', date: today(), comment: '' }
+
+const SettlementEditForm = ({ settlement, drivers, vehicles, onSave, onCancel }) => {
+  const [form, setForm] = useState({
+    date: settlement.date || '',
+    driver: settlement.driver || '',
+    plate: settlement.plate || '',
+    amount: settlement.amount || '',
+    comment: settlement.comment || '',
+  })
+  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+
+  return (
+    <div className="payment-form">
+      <div className="payment-form__header">
+        <span className="payment-form__title">Editar liquidación</span>
+      </div>
+      <div className="payment-form__body">
+        <div className="payment-form__field">
+          <label className="payment-form__label">Fecha</label>
+          <input className="payment-form__input" type="date" value={form.date} onChange={set('date')} />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Conductor</label>
+          <select className="payment-form__input payment-form__input--select" value={form.driver} onChange={set('driver')}>
+            <option value="">— Seleccionar —</option>
+            {drivers.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+          </select>
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Placa</label>
+          <select className="payment-form__input payment-form__input--select" value={form.plate} onChange={set('plate')}>
+            <option value="">— Seleccionar —</option>
+            {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}{v.brand ? ` · ${v.brand}` : ''}</option>)}
+          </select>
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Valor</label>
+          <input className="payment-form__input" type="number" value={form.amount} onChange={set('amount')} placeholder="0" />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Comentario</label>
+          <textarea className="payment-form__input payment-form__input--textarea" value={form.comment || ''} onChange={set('comment')} rows={3} />
+        </div>
+      </div>
+      <div className="payment-form__actions">
+        <CButton className="payment-form__btn payment-form__btn--cancel" onClick={onCancel}>Cancelar</CButton>
+        <CButton className="payment-form__btn payment-form__btn--save" onClick={() => onSave({ ...settlement, ...form, amount: Number(form.amount) })}>Guardar</CButton>
+      </div>
+    </div>
+  )
+}
 
 const DetailField = ({ label, value, mono }) =>
   value != null && value !== '' ? (
@@ -89,7 +140,7 @@ const SettlementDetail = ({ data, drivers, vehicles }) => {
 
 const Taxis = () => {
   const dispatch = useDispatch()
-  const { data: settlementsData, fetching: loadingSettlements } = useSelector((s) => s.taxiSettlement)
+  const { data: settlementsData, fetching: loadingSettlements, isError: settlementError } = useSelector((s) => s.taxiSettlement)
   const { data: driversData } = useSelector((s) => s.taxiDriver)
   const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
   const { data: expensesData } = useSelector((s) => s.taxiExpense)
@@ -100,7 +151,12 @@ const Taxis = () => {
   const [error, setError] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [driverFilter, setDriverFilter] = useState('')
+  const [plateFilter, setPlateFilter] = useState('')
   const [viewMode, setViewMode] = useState('detail')
+  const [editingRow, setEditingRow] = useState(null)
+  const [toast, setToast] = useState(null) // { type: 'success'|'error', msg: string }
+  const savingRef = useRef(false)
+  const dataGridRef = useRef(null)
 
   const records = settlementsData ?? []
   const drivers = driversData ?? []
@@ -113,6 +169,28 @@ const Taxis = () => {
     dispatch(taxiVehicleActions.fetchRequest())
     dispatch(taxiExpenseActions.fetchRequest())
   }, [dispatch])
+
+  useEffect(() => {
+    if (!savingRef.current) return
+    if (loadingSettlements) return
+    const wasCreate = savingRef.current === 'create'
+    savingRef.current = false
+    if (settlementError) {
+      setToast({ type: 'error', msg: 'Error al guardar los cambios' })
+    } else {
+      if (wasCreate) {
+        setForm(EMPTY)
+        setShowForm(false)
+      } else {
+        dataGridRef.current?.instance?.collapseRow(editingRow?.id)
+        setEditingRow(null)
+      }
+      dispatch(taxiSettlementActions.fetchRequest())
+      setToast({ type: 'success', msg: 'Cambios guardados correctamente' })
+    }
+    const t = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [loadingSettlements, settlementError])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -148,17 +226,20 @@ const Taxis = () => {
     }
     if (picoPlacaWarning) return
     setError(null)
+    savingRef.current = 'create'
     dispatch(taxiSettlementActions.createRequest(form))
-    setForm(EMPTY)
-    setShowForm(false)
   }
 
   const handleRowUpdating = (e) => {
     const merged = { ...e.oldData, ...e.newData }
-    e.cancel = new Promise((resolve) => {
-      dispatch(taxiSettlementActions.updateRequest({ id: e.key, ...merged }))
-      resolve(false)
-    })
+    savingRef.current = 'update'
+    e.cancel = true
+    dispatch(taxiSettlementActions.updateRequest({ id: e.key, ...merged }))
+  }
+
+  const handleEditSave = (updated) => {
+    savingRef.current = 'update'
+    dispatch(taxiSettlementActions.updateRequest({ id: updated.id, ...updated }))
   }
 
   const handleDelete = (id) => {
@@ -175,6 +256,7 @@ const Taxis = () => {
     const [y, m] = r.date.split('-').map(Number)
     if (y !== period.year || m !== period.month) return false
     if (driverFilter && r.driver !== driverFilter) return false
+    if (plateFilter && r.plate !== plateFilter) return false
     return true
   })
 
@@ -220,8 +302,43 @@ const Taxis = () => {
     }, {}),
   ).sort((a, b) => b.total - a.total)
 
+  const byVehicle = Object.values(
+    filtered.reduce((acc, r) => {
+      const k = r.plate || '—'
+      if (!acc[k]) acc[k] = { id: k, plate: k, count: 0, total: 0, rows: [] }
+      acc[k].count += 1
+      acc[k].total += r.amount || 0
+      acc[k].rows.push(r)
+      return acc
+    }, {}),
+  ).sort((a, b) => b.total - a.total)
+
   return (
     <>
+      {/* Full-screen saving overlay */}
+      {loadingSettlements && savingRef.current && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CSpinner color="light" style={{ width: 48, height: 48 }} />
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 10000, padding: '12px 28px', borderRadius: 8, fontSize: 14, fontWeight: 500,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+          background: toast.type === 'success' ? '#2f9e44' : '#e03131',
+          color: '#fff',
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
       {/* Summary */}
       <CRow className="mb-3 d-none d-sm-flex">
         <CCol sm={2}>
@@ -342,6 +459,18 @@ const Taxis = () => {
                     <option key={d.id} value={d.name}>{d.name}</option>
                   ))}
                 </CFormSelect>
+                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
+                <CFormSelect
+                  size="sm"
+                  style={{ width: 110 }}
+                  value={plateFilter}
+                  onChange={(e) => setPlateFilter(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.plate}>{v.plate}</option>
+                  ))}
+                </CFormSelect>
               </>
             )}
           </div>
@@ -363,6 +492,15 @@ const Taxis = () => {
               style={{ fontSize: 12 }}
             >
               Por conductor
+            </CButton>
+            <CButton
+              size="sm"
+              color="secondary"
+              variant={viewMode === 'byVehicle' ? undefined : 'outline'}
+              onClick={() => setViewMode('byVehicle')}
+              style={{ fontSize: 12 }}
+            >
+              Por vehículo
             </CButton>
           </div>
           <CButton
@@ -446,6 +584,7 @@ const Taxis = () => {
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
           ) : viewMode === 'detail' ? (
             <DataGrid
+              ref={dataGridRef}
               id="paymentsGrid"
               style={{ margin: 16 }}
               keyExpr="id"
@@ -467,17 +606,6 @@ const Taxis = () => {
                 }
               }}
             >
-              <Editing allowUpdating={true} mode="form">
-                <Form colCount={4}>
-                  <GroupItem caption="Liquidación" colCount={4} colSpan={4}>
-                    <SimpleItem dataField="date" label={{ text: 'Fecha' }} editorType="dxDateBox" editorOptions={{ displayFormat: 'dd/MM/yyyy', dateSerializationFormat: 'yyyy-MM-dd' }} />
-                    <SimpleItem dataField="driver" label={{ text: 'Conductor' }} editorType="dxSelectBox" editorOptions={{ dataSource: drivers, valueExpr: 'name', displayExpr: 'name' }} />
-                    <SimpleItem dataField="plate" label={{ text: 'Placa' }} editorType="dxSelectBox" editorOptions={{ dataSource: vehicles, valueExpr: 'plate', displayExpr: (v) => v ? `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` : '' }} />
-                    <SimpleItem dataField="amount" label={{ text: 'Valor' }} editorType="dxNumberBox" />
-                    <SimpleItem dataField="comment" label={{ text: 'Comentario' }} colSpan={4} />
-                  </GroupItem>
-                </Form>
-              </Editing>
               <Column dataField="date" caption="Fecha" width={110} hidingPriority={1} sortOrder="asc" defaultSortIndex={0} />
               <Column dataField="driver" caption="Conductor" minWidth={150} hidingPriority={4} />
               <Column
@@ -488,13 +616,7 @@ const Taxis = () => {
                 cellRender={({ value }) => (
                   <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
                 )}
-              >
-                <Lookup
-                  dataSource={vehicles}
-                  valueExpr="plate"
-                  displayExpr={(v) => v ? `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` : ''}
-                />
-              </Column>
+              />
               <Column
                 dataField="amount"
                 caption="Valor"
@@ -506,28 +628,52 @@ const Taxis = () => {
               <Column dataField="comment" caption="Comentario" minWidth={120} hidingPriority={5} />
               <Column
                 caption=""
-                width={50}
+                width={80}
                 allowSorting={false}
                 allowResizing={false}
                 hidingPriority={6}
                 cellRender={({ data }) => (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(data.id) }}
-                    style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
-                    title="Eliminar"
-                  >
-                    <CIcon icon={cilTrash} size="sm" />
-                  </button>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingRow(data)
+                        dataGridRef.current?.instance?.expandRow(data.id)
+                      }}
+                      style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '2px 6px' }}
+                      title="Editar"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(data.id) }}
+                      style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '2px 6px' }}
+                      title="Eliminar"
+                    >
+                      <CIcon icon={cilTrash} size="sm" />
+                    </button>
+                  </div>
                 )}
               />
               <MasterDetail
                 enabled={true}
                 render={({ data }) => (
-                  <SettlementDetail data={data} drivers={drivers} vehicles={vehicles} />
+                  editingRow?.id === data.id
+                    ? <SettlementEditForm
+                        settlement={data}
+                        drivers={drivers}
+                        vehicles={vehicles}
+                        onCancel={() => {
+                          dataGridRef.current?.instance?.collapseRow(data.id)
+                          setEditingRow(null)
+                        }}
+                        onSave={handleEditSave}
+                      />
+                    : <SettlementDetail data={data} drivers={drivers} vehicles={vehicles} />
                 )}
               />
             </DataGrid>
-          ) : (
+          ) : viewMode === 'byDriver' ? (
             <DataGrid
               style={{ margin: 16 }}
               keyExpr="id"
@@ -590,6 +736,87 @@ const Taxis = () => {
                           <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
                         )}
                       />
+                      <Column
+                        dataField="amount"
+                        caption="Valor"
+                        width={130}
+                        cellRender={({ value }) => (
+                          <span style={{ fontWeight: 600 }}>{fmt(value)}</span>
+                        )}
+                      />
+                      <Column dataField="comment" caption="Comentario" minWidth={120} />
+                    </DataGrid>
+                  </div>
+                )}
+              />
+            </DataGrid>
+          ) : (
+            <DataGrid
+              style={{ margin: 16 }}
+              keyExpr="id"
+              dataSource={byVehicle}
+              showBorders={true}
+              columnAutoWidth={true}
+              allowColumnResizing={true}
+              rowAlternationEnabled={true}
+              hoverStateEnabled={true}
+              noDataText="Sin liquidaciones para este periodo."
+            >
+              <Column
+                dataField="plate"
+                caption="Placa"
+                minWidth={130}
+                cellRender={({ value }) => (
+                  <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span>
+                )}
+              />
+              <Column
+                dataField="count"
+                caption="# Liquidaciones"
+                width={140}
+                cellRender={({ value }) => (
+                  <span style={{ fontWeight: 600 }}>{value}</span>
+                )}
+              />
+              <Column
+                dataField="total"
+                caption="Total consignado"
+                width={170}
+                cellRender={({ value }) => (
+                  <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
+                )}
+              />
+              <Column
+                caption="Falta por liquidar"
+                width={170}
+                cellRender={({ data }) => {
+                  if (!isCurrentPeriod) return <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
+                  const driver = drivers.find((d) => d.defaultVehicle === data.plate)
+                  if (!driver) return <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
+                  const remaining = calcRemaining(driver.name)
+                  if (remaining === null) return <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
+                  return (
+                    <span style={{ fontWeight: 700, color: remaining > 0 ? '#e67700' : '#2f9e44' }}>
+                      {fmt(remaining)}
+                    </span>
+                  )
+                }}
+              />
+              <MasterDetail
+                enabled={true}
+                render={({ data }) => (
+                  <div style={{ margin: '8px 8px 12px 32px' }}>
+                    <DataGrid
+                      dataSource={data.rows}
+                      keyExpr="id"
+                      showBorders={true}
+                      columnAutoWidth={true}
+                      rowAlternationEnabled={true}
+                      hoverStateEnabled={true}
+                      noDataText="Sin registros."
+                    >
+                      <Column dataField="date" caption="Fecha" width={110} sortOrder="asc" defaultSortIndex={0} />
+                      <Column dataField="driver" caption="Conductor" minWidth={150} />
                       <Column
                         dataField="amount"
                         caption="Valor"

@@ -24,12 +24,14 @@ const taxiSettlementSlice = createSlice({
       })
       .addCase(actions.errorRequestCreate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
+      .addCase(actions.beginRequestUpdate, (state) => { state.fetching = true; state.isError = false })
       .addCase(actions.successRequestUpdate, (state, { payload }) => {
         if (state.data) {
           state.data = state.data.map((r) => r.id === payload.id ? { ...r, ...payload } : r)
         }
+        state.fetching = false
       })
-      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.isError = true })
+      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
       .addCase(actions.successRequestDelete, (state, { payload }) => {
         if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)

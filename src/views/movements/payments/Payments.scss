@@ -43,6 +43,13 @@
     .dx-sort {
       color: rgba(255, 255, 255, 0.60) !important;
     }
+
+    // Header row hover — override the generic data-row hover rule
+    &.dx-state-hover > td,
+    .dx-state-hover > td {
+      color: rgba(255, 255, 255, 0.60) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
   }
 
   // ── Filas de datos ──────────────────────────────────────────────
