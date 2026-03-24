@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/StandardGrid'
@@ -64,9 +64,11 @@ const Resumen = () => {
     }).finally(() => setLoading(false))
   }, [])
 
-  const availableYears = [...new Set(rows.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
-    .map(Number).sort((a, b) => b - a)
-  if (!availableYears.includes(period.year)) availableYears.unshift(period.year)
+  const availableYears = useMemo(() => {
+    const years = [...new Set(rows.map((r) => r.date?.slice(0, 4)).filter(Boolean))].map(Number).sort((a, b) => b - a)
+    if (!years.includes(period.year)) years.unshift(period.year)
+    return years
+  }, [rows, period.year])
 
   const filtered = rows
     .filter((r) => {

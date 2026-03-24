@@ -100,15 +100,20 @@ const TaxisHome = () => {
 
   // ── Daily bar data ────────────────────────────────────────────────────────
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
-  const dailyLabels = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  const dailySettled = dailyLabels.map((d) => {
-    const ds = `${monthStr}-${String(d).padStart(2, '0')}`
-    return monthSettlements.filter((r) => r.date === ds).reduce((s, r) => s + (r.amount || 0), 0)
-  })
-  const dailyExpenses = dailyLabels.map((d) => {
-    const ds = `${monthStr}-${String(d).padStart(2, '0')}`
-    return monthExpenses.filter((r) => r.date === ds).reduce((s, r) => s + (r.amount || 0), 0)
-  })
+  const dailyLabels = useMemo(
+    () => Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    [daysInMonth],
+  )
+  const dailySettled = useMemo(() => {
+    const map = {}
+    monthSettlements.forEach((r) => { if (r.date) map[r.date] = (map[r.date] || 0) + (r.amount || 0) })
+    return dailyLabels.map((d) => map[`${monthStr}-${String(d).padStart(2, '0')}`] || 0)
+  }, [monthSettlements, dailyLabels, monthStr])
+  const dailyExpenses = useMemo(() => {
+    const map = {}
+    monthExpenses.forEach((r) => { if (r.date) map[r.date] = (map[r.date] || 0) + (r.amount || 0) })
+    return dailyLabels.map((d) => map[`${monthStr}-${String(d).padStart(2, '0')}`] || 0)
+  }, [monthExpenses, dailyLabels, monthStr])
 
   // ── By driver ─────────────────────────────────────────────────────────────
   const byDriver = useMemo(() => {
@@ -122,11 +127,15 @@ const TaxisHome = () => {
 
   // ── By expense category ───────────────────────────────────────────────────
   const byCategory = useMemo(() => {
-    const cats = [...new Set(monthExpenses.map((e) => e.category).filter(Boolean))]
-    return cats.map((cat) => ({
-      label: cat,
-      value: monthExpenses.filter((e) => e.category === cat).reduce((s, e) => s + (e.amount || 0), 0),
-    })).filter((c) => c.value > 0).sort((a, b) => b.value - a.value)
+    const map = {}
+    monthExpenses.forEach((e) => {
+      if (!e.category) return
+      map[e.category] = (map[e.category] || 0) + (e.amount || 0)
+    })
+    return Object.entries(map)
+      .filter(([, v]) => v > 0)
+      .map(([label, value]) => ({ label, value }))
+      .sort((a, b) => b.value - a.value)
   }, [monthExpenses])
 
   // ── 6-month trend ─────────────────────────────────────────────────────────
@@ -137,14 +146,26 @@ const TaxisHome = () => {
     })
   }, [period])
 
-  const trendSettled = last6.map(({ year, month }) => {
-    const ms = `${year}-${String(month).padStart(2, '0')}`
-    return settlements.filter((r) => r.date?.startsWith(ms)).reduce((s, r) => s + (r.amount || 0), 0)
-  })
-  const trendExp = last6.map(({ year, month }) => {
-    const ms = `${year}-${String(month).padStart(2, '0')}`
-    return expenses.filter((r) => r.date?.startsWith(ms)).reduce((s, r) => s + (r.amount || 0), 0)
-  })
+  const { trendSettled, trendExp } = useMemo(() => {
+    const settledByMonth = {}
+    settlements.forEach((r) => {
+      if (r.date) {
+        const k = r.date.slice(0, 7)
+        settledByMonth[k] = (settledByMonth[k] || 0) + (r.amount || 0)
+      }
+    })
+    const expByMonth = {}
+    expenses.forEach((r) => {
+      if (r.date) {
+        const k = r.date.slice(0, 7)
+        expByMonth[k] = (expByMonth[k] || 0) + (r.amount || 0)
+      }
+    })
+    return {
+      trendSettled: last6.map(({ year, month }) => settledByMonth[`${year}-${String(month).padStart(2, '0')}`] || 0),
+      trendExp: last6.map(({ year, month }) => expByMonth[`${year}-${String(month).padStart(2, '0')}`] || 0),
+    }
+  }, [settlements, expenses, last6])
   const trendNet = trendSettled.map((v, i) => v - trendExp[i])
 
   // ── Top vehicles ──────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Column, MasterDetail } from 'devextreme-react/data-grid'
+import { Column, MasterDetail, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
@@ -29,6 +29,82 @@ const fmt = (n) =>
 const today = () => new Date().toISOString().split('T')[0]
 
 const EMPTY = { description: '', category: CATEGORIES[0], amount: '', date: today(), plate: '', comment: '' }
+
+const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
+  const [open, setOpen] = useState(false)
+  const ref = useRef()
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const toggle = useCallback((val) => {
+    onChange(selected.includes(val) ? selected.filter((s) => s !== val) : [...selected, val])
+  }, [selected, onChange])
+
+  const label = selected.length === 0 ? placeholder : selected.length === 1 ? selected[0] : `${selected.length} categorías`
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        style={{
+          height: 30, fontSize: 13, padding: '0 8px', borderRadius: 4,
+          border: '1px solid var(--cui-border-color)', background: 'var(--cui-body-bg)',
+          color: selected.length ? 'var(--cui-body-color)' : 'var(--cui-secondary-color)',
+          cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 130, textAlign: 'left',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
+        }}
+      >
+        <span>{label}</span>
+        <span style={{ fontSize: 10, opacity: 0.6 }}>{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, zIndex: 1050, marginTop: 2,
+          background: 'var(--cui-body-bg)', border: '1px solid var(--cui-border-color)',
+          borderRadius: 6, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: 160, padding: '4px 0',
+        }}>
+          <label
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '5px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+              borderBottom: '1px solid var(--cui-border-color)', marginBottom: 2,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selected.length === 0}
+              onChange={() => onChange(selected.length === 0 ? options : [])}
+              style={{ cursor: 'pointer', accentColor: 'var(--cui-primary)' }}
+            />
+            Todos
+          </label>
+          {options.map((opt) => (
+            <label
+              key={opt}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '5px 12px', cursor: 'pointer', fontSize: 13,
+                background: selected.includes(opt) ? 'var(--cui-primary-bg-subtle, #e7f1ff)' : 'transparent',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(opt)}
+                onChange={() => toggle(opt)}
+                style={{ cursor: 'pointer', accentColor: 'var(--cui-primary)' }}
+              />
+              {opt}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
   const [form, setForm] = useState(initial)
@@ -76,7 +152,7 @@ const Gastos = () => {
   const [showCreate, setShowCreate] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
-  const [categoryFilter, setCategoryFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState([])
   const [plateFilter, setPlateFilter] = useState('')
   const [paidFilter, setPaidFilter] = useState('')
   const [cloneSource, setCloneSource] = useState(null)
@@ -135,16 +211,18 @@ const Gastos = () => {
 
   const records = expenses ?? []
 
-  const availableYears = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
-    .map(Number).sort((a, b) => b - a)
-  if (!availableYears.includes(period.year)) availableYears.unshift(period.year)
+  const availableYears = useMemo(() => {
+    const years = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))].map(Number).sort((a, b) => b - a)
+    if (!years.includes(period.year)) years.unshift(period.year)
+    return years
+  }, [records, period.year])
 
   const filtered = records.filter((r) => {
     if (!r.date) return false
     const [y, m] = r.date.split('-').map(Number)
     if (y !== period.year) return false
     if (period.month !== 0 && m !== period.month) return false
-    if (categoryFilter && r.category !== categoryFilter) return false
+    if (categoryFilter.length > 0 && !categoryFilter.includes(r.category)) return false
     if (plateFilter && r.plate !== plateFilter) return false
     if (paidFilter === 'paid' && !r.paid) return false
     if (paidFilter === 'unpaid' && r.paid) return false
@@ -225,11 +303,12 @@ const Gastos = () => {
               {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
             </CFormSelect>
             <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Categoría</span>
-            <CFormSelect size="sm" style={{ width: 130 }} value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="">Todas</option>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </CFormSelect>
+            <MultiCheckDropdown
+              options={CATEGORIES}
+              selected={categoryFilter}
+              onChange={setCategoryFilter}
+              placeholder="Todas"
+            />
             <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
             <CFormSelect size="sm" style={{ width: 110 }} value={plateFilter}
               onChange={(e) => setPlateFilter(e.target.value)}>
@@ -328,6 +407,14 @@ const Gastos = () => {
                   </div>
                 )}
               />
+              <Summary>
+                <TotalItem
+                  column="amount"
+                  summaryType="sum"
+                  customizeText={({ value }) => fmt(value)}
+                  cssClass="summary-total-white"
+                />
+              </Summary>
               <MasterDetail
                 enabled={true}
                 render={({ data }) => (

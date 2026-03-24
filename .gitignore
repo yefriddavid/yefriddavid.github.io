@@ -13,6 +13,8 @@ yarn.lock
 
 # misc
 .eslintcache
+**/service-account.json
+**/*-service-account.json
 .DS_Store
 .idea
 .env.local

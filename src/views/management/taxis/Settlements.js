@@ -433,6 +433,31 @@ const Taxis = () => {
     return remaining
   }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now])
 
+  const calcFuture = useCallback((driverName, rows = []) => {
+    if (!isCurrentPeriod) return null
+    const driver = driversMap.get(driverName)
+    if (!driver || driver.active === false) return null
+    const vehicle = vehiclesMap.get(driver.defaultVehicle)
+    const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
+    const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+    const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
+    const driverEndDay = driver.endDate?.startsWith(periodPrefix)
+      ? parseInt(driver.endDate.slice(-2), 10) : daysInMonth
+    const todayNum = now.getDate()
+    const hasSettlementToday = rows.some(
+      (r) => r.date?.startsWith(periodPrefix) && parseInt(r.date.slice(-2), 10) === todayNum,
+    )
+    const startDay = hasSettlementToday ? todayNum + 1 : todayNum
+    const endDay = Math.min(driverEndDay, daysInMonth)
+    let future = 0
+    for (let day = startDay; day <= endDay; day++) {
+      if (restrictedDays.has(day)) continue
+      const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
+      future += isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+    }
+    return future
+  }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now])
+
   const rowsByDriver = useMemo(() => records.filter((r) => {
     if (!r.date) return false
     const [y, m] = r.date.split('-').map(Number)
@@ -463,7 +488,8 @@ const Taxis = () => {
   ).sort((a, b) => b.total - a.total).map((item) => ({
     ...item,
     remaining: calcRemaining(item.driver, rowsByDriver[item.driver] || []) ?? 0,
-  })), [filtered, calcRemaining, rowsByDriver])
+    future: calcFuture(item.driver, rowsByDriver[item.driver] || []),
+  })), [filtered, calcRemaining, calcFuture, rowsByDriver])
 
   const byVehicle = useMemo(() => Object.values(
     filtered.reduce((acc, r) => {
@@ -703,6 +729,7 @@ const Taxis = () => {
                       <th style={{ padding: '8px 12px', textAlign: 'right' }}>Liquidaciones</th>
                       <th style={{ padding: '8px 12px', textAlign: 'right' }}>Total</th>
                       {isCurrentPeriod && <th style={{ padding: '8px 12px', textAlign: 'right' }}>Por cobrar</th>}
+                      {isCurrentPeriod && <th style={{ padding: '8px 12px', textAlign: 'right' }}>Resta del mes</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -716,6 +743,11 @@ const Taxis = () => {
                             {fmt(d.remaining)}
                           </td>
                         )}
+                        {isCurrentPeriod && (
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: d.future === null ? 'var(--cui-secondary-color)' : '#1971c2' }}>
+                            {d.future === null ? '—' : fmt(d.future)}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -727,6 +759,11 @@ const Taxis = () => {
                       {isCurrentPeriod && (
                         <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#e67700' }}>
                           {fmt(byDriver.reduce((s, d) => s + (d.remaining || 0), 0))}
+                        </td>
+                      )}
+                      {isCurrentPeriod && (
+                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#1971c2' }}>
+                          {fmt(byDriver.filter((d) => d.future !== null).reduce((s, d) => s + d.future, 0))}
                         </td>
                       )}
                     </tr>

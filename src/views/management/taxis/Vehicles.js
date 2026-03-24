@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
@@ -141,8 +141,16 @@ const Vehiculos = () => {
   }
 
   const rows = records ?? []
-  const driversByPlate = (plate) =>
-    (drivers ?? []).filter((d) => d.defaultVehicle === plate).map((d) => d.name)
+  const driversByPlateMap = useMemo(() => {
+    const map = {}
+    ;(drivers ?? []).forEach((d) => {
+      if (!d.defaultVehicle) return
+      if (!map[d.defaultVehicle]) map[d.defaultVehicle] = []
+      map[d.defaultVehicle].push(d.name)
+    })
+    return map
+  }, [drivers])
+  const driversByPlate = (plate) => driversByPlateMap[plate] ?? []
 
   return (
     <>
@@ -258,12 +266,12 @@ const Vehiculos = () => {
                           <DetailRow label="Año" value={data.year} />
                         </DetailSection>
                         <DetailSection title="Conductores asignados">
-                          {driversByPlate(data.plate).length > 0
-                            ? driversByPlate(data.plate).map((name) => (
-                                <DetailRow key={name} label="Conductor" value={name} />
-                              ))
-                            : <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Sin conductores asignados</span>
-                          }
+                          {(() => {
+                            const names = driversByPlate(data.plate)
+                            return names.length > 0
+                              ? names.map((name) => <DetailRow key={name} label="Conductor" value={name} />)
+                              : <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Sin conductores asignados</span>
+                          })()}
                         </DetailSection>
                       </DetailPanel>
                     )

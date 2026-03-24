@@ -1,5 +1,10 @@
 // Here you can add other styles
 
+.summary-total-white {
+  color: #fff !important;
+  font-weight: 700;
+}
+
 // ─── Mixin de tema ────────────────────────────────────────────────
 @mixin app-theme($bg, $accent) {
   $accent-dim: rgba($accent, 0.15);
