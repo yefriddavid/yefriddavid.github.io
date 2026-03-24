@@ -12,6 +12,7 @@ export const getTokens = async () => {
       id: d.id,
       token: data.token,
       userAgent: data.userAgent ?? '',
+      origin: data.origin ?? '',
       createdAt: data.createdAt?.toDate() ?? null,
     }
   })
@@ -22,6 +23,7 @@ export const saveFcmToken = async (token) => {
     token,
     createdAt: serverTimestamp(),
     userAgent: navigator.userAgent,
+    origin: window.location.origin,
   })
 }
 

@@ -41,6 +41,7 @@ const PushSubscribers = () => {
           browser: parseBrowser(t.userAgent),
           tokenShort: `${t.token.slice(0, 12)}…${t.token.slice(-8)}`,
           registeredAt: t.createdAt ? t.createdAt.toLocaleString('es-CO') : '—',
+          origin: t.origin || '—',
         })),
       )
     } finally {
@@ -90,6 +91,7 @@ const PushSubscribers = () => {
             noDataText="No hay dispositivos suscritos."
           >
             <Column dataField="tokenShort" caption="Token" minWidth={180} allowSorting={false} />
+            <Column dataField="origin" caption="Origen" minWidth={200} />
             <Column dataField="browser" caption="Navegador" width={120} />
             <Column dataField="device" caption="Dispositivo" width={120} />
             <Column dataField="registeredAt" caption="Registrado" width={180} />
