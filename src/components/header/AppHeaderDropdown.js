@@ -1,98 +1,73 @@
 import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import {
   CAvatar,
-  CBadge,
   CDropdown,
   CDropdownDivider,
-  CDropdownHeader,
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
-import {
-  cilBell,
-  cilCreditCard,
-  cilCommentSquare,
-  cilEnvelopeOpen,
-  cilFile,
-  cilLockLocked,
-  cilSettings,
-  cilTask,
-  cilUser,
-} from '@coreui/icons'
+import { cilLockLocked, cilUser } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-
+import { clearProfile } from '../../actions/authActions'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 
+const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
+
+const ROLE_LABELS = {
+  superAdmin: 'Super Admin',
+  manager: 'Manager',
+  conductor: 'Conductor',
+}
+
 const AppHeaderDropdown = () => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const profile = useSelector((s) => s.profile.data)
+
+  const avatarSrc = profile?.avatar || (profile ? DEFAULT_AVATAR : avatar8)
+  const displayName = profile?.name || profile?.username || null
 
   const logout = () => {
-
-
     localStorage.removeItem('token')
-
+    localStorage.removeItem('username')
+    dispatch(clearProfile())
+    navigate('/login')
   }
 
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={avatar8} size="md" />
+        <CAvatar
+          src={avatarSrc}
+          size="md"
+          style={{ objectFit: 'cover' }}
+        />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        {/*}<CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
-        <CDropdownItem href="#">
-          <CIcon icon={cilBell} className="me-2" />
-          Updates
-          <CBadge color="info" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilEnvelopeOpen} className="me-2" />
-          Messages
-          <CBadge color="success" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilTask} className="me-2" />
-          Tasks
-          <CBadge color="danger" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilCommentSquare} className="me-2" />
-          Comments
-          <CBadge color="warning" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
+        {displayName && (
+          <>
+            <div className="px-3 py-2 border-bottom">
+              <div className="fw-semibold small">{displayName}</div>
+              {profile?.role && (
+                <div className="text-secondary" style={{ fontSize: 11 }}>
+                  {ROLE_LABELS[profile.role] ?? profile.role}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        <CDropdownItem
+          onClick={() => navigate('/profile')}
+          style={{ cursor: 'pointer' }}
+        >
           <CIcon icon={cilUser} className="me-2" />
-          Profile
+          Mi perfil
         </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilSettings} className="me-2" />
-          Settings
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilCreditCard} className="me-2" />
-          Payments
-          <CBadge color="secondary" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilFile} className="me-2" />
-          Projects
-          <CBadge color="primary" className="ms-2">
-            42
-          </CBadge>
-        </CDropdownItem>
-        <CDropdownDivider />*/}
-        <CDropdownItem href="#" onClick={logout}>
+        <CDropdownDivider />
+        <CDropdownItem onClick={logout} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilLockLocked} className="me-2" />
           Logout
         </CDropdownItem>

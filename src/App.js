@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSpinner, useColorModes } from '@coreui/react'
+import { fetchProfile } from './actions/authActions'
 import './scss/style.scss'
 
 // We use those styles to show code examples, you should remove them in your application.
@@ -29,6 +30,14 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const storedTheme = useSelector((state) => state.theme)
   const appTheme = useSelector((state) => state.ui.appTheme)
+  const dispatch = useDispatch()
+
+  // Restore profile on page refresh when already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const username = localStorage.getItem('username')
+    if (token && username) dispatch(fetchProfile(username))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1])

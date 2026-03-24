@@ -15,6 +15,10 @@ const TaxisHome = React.lazy(() => import('./views/management/taxis/Home'))
 const Partners = React.lazy(() => import('./views/management/taxis/Partners'))
 const Distributions = React.lazy(() => import('./views/management/taxis/Distributions'))
 
+// Users & Profile
+const Users = React.lazy(() => import('./views/management/users/Users'))
+const Profile = React.lazy(() => import('./views/profile/Profile'))
+
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Reports = React.lazy(() => import('./views/reports/Reports'))
@@ -90,6 +94,8 @@ const routes = [
   { path: '/management/taxis/profit-sharing', name: 'Distributions', element: Distributions },
   { path: '/management/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
   { path: '/management/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
+  { path: '/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
+  { path: '/profile', name: 'Profile', element: Profile },
 
   { path: '/tools/adjustments', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
   { path: '/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },

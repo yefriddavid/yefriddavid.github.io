@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { deleteCookie, getCookie, setCookie } from 'cookies-next'
-import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import withRouter from '../../../context/searchParamsContext'
+import { fetchProfile } from '../../../actions/authActions'
+import { getUserForAuth, hashPassword } from '../../../services/providers/firebase/users'
 import './Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -47,6 +49,7 @@ const Login = () => {
   const cookieUsername = getCookie('username') || ''
   const cookiePassword = getCookie('password') || ''
   const navigate       = useNavigate()
+  const dispatch       = useDispatch()
 
   const [form, setForm] = useState({
     username:   cookieUsername,
@@ -80,33 +83,34 @@ const Login = () => {
 
   const handleSubmit = async () => {
     if (form.loading) return
+    if (!form.username || !form.password) {
+      setForm((prev) => ({ ...prev, error: 'Ingresa usuario y contraseña', shake: true }))
+      setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
+      return
+    }
     setForm((prev) => ({ ...prev, loading: true, error: null }))
 
     try {
-      const body = new FormData()
-      body.append('action',   'login')
-      body.append('username', form.username)
-      body.append('password', form.password)
+      const user = await getUserForAuth(form.username.trim())
+      if (!user) throw new Error('Credenciales incorrectas')
+      if (user.active === false) throw new Error('Usuario inactivo')
 
-      const { data } = await axios.post(
-        'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec',
-        body,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
-      )
+      const inputHash = await hashPassword(form.password)
+      if (inputHash !== user.passwordHash) throw new Error('Credenciales incorrectas')
 
-      if (data.status === 'ok' && data.data?.token) {
-        localStorage.setItem('token', data.data.token)
-        if (form.rememberMe) {
-          setCookie('username', form.username)
-          setCookie('password', form.password)
-        }
-        navigate('/management/payments')
-      } else {
-        setForm((prev) => ({ ...prev, loading: false, error: data.message || 'Credenciales incorrectas', shake: true }))
-        setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
+      const token = btoa(`${user.username}:${Date.now()}`)
+      localStorage.setItem('token', token)
+      localStorage.setItem('username', user.username)
+
+      if (form.rememberMe) {
+        setCookie('username', form.username)
+        setCookie('password', form.password)
       }
-    } catch {
-      setForm((prev) => ({ ...prev, loading: false, error: 'Error de conexión', shake: true }))
+
+      dispatch(fetchProfile(user.username))
+      navigate('/management/payments')
+    } catch (e) {
+      setForm((prev) => ({ ...prev, loading: false, error: e.message || 'Error de conexión', shake: true }))
       setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
     }
   }

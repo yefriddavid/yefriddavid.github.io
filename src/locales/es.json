@@ -93,7 +93,8 @@
     "taxiManagement": "Gestión de Taxis",
     "taxiHome": "Inicio Taxis",
     "partners": "Socios",
-    "distributions": "Repartición"
+    "distributions": "Repartición",
+    "users": "Usuarios"
   },
   "auth": {
     "login": "Iniciar sesión",

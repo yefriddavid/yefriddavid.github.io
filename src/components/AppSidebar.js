@@ -25,7 +25,8 @@ const AppSidebar = () => {
   const { t } = useTranslation()
   const unfoldable = useSelector((state) => state.ui.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
-  const navigation = getNav(t)
+  const role = useSelector((state) => state.profile.data?.role ?? null)
+  const navigation = getNav(t, role)
 
   return (
     <CSidebar

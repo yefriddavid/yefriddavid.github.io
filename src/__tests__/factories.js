@@ -92,3 +92,13 @@ export const makeAuditNote = (overrides = {}) => ({
   note: 'Pagó con retraso',
   ...overrides,
 })
+
+export const makeUser = (overrides = {}) => ({
+  username: 'jperez',
+  name: 'Juan Perez',
+  email: 'juan@example.com',
+  role: 'manager',
+  active: true,
+  avatar: null,
+  ...overrides,
+})

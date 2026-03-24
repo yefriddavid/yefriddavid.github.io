@@ -93,7 +93,8 @@
     "taxiManagement": "Taxi Management",
     "taxiHome": "Taxis Home",
     "partners": "Partners",
-    "distributions": "Profit Sharing"
+    "distributions": "Profit Sharing",
+    "users": "Users"
   },
   "auth": {
     "login": "Login",
