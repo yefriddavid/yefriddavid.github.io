@@ -94,7 +94,8 @@
     "taxiHome": "Inicio Taxis",
     "partners": "Socios",
     "distributions": "Repartición",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "pushSubscribers": "Suscriptores Push"
   },
   "auth": {
     "login": "Iniciar sesión",

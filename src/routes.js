@@ -17,6 +17,7 @@ const Distributions = React.lazy(() => import('./views/management/taxis/Distribu
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/management/users/Users'))
+const PushSubscribers = React.lazy(() => import('./views/management/users/PushSubscribers'))
 const Profile = React.lazy(() => import('./views/profile/Profile'))
 
 // Movements
@@ -95,6 +96,7 @@ const routes = [
   { path: '/management/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
   { path: '/management/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
   { path: '/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
+  { path: '/management/push-subscribers', name: 'Push Subscribers', element: PushSubscribers, roles: ['superAdmin'] },
   { path: '/profile', name: 'Profile', element: Profile },
 
   { path: '/tools/adjustments', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },

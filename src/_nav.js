@@ -1,6 +1,7 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
+  cilBell,
   cilCalculator,
   cilChartPie,
   cilNotes,
@@ -55,6 +56,12 @@ const getNav = (t, role) => {
             name: t('nav.users'),
             to: '/management/users',
             icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+          },
+          {
+            component: CNavItem,
+            name: t('nav.pushSubscribers'),
+            to: '/management/push-subscribers',
+            icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
           },
         ] : []),
       ],

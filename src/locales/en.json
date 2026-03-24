@@ -94,7 +94,8 @@
     "taxiHome": "Taxis Home",
     "partners": "Partners",
     "distributions": "Profit Sharing",
-    "users": "Users"
+    "users": "Users",
+    "pushSubscribers": "Push Subscribers"
   },
   "auth": {
     "login": "Login",
