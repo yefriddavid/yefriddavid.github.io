@@ -75,6 +75,9 @@ export default defineConfig(() => {
       react(),
       legacy({ targets: ['defaults', 'not IE 11'] }),
       VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.js',
         registerType: 'autoUpdate',
         injectRegister: 'auto',
         includeAssets: ['favicon.ico', 'icons/icon.svg'],
@@ -103,39 +106,10 @@ export default defineConfig(() => {
             },
           ],
         },
-        workbox: {
-          // Cache app shell — exclude heavy reporting/flags bundles (>2MB)
+        injectManifest: {
           globPatterns: ['**/*.{js,css,html,ico,svg,woff,woff2}'],
-          globIgnores: [
-            '**/Reports*',
-            '**/Flags*',
-            '**/Brands*',
-            '**/pdf.worker*',
-          ],
+          globIgnores: ['**/Reports*', '**/Flags*', '**/Brands*', '**/pdf.worker*'],
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-          navigateFallback: 'index.html',
-          navigateFallbackDenylist: [/^\/api/],
-          runtimeCaching: [
-            {
-              // Google Fonts
-              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts',
-                expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              },
-            },
-            {
-              // Firebase Firestore — always go to network (real-time data)
-              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-              handler: 'NetworkOnly',
-            },
-            {
-              // Google Apps Script API — always go to network
-              urlPattern: /^https:\/\/script\.google\.com\/.*/i,
-              handler: 'NetworkOnly',
-            },
-          ],
         },
       }),
       versionPlugin(),

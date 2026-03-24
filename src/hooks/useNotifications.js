@@ -15,7 +15,7 @@ const useNotifications = () => {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') return
 
-        const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        const sw = await navigator.serviceWorker.ready
         const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: sw })
         if (token) await saveFcmToken(token)
       } catch (err) {
