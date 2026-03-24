@@ -93,6 +93,34 @@ export const makeAuditNote = (overrides = {}) => ({
   ...overrides,
 })
 
+export const makePayment = (overrides = {}) => ({
+  paymentId: 'pay-1',
+  value: 50000,
+  date: '2024-03-10',
+  vaucher: false,
+  ...overrides,
+})
+
+export const makeAccount = (overrides = {}) => ({
+  accountId: 'acc-1',
+  name: 'Account Test',
+  payments: {
+    items: [makePayment()],
+    total: 50000,
+  },
+  ...overrides,
+})
+
+export const makeAccountState = (overrides = {}) => ({
+  data: { data: { items: [makeAccount()] } },
+  error: null,
+  fetching: false,
+  isError: false,
+  selectedAccount: null,
+  selectedVaucher: null,
+  ...overrides,
+})
+
 export const makeUser = (overrides = {}) => ({
   username: 'jperez',
   name: 'Juan Perez',

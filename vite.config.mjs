@@ -162,6 +162,7 @@ export default defineConfig(() => {
       globals: true,
       environment: 'node',
       include: ['src/**/*.test.js'],
+      setupFiles: ['src/__tests__/setup.js'],
     },
   }
 })

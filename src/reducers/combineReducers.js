@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux'
-import login from './loginReducer'
 import payment from './paymentReducer'
 import paymentVaucher from './paymentVaucherReducer'
 import account from './accountReducer'
@@ -15,7 +14,6 @@ import profile from './profileReducer'
 import users from './usersReducer'
 
 const combinedReducers = combineReducers({
-  login,
   payment,
   paymentVaucher,
   account,
