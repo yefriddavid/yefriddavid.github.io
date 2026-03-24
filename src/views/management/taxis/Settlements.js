@@ -411,7 +411,11 @@ const Taxis = () => {
       ? parseInt(driver.startDate.slice(-2), 10) : 1
     const driverEndDay = driver.endDate?.startsWith(periodPrefix)
       ? parseInt(driver.endDate.slice(-2), 10) : daysInMonth
-    const endDay = Math.min(driverEndDay, now.getDate() - 1)
+    const todayNum = now.getDate()
+    const hasSettlementToday = rows.some(
+      (r) => r.date?.startsWith(periodPrefix) && parseInt(r.date.slice(-2), 10) === todayNum,
+    )
+    const endDay = Math.min(driverEndDay, hasSettlementToday ? todayNum : todayNum - 1)
     const paidPerDay = {}
     for (const r of rows) {
       if (r.date?.startsWith(periodPrefix)) {
