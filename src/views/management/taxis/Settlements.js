@@ -18,6 +18,7 @@ import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
 import * as taxiAuditNoteActions from 'src/actions/taxiAuditNoteActions'
 import { getEaster, toYMD, nextMonday, getColombianHolidays, auditNoteId, buildAuditDay } from './auditHelpers'
+import * as XLSX from 'xlsx'
 import '../../../views/movements/payments/Payments.scss'
 import '../../../views/movements/payments/ItemDetail.scss'
 import './Taxis.scss'
@@ -479,6 +480,45 @@ const Taxis = () => {
     if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
     return true
   })
+
+  const exportAuditToExcel = () => {
+    const statusLabel = { none: 'Sin actividad', partial: 'Parcial', full: 'Completo', future: 'Futuro' }
+    const monthName = new Date(period.year, period.month - 1, 1).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+    const title = `Auditoría ${monthName}`
+
+    const headers = ['Día', 'Fecha', 'Semana', 'Estado', 'Liq.', 'Total (COP)', 'Liquidaron', 'Sin liquidar']
+    const rows = auditFilteredDays.map((day) => [
+      String(day.d).padStart(2, '0'),
+      day.dateStr,
+      DAY_NAMES[day.dow],
+      statusLabel[day.status] ?? day.status,
+      day.isFuture ? '' : day.dayRecords.length,
+      day.isFuture ? '' : day.total,
+      day.settled.join(', '),
+      day.missing.join(', '),
+    ])
+
+    const pastDays = auditFilteredDays.filter((d) => !d.isFuture)
+    const totalsRow = [
+      '', '', '', 'TOTAL',
+      pastDays.reduce((s, d) => s + d.dayRecords.length, 0),
+      pastDays.reduce((s, d) => s + d.total, 0),
+      '', '',
+    ]
+
+    const aoa = [[title], [], headers, ...rows, [], totalsRow]
+    const ws = XLSX.utils.aoa_to_sheet(aoa)
+
+    // Column widths
+    ws['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 8 }, { wch: 14 }, { wch: 6 }, { wch: 16 }, { wch: 40 }, { wch: 40 }]
+
+    // Merge title row across all columns
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }]
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Auditoría')
+    XLSX.writeFile(wb, `auditoria_${auditMonthStr}.xlsx`)
+  }
 
   const getNote = (date, driver) => auditNotes[auditNoteId(date, driver)]?.note ?? ''
   const handleNoteSave = (date, driver, note) => {
@@ -1077,6 +1117,13 @@ const Taxis = () => {
                     ✕ Limpiar
                   </button>
                 )}
+                <button
+                  onClick={exportAuditToExcel}
+                  style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #2f9e44', background: 'none', color: '#2f9e44', cursor: 'pointer', marginLeft: 'auto' }}
+                  title="Exportar auditoría a Excel"
+                >
+                  ↓ Excel
+                </button>
               </div>
 
               {/* Table */}
