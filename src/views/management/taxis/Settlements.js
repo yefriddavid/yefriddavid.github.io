@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
@@ -257,6 +257,13 @@ const Taxis = () => {
   const vehicles = vehiclesData ?? []
   const loading = loadingSettlements && !settlementsData
 
+  const driversMap = useMemo(() => new Map(drivers.map((d) => [d.name, d])), [drivers])
+  const vehiclesMap = useMemo(() => new Map(vehicles.map((v) => [v.plate, v])), [vehicles])
+  const driversByVehicleMap = useMemo(
+    () => new Map(drivers.filter((d) => d.defaultVehicle).map((d) => [d.defaultVehicle, d])),
+    [drivers],
+  )
+
   useEffect(() => {
     dispatch(taxiSettlementActions.fetchRequest())
     dispatch(taxiDriverActions.fetchRequest())
@@ -310,7 +317,7 @@ const Taxis = () => {
 
   const handleDriverChange = (e) => {
     const name = e.target.value
-    const driver = drivers.find((d) => d.name === name)
+    const driver = driversMap.get(name)
     setForm((p) => ({
       ...p,
       driver: name,
@@ -324,9 +331,9 @@ const Taxis = () => {
     const [, monthStr, dayStr] = form.date.split('-')
     const month = parseInt(monthStr, 10)
     const day = parseInt(dayStr, 10)
-    const vehicle = vehicles.find((v) => v.plate === form.plate)
+    const vehicle = vehiclesMap.get(form.plate)
     const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
-    if (restr && [restr.d1, restr.d2].filter(Boolean).map(Number).includes(day)) {
+    if (restr && new Set([restr.d1, restr.d2].filter(Boolean).map(Number)).has(day)) {
       return t('taxis.settlements.errors.picoPlaca', { plate: form.plate, day })
     }
     return null
@@ -361,9 +368,11 @@ const Taxis = () => {
     dispatch(taxiSettlementActions.deleteRequest({ id }))
   }
 
-  const availableYears = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
-    .map(Number).sort((a, b) => b - a)
-  if (!availableYears.includes(period.year)) availableYears.unshift(period.year)
+  const availableYears = useMemo(() => {
+    const years = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))].map(Number).sort((a, b) => b - a)
+    if (!years.includes(period.year)) years.unshift(period.year)
+    return years
+  }, [records, period.year])
 
   const filtered = records.filter((r) => {
     if (!r.date) return false
@@ -390,31 +399,55 @@ const Taxis = () => {
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
   const projection = daysElapsed && daysElapsed > 0 ? Math.round((total / daysElapsed) * daysInMonth) : null
 
-  const calcRemaining = (driverName) => {
+  const calcRemaining = useCallback((driverName, rows = []) => {
     if (!isCurrentPeriod) return null
-    const driver = drivers.find((d) => d.name === driverName)
+    const driver = driversMap.get(driverName)
     if (!driver) return null
-    const vehicle = vehicles.find((v) => v.plate === driver.defaultVehicle)
+    const vehicle = vehiclesMap.get(driver.defaultVehicle)
     const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-    const restrictedDays = [restr.d1, restr.d2].filter(Boolean).map(Number)
+    const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+    const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
+    const startDay = driver.startDate?.startsWith(periodPrefix)
+      ? parseInt(driver.startDate.slice(-2), 10) : 1
+    const driverEndDay = driver.endDate?.startsWith(periodPrefix)
+      ? parseInt(driver.endDate.slice(-2), 10) : daysInMonth
+    const endDay = Math.min(driverEndDay, now.getDate() - 1)
+    const paidPerDay = {}
+    for (const r of rows) {
+      if (r.date?.startsWith(periodPrefix)) {
+        const day = parseInt(r.date.slice(-2), 10)
+        paidPerDay[day] = (paidPerDay[day] || 0) + (r.amount || 0)
+      }
+    }
     let remaining = 0
-    for (let day = now.getDate() + 1; day <= daysInMonth; day++) {
-      if (restrictedDays.includes(day)) continue
+    for (let day = startDay; day <= endDay; day++) {
+      if (restrictedDays.has(day)) continue
       const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
-      remaining += isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+      const expectedDay = isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+      remaining += Math.max(0, expectedDay - (paidPerDay[day] || 0))
     }
     return remaining
-  }
+  }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now])
+
+  const rowsByDriver = useMemo(() => records.filter((r) => {
+    if (!r.date) return false
+    const [y, m] = r.date.split('-').map(Number)
+    return y === period.year && m === period.month
+  }).reduce((acc, r) => {
+    if (!acc[r.driver]) acc[r.driver] = []
+    acc[r.driver].push(r)
+    return acc
+  }, {}), [records, period.year, period.month])
 
   const totalRemaining = isCurrentPeriod
     ? drivers
         .filter((d) => d.active !== false)
-        .reduce((s, d) => s + (calcRemaining(d.name) ?? 0), 0)
+        .reduce((s, d) => s + (calcRemaining(d.name, rowsByDriver[d.name] || []) ?? 0), 0)
     : null
 
   const settlementAbbr = t('taxis.settlements.settlementAbbr')
 
-  const byDriver = Object.values(
+  const byDriver = useMemo(() => Object.values(
     filtered.reduce((acc, r) => {
       const k = r.driver
       if (!acc[k]) acc[k] = { id: k, driver: k, count: 0, total: 0, rows: [] }
@@ -425,10 +458,10 @@ const Taxis = () => {
     }, {}),
   ).sort((a, b) => b.total - a.total).map((item) => ({
     ...item,
-    remaining: calcRemaining(item.driver) ?? 0,
-  }))
+    remaining: calcRemaining(item.driver, rowsByDriver[item.driver] || []) ?? 0,
+  })), [filtered, calcRemaining, rowsByDriver])
 
-  const byVehicle = Object.values(
+  const byVehicle = useMemo(() => Object.values(
     filtered.reduce((acc, r) => {
       const k = r.plate || '—'
       if (!acc[k]) acc[k] = { id: k, plate: k, count: 0, total: 0, rows: [] }
@@ -438,9 +471,9 @@ const Taxis = () => {
       return acc
     }, {}),
   ).sort((a, b) => b.total - a.total).map((item) => {
-    const driver = drivers.find((d) => d.defaultVehicle === item.plate)
-    return { ...item, remaining: driver ? (calcRemaining(driver.name) ?? 0) : 0 }
-  })
+    const driver = driversByVehicleMap.get(item.plate)
+    return { ...item, remaining: driver ? (calcRemaining(driver.name, rowsByDriver[driver.name] || []) ?? 0) : 0 }
+  }), [filtered, calcRemaining, driversByVehicleMap, rowsByDriver])
 
   // ── Audit data ──────────────────────────────────────────────────────────────
   // All taxis have a single shift, so coverage is per vehicle (not per driver).
