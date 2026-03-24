@@ -163,6 +163,9 @@ export default defineConfig(() => {
       environment: 'node',
       include: ['src/**/*.test.js'],
       setupFiles: ['src/__tests__/setup.js'],
+      alias: {
+        'firebase/messaging': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-messaging.js'),
+      },
     },
   }
 })

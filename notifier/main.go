@@ -46,6 +46,7 @@ type tokenDoc struct {
 func main() {
 	credFile := flag.String("creds", envOr("GOOGLE_APPLICATION_CREDENTIALS", "service-account.json"), "path to Firebase service account JSON")
 	runNow := flag.Bool("run-now", false, "send notifications immediately and exit")
+	force := flag.Bool("force", false, "send a test notification ignoring pico y placa restrictions")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "[notifier] ", log.LstdFlags)
@@ -56,6 +57,13 @@ func main() {
 		logger.Fatalf("init: %v", err)
 	}
 	defer a.fs.Close()
+
+	if *force {
+		if err := a.sendTestNotification(ctx); err != nil {
+			logger.Fatalf("send: %v", err)
+		}
+		return
+	}
 
 	if *runNow {
 		if err := a.sendNotifications(ctx); err != nil {
@@ -149,6 +157,29 @@ func (a *app) sendNotifications(ctx context.Context) error {
 	}
 
 	a.log.Printf("sent=%d failed=%d plates=%s", sent, failed, joinPlates(plates))
+	return nil
+}
+
+func (a *app) sendTestNotification(ctx context.Context) error {
+	tokens, err := a.loadTokens(ctx)
+	if err != nil {
+		return fmt.Errorf("load tokens: %w", err)
+	}
+	if len(tokens) == 0 {
+		a.log.Println("no registered devices")
+		return nil
+	}
+
+	sent, failed := 0, 0
+	for _, token := range tokens {
+		if a.sendOne(ctx, token, "🧪 Prueba de notificación", "El servicio de pico y placa está funcionando correctamente.") {
+			sent++
+		} else {
+			failed++
+			a.deleteToken(ctx, token)
+		}
+	}
+	a.log.Printf("test sent=%d failed=%d", sent, failed)
 	return nil
 }
 
