@@ -665,6 +665,7 @@ const Taxis = () => {
                       <th style={{ padding: '8px 12px', textAlign: 'left' }}>Conductor</th>
                       <th style={{ padding: '8px 12px', textAlign: 'right' }}>Liquidaciones</th>
                       <th style={{ padding: '8px 12px', textAlign: 'right' }}>Total</th>
+                      {isCurrentPeriod && <th style={{ padding: '8px 12px', textAlign: 'right' }}>Por cobrar</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -673,6 +674,11 @@ const Taxis = () => {
                         <td style={{ padding: '8px 12px', fontWeight: 600 }}>{d.driver}</td>
                         <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--cui-secondary-color)' }}>{d.count} {settlementAbbr}</td>
                         <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{fmt(d.total)}</td>
+                        {isCurrentPeriod && (
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: d.remaining > 0 ? '#e67700' : '#2f9e44' }}>
+                            {fmt(d.remaining)}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -681,6 +687,11 @@ const Taxis = () => {
                       <td style={{ padding: '8px 12px', fontWeight: 700 }}>Total</td>
                       <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{byDriver.reduce((s, d) => s + d.count, 0)} {settlementAbbr}</td>
                       <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{fmt(byDriver.reduce((s, d) => s + d.total, 0))}</td>
+                      {isCurrentPeriod && (
+                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#e67700' }}>
+                          {fmt(byDriver.reduce((s, d) => s + (d.remaining || 0), 0))}
+                        </td>
+                      )}
                     </tr>
                   </tfoot>
                 </table>
