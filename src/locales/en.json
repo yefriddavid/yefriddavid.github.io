@@ -195,7 +195,9 @@
         "totalExpenses": "Total expenses",
         "net": "Net",
         "byDriver": "By driver",
-        "noRecords": "No records"
+        "noRecords": "No records",
+        "pendingDrivers": "Pending (drivers)",
+        "remainingDays": "{{days}} days remaining"
       },
       "audit": {
         "activeDrivers": "{{count}} active driver in the period",

@@ -195,7 +195,9 @@
         "totalExpenses": "Total gastos",
         "net": "Neto",
         "byDriver": "Por conductor",
-        "noRecords": "Sin registros"
+        "noRecords": "Sin registros",
+        "pendingDrivers": "Por cobrar (conductores)",
+        "remainingDays": "{{days}} días restantes"
       },
       "audit": {
         "activeDrivers": "{{count}} conductor activo en el periodo",

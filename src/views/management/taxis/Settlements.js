@@ -406,6 +406,12 @@ const Taxis = () => {
     return remaining
   }
 
+  const totalRemaining = isCurrentPeriod
+    ? drivers
+        .filter((d) => d.active !== false)
+        .reduce((s, d) => s + (calcRemaining(d.name) ?? 0), 0)
+    : null
+
   const settlementAbbr = t('taxis.settlements.settlementAbbr')
 
   const byDriver = Object.values(
@@ -683,6 +689,26 @@ const Taxis = () => {
           </CModal>
         </CCol>
       </CRow>
+
+      {isCurrentPeriod && totalRemaining !== null && (
+        <CRow className="mb-3 d-none d-sm-flex">
+          <CCol sm={2}>
+            <CCard className="text-center">
+              <CCardBody>
+                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+                  {t('taxis.settlements.summary.pendingDrivers')}
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: totalRemaining > 0 ? '#e67700' : '#2f9e44' }}>
+                  {fmt(totalRemaining)}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--cui-secondary-color)', marginTop: 2 }}>
+                  {t('taxis.settlements.summary.remainingDays', { days: daysInMonth - now.getDate() })}
+                </div>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      )}
 
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between flex-wrap gap-2">
