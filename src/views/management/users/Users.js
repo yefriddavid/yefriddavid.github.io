@@ -119,6 +119,8 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
 const Users = () => {
   const dispatch = useDispatch()
   const { data, fetching, isError, error } = useSelector((s) => s.users)
+  const profile = useSelector((s) => s.profile.data)
+  const isSuperAdmin = profile?.role === 'superAdmin'
   const gridRef = useRef(null)
 
   const [showForm, setShowForm] = useState(false)
@@ -156,6 +158,7 @@ const Users = () => {
   }
 
   const openEdit = (row) => {
+    if (!isSuperAdmin) return
     setShowForm(false)
     setEditTarget({ ...row, email: row.email ?? '' })
   }
@@ -166,14 +169,16 @@ const Users = () => {
         <strong>Usuarios</strong>
         {fetching && <CSpinner size="sm" />}
         <div className="ms-auto d-flex gap-2">
-          {showForm ? (
-            <CButton size="sm" color="secondary" variant="outline" onClick={() => setShowForm(false)}>
-              <CIcon icon={cilX} /> Cancelar
-            </CButton>
-          ) : (
-            <CButton size="sm" color="primary" onClick={() => { setEditTarget(null); setShowForm(true) }}>
-              <CIcon icon={cilPlus} /> Nuevo usuario
-            </CButton>
+          {isSuperAdmin && (
+            showForm ? (
+              <CButton size="sm" color="secondary" variant="outline" onClick={() => setShowForm(false)}>
+                <CIcon icon={cilX} /> Cancelar
+              </CButton>
+            ) : (
+              <CButton size="sm" color="primary" onClick={() => { setEditTarget(null); setShowForm(true) }}>
+                <CIcon icon={cilPlus} /> Nuevo usuario
+              </CButton>
+            )
           )}
         </div>
       </CCardHeader>
@@ -242,15 +247,19 @@ const Users = () => {
             allowSorting={false}
             cellRender={({ data: row }) => (
               <div className="d-flex gap-1">
-                <CButton size="sm" color="primary" variant="outline" onClick={() => openEdit(row)}>
-                  Editar
-                </CButton>
-                <CButton size="sm" color="warning" variant="outline" title="Enviar email de recuperación" onClick={() => handlePasswordReset(row)}>
-                  Reset pw
-                </CButton>
-                <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(row)}>
-                  <CIcon icon={cilTrash} />
-                </CButton>
+                {isSuperAdmin && (
+                  <>
+                    <CButton size="sm" color="primary" variant="outline" onClick={() => openEdit(row)}>
+                      Editar
+                    </CButton>
+                    <CButton size="sm" color="warning" variant="outline" title="Enviar email de recuperación" onClick={() => handlePasswordReset(row)}>
+                      Reset pw
+                    </CButton>
+                    <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(row)}>
+                      <CIcon icon={cilTrash} />
+                    </CButton>
+                  </>
+                )}
               </div>
             )}
           />

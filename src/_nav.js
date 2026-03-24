@@ -49,6 +49,14 @@ const getNav = (t, role) => {
           to: '/management/payments',
           icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
         },
+        ...(isSuperAdmin ? [
+          {
+            component: CNavItem,
+            name: t('nav.users'),
+            to: '/management/users',
+            icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+          },
+        ] : []),
       ],
     })
   }
@@ -132,15 +140,6 @@ const getNav = (t, role) => {
       ] : []),
     ],
   })
-
-  if (isSuperAdmin) {
-    items.push({
-      component: CNavItem,
-      name: t('nav.users'),
-      to: '/management/users',
-      icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
-    })
-  }
 
   return items
 }

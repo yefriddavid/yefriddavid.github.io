@@ -6,6 +6,7 @@ import StandardGrid from 'src/components/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CForm, CFormInput, CFormLabel, CFormSelect, CRow, CCol, CCollapse,
+  CModal, CModalHeader, CModalTitle, CModalBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilReload, cilPencil } from '@coreui/icons'
@@ -232,8 +233,9 @@ const Taxis = () => {
   const [editingNote, setEditingNote] = useState(null) // { date, driver }
   const [auditPlateFilter, setAuditPlateFilter] = useState('')
   const [auditDriverFilter, setAuditDriverFilter] = useState(new Set())
-  const [auditStatusFilter, setAuditStatusFilter] = useState(null)
+  const [auditStatusFilter, setAuditStatusFilter] = useState(new Set())
   const [selectedAuditDay, setSelectedAuditDay] = useState(null)
+  const [byDriverModalOpen, setByDriverModalOpen] = useState(false)
   const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
   const auditDriverDropRef = useRef(null)
   const [addingSettlementDay, setAddingSettlementDay] = useState(null)
@@ -472,7 +474,7 @@ const Taxis = () => {
   )
   const auditFilteredDays = auditDays.filter((day) => {
     if (dayFilter && day.d !== Number(dayFilter)) return false
-    if (auditStatusFilter && day.status !== auditStatusFilter) return false
+    if (auditStatusFilter.size > 0 && !auditStatusFilter.has(day.status)) return false
     if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
     if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
     return true
@@ -583,27 +585,62 @@ const Taxis = () => {
           </CCard>
         </CCol>
         <CCol sm={2}>
-          <CCard>
-            <CCardBody style={{ padding: '12px 16px' }}>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>{t('taxis.settlements.summary.byDriver')}</div>
-              {loading ? (
-                <CSpinner size="sm" />
-              ) : byDriver.length === 0 ? (
-                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>{t('taxis.settlements.summary.noRecords')}</span>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {byDriver.map((d) => (
-                    <div key={d.driver} style={{ background: 'var(--cui-primary-bg-subtle, #e7f1ff)', borderRadius: 8, padding: '4px 12px', fontSize: 13 }}>
-                      <strong>{d.driver}</strong>
-                      <span style={{ color: 'var(--cui-secondary-color)', marginLeft: 8 }}>
-                        {d.count} {settlementAbbr} · {fmt(d.total)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+          <CCard style={{ height: '100%' }}>
+            <CCardBody style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 8 }}>{t('taxis.settlements.summary.byDriver')}</div>
+              <CButton
+                size="sm"
+                color="primary"
+                variant="outline"
+                disabled={loading || byDriver.length === 0}
+                onClick={() => setByDriverModalOpen(true)}
+              >
+                {loading ? <CSpinner size="sm" /> : `${byDriver.length} conductores`}
+              </CButton>
             </CCardBody>
           </CCard>
+
+          <CModal
+            visible={byDriverModalOpen}
+            onClose={() => setByDriverModalOpen(false)}
+            size="lg"
+            alignment="center"
+          >
+            <CModalHeader>
+              <CModalTitle>{t('taxis.settlements.summary.byDriver')}</CModalTitle>
+            </CModalHeader>
+            <CModalBody>
+              {byDriver.length === 0 ? (
+                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>{t('taxis.settlements.summary.noRecords')}</span>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--cui-border-color)' }}>
+                      <th style={{ padding: '8px 12px', textAlign: 'left' }}>Conductor</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right' }}>Liquidaciones</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {byDriver.map((d, i) => (
+                      <tr key={d.driver} style={{ background: i % 2 === 0 ? 'transparent' : 'var(--cui-tertiary-bg, #f8f9fa)', borderBottom: '1px solid var(--cui-border-color)' }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 600 }}>{d.driver}</td>
+                        <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--cui-secondary-color)' }}>{d.count} {settlementAbbr}</td>
+                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{fmt(d.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '2px solid var(--cui-border-color)', background: 'var(--cui-tertiary-bg, #f8f9fa)' }}>
+                      <td style={{ padding: '8px 12px', fontWeight: 700 }}>Total</td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{byDriver.reduce((s, d) => s + d.count, 0)} {settlementAbbr}</td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{fmt(byDriver.reduce((s, d) => s + d.total, 0))}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </CModalBody>
+          </CModal>
         </CCol>
       </CRow>
 
@@ -933,11 +970,15 @@ const Taxis = () => {
                   { key: 'full', label: t('taxis.settlements.audit.statusFull'), count: auditDays.filter((d) => d.status === 'full').length, color: '#2f9e44', bg: '#f0fdf4' },
                   { key: 'future', label: t('taxis.settlements.audit.statusFuture'), count: auditDays.filter((d) => d.status === 'future').length, color: '#868e96', bg: '#f8fafc' },
                 ].map(({ key, label, count, color, bg }) => {
-                  const active = auditStatusFilter === key
+                  const active = auditStatusFilter.has(key)
                   return (
                     <div
                       key={key}
-                      onClick={() => setAuditStatusFilter(active ? null : key)}
+                      onClick={() => setAuditStatusFilter((prev) => {
+                        const next = new Set(prev)
+                        next.has(key) ? next.delete(key) : next.add(key)
+                        return next
+                      })}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         background: active ? color : bg,
@@ -1028,9 +1069,9 @@ const Taxis = () => {
                   )}
                 </div>
 
-                {(auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter) && (
+                {(auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter.size > 0) && (
                   <button
-                    onClick={() => { setAuditPlateFilter(''); setAuditDriverFilter(new Set()); setAuditStatusFilter(null) }}
+                    onClick={() => { setAuditPlateFilter(''); setAuditDriverFilter(new Set()); setAuditStatusFilter(new Set()) }}
                     style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e03131', background: 'none', color: '#e03131', cursor: 'pointer' }}
                   >
                     ✕ Limpiar
