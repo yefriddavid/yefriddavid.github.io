@@ -5,10 +5,13 @@ import { useSelector } from 'react-redux'
 
 // routes config
 import routes from '../routes'
+import useNotifications from '../hooks/useNotifications'
 
 const AppContent = () => {
   const token = localStorage.getItem('token')
   const role = useSelector((s) => s.profile.data?.role ?? null)
+
+  useNotifications()
 
   if (!token) {
     return (
