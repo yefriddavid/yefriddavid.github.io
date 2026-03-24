@@ -61,7 +61,7 @@ export const auditNoteId = (date, driver) => `${date}__${driver.replace(/\s+/g, 
 //   holidays       - Set of 'YYYY-MM-DD' strings for the year
 export const buildAuditDay = (d, {
   monthStr, periodRecords, periodDrivers, auditVehicles, auditDrivers,
-  year, month, auditToday, now, holidays,
+  year, month, auditToday, now, holidays, vehicleRestrictions,
 }) => {
   const dateStr = `${monthStr}-${String(d).padStart(2, '0')}`
   const dayRecords = periodRecords.filter((r) => r.date === dateStr)
@@ -79,7 +79,12 @@ export const buildAuditDay = (d, {
   })
 
   const expectedVehicles = auditVehicles.filter((pl) => !!driverOnDay(pl))
-  const missingVehicles = expectedVehicles.filter((pl) => !settledVehicles.has(pl))
+
+  // Vehicles restricted by pico y placa on this specific day number
+  const picoPlacaVehicles = expectedVehicles.filter((pl) => vehicleRestrictions?.get(pl)?.has(d))
+  const picoPlacaSet = new Set(picoPlacaVehicles)
+
+  const missingVehicles = expectedVehicles.filter((pl) => !settledVehicles.has(pl) && !picoPlacaSet.has(pl))
 
   const underpaidVehicles = expectedVehicles.filter((pl) => {
     if (!settledVehicles.has(pl)) return false
@@ -99,21 +104,36 @@ export const buildAuditDay = (d, {
     if (driverObj.startDate && driverObj.startDate > dateStr) return false
     if (driverObj.endDate && driverObj.endDate < dateStr) return false
     const plate = driverObj.defaultVehicle
+    if (plate && picoPlacaSet.has(plate)) return false
     return plate ? missingVehicles.includes(plate) : !settled.has(dr)
   })
 
+  const picoPlacaDrivers = auditDrivers.filter((dr) => {
+    const driverObj = periodDrivers.find((d) => d.name === dr)
+    if (!driverObj) return false
+    if (driverObj.startDate && driverObj.startDate > dateStr) return false
+    if (driverObj.endDate && driverObj.endDate < dateStr) return false
+    const plate = driverObj.defaultVehicle
+    return !!plate && picoPlacaSet.has(plate)
+  })
+
+  const hasPicoPlaca = picoPlacaVehicles.length > 0
   const total = dayRecords.reduce((s, r) => s + (r.amount || 0), 0)
   const isFuture = auditToday !== null
     ? d > auditToday
     : year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1)
   const isToday = d === auditToday
   const hasIssue = missingVehicles.length > 0 || underpaidVehicles.length > 0
-  const status = isFuture ? 'future' : dayRecords.length === 0 ? 'none' : hasIssue ? 'partial' : 'full'
+  const status = isFuture ? 'future'
+    : (dayRecords.length === 0 && !hasPicoPlaca) ? 'none'
+    : hasIssue ? 'partial'
+    : 'full'
 
   return {
     d, dateStr, dayRecords,
     settled: [...settled], settledVehicles: [...settledVehicles],
     missing, missingVehicles, underpaidVehicles,
+    picoPlacaVehicles, picoPlacaDrivers, hasPicoPlaca,
     total, dow, isFuture, isToday, isSunday, isHoliday, status,
   }
 }

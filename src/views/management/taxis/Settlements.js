@@ -399,13 +399,12 @@ const Taxis = () => {
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
   const projection = daysElapsed && daysElapsed > 0 ? Math.round((total / daysElapsed) * daysInMonth) : null
 
+  const colombianHolidaysCalc = useMemo(() => getColombianHolidays(period.year), [period.year])
+
   const calcRemaining = useCallback((driverName, rows = []) => {
     if (!isCurrentPeriod) return null
     const driver = driversMap.get(driverName)
     if (!driver) return null
-    const vehicle = vehiclesMap.get(driver.defaultVehicle)
-    const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-    const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
     const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
     const startDay = driver.startDate?.startsWith(periodPrefix)
       ? parseInt(driver.startDate.slice(-2), 10) : 1
@@ -425,13 +424,14 @@ const Taxis = () => {
     }
     let remaining = 0
     for (let day = startDay; day <= endDay; day++) {
-      if (restrictedDays.has(day)) continue
+      const dayStr = `${periodPrefix}${String(day).padStart(2, '0')}`
       const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
-      const expectedDay = isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+      const isHoliday = colombianHolidaysCalc.has(dayStr)
+      const expectedDay = (isSunday || isHoliday) ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
       remaining += Math.max(0, expectedDay - (paidPerDay[day] || 0))
     }
     return remaining
-  }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now])
+  }, [isCurrentPeriod, driversMap, period.month, period.year, daysInMonth, now, colombianHolidaysCalc])
 
   const calcFuture = useCallback((driverName, rows = []) => {
     if (!isCurrentPeriod) return null
@@ -452,11 +452,13 @@ const Taxis = () => {
     let future = 0
     for (let day = startDay; day <= endDay; day++) {
       if (restrictedDays.has(day)) continue
+      const dayStr = `${periodPrefix}${String(day).padStart(2, '0')}`
       const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
-      future += isSunday ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
+      const isHoliday = colombianHolidaysCalc.has(dayStr)
+      future += (isSunday || isHoliday) ? (driver.defaultAmountSunday || 0) : (driver.defaultAmount || 0)
     }
     return future
-  }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now])
+  }, [isCurrentPeriod, driversMap, vehiclesMap, period.month, period.year, daysInMonth, now, colombianHolidaysCalc])
 
   const rowsByDriver = useMemo(() => records.filter((r) => {
     if (!r.date) return false
@@ -527,7 +529,13 @@ const Taxis = () => {
   const auditDrivers = periodDrivers.map((d) => d.name).sort()
   const auditVehicles = [...new Set(periodDrivers.map((d) => d.defaultVehicle).filter(Boolean))].sort()
   const auditToday = now.getFullYear() === period.year && now.getMonth() + 1 === period.month ? now.getDate() : null
-  const colombianHolidays = useMemo(() => getColombianHolidays(period.year), [period.year])
+  const auditVehicleRestrictions = new Map(
+    auditVehicles.map((pl) => {
+      const v = vehiclesMap.get(pl)
+      const restr = v?.restrictions?.[period.month] ?? v?.restrictions?.[String(period.month)] ?? {}
+      return [pl, new Set([restr.d1, restr.d2].filter(Boolean).map(Number))]
+    })
+  )
   const auditDays = Array.from({ length: daysInMonth }, (_, i) =>
     buildAuditDay(i + 1, {
       monthStr: auditMonthStr,
@@ -539,14 +547,15 @@ const Taxis = () => {
       month: period.month,
       auditToday,
       now,
-      holidays: colombianHolidays,
+      holidays: colombianHolidaysCalc,
+      vehicleRestrictions: auditVehicleRestrictions,
     })
   )
   const auditFilteredDays = auditDays.filter((day) => {
     if (dayFilter && day.d !== Number(dayFilter)) return false
     if (auditStatusFilter.size > 0 && !auditStatusFilter.has(day.status)) return false
-    if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter)) return false
-    if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr))) return false
+    if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter) && !day.picoPlacaVehicles.includes(auditPlateFilter)) return false
+    if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr)) && !day.picoPlacaDrivers.some((dr) => auditDriverFilter.has(dr))) return false
     return true
   })
 
@@ -604,9 +613,11 @@ const Taxis = () => {
     if (day.status === 'future') return '#f8fafc'
     if (day.status === 'none') return '#fff5f5'
     if (day.status === 'partial') return '#fffbeb'
+    if (day.hasPicoPlaca) return '#faf5ff'
     return '#f8fff8'
   }
   const auditAccent = { none: '#e03131', partial: '#e67700', full: '#2f9e44', future: '#cbd5e1' }
+  const auditLeftBorder = (day) => day.hasPicoPlaca && day.status === 'full' ? '#7c3aed' : auditAccent[day.status]
 
   return (
     <>
@@ -1264,11 +1275,12 @@ const Taxis = () => {
                         onClick={() => setSelectedAuditDay((prev) => prev === day.d ? null : day.d)}
                         onMouseEnter={() => setHoveredAuditDay(day.d)}
                         onMouseLeave={() => setHoveredAuditDay(null)}
-                        style={{ background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditAccent[day.status]}`, cursor: 'pointer', boxShadow: hoveredAuditDay === day.d ? 'inset 0 0 0 9999px rgba(0,0,0,0.04)' : 'none', transition: 'box-shadow 0.1s' }}
+                        style={{ background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day), borderBottom: '1px solid #f1f5f9', borderLeft: `4px solid ${auditLeftBorder(day)}`, cursor: 'pointer', boxShadow: hoveredAuditDay === day.d ? 'inset 0 0 0 9999px rgba(0,0,0,0.04)' : 'none', transition: 'box-shadow 0.1s' }}
                       >
                         <td style={{ padding: '8px 12px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
                           {String(day.d).padStart(2, '0')}
                           {day.isToday && <span style={{ fontSize: 10, background: '#1e3a5f', color: '#fff', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>{t('taxis.settlements.audit.today')}</span>}
+                          {day.hasPicoPlaca && <span style={{ fontSize: 10, background: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 4, padding: '1px 5px', marginLeft: 6 }}>P&P</span>}
                         </td>
                         <td style={{ padding: '8px 12px', color: (day.isSunday || day.isHoliday) ? '#7c5e00' : day.isFuture ? '#adb5bd' : '#64748b', fontWeight: (day.isSunday || day.isHoliday) ? 700 : 400 }}>
                           {DAY_NAMES[day.dow]}
@@ -1417,6 +1429,11 @@ const Taxis = () => {
                                 </div>
                               )
                             })}
+                            {!day.isFuture && day.picoPlacaDrivers.map((dr) => (
+                              <div key={dr} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span style={{ fontSize: 11, background: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>🚫 {dr.split(' ')[0]}</span>
+                              </div>
+                            ))}
                           </div>
                         </td>
                       </tr>
@@ -1445,6 +1462,15 @@ const Taxis = () => {
                                 )) : day.missing.map((dr) => (
                                   <DetailRow key={dr} label={dr} value={getNote(day.dateStr, dr) || '—'} />
                                 ))}
+                                {day.hasPicoPlaca && day.picoPlacaDrivers.map((dr) => {
+                                  const driverObj = periodDrivers.find((pd) => pd.name === dr)
+                                  return (
+                                    <div key={dr} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid #e8e8e8' }}>
+                                      <span style={{ minWidth: 150, fontSize: 12, color: '#6b21a8', fontWeight: 500 }}>🚫 {dr}</span>
+                                      <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#6b21a8' }}>{driverObj?.defaultVehicle || ''} · Pico y placa</span>
+                                    </div>
+                                  )
+                                })}
                               </DetailSection>
                             </DetailPanel>
                           </td>

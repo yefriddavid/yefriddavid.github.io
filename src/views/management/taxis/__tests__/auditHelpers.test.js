@@ -513,6 +513,87 @@ describe('buildAuditDay', () => {
     })
   })
 
+  // ── Pico y placa (vehicleRestrictions) ─────────────────────────────────
+  describe('pico y placa (vehicleRestrictions)', () => {
+    const driverB = makeDriver({ id: 'driver-2', name: 'Ana Garcia', defaultVehicle: 'XYZ999', defaultAmount: 40000 })
+    const multiParams = {
+      ...baseParams,
+      periodDrivers: [driver, driverB],
+      auditVehicles: ['ABC123', 'XYZ999'],
+      auditDrivers: ['Ana Garcia', 'Juan Perez'],
+    }
+    // ABC123 restricted on days 5 and 10
+    const restrictions = new Map([
+      ['ABC123', new Set([5, 10])],
+    ])
+
+    it('restricted vehicle is not in missingVehicles on its restricted day', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.missingVehicles).not.toContain('ABC123')
+    })
+
+    it('hasPicoPlaca is true when any expected vehicle is restricted that day', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.hasPicoPlaca).toBe(true)
+    })
+
+    it('hasPicoPlaca is false when restriction does not apply to that day', () => {
+      const day = buildAuditDay(6, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.hasPicoPlaca).toBe(false)
+    })
+
+    it('status is "full" (not "none") when only restricted vehicles are missing', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.status).toBe('full')
+    })
+
+    it('status is "none" when no records and no pico y placa', () => {
+      const day = buildAuditDay(6, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.status).toBe('none')
+    })
+
+    it('status is "partial" when one vehicle settled and another (non-restricted) is missing', () => {
+      const records = [makeSettlement({ plate: 'ABC123', amount: 50000, date: '2024-03-05' })]
+      const day = buildAuditDay(5, { ...multiParams, periodRecords: records, vehicleRestrictions: restrictions })
+      expect(day.status).toBe('partial')
+      expect(day.missingVehicles).toContain('XYZ999')
+    })
+
+    it('status is "full" when the only non-restricted vehicle settled', () => {
+      const records = [makeSettlement({ plate: 'XYZ999', amount: 40000, date: '2024-03-05' })]
+      const day = buildAuditDay(5, { ...multiParams, periodRecords: records, vehicleRestrictions: restrictions })
+      expect(day.status).toBe('full')
+      expect(day.missingVehicles).toHaveLength(0)
+    })
+
+    it('picoPlacaVehicles contains the restricted plate', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.picoPlacaVehicles).toContain('ABC123')
+    })
+
+    it('picoPlacaDrivers contains the driver of the restricted vehicle', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.picoPlacaDrivers).toContain('Juan Perez')
+    })
+
+    it('driver of restricted vehicle is not in missing', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.missing).not.toContain('Juan Perez')
+    })
+
+    it('restricted vehicle still in missingVehicles on non-restricted day', () => {
+      const day = buildAuditDay(6, { ...baseParams, periodRecords: [], vehicleRestrictions: restrictions })
+      expect(day.missingVehicles).toContain('ABC123')
+    })
+
+    it('works correctly with no vehicleRestrictions passed (backward compat)', () => {
+      const day = buildAuditDay(5, { ...baseParams, periodRecords: [] })
+      expect(day.hasPicoPlaca).toBe(false)
+      expect(day.picoPlacaVehicles).toHaveLength(0)
+      expect(day.picoPlacaDrivers).toHaveLength(0)
+    })
+  })
+
   // ── Plate in auditVehicles with no matching driver ──────────────────────
   describe('orphan plate (no driver in periodDrivers)', () => {
     it('plate with no driver is excluded from expectedVehicles and missingVehicles', () => {
