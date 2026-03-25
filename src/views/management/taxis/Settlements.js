@@ -155,7 +155,7 @@ const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) =
 
   const getDefaultAmount = (driver) => {
     if (!driver) return ''
-    const amt = day.isSunday
+    const amt = (day.isSunday || day.isHoliday)
       ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
       : (driver.defaultAmount || 0)
     return amt ? String(amt) : ''
