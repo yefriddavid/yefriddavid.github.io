@@ -30,6 +30,7 @@ const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 const IncreaseDecrease = React.lazy(() => import('./views/tools/increase-decrease/IncreaseDecrease'))
 const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
 
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
