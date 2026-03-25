@@ -437,7 +437,8 @@ const Taxis = () => {
     if (!isCurrentPeriod) return null
     const driver = driversMap.get(driverName)
     if (!driver || driver.active === false) return null
-    const vehicle = vehiclesMap.get(driver.defaultVehicle)
+    const plateKey = driver.defaultVehicle || rows.find((r) => r.plate)?.plate
+    const vehicle = vehiclesMap.get(plateKey)
     const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
     const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
     const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
