@@ -63,7 +63,7 @@ const Login = () => {
   document.title = 'yefriddavid'
 
   useEffect(() => {
-    if (localStorage.getItem('token')) navigate('/management/payments')
+    if (localStorage.getItem('token')) navigate('/cash_flow/management/payments')
   }, [])
 
   const set = (name) => (e) =>
@@ -108,7 +108,7 @@ const Login = () => {
       }
 
       dispatch(fetchProfile(user.username))
-      navigate('/management/payments')
+      navigate('/cash_flow/management/payments')
     } catch (e) {
       setForm((prev) => ({ ...prev, loading: false, error: e.message || 'Error de conexión', shake: true }))
       setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)

@@ -60,7 +60,7 @@ const AppHeaderDropdown = () => {
           </>
         )}
         <CDropdownItem
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/cash_flow/profile')}
           style={{ cursor: 'pointer' }}
         >
           <CIcon icon={cilUser} className="me-2" />

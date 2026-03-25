@@ -28,7 +28,7 @@ const getNav = (t, role) => {
   items.push({
     component: CNavItem,
     name: t('nav.dashboard'),
-    to: '/dashboard',
+    to: '/cash_flow/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   })
 
@@ -41,26 +41,26 @@ const getNav = (t, role) => {
         {
           component: CNavItem,
           name: t('nav.accounts'),
-          to: '/management/accounts',
+          to: '/cash_flow/management/accounts',
           icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.payments'),
-          to: '/management/payments',
+          to: '/cash_flow/management/payments',
           icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
         },
         ...(isSuperAdmin ? [
           {
             component: CNavItem,
             name: t('nav.users'),
-            to: '/management/users',
+            to: '/cash_flow/management/users',
             icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
           },
           {
             component: CNavItem,
             name: t('nav.pushSubscribers'),
-            to: '/management/push-subscribers',
+            to: '/cash_flow/management/push-subscribers',
             icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
           },
         ] : []),
@@ -77,13 +77,13 @@ const getNav = (t, role) => {
         {
           component: CNavItem,
           name: t('nav.increaseDecrease'),
-          to: '/tools/adjustments',
+          to: '/cash_flow/tools/adjustments',
           icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.visits'),
-          to: '/tools/visits',
+          to: '/cash_flow/tools/visits',
           icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
         },
       ],
@@ -98,50 +98,50 @@ const getNav = (t, role) => {
       {
         component: CNavItem,
         name: t('nav.taxiHome'),
-        to: '/management/taxis/home',
+        to: '/cash_flow/management/taxis/home',
         icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: t('nav.liquidaciones'),
-        to: '/management/taxis/settlements',
+        to: '/cash_flow/management/taxis/settlements',
         icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
       },
       ...(isManager ? [
         {
           component: CNavItem,
           name: t('nav.conductores'),
-          to: '/management/taxis/drivers',
+          to: '/cash_flow/management/taxis/drivers',
           icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.vehiculos'),
-          to: '/management/taxis/vehicles',
+          to: '/cash_flow/management/taxis/vehicles',
           icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.taxiExpenses'),
-          to: '/management/taxis/expenses',
+          to: '/cash_flow/management/taxis/expenses',
           icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.taxiResumen'),
-          to: '/management/taxis/summary',
+          to: '/cash_flow/management/taxis/summary',
           icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.partners'),
-          to: '/management/taxis/partners',
+          to: '/cash_flow/management/taxis/partners',
           icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.distributions'),
-          to: '/management/taxis/profit-sharing',
+          to: '/cash_flow/management/taxis/profit-sharing',
           icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
         },
       ] : []),

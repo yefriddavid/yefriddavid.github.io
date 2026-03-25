@@ -45,7 +45,8 @@ const AppContent = () => {
               />
             ) : null,
           )}
-          <Route path="/" element={<Navigate to="abountMe" replace />} />
+          <Route path="/" element={<Navigate to="/abountMe" replace />} />
+          <Route path="/cash_flow" element={<Navigate to="/abountMe" replace />} />
         </Routes>
       </Suspense>
     </CContainer>
