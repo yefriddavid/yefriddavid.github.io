@@ -599,25 +599,61 @@ const Taxis = () => {
   }
 
   const getNote = (date, driver) => auditNotes[auditNoteId(date, driver)]?.note ?? ''
+  const getResolved = (date, driver) => auditNotes[auditNoteId(date, driver)]?.resolved || false
+
   const handleNoteSave = (date, driver, note) => {
-    if (note.trim()) {
-      dispatch(taxiAuditNoteActions.upsertRequest({ date, driver, note: note.trim() }))
+    const resolved = getResolved(date, driver)
+    if (note.trim() || resolved) {
+      dispatch(taxiAuditNoteActions.upsertRequest({ date, driver, note: note.trim(), resolved }))
     } else {
       dispatch(taxiAuditNoteActions.deleteRequest({ date, driver }))
     }
     setEditingNote(null)
   }
 
+  const handleResolvedToggle = (date, driver) => {
+    const current = auditNotes[auditNoteId(date, driver)]
+    const note = current?.note || ''
+    const resolved = !(current?.resolved || false)
+    if (note || resolved) {
+      dispatch(taxiAuditNoteActions.upsertRequest({ date, driver, note, resolved }))
+    } else {
+      dispatch(taxiAuditNoteActions.deleteRequest({ date, driver }))
+    }
+  }
+
+  const isAllResolved = (day) => {
+    if (day.status === 'full' || day.status === 'future') return false
+    const hasIssues = day.missing.length > 0 || day.underpaidVehicles.length > 0
+    if (!hasIssues) return false
+    const missingResolved = day.missing.every((dr) => getResolved(day.dateStr, dr))
+    const underpaidResolved = day.underpaidVehicles.every((pl) => {
+      const driver = periodDrivers.find((d) => {
+        if (d.defaultVehicle !== pl) return false
+        if (d.startDate && d.startDate > day.dateStr) return false
+        if (d.endDate && d.endDate < day.dateStr) return false
+        return true
+      })
+      return driver ? getResolved(day.dateStr, driver.name) : true
+    })
+    return missingResolved && underpaidResolved
+  }
+
   const auditRowBg = (day) => {
     if (day.isToday) return '#e8f0fb'
     if (day.status === 'future') return '#f8fafc'
+    if (isAllResolved(day)) return '#f0fdf4'
     if (day.status === 'none') return '#fff5f5'
     if (day.status === 'partial') return '#fffbeb'
     if (day.hasPicoPlaca) return '#faf5ff'
     return '#f8fff8'
   }
   const auditAccent = { none: '#e03131', partial: '#e67700', full: '#2f9e44', future: '#cbd5e1' }
-  const auditLeftBorder = (day) => day.hasPicoPlaca && day.status === 'full' ? '#7c3aed' : auditAccent[day.status]
+  const auditLeftBorder = (day) => {
+    if (isAllResolved(day)) return '#2f9e44'
+    if (day.hasPicoPlaca && day.status === 'full') return '#7c3aed'
+    return auditAccent[day.status]
+  }
 
   return (
     <>
@@ -1287,9 +1323,9 @@ const Taxis = () => {
                           {day.isHoliday && <span style={{ fontSize: 10, background: '#fff3cd', color: '#7c5e00', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 5px', marginLeft: 5 }}>Festivo</span>}
                         </td>
                         <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
-                          {day.status === 'none' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ {t('taxis.settlements.audit.statusNone')}</span>}
-                          {day.status === 'partial' && <span style={{ fontSize: 11, fontWeight: 700, color: '#e67700', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 4, padding: '2px 8px' }}>◐ {t('taxis.settlements.audit.statusPartial')}</span>}
-                          {day.status === 'full' && <span style={{ fontSize: 11, fontWeight: 700, color: '#2f9e44', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 4, padding: '2px 8px' }}>✓ {t('taxis.settlements.audit.statusFull')}</span>}
+                          {day.status === 'none' && !isAllResolved(day) && <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131', background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px' }}>✗ {t('taxis.settlements.audit.statusNone')}</span>}
+                          {day.status === 'partial' && !isAllResolved(day) && <span style={{ fontSize: 11, fontWeight: 700, color: '#e67700', background: '#fffbeb', border: '1px solid #fed7aa', borderRadius: 4, padding: '2px 8px' }}>◐ {t('taxis.settlements.audit.statusPartial')}</span>}
+                          {(day.status === 'full' || isAllResolved(day)) && <span style={{ fontSize: 11, fontWeight: 700, color: '#2f9e44', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 4, padding: '2px 8px' }}>✓ {t('taxis.settlements.audit.statusFull')}</span>}
                           {day.status === 'future' && <span style={{ fontSize: 11, color: '#adb5bd', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px' }}>— {t('taxis.settlements.audit.statusFuture')}</span>}
                         </td>
                         <td style={{ padding: '8px 12px', fontWeight: 600, color: day.isFuture ? '#adb5bd' : '#334155' }}>
@@ -1351,13 +1387,19 @@ const Taxis = () => {
                                 : (driver.defaultAmount || 0)
                               const paid = day.dayRecords.filter((r) => r.plate === pl).reduce((s, r) => s + (r.amount || 0), 0)
                               const note = getNote(day.dateStr, driver.name)
+                              const resolved = getResolved(day.dateStr, driver.name)
                               const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === driver.name
                               return (
                                 <div key={pl} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <span style={{ fontSize: 11, background: '#fff3cd', color: '#7c5e00', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
+                                    <span style={{ fontSize: 11, background: resolved ? '#dcfce7' : '#fff3cd', color: resolved ? '#166534' : '#7c5e00', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
                                       ◐ {driver.name.split(' ')[0]} · {fmt(paid)}/{fmt(expected)}
                                     </span>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleResolvedToggle(day.dateStr, driver.name) }}
+                                      title={resolved ? 'Desmarcar resuelto' : 'Marcar como resuelto'}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: resolved ? '#2f9e44' : '#adb5bd', fontSize: 14, lineHeight: 1, fontWeight: 700 }}
+                                    >✓</button>
                                     <button
                                       onClick={(e) => { e.stopPropagation(); setEditingNote(isEditing ? null : { date: day.dateStr, driver: driver.name }) }}
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
@@ -1392,11 +1434,17 @@ const Taxis = () => {
                             })}
                             {!day.isFuture && day.missing.map((dr) => {
                               const note = getNote(day.dateStr, dr)
+                              const resolved = getResolved(day.dateStr, dr)
                               const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === dr
                               return (
                                 <div key={dr} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <span style={{ fontSize: 11, background: '#fee2e2', color: '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
+                                    <span style={{ fontSize: 11, background: resolved ? '#dcfce7' : '#fee2e2', color: resolved ? '#166534' : '#b91c1c', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>{dr.split(' ')[0]}</span>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleResolvedToggle(day.dateStr, dr) }}
+                                      title={resolved ? 'Desmarcar resuelto' : 'Marcar como resuelto'}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '1px 3px', color: resolved ? '#2f9e44' : '#adb5bd', fontSize: 14, lineHeight: 1, fontWeight: 700 }}
+                                    >✓</button>
                                     <button
                                       onClick={(e) => { e.stopPropagation(); setEditingNote(isEditing ? null : { date: day.dateStr, driver: dr }) }}
                                       title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}

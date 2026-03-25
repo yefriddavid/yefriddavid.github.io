@@ -10,9 +10,9 @@ export const getNotes = async () => {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
 }
 
-export const upsertNote = async ({ date, driver, note }) => {
+export const upsertNote = async ({ date, driver, note, resolved = false }) => {
   const id = noteId(date, driver)
-  await setDoc(doc(db, COL, id), { date, driver, note })
+  await setDoc(doc(db, COL, id), { date, driver, note, resolved })
   return id
 }
 
