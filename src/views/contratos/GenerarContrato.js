@@ -694,7 +694,7 @@ export default function GenerarContrato() {
               </div>
               <div className="c-card-body">
                 <div className="c-field full" id="property-alias-field">
-                  <label className="c-label">Alias del inmueble</label>
+                  <label className="c-label">Inmueble</label>
                   <div className="c-combobox-wrap">
                     <input
                       className="c-input"
