@@ -12,6 +12,10 @@ import taxiDistribution from './CashFlow/taxiDistributionReducer'
 import taxiAuditNote from './CashFlow/taxiAuditNoteReducer'
 import profile from './profileReducer'
 import users from './usersReducer'
+import contratoProperty from './Contratos/propertyReducer'
+import contratoBankAccount from './Contratos/bankAccountReducer'
+import contratoOwner from './Contratos/ownerReducer'
+import contrato from './Contratos/contractReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -27,6 +31,10 @@ const combinedReducers = combineReducers({
   taxiAuditNote,
   profile,
   users,
+  contratoProperty,
+  contratoBankAccount,
+  contratoOwner,
+  contrato,
 })
 
 export default combinedReducers

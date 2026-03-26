@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;lang=en" />
+  -->
+
+  <!--<link rel="stylesheet" href="/mnt/Zeus/Workspace/go/src/github.com/yefriddavid/contratos/styles.css"/>-->
+  <style>
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            font-weight: bold;
+            /*color: rgba(200, 200, 200, 0.3);*/
+            color: rgba(226, 127, 127, 0.3);
+            z-index: -1;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+  .contrctInfo span {
+    padding-top: 8px;
+    display: block;
+
+  }
+.sign .info {
+  padding-top: 30px;
+}
+p {
+  /*line-height: 1.4;*/
+}
+  .sign{
+    margin-top: 50px;
+    margin-bottom: 50px;
+  }
+  .sign:first-child{
+    margin-bottom: 150px;
+    color: red;
+    size: 500px;
+  }
+  .clausules p:nth-of-type(1) {
+    margin-bottom: 50px;
+
+  }
+  .clausules {
+    margin-top: 20px;
+  }
+    .contrctInfo {
+      /*margin-bottom: 60px;*/
+    }
+    .justify {
+      text-align: justify;
+    }
+
+    body, pre {
+      font-family: Arial, Helvetica, sans-serif;
+
+          /*font-family: Arial, monospace;*/
+
+      /*font-family: "Times New Roman", Times, serif;*/
+      background-color: white;
+    }
+
+    h1 {
+      color: black;
+    }
+
+    /*p    {color: red;}*/
+    .title {
+      margin-bottom: 50px;
+    }
+
+    .main {
+      margin-top: 90px;
+      margin-left: 50px;
+      margin-right: 50px;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+    <div class="watermark" watermark-text>DOCUMENTO <br /> NO VÁLIDO <br />PARA TRAMITES</div>
+
+  <div class=main>
+    <div class=title>
+      <center>
+        <h3>
+        CONTRATO DE ARRENDAMIENTO DE VIVIENDA URBANA
+        </h3>
+      </center>
+    </div>
+
+    <div class=contrctInfo>
+      <!--
+      <pre>
+<b>DIRECCI&Oacute;N DEL INMUEBLE:</b> {{.Property.FullAddress}}
+<b>ARRENDADOR: </b> {{.Owner.FullName.Upper.Bold}}. CC.{{.Owner.Identification.Number.Currency}}
+<b>ARRENDATARIO: </b>{{.Tenant.FullName.Upper.Bold}} CC. {{.Tenant.Identification.Number.Currency}}
+<b>CANON MENSUAL: </b>{{.Rental.Value.Letters.Title}} ({{.Rental.Value.CurrencySign}})
+<b>DURACI&Oacute;N DEL C0NTRATO: </b>{{.Contract.Date.Nmonth.Upper}} ({{.Rental.Duration}})
+<b>FECHA DE INICIACI&Oacute;N DEL CONTRATO: </b> {{.Rental.StartDate.Day.Ordinal.Title}} ({{.Rental.StartDate.Day}}) de {{.Rental.StartDate.MonthName}} del {{.Rental.StartDate.Year.Letters}} ({{.Rental.StartDate.Year}})
+      </pre>
+-->
+
+      <span>
+        <b>DIRECCI&Oacute;N DEL INMUEBLE:</b> {{.Property.FullAddress}} DAVID
+      </span>
+
+      <span>
+        <b>ARRENDADOR: </b> {{.Administrator.FullName.Upper.Bold}}. CC.{{.Administrator.Identification.Number.Currency}}
+      </span>
+
+      <span>
+        <b>ARRENDATARIO: </b>{{.Tenant.FullName.Upper.Bold}} CC. {{.Tenant.Identification.Number.Currency}}
+      </span>
+
+      <span>
+      <b>CANON MENSUAL: </b>{{.Rental.Value.Letters.Title}} ({{.Rental.Value.CurrencySign}})
+      </span>
+      <!--<b>CANON MENSUAL: </b>Ochocientos veinte mil ({{.Rental.Value}})-->
+
+      <span>
+      <b>DURACI&Oacute;N DEL C0NTRATO: </b>{{.Contract.Date.Nmonth.Upper}} ({{.Rental.Duration}})
+      </span>
+
+      <!--<p>
+        <b>FECHA DE INICIACI&Oacute;N DEL CONTRATO: </b>
+        {{.Contract.Date}}
+        <br />
+        {{.Contract.Date.OrdinalDay.Title}} ({{.Contract.Date.Month}}) de {{.Rental.StartDate.MonthName}} del {{.Contract.Date.Year.Letters}} ({{.Rental.StartDate.Year}})
+      </p>-->
+      <span>
+        <b>FECHA DE INICIACI&Oacute;N DEL CONTRATO: </b>
+        {{.Rental.StartDate.Day.Ordinal.Title}} ({{.Rental.StartDate.Day}}) de {{.Rental.StartDate.MonthName}} del {{.Rental.StartDate.Year.Letters}} ({{.Rental.StartDate.Year}})
+        <!--
+        {{.Rental.StartDate.OrdinalDay.Title}} ({{.Rental.StartDate.Day}}) de {{.Rental.StartDate.MonthName}} del {{.Rental.StartDate.Year.Letters}} ({{.Rental.StartDate.Year}})
+        -->
+      </span>
+
+    </div>
+
+
+
+    <div class=clausules>
+      <p class=justify>
+      Entre los suscritos a saber: <b>{{.Administrator.FullName.Upper.Bold}} </b> mayores de edad, domiciliados en la ciudad de
+      {{.Contract.City}}, identificadas con las c&eacute;dulas de ciudadan&iacute;a, cuyos n&uacute;meros aparecen al pie
+        de su
+        firma,
+        quienes en adelante se denominar&aacute;n <b>EL ARRENDADOR</b> de una parte, y de la otra, el se&ntilde;or
+        <b>{{.Tenant.FullName.Upper.Bold}}</b>,
+        mayor de edad, identificado como aparece al pi&eacute; de su respectiva firma, quien se denominara <b>EL
+          ARRENDATARIO</b>, se ha
+        celebrado un contrato de arrendamiento que se regir&aacute; por las siguientes cl&aacute;usulas:
+      </p>
+
+      <p class=justify>
+          <b> PRIMERA: </b> {{.Paragraphs.First}}
+      </p>
+      {{.Paragraphs.PostFirst}}
+
+      <p class=justify>
+      <b>SEGUNDA:</b> El t&eacute;rmino de arrendamiento ser&aacute; de {{.Rental.Duration.Letters}}<!--tres--> ({{.Rental.Duration}}) meses contado a partir del d&iacute;a
+      <!--sexto-->
+        {{.Rental.StartDate.Day.Ordinal}}
+        ({{.Rental.StartDate.Day}}) del
+        mes de
+        {{.Rental.StartDate.MonthName}} <!--Junio--> del a&ntilde;o {{.Rental.StartDate.Year.Letters}}<!--dos mil veintid&oacute;s--> ({{.Rental.StartDate.Year}}).
+      </p>
+
+      <p class=justify>
+      <b>TERCERA:</b> El precio del arrendamiento es la suma de {{.Rental.Value.Letters.Upper.Bold}} <!--Ochocientos veinte mil--> MONEDA LEGAL COLOMBIANA
+        ({{.Rental.Value.CurrencySign.Upper.Bold}}<!--$820,000-->) mensual, suma que deber&aacute; ser cancelada dentro de los cinco (5) primeros d&iacute;as de cada
+        periodo,
+        dicha
+        suma se consignar&aacute; en la cuenta de {{.Account.Type}} de {{.Account.BankName}}<!--Colpatria--> No. {{.Account.Number}} <!--5632003216--> a nombre de {{.Account.Name.Upper.Bold}}<!--Marly Yohana Mosquera Loaiza--> y
+        se enviara comprobante de pago del mismo al <b>EL ARRENDADOR</b>.
+      </p>
+
+      <p class=justify>
+        <b>CUARTA:</b> Sin previo permiso escrito de <b>EL ARRENDADOR</b>, no podr&aacute; <b>EL ARRENDATARIO</b>, subarrendar,
+          ni ceder
+          en arriendo, ni cambiar la destinaci&oacute;n que hoy se est&aacute; dando a los inmuebles, bajo la sanci&oacute;n
+          de responder
+          por
+          todos los da&ntilde;os y perjuicios. Adicionalmente <b>EL ARRENDADOR</b> podr&aacute; dar por terminado &eacute;ste
+          contrato,
+          a&uacute;n antes
+          del vencimiento, en caso de violaci&oacute;n de &eacute;sta prohibici&oacute;n.
+      </p>
+
+
+      <!--
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      -->
+      <p class=justify>
+        <b>QUINTA:</b> Es prohibido a <b>EL ARRENDATARIO</b>, mantener o guarda o permitir que otro guarde o mantenga
+        dentro del inmueble arrendado transitoria o permanentemente, sustancias inflamables, explosivas, o en cualquier
+        forma nocivas para la salud y que puedan afectar la seguridad, buena conservaci&oacute;n e higiene de los
+        inmuebles
+        arrendados o la de los inmuebles colindantes. <b>EL ARRENDADOR</b> no ser&aacute; responsable por robos, da&ntilde;os o
+        eventualidades de cualquier naturaleza que puedan sobrevenir en los inmuebles arrendados, sea que en tales robos,
+        da&ntilde;os o eventos intervenga o no la mano del hombre, y que con ellos se perjudique directa o indirectamente
+        a <b>EL ARRENDATARIO</b>.
+      </p>
+
+      <p class=justify>
+      <b>SEXTA:</b> <b>EL ARRENDATARIO</b> declara haber recibido los inmuebles en buen estado de conservaci&oacute;n y se
+        obligan a
+        devolverlos en el mismo estado, salvo los deterioros naturales producidos por el goce legitimo de los inmuebles
+        arrendados. Las reparaciones locativas ser&aacute;n por cuenta de <b>EL ARRENDATARIO</b>.
+      </p>
+
+      <p class=justify>
+      <b>SEPTIMA:</b> Sin previo permiso escrito de <b>EL ARRENDADOR</b>, no podr&aacute; <b>EL ARRENDATARIO</b> efectuar
+        mejoras de
+        ninguna naturaleza; y en caso de que las hicieren, &eacute;stas quedaran de propiedad del due&ntilde;o de los
+        inmuebles,
+        sin derecho por parte de <b>EL ARRENDATARIO</b> a retirarlas ni a cobrar su valor. En este ni en ning&uacute;n otro caso
+        podr&aacute;
+        EL ARRENDATARIO alegar en contra de <b>EL ARRENDADOR</b> o del propietario del inmueble, el derecho de retenci&oacute;n
+        que en
+        algunos casos establece la ley colombiana, pues desde ahora renuncian a ese derecho.
+      </p>
+
+      <p class=justify>
+        <b>OCTAVA:</b> El servicio de energ&iacute;a el&eacute;ctrica, gas, agua, tasa de aseo, alcantarillado,
+        tel&eacute;fono, Multas
+        por la
+        administracion ser&aacute; pagado por <b>EL ARRENDATARIO</b>. <b>EL ARRENDADOR</b> no se hace responsable en ning&uacute;n caso
+        por la
+        deficiencia en la prestaci&oacute;n de tales servicios. Ser&aacute; obligaci&oacute;n expresa de <b>EL ARRENDATARIO</b>
+        el estricto
+        cumplimiento de todas las disposiciones y reglamentos de las empresas de servicios p&uacute;blicos, as&iacute;
+        como el
+        cumplimiento de las normas vigentes en la copropiedad.
+        Las cuotas de administraci&oacute;n de la copropiedad corren por cuenta de <b>EL ARRENDADOR</b>.
+      </p>
+
+      <!--<p class=justify>
+        <b>NOVENA:</b> Con cuarenta y cinco (45) d&iacute;as de anticipaci&oacute;n a la expiraci&oacute;n del plazo fijado en este
+        contrato, <b>EL ARRENDATARIO</b> manifestar&aacute; por escrito a <b>EL ARRENDADOR</b>, si desean desocupar o si continuar&aacute;n ocupando
+        los inmuebles
+        someti&eacute;ndose a las condiciones que establece la ley en cuanto a incremento del valor del arriendo, si este
+        aviso
+        no se da por escrito se da por entendido que <b>EL ARRENDATARIO</b> continuara con el inmueble.
+      </p>-->
+
+      <p class=justify>
+ <b>NOVENA:</b> PREAVISO, PR&Oacute;RROGA Y DEVOLUCI&Oacute;N DEL DEP&Oacute;SITO: Las partes acuerdan que, si <b>EL ARRENDATARIO</b> decide no renovar el contrato al vencimiento del plazo inicial o de sus pr&oacute;rrogas,
+ deber&aacute; notificarlo por escrito a <b>EL ARRENDADOR</b> con una antelaci&oacute;n no menor a cuarenta y cinco (45) d&iacute;as calendario. De no recibirse dicha comunicaci&oacute;n en el tiempo y forma pactados,
+ el contrato se entender&aacute; prorrogado autom&aacute;ticamente por un periodo igual al inicialmente pactado.
+ <b>En caso de que EL ARRENDATARIO no d&eacute; el aviso previo de cuarenta y cinco (45) d&iacute;as establecido en la presente cl&aacute;usula, EL ARRENDADOR quedar&aacute; facultado para retener el dep&oacute;sito de garant&iacute;a en su totalidad, como compensaci&oacute;n por el incumplimiento del preaviso pactado, sin perjuicio de las dem&aacute;s acciones legales a que hubiere lugar.</b>
+ La entrega anticipada del inmueble antes del vencimiento del plazo contractual obligar&aacute; a <b>EL ARRENDATARIO</b> al pago de los c&aacute;nones restantes hasta completar el periodo vigente,
+ a menos que se pacte algo distinto por escrito.
+      </p>
+
+
+
+      <p class=justify>
+        <b>DECIMA:</b> La simple demora en el pago de una de las mensualidades del arrendamiento, la demora en el
+        cumplimiento o la violaci&oacute;n total o parcial de cualquiera de las obligaciones que la ley o este contrato
+        imponen a
+        <b>EL ARRENDATARIO</b> dar&aacute; potestad a <b>EL ARRENDADOR</b> para dar por terminado el contrato y pedir la inmediata
+        restituci&oacute;n
+        de los inmuebles.
+      </p>
+
+      <p class=justify>
+        <b>DECIMA PRIMERA:</b> <b>EL ARRENDATARIO</b> renuncia al derecho a que se les requiera judicial o privadamente
+        para ser constituidos en mora y dar por terminado el contrato, lo mismo que al derecho a prestar la seguridad
+        competente de pago a que alude el art&iacute;culo 2035 del C&oacute;digo Civil.
+      </p>
+
+      <p class=justify>
+      <b>DECIMA SEGUNDA:</b> <b>EL ARRENDATARIO</b> acepta desde ahora cualquier traspaso que <b>EL ARRENDADOR</b> haga del
+      presente contrato o de las sumas u obligaciones a su favor y a cargo de aquellos por raz&oacute;n del mismo.
+      </p>
+
+      <p class=justify>
+      <b>DECIMA TERCERA:</b> Est&aacute; prohibido a <b>EL ARRENDATARIO</b> hacer uso de la cuenta de servicios
+      p&uacute;blicos
+      para
+      respaldar cualquier cr&eacute;dito tales como: Somos, GNB, Fundaci&oacute;n social EPM o cualquier otra entidad.
+      </p>
+
+
+
+      <p class=justify>
+      Presente el se&ntilde;or (a) {{.Guarantor.FullName.Upper.Bold}} <!--DIANA MILDRED R&aacute;MIREZ-->, mayor de edad, identificado con la c&eacute;dula de
+        ciudadan&iacute;a
+        No.
+        <!--1.053.773.730--> {{.Guarantor.Identification.Number.Currency.Bold}}, obrando en mi condici&oacute;n de <b>COARRENDATARIO</b> del se&ntilde;or (a) {{.Tenant.FullName.Upper.Bold}} <!--WILSON ESTIBEN ALVAREZ CASTRO-->
+        manifiesto
+        que acepto en todas sus partes el presente contrato, en especial mi calidad de coarrendatario.
+      </p>
+
+
+      <p class=justify>
+      Para constancia se firma este contrato en la ciudad de {{.Contract.City}} al {{.Contract.Date.Day.Ordinal}} ({{.Contract.Date.Day}}) d&iacute;a del mes de {{.Contract.Date.MonthName.Title}} del
+        a&ntilde;o
+        {{.Contract.Date.Year.Letters}}
+        <!--dos mil veintid&oacute;s--> ({{.Contract.Date.Year}}).
+      </p>
+    </div>
+
+
+    <!--<br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />-->
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+     <div class=sign>
+    <p>
+      <b>
+        ARRENDADOR:
+      </b>
+    </p>
+<pre>
+<div class="info">
+_________________________________________
+{{.Administrator.FullName.Upper.Bold}}
+CC No. {{.Administrator.Identification.Number.Len.RepeactSpaces}} De <!--{{.Owner.Identification.City}}-->
+</div>
+</pre>
+
+</div>
+
+
+     <div class=sign>
+       <p>
+          <b class="header">
+            ARRENDATARIO:
+          </b>
+       </p>
+<pre>
+<div class="info">
+_________________________________________
+{{.Tenant.FullName.Upper.Bold}}
+CC No. {{.Tenant.Identification.Number.Len.RepeactSpaces}} De <!--{{.Tenant.Identification.City}}-->
+</div>
+</pre>
+
+  </div>
+
+
+
+<div class=sign>
+    <p>
+      <b>COARRENDATARIA:</b>
+    </p>
+
+<pre>
+<div class="info">
+_________________________________________
+{{.Guarantor.FullName.Upper.Bold}}
+CC No. {{.Guarantor.Identification.Number.Len.RepeactSpaces}} De
+</div>
+</pre>
+    <div>
+
+
+
+
+  </div>
+
+
+
+</body>
+
+</html>
+

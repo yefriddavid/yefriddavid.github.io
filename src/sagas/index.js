@@ -11,6 +11,10 @@ import sagaTaxiDistributions from './CashFlow/taxiDistributionSagas'
 import sagaTaxiAuditNotes from './CashFlow/taxiAuditNoteSagas'
 import sagaProfile from './profileSagas'
 import sagaUsers from './usersSagas'
+import sagaContratoProperties from './Contratos/propertySagas'
+import sagaContratoBankAccounts from './Contratos/bankAccountSagas'
+import sagaContratoOwners from './Contratos/ownerSagas'
+import sagaContratos from './Contratos/contractSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -26,5 +30,9 @@ export default function* rootSagas() {
     sagaTaxiAuditNotes(),
     sagaProfile(),
     sagaUsers(),
+    sagaContratoProperties(),
+    sagaContratoBankAccounts(),
+    sagaContratoOwners(),
+    sagaContratos(),
   ])
 }
