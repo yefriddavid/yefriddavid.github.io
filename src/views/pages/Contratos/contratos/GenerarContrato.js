@@ -591,7 +591,7 @@ export default function GenerarContrato() {
   // Generate PDF
   const [generating, setGenerating] = useState(false)
 
-  const handleGenerate = (e) => {
+  const handleGenerate = async (e) => {
     e.preventDefault()
     if (!validate()) {
       showToast('Por favor completa todos los campos obligatorios.', 'error')
@@ -603,7 +603,7 @@ export default function GenerarContrato() {
       const filename = currentContract
         ? `Contrato_${currentContract.name.replace(/\s+/g, '_')}.pdf`
         : `Contrato_${form.tenant_full_name.replace(/\s+/g, '_')}.pdf`
-      generateContractPdf(buildPayload(form), filename)
+      await generateContractPdf(buildPayload(form), filename)
       showToast('¡Contrato generado exitosamente!', 'success')
     } catch (err) {
       showToast('Error al generar el contrato: ' + err.message, 'error')

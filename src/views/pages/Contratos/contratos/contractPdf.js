@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
@@ -200,11 +201,13 @@ export function buildContractHtml(p, isPreview = false) {
   const tenantUpper = (tenant.full_name || '').toUpperCase()
   const guarantorUpper = (guarantor.full_name || '').toUpperCase()
 
-  const watermark = isPreview
+    /*const watermark = isPreview
     ? `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);
         font-size:120px;font-weight:bold;color:rgba(226,127,127,0.3);z-index:-1;
         white-space:nowrap;pointer-events:none;">DOCUMENTO <br/> NO VÁLIDO <br/>PARA TRAMITES</div>`
-    : ''
+    : ''*/
+
+  const watermark = ''
 
   return `<!DOCTYPE html>
 <html>
@@ -395,252 +398,88 @@ CC No. ${guarantor.identification?.number || ''} De ${guarantor.identification?.
 </html>`
 }
 
-// ── PDF generation (jsPDF) ────────────────────────────────────────────────────
+// ── PDF generation — renders the same HTML as the preview ─────────────────────
 
-export function generateContractPdf(payload, filename) {
-  const tenant = payload.tenant || {}
-  const guarantor = payload.guarantor || {}
-  const owner = payload.owner || {}
-  const property = payload.property || {}
-  const rental = payload.rental || {}
-  const contract = payload.contract || {}
-  const account = payload.account || {}
+export async function generateContractPdf(payload, filename) {
+  const html = buildContractHtml(payload, false)
 
-  const rentalNum = parseInt(String(rental.value || '0').replace(/\D/g, ''), 10)
-  const rentalWords = numToWords(rentalNum).toUpperCase()
-  const rentalCOP = formatCOP(rentalNum)
+  // Mount a hidden container with letter-page width
+  const container = document.createElement('div')
+  container.style.cssText =
+    'position:fixed;left:-9999px;top:0;width:816px;background:#fff;font-family:Arial,Helvetica,sans-serif;'
+  container.innerHTML = html
+  document.body.appendChild(container)
 
-  const startDate = parseDate(rental.start_date)
-  const contractDate = parseDate(contract.date)
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    })
 
-  const sd = {
-    day: startDate?.getDate() ?? '',
-    ordinal: startDate ? ordinalDay(startDate.getDate()) : '',
-    month: startDate ? monthName(startDate.getMonth()) : '',
-    year: startDate?.getFullYear() ?? '',
-    yearWords: startDate ? yearToWords(startDate.getFullYear()) : '',
-  }
-  const cd = {
-    day: contractDate?.getDate() ?? '',
-    ordinal: contractDate ? ordinalDay(contractDate.getDate()) : '',
-    month: contractDate ? monthName(contractDate.getMonth()) : '',
-    year: contractDate?.getFullYear() ?? '',
-    yearWords: contractDate ? yearToWords(contractDate.getFullYear()) : '',
-  }
+    const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' })
+    const pageW = pdf.internal.pageSize.getWidth()
+    const pageH = pdf.internal.pageSize.getHeight()
+    const margin = 10
+    const printW = pageW - margin * 2
+    const availableH = pageH - margin * 2
 
-  const ownerUpper = (owner.full_name || '').toUpperCase()
-  const tenantUpper = (tenant.full_name || '').toUpperCase()
-  const guarantorUpper = (guarantor.full_name || '').toUpperCase()
-  const durationWords = numMonthsToWords(rental.duration || '').toUpperCase()
-  const accountName = (account.name || owner.full_name || '').toUpperCase()
+    // canvas pixels per mm in the output PDF
+    const pxPerMm = canvas.width / printW
+    // how many canvas pixels fit in one PDF page
+    const pageHeightPx = availableH * pxPerMm
 
-  const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' })
-  const pageW = doc.internal.pageSize.getWidth()
-  const pageH = doc.internal.pageSize.getHeight()
-  const mL = 22
-  const mR = 22
-  const mT = 22
-  const usableW = pageW - mL - mR
-  let y = mT
+    // Collect safe Y break points (bottom edge of each block element) in canvas pixels.
+    // scale:2 means CSS px * 2 = canvas px.
+    const blockEls = container.querySelectorAll('p, h3, .sign, .title, .contrctInfo')
+    const safeBreaks = new Set([0, canvas.height])
+    blockEls.forEach((el) => {
+      safeBreaks.add((el.offsetTop + el.offsetHeight) * 2)
+    })
+    const sortedBreaks = [...safeBreaks].sort((a, b) => a - b)
 
-  const checkPage = (needed = 8) => {
-    if (y + needed > pageH - 18) {
-      doc.addPage()
-      y = mT
+    const addSlice = (startPx, endPx, isFirst) => {
+      const heightPx = endPx - startPx
+      const heightMm = heightPx / pxPerMm
+      const sliceCanvas = document.createElement('canvas')
+      sliceCanvas.width = canvas.width
+      sliceCanvas.height = heightPx
+      sliceCanvas.getContext('2d').drawImage(canvas, 0, startPx, canvas.width, heightPx, 0, 0, canvas.width, heightPx)
+      if (!isFirst) pdf.addPage()
+      pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, printW, heightMm)
     }
-  }
 
-  const addLines = (text, fontSize = 10, bold = false, indent = 0, spacing = 5.5) => {
-    doc.setFontSize(fontSize)
-    doc.setFont('helvetica', bold ? 'bold' : 'normal')
-    const lines = doc.splitTextToSize(text, usableW - indent)
-    checkPage(lines.length * spacing + 2)
-    doc.text(lines, mL + indent, y, { align: 'justify', maxWidth: usableW - indent })
-    y += lines.length * spacing + 1
-  }
+    let pageStartPx = 0
+    let firstPage = true
 
-  const blankLine = (h = 3) => {
-    y += h
-  }
+    while (pageStartPx < canvas.height) {
+      const idealBreak = pageStartPx + pageHeightPx
+      let endPx
 
-  // ── Title ──
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'bold')
-  const titleLines = doc.splitTextToSize('CONTRATO DE ARRENDAMIENTO DE VIVIENDA URBANA', usableW)
-  doc.text(titleLines, pageW / 2, y, { align: 'center' })
-  y += titleLines.length * 7 + 8
+      if (idealBreak >= canvas.height) {
+        endPx = canvas.height
+      } else {
+        // Use the last safe break that fits within this page
+        const fitting = sortedBreaks.filter((b) => b > pageStartPx && b <= idealBreak)
+        if (fitting.length > 0) {
+          endPx = fitting[fitting.length - 1]
+        } else {
+          // Paragraph is taller than one page — fall back to next safe break
+          endPx = sortedBreaks.find((b) => b > idealBreak) ?? canvas.height
+        }
+      }
 
-  // ── Info block ──
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'normal')
-
-  const infoLines = [
-    ['DIRECCIÓN DEL INMUEBLE: ', property.full_address || ''],
-    ['ARRENDADOR: ', `${ownerUpper}. CC. ${owner.identification?.number || ''}`],
-    ['ARRENDATARIO: ', `${tenantUpper}. CC. ${tenant.identification?.number || ''}`],
-    ['CANON MENSUAL: ', `${rentalWords} (${rentalCOP})`],
-    ['DURACIÓN DEL CONTRATO: ', `${durationWords} (${rental.duration || ''})`],
-    [
-      'FECHA DE INICIACIÓN: ',
-      `${sd.ordinal ? sd.ordinal.charAt(0).toUpperCase() + sd.ordinal.slice(1) : ''} (${sd.day}) de ${sd.month} del ${sd.yearWords} (${sd.year})`,
-    ],
-  ]
-
-  infoLines.forEach(([label, value]) => {
-    checkPage(8)
-    doc.setFont('helvetica', 'bold')
-    const labelW = doc.getTextWidth(label)
-    doc.text(label, mL, y)
-    doc.setFont('helvetica', 'normal')
-    const valueLines = doc.splitTextToSize(value, usableW - labelW)
-    doc.text(valueLines[0] || '', mL + labelW, y)
-    if (valueLines.length > 1) {
-      y += 5.5
-      doc.text(valueLines.slice(1), mL + labelW, y)
-      y += (valueLines.length - 1) * 5.5
+      addSlice(pageStartPx, endPx, firstPage)
+      firstPage = false
+      pageStartPx = endPx
     }
-    y += 6
-  })
 
-  blankLine(4)
-
-  // ── Clauses ──
-  const clause = (label, text) => {
-    blankLine(2)
-    const full = `${label} ${text}`
-    addLines(full, 10, false, 0, 5.5)
+    const name =
+      filename ||
+      `Contrato_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
+    pdf.save(name)
+  } finally {
+    document.body.removeChild(container)
   }
-
-  addLines(
-    `Entre los suscritos a saber: ${ownerUpper}, mayor de edad, domiciliado en la ciudad de ${contract.city || ''}, identificado con cédula de ciudadanía, cuyo número aparece al pie de su firma, quien en adelante se denominará EL ARRENDADOR de una parte, y de la otra, el señor ${tenantUpper}, mayor de edad, identificado como aparece al pié de su respectiva firma, quien se denominará EL ARRENDATARIO, se ha celebrado un contrato de arrendamiento que se regirá por las siguientes cláusulas:`,
-    10,
-    false,
-    0,
-    5.5,
-  )
-
-  clause(
-    'PRIMERA:',
-    `EL ARRENDADOR entrega en arrendamiento al ARRENDATARIO el inmueble ubicado en ${property.full_address || ''}${property.appartment_number ? ', apartamento No. ' + property.appartment_number : ''}, municipio de ${property.city || ''}, departamento de ${property.state || ''}${property.urbanization_name ? ', urbanización ' + property.urbanization_name : ''}, para ser destinado única y exclusivamente a vivienda urbana del ARRENDATARIO y su familia.`,
-  )
-
-  clause(
-    'SEGUNDA:',
-    `El término de arrendamiento será de ${durationWords} (${rental.duration || ''}) meses contado a partir del día ${sd.ordinal} (${sd.day}) del mes de ${sd.month} del año ${sd.yearWords} (${sd.year}).`,
-  )
-
-  clause(
-    'TERCERA:',
-    `El precio del arrendamiento es la suma de ${rentalWords} MONEDA LEGAL COLOMBIANA (${rentalCOP}) mensual, suma que deberá ser cancelada dentro de los cinco (5) primeros días de cada periodo. Dicha suma se consignará en la cuenta de ${account.type || ''} de ${account.bank_name || ''} No. ${account.number || ''} a nombre de ${accountName} y se enviará comprobante de pago al EL ARRENDADOR.`,
-  )
-
-  clause(
-    'CUARTA:',
-    'Sin previo permiso escrito de EL ARRENDADOR, no podrá EL ARRENDATARIO subarrendar, ni ceder en arriendo, ni cambiar la destinación que hoy se está dando a los inmuebles, bajo la sanción de responder por todos los daños y perjuicios. Adicionalmente EL ARRENDADOR podrá dar por terminado éste contrato, aún antes del vencimiento, en caso de violación de ésta prohibición.',
-  )
-
-  clause(
-    'QUINTA:',
-    'Es prohibido a EL ARRENDATARIO mantener o guardar o permitir que otro guarde o mantenga dentro del inmueble arrendado transitoria o permanentemente, sustancias inflamables, explosivas, o en cualquier forma nocivas para la salud y que puedan afectar la seguridad, buena conservación e higiene de los inmuebles arrendados o la de los inmuebles colindantes. EL ARRENDADOR no será responsable por robos, daños o eventualidades de cualquier naturaleza que puedan sobrevenir en los inmuebles arrendados.',
-  )
-
-  clause(
-    'SEXTA:',
-    'EL ARRENDATARIO declara haber recibido los inmuebles en buen estado de conservación y se obliga a devolverlos en el mismo estado, salvo los deterioros naturales producidos por el goce legítimo de los inmuebles arrendados. Las reparaciones locativas serán por cuenta de EL ARRENDATARIO.',
-  )
-
-  clause(
-    'SEPTIMA:',
-    'Sin previo permiso escrito de EL ARRENDADOR, no podrá EL ARRENDATARIO efectuar mejoras de ninguna naturaleza; y en caso de que las hiciere, éstas quedarán de propiedad del dueño de los inmuebles, sin derecho por parte de EL ARRENDATARIO a retirarlas ni a cobrar su valor. En este ni en ningún otro caso podrá EL ARRENDATARIO alegar contra EL ARRENDADOR el derecho de retención que en algunos casos establece la ley colombiana, pues desde ahora renuncia a ese derecho.',
-  )
-
-  clause(
-    'OCTAVA:',
-    'El servicio de energía eléctrica, gas, agua, tasa de aseo, alcantarillado, teléfono, multas por la administración serán pagados por EL ARRENDATARIO. EL ARRENDADOR no se hace responsable en ningún caso por la deficiencia en la prestación de tales servicios. Será obligación expresa de EL ARRENDATARIO el estricto cumplimiento de todas las disposiciones y reglamentos de las empresas de servicios públicos, así como el cumplimiento de las normas vigentes en la copropiedad. Las cuotas de administración de la copropiedad corren por cuenta de EL ARRENDADOR.',
-  )
-
-  clause(
-    'NOVENA:',
-    'PREAVISO, PRÓRROGA Y DEVOLUCIÓN DEL DEPÓSITO: Las partes acuerdan que, si EL ARRENDATARIO decide no renovar el contrato al vencimiento del plazo inicial o de sus prórrogas, deberá notificarlo por escrito a EL ARRENDADOR con una antelación no menor a cuarenta y cinco (45) días calendario. De no recibirse dicha comunicación en el tiempo y forma pactados, el contrato se entenderá prorrogado automáticamente por un periodo igual al inicialmente pactado. En caso de que EL ARRENDATARIO no dé el aviso previo de cuarenta y cinco (45) días, EL ARRENDADOR quedará facultado para retener el depósito de garantía en su totalidad, como compensación por el incumplimiento del preaviso pactado. La entrega anticipada del inmueble obligará a EL ARRENDATARIO al pago de los cánones restantes hasta completar el periodo vigente, a menos que se pacte algo distinto por escrito.',
-  )
-
-  clause(
-    'DECIMA:',
-    'La simple demora en el pago de una de las mensualidades del arrendamiento, la demora en el cumplimiento o la violación total o parcial de cualquiera de las obligaciones que la ley o este contrato imponen a EL ARRENDATARIO dará potestad a EL ARRENDADOR para dar por terminado el contrato y pedir la inmediata restitución de los inmuebles.',
-  )
-
-  clause(
-    'DECIMA PRIMERA:',
-    'EL ARRENDATARIO renuncia al derecho a que se le requiera judicial o privadamente para ser constituido en mora y dar por terminado el contrato, lo mismo que al derecho a prestar la seguridad competente de pago a que alude el artículo 2035 del Código Civil.',
-  )
-
-  clause(
-    'DECIMA SEGUNDA:',
-    'EL ARRENDATARIO acepta desde ahora cualquier traspaso que EL ARRENDADOR haga del presente contrato o de las sumas u obligaciones a su favor y a cargo de aquellos por razón del mismo.',
-  )
-
-  clause(
-    'DECIMA TERCERA:',
-    'Está prohibido a EL ARRENDATARIO hacer uso de la cuenta de servicios públicos para respaldar cualquier crédito tales como: Somos, GNB, Fundación social EPM o cualquier otra entidad.',
-  )
-
-  blankLine(3)
-  addLines(
-    `Presente el señor (a) ${guarantorUpper}, mayor de edad, identificado con la cédula de ciudadanía No. ${guarantor.identification?.number || ''}, expedida en ${guarantor.identification?.city || ''}, obrando en mi condición de COARRENDATARIO del señor (a) ${tenantUpper} manifiesto que acepto en todas sus partes el presente contrato, en especial mi calidad de coarrendatario.`,
-  )
-
-  blankLine(3)
-  addLines(
-    `Para constancia se firma este contrato en la ciudad de ${contract.city || ''} al ${cd.ordinal} (${cd.day}) día del mes de ${cd.month ? cd.month.charAt(0).toUpperCase() + cd.month.slice(1) : ''} del año ${cd.yearWords} (${cd.year}).`,
-  )
-
-  // ── Signatures ──
-  blankLine(20)
-  checkPage(50)
-
-  const sigColW = usableW / 3
-  const sigStartX = mL
-
-  ;[
-    {
-      label: 'ARRENDADOR:',
-      name: ownerUpper,
-      cc: owner.identification?.number || '',
-      city: owner.identification?.city || '',
-    },
-    {
-      label: 'ARRENDATARIO:',
-      name: tenantUpper,
-      cc: tenant.identification?.number || '',
-      city: tenant.identification?.city || '',
-    },
-    {
-      label: 'COARRENDATARIO:',
-      name: guarantorUpper,
-      cc: guarantor.identification?.number || '',
-      city: guarantor.identification?.city || '',
-    },
-  ].forEach((sig, i) => {
-    const colX = sigStartX + i * sigColW
-    const lineX1 = colX + 2
-    const lineX2 = colX + sigColW - 4
-
-    checkPage(40)
-    const baseY = y
-
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.text(sig.label, colX + sigColW / 2, baseY, { align: 'center' })
-    doc.line(lineX1, baseY + 18, lineX2, baseY + 18)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
-    doc.text(sig.name, colX + sigColW / 2, baseY + 23, { align: 'center' })
-    doc.text(`CC No. ${sig.cc}`, colX + sigColW / 2, baseY + 28, { align: 'center' })
-    if (sig.city) doc.text(`De ${sig.city}`, colX + sigColW / 2, baseY + 33, { align: 'center' })
-  })
-
-  y += 40
-
-  const name = filename || `Contrato_${(tenant.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
-  doc.save(name)
 }
