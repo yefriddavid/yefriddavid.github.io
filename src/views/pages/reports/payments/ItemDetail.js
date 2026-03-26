@@ -14,8 +14,8 @@ import { VaucherModalViewer } from './Controls'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
-import * as paymentActions from '../../../actions/paymentActions'
-import * as accountActions from '../../../actions/accountActions'
+import * as paymentActions from '../../../../actions/paymentActions'
+import * as accountActions from '../../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
 
 

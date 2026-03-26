@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const Dashboard = React.lazy(() => import('./views/pages/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
@@ -18,11 +18,11 @@ const Distributions = React.lazy(() => import('./views/pages/CashFlow/management
 // Users & Profile
 const Users = React.lazy(() => import('./views/pages/CashFlow/management/users/Users'))
 const PushSubscribers = React.lazy(() => import('./views/pages/CashFlow/management/users/PushSubscribers'))
-const Profile = React.lazy(() => import('./views/profile/Profile'))
+const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
-const Reports = React.lazy(() => import('./views/reports/Reports'))
+const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
