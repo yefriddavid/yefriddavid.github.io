@@ -10,8 +10,8 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
-import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
-import * as taxiDriverActions from 'src/actions/taxiDriverActions'
+import * as taxiVehicleActions from 'src/actions/CashFlow/taxiVehicleActions'
+import * as taxiDriverActions from 'src/actions/CashFlow/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
 import './masters.scss'
 

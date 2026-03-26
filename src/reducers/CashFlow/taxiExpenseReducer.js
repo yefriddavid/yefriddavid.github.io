@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as taxiExpenseActions from '../actions/taxiExpenseActions'
+import * as taxiExpenseActions from '../../actions/CashFlow/taxiExpenseActions'
 
 const taxiExpenseSlice = createSlice({
   name: 'taxiExpense',

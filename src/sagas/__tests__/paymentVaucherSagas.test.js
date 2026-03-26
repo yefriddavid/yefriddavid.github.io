@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as paymentVaucherActions from '../../actions/paymentVaucherActions'
-import * as apiPaymentVaucherServices from '../../services/providers/firebase/paymentVaucher'
+import * as paymentVaucherActions from '../../actions/CashFlow/paymentVaucherActions'
+import * as apiPaymentVaucherServices from '../../services/providers/firebase/CashFlow/paymentVaucher'
 
 // Step-through generator copy (standard redux-saga testing pattern)
 function* createPaymentVaucher({ payload }) {

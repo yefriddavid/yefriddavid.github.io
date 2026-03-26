@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { successRequestCreate as paymentSuccessRequestCreate } from '../actions/paymentActions'
-import * as paymentVaucherActions from '../actions/paymentVaucherActions'
+import { successRequestCreate as paymentSuccessRequestCreate } from '../../actions/CashFlow/paymentActions'
+import * as paymentVaucherActions from '../../actions/CashFlow/paymentVaucherActions'
 
 const paymentVaucherSlice = createSlice({
   name: 'paymentVaucher',

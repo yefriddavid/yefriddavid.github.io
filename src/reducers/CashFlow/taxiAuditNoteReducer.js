@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../actions/taxiAuditNoteActions'
+import * as actions from '../../actions/CashFlow/taxiAuditNoteActions'
 
 const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
 

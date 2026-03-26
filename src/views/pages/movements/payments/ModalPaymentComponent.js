@@ -6,7 +6,7 @@ import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { CFormInput, CFormSelect } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
-import * as paymentActions from '../../../../actions/paymentActions'
+import * as paymentActions from '../../../../actions/CashFlow/paymentActions'
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';

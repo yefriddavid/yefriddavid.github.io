@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../actions/taxiDriverActions'
+import * as actions from '../../actions/CashFlow/taxiVehicleActions'
 
-const taxiDriverSlice = createSlice({
-  name: 'taxiDriver',
+const taxiVehicleSlice = createSlice({
+  name: 'taxiVehicle',
   initialState: {
     data: null,
     error: {},
@@ -20,7 +20,7 @@ const taxiDriverSlice = createSlice({
       .addCase(actions.beginRequestCreate, (state) => { state.fetching = true })
       .addCase(actions.successRequestCreate, (state, { payload }) => {
         state.data = state.data
-          ? [...state.data, payload].sort((a, b) => a.name.localeCompare(b.name))
+          ? [...state.data, payload].sort((a, b) => a.plate.localeCompare(b.plate))
           : [payload]
         state.fetching = false
       })
@@ -30,7 +30,7 @@ const taxiDriverSlice = createSlice({
         if (state.data) {
           state.data = state.data
             .map((r) => r.id === payload.id ? { ...r, ...payload } : r)
-            .sort((a, b) => a.name.localeCompare(b.name))
+            .sort((a, b) => a.plate.localeCompare(b.plate))
         }
       })
       .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.isError = true })
@@ -39,7 +39,16 @@ const taxiDriverSlice = createSlice({
         if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
       })
       .addCase(actions.errorRequestDelete, (state, { payload }) => { state.error = payload; state.isError = true })
+
+      .addCase(actions.successRequestUpdateRestrictions, (state, { payload }) => {
+        if (state.data) {
+          state.data = state.data.map((r) =>
+            r.id === payload.id ? { ...r, restrictions: payload.restrictions } : r,
+          )
+        }
+      })
+      .addCase(actions.errorRequestUpdateRestrictions, (state, { payload }) => { state.error = payload; state.isError = true })
   },
 })
 
-export default taxiDriverSlice.reducer
+export default taxiVehicleSlice.reducer

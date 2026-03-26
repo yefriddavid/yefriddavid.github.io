@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../taxiDriverReducer'
-import * as actions from '../../actions/taxiDriverActions'
+import reducer from '../CashFlow/taxiDriverReducer'
+import * as actions from '../../actions/CashFlow/taxiDriverActions'
 import { makeDriver } from '../../__tests__/factories'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }

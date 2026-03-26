@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../paymentVaucherReducer'
-import * as paymentActions from '../../actions/paymentActions'
-import * as vaucherActions from '../../actions/paymentVaucherActions'
+import reducer from '../CashFlow/paymentVaucherReducer'
+import * as paymentActions from '../../actions/CashFlow/paymentActions'
+import * as vaucherActions from '../../actions/CashFlow/paymentVaucherActions'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }
 

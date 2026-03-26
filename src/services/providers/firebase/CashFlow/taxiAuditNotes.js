@@ -1,4 +1,4 @@
-import { db } from './settings'
+import { db } from '../settings'
 import { collection, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore'
 
 const COL = 'taxi_audit_notas'

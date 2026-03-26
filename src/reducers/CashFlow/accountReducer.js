@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as accountActions from '../actions/accountActions'
-import { successRequestCreate, successRequestDelete } from '../actions/paymentActions'
+import * as accountActions from '../../actions/CashFlow/accountActions'
+import { successRequestCreate, successRequestDelete } from '../../actions/CashFlow/paymentActions'
 
 const accountSlice = createSlice({
   name: 'account',

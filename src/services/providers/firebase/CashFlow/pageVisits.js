@@ -1,4 +1,4 @@
-import { db } from './settings'
+import { db } from '../settings'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 const collectVisitorMeta = () => ({

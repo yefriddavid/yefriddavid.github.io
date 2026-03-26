@@ -2,12 +2,12 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 
 import cloneDeep from 'lodash/cloneDeep'
 
-import * as paymentActions from '../actions/paymentActions'
-import * as accountActions from '../actions/accountActions'
-import * as paymentVaucherActions from '../actions/paymentVaucherActions'
+import * as paymentActions from '../../actions/CashFlow/paymentActions'
+import * as accountActions from '../../actions/CashFlow/accountActions'
+import * as paymentVaucherActions from '../../actions/CashFlow/paymentVaucherActions'
 
-import * as apiPaymentVaucherServices from '../services/providers/firebase/paymentVaucher'
-import { getCache, setCache } from '../services/voucherCache'
+import * as apiPaymentVaucherServices from '../../services/providers/firebase/CashFlow/paymentVaucher'
+import { getCache, setCache } from '../../services/voucherCache'
 
 function* addVauchersToAccountPayments({ payload }) {
   try {

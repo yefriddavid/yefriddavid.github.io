@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { CCard, CCardBody, CCardHeader, CSpinner, CRow, CCol, CFormSelect } from '@coreui/react'
 import { CChartBar, CChartDoughnut, CChartLine } from '@coreui/react-chartjs'
-import { getSettlements } from 'src/services/providers/firebase/taxiSettlements'
-import { fetchExpenses } from 'src/services/providers/firebase/taxiExpenses'
-import { getDrivers } from 'src/services/providers/firebase/taxiDrivers'
-import { getVehicles } from 'src/services/providers/firebase/taxiVehicles'
+import { getSettlements } from 'src/services/providers/firebase/CashFlow/taxiSettlements'
+import { fetchExpenses } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
+import { getDrivers } from 'src/services/providers/firebase/CashFlow/taxiDrivers'
+import { getVehicles } from 'src/services/providers/firebase/CashFlow/taxiVehicles'
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

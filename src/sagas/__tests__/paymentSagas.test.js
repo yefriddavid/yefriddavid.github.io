@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as paymentActions from '../../actions/paymentActions'
+import * as paymentActions from '../../actions/CashFlow/paymentActions'
 import * as apiServices from '../../services/providers/api/payments'
 import { makePayment } from '../../__tests__/factories'
 

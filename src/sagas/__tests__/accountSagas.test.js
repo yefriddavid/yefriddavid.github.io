@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as accountActions from '../../actions/accountActions'
+import * as accountActions from '../../actions/CashFlow/accountActions'
 import * as apiService from '../../services/providers/api/accounts'
 
 // Step-through generator copy (standard redux-saga testing pattern)

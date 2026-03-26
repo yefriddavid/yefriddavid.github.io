@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { trackPageVisit } from 'src/services/providers/firebase/pageVisits'
+import { trackPageVisit } from 'src/services/providers/firebase/CashFlow/pageVisits'
 import './AboutMe.scss'
 
 import NodeImg    from 'src/assets/images/skills/nodejs.png'

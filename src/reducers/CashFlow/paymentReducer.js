@@ -7,7 +7,7 @@ import {
   beginRequestCreate,
   successRequestCreate,
   errorRequestCreate,
-} from '../actions/paymentActions'
+} from '../../actions/CashFlow/paymentActions'
 
 const paymentSlice = createSlice({
   name: 'payment',

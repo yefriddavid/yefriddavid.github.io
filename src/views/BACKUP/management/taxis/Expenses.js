@@ -10,9 +10,9 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
-import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
-import { updateExpense } from 'src/services/providers/firebase/taxiExpenses'
-import { getVehicles } from 'src/services/providers/firebase/taxiVehicles'
+import * as taxiExpenseActions from 'src/actions/CashFlow/taxiExpenseActions'
+import { updateExpense } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
+import { getVehicles } from 'src/services/providers/firebase/CashFlow/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 

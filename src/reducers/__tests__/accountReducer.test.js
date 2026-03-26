@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../accountReducer'
-import * as accountActions from '../../actions/accountActions'
-import { successRequestCreate, successRequestDelete } from '../../actions/paymentActions'
+import reducer from '../CashFlow/accountReducer'
+import * as accountActions from '../../actions/CashFlow/accountActions'
+import { successRequestCreate, successRequestDelete } from '../../actions/CashFlow/paymentActions'
 import { makeAccount, makeAccountState, makePayment } from '../../__tests__/factories'
 
 const initial = {

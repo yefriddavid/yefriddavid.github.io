@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
-import * as paymentActions from '../actions/paymentActions'
-import * as apiServices from '../services/providers/api/payments'
+import * as paymentActions from '../../actions/CashFlow/paymentActions'
+import * as apiServices from '../../services/providers/api/payments'
 
 function* fetchPayments({ payload }) {
   try {
