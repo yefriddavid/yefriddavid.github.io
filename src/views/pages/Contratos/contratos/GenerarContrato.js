@@ -656,7 +656,7 @@ export default function GenerarContrato() {
           <IcoCopy /> Clonar
         </button>
         <button className="c-btn-header" onClick={openPicker}>
-          <IcoSwitch /> Cambiar contrato
+          <IcoSwitch /> Seleccionar Contrato
         </button>
       </header>
 

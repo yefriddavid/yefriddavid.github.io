@@ -1306,7 +1306,12 @@ const Taxis = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {auditFilteredDays.map((day) => (
+                    {auditFilteredDays.map((day) => {
+                      const filteredRecords = auditDriverFilter.size > 0
+                        ? day.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
+                        : day.dayRecords
+                      const filteredTotal = filteredRecords.reduce((s, r) => s + (r.amount || 0), 0)
+                      return (
                       <React.Fragment key={day.d}>
                       <tr
                         onClick={() => setSelectedAuditDay((prev) => prev === day.d ? null : day.d)}
@@ -1330,14 +1335,14 @@ const Taxis = () => {
                           {day.status === 'future' && <span style={{ fontSize: 11, color: '#adb5bd', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px' }}>— {t('taxis.settlements.audit.statusFuture')}</span>}
                         </td>
                         <td style={{ padding: '8px 12px', fontWeight: 600, color: day.isFuture ? '#adb5bd' : '#334155' }}>
-                          {day.isFuture ? '—' : day.dayRecords.length}
+                          {day.isFuture ? '—' : filteredRecords.length}
                         </td>
                         <td style={{ padding: '8px 12px', fontWeight: 700, color: day.isFuture ? '#adb5bd' : '#1e3a5f', whiteSpace: 'nowrap' }}>
-                          {day.isFuture ? '—' : day.total > 0 ? fmt(day.total) : <span style={{ color: '#adb5bd' }}>—</span>}
+                          {day.isFuture ? '—' : filteredTotal > 0 ? fmt(filteredTotal) : <span style={{ color: '#adb5bd' }}>—</span>}
                         </td>
                         <td style={{ padding: '8px 6px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
-                            {day.settled.map((dr) => {
+                            {(auditDriverFilter.size > 0 ? day.settled.filter((dr) => auditDriverFilter.has(dr)) : day.settled).map((dr) => {
                               const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
                               const underpaid = plate ? day.underpaidVehicles.includes(plate) : false
                               const driverRecords = day.dayRecords.filter((r) => r.driver === dr)
@@ -1383,6 +1388,7 @@ const Taxis = () => {
                                 return true
                               })
                               if (!driver) return null
+                              if (auditDriverFilter.size > 0 && !auditDriverFilter.has(driver.name)) return null
                               const expected = day.isSunday
                                 ? (driver.defaultAmountSunday || driver.defaultAmount || 0)
                                 : (driver.defaultAmount || 0)
@@ -1433,7 +1439,7 @@ const Taxis = () => {
                                 </div>
                               )
                             })}
-                            {!day.isFuture && day.missing.map((dr) => {
+                            {!day.isFuture && (auditDriverFilter.size > 0 ? day.missing.filter((dr) => auditDriverFilter.has(dr)) : day.missing).map((dr) => {
                               const note = getNote(day.dateStr, dr)
                               const resolved = getResolved(day.dateStr, dr)
                               const isEditing = editingNote?.date === day.dateStr && editingNote?.driver === dr
@@ -1478,7 +1484,7 @@ const Taxis = () => {
                                 </div>
                               )
                             })}
-                            {!day.isFuture && day.picoPlacaDrivers.map((dr) => (
+                            {!day.isFuture && (auditDriverFilter.size > 0 ? day.picoPlacaDrivers.filter((dr) => auditDriverFilter.has(dr)) : day.picoPlacaDrivers).map((dr) => (
                               <div key={dr} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <span style={{ fontSize: 11, background: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>🚫 {dr.split(' ')[0]}</span>
                               </div>
@@ -1526,7 +1532,8 @@ const Taxis = () => {
                         </tr>
                       )}
                       </React.Fragment>
-                    ))}
+                      )
+                    })}
                   </tbody>
                   <tfoot>
                     <tr style={{ background: '#1e3a5f', borderTop: '2px solid #1e3a5f' }}>
@@ -1534,10 +1541,16 @@ const Taxis = () => {
                         {t('taxis.settlements.audit.total')}
                       </td>
                       <td style={{ padding: '9px 12px', fontWeight: 700, color: '#fff', fontSize: 13 }}>
-                        {auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => s + d.dayRecords.length, 0)}
+                        {auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => {
+                          const recs = auditDriverFilter.size > 0 ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver)) : d.dayRecords
+                          return s + recs.length
+                        }, 0)}
                       </td>
                       <td style={{ padding: '9px 12px', fontWeight: 700, color: '#fff', fontSize: 13, whiteSpace: 'nowrap' }}>
-                        {fmt(auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => s + d.total, 0))}
+                        {fmt(auditFilteredDays.filter((d) => !d.isFuture).reduce((s, d) => {
+                          const recs = auditDriverFilter.size > 0 ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver)) : d.dayRecords
+                          return s + recs.reduce((a, r) => a + (r.amount || 0), 0)
+                        }, 0))}
                       </td>
                       <td colSpan={2} />
                     </tr>
