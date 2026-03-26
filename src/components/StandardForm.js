@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { CSpinner } from '@coreui/react'
-import '../views/movements/payments/ItemDetail.scss'
+import '../views/pages/movements/payments/ItemDetail.scss'
 
 // CSS class helpers for inputs inside StandardField
 export const SF = {

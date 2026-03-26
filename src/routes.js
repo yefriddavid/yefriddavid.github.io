@@ -5,30 +5,30 @@ const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
 // Managment
-const Accounts = React.lazy(() => import('./views/management/accounts/Accounts'))
-const Settlements = React.lazy(() => import('./views/management/taxis/Settlements'))
-const Drivers = React.lazy(() => import('./views/management/taxis/Drivers'))
-const Vehicles = React.lazy(() => import('./views/management/taxis/Vehicles'))
-const Expenses = React.lazy(() => import('./views/management/taxis/Expenses'))
-const Summary = React.lazy(() => import('./views/management/taxis/Summary'))
-const TaxisHome = React.lazy(() => import('./views/management/taxis/Home'))
-const Partners = React.lazy(() => import('./views/management/taxis/Partners'))
-const Distributions = React.lazy(() => import('./views/management/taxis/Distributions'))
+const Accounts = React.lazy(() => import('./views/pages/CashFlow/management/accounts/Accounts'))
+const Settlements = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Settlements'))
+const Drivers = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Drivers'))
+const Vehicles = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Vehicles'))
+const Expenses = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Expenses'))
+const Summary = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Summary'))
+const TaxisHome = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Home'))
+const Partners = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Partners'))
+const Distributions = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Distributions'))
 
 // Users & Profile
-const Users = React.lazy(() => import('./views/management/users/Users'))
-const PushSubscribers = React.lazy(() => import('./views/management/users/PushSubscribers'))
+const Users = React.lazy(() => import('./views/pages/CashFlow/management/users/Users'))
+const PushSubscribers = React.lazy(() => import('./views/pages/CashFlow/management/users/PushSubscribers'))
 const Profile = React.lazy(() => import('./views/profile/Profile'))
 
 // Movements
-const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
+const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
 const Reports = React.lazy(() => import('./views/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
 // Tools
-const IncreaseDecrease = React.lazy(() => import('./views/tools/increase-decrease/IncreaseDecrease'))
-const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
+const IncreaseDecrease = React.lazy(() => import('./views/pages/tools/increase-decrease/IncreaseDecrease'))
+const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
 
 
 // Base

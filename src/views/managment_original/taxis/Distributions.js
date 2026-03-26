@@ -13,7 +13,7 @@ import * as taxiDistributionActions from 'src/actions/taxiDistributionActions'
 import * as taxiPartnerActions from 'src/actions/taxiPartnerActions'
 import * as taxiSettlementActions from 'src/actions/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
-import '../../../views/movements/payments/Payments.scss'
+import '../../pages/movements/payments/Payments.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n ?? 0)

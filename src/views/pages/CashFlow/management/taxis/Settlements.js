@@ -19,8 +19,8 @@ import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
 import * as taxiAuditNoteActions from 'src/actions/taxiAuditNoteActions'
 import { getEaster, toYMD, nextMonday, getColombianHolidays, auditNoteId, buildAuditDay } from './auditHelpers'
 import * as XLSX from 'xlsx'
-import '../../../views/movements/payments/Payments.scss'
-import '../../../views/movements/payments/ItemDetail.scss'
+import '../../../movements/payments/Payments.scss'
+import '../../../movements/payments/ItemDetail.scss'
 import './Taxis.scss'
 
 

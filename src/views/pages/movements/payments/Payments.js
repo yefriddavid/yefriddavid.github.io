@@ -12,8 +12,8 @@ import { cilX, cilCheckCircle } from '@coreui/icons';
 import { CIcon } from '@coreui/icons-react';
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
-import * as paymentActions from '../../../actions/paymentActions'
-import * as accountActions from '../../../actions/accountActions'
+import * as paymentActions from '../../../../actions/paymentActions'
+import * as accountActions from '../../../../actions/accountActions'
 import { bindActionCreators } from 'redux';
 import { withTranslation } from 'react-i18next'
 import { Notification } from './Alert';

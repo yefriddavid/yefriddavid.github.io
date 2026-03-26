@@ -14,7 +14,8 @@ import "./i18n";
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Standalone pages (no app layout)
-const GenerarContrato = React.lazy(() => import('./views/contratos/GenerarContrato'))
+// const GenerarContrato = React.lazy(() => import('./views/pages/Contratos_REYDAVID/contratos/GenerarContrato'))
+const GenerarContrato = React.lazy(() => import('./views/pages/Contratos/contratos/GenerarContrato'))
 
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))

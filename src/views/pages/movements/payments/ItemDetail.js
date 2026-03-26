@@ -15,11 +15,11 @@ import { VaucherModalViewer } from './Controls'
 import './ItemDetail.scss'
 import { useSelector, useDispatch } from 'react-redux'
 import { connect } from 'react-redux'
-import * as paymentActions from '../../../actions/paymentActions'
-import * as accountActions from '../../../actions/accountActions'
+import * as paymentActions from '../../../../actions/paymentActions'
+import * as accountActions from '../../../../actions/accountActions'
 import { bindActionCreators } from 'redux'
-import { CreatePaymentVaucher, UpdatePaymentVaucher, fetchVaucherPayment } from '../../../services/providers/firebase/paymentVaucher'
-import { getCache, setCache, clearCache } from '../../../services/voucherCache'
+import { CreatePaymentVaucher, UpdatePaymentVaucher, fetchVaucherPayment } from '../../../../services/providers/firebase/paymentVaucher'
+import { getCache, setCache, clearCache } from '../../../../services/voucherCache'
 
 
 const currencyCode = "COP";

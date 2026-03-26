@@ -14,8 +14,8 @@ import * as taxiSettlementActions from 'src/actions/taxiSettlementActions'
 import * as taxiDriverActions from 'src/actions/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxiVehicleActions'
 import * as taxiExpenseActions from 'src/actions/taxiExpenseActions'
-import '../../../views/movements/payments/Payments.scss'
-import '../../../views/movements/payments/ItemDetail.scss'
+import '../../pages/movements/payments/Payments.scss'
+import '../../pages/movements/payments/ItemDetail.scss'
 import './Taxis.scss'
 
 
