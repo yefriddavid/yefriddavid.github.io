@@ -1,0 +1,103 @@
+// ─── Sunday row highlight ─────────────────────────────────────────
+#paymentsGrid .dx-row-sunday > td,
+#paymentsGrid .dx-row-sunday.dx-row-alt > td {
+  background-color: #fff0f0 !important;
+  color: #c0392b !important;
+}
+
+#paymentsGrid .dx-state-hover.dx-row-sunday > td {
+  background-color: #ffd6d6 !important;
+  color: #c0392b !important;
+}
+
+// ─── Taxis Grid ───────────────────────────────────────────────────
+#taxisGrid {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(30, 58, 95, 0.10);
+  border: 1px solid #b0bec5;
+
+  .dx-datagrid {
+    font-family: inherit;
+    font-size: 13px;
+    color: #334155;
+    background: #fff;
+  }
+
+  // ── Header ──────────────────────────────────────────────────────
+  .dx-datagrid-headers {
+    background: #1e3a5f;
+    border-bottom: none;
+
+    .dx-header-row > td {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.90) !important;
+      background: transparent !important;
+      border-color: rgba(255, 255, 255, 0.10) !important;
+    }
+
+    .dx-sort-indicator,
+    .dx-sort {
+      color: rgba(255, 255, 255, 0.60) !important;
+    }
+  }
+
+  // ── Data rows ───────────────────────────────────────────────────
+  .dx-data-row > td {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 13px;
+    color: #334155;
+    border-color: #f1f5f9 !important;
+    vertical-align: middle;
+  }
+
+  .dx-row-alt > td {
+    background-color: #f8fafc !important;
+  }
+
+  // ── Hover ───────────────────────────────────────────────────────
+  .dx-state-hover > td {
+    background-color: #e8f0fb !important;
+    color: #1e3a5f !important;
+    cursor: pointer;
+  }
+
+  // ── Selected row ────────────────────────────────────────────────
+  .dx-selection > td,
+  .dx-selection.dx-row-alt > td {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border-color: #bfdbfe !important;
+  }
+
+  // ── Borders ─────────────────────────────────────────────────────
+  .dx-datagrid-borders > .dx-datagrid-headers,
+  .dx-datagrid-borders > .dx-datagrid-rowsview {
+    border-left: 1px solid #b0bec5;
+    border-right: 1px solid #b0bec5;
+  }
+
+  .dx-data-row > td,
+  .dx-header-row > td {
+    border-right: 1px solid #b0bec5 !important;
+    border-bottom: 1px solid #b0bec5 !important;
+
+    &:last-child {
+      border-right: none !important;
+    }
+  }
+
+  // ── Pager ───────────────────────────────────────────────────────
+  .dx-datagrid-pager {
+    border-top: 1px solid #b0bec5;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #64748b;
+  }
+}
