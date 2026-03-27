@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSpinner, useColorModes } from '@coreui/react'
+import { useRegisterSW } from 'virtual:pwa-register/react'
 import { fetchProfile } from './actions/authActions'
 import './scss/style.scss'
 
@@ -36,6 +37,8 @@ const App = () => {
   const appTheme = useSelector((state) => state.ui.appTheme)
   const dispatch = useDispatch()
 
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW()
+
   // Restore profile on page refresh when already authenticated
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -63,6 +66,26 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      {needRefresh && (
+        <div style={{
+          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          background: '#1e3a5f', color: '#fff', borderRadius: 10,
+          padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 16,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)', zIndex: 9999, fontSize: 14,
+        }}>
+          <span>Nueva versión disponible</span>
+          <button
+            onClick={() => updateServiceWorker(true)}
+            style={{
+              background: '#fff', color: '#1e3a5f', border: 'none',
+              borderRadius: 6, padding: '6px 14px', fontWeight: 700,
+              cursor: 'pointer', fontSize: 13,
+            }}
+          >
+            Actualizar
+          </button>
+        </div>
+      )}
       <Suspense
         fallback={
           <div className="pt-3 text-center">

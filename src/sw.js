@@ -6,6 +6,11 @@ import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
+// Allow the app to trigger skipWaiting from the update prompt
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
+
 // Firebase Messaging background handler
 const app = initializeApp({
   apiKey: 'AIzaSyBCul4mFCoDYWWKwBjNUrkPQSbmq6vXi4g',
