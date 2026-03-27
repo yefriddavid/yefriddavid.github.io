@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import * as propertyActions from 'src/actions/Contratos/propertyActions'
 import * as bankAccountActions from 'src/actions/Contratos/bankAccountActions'
@@ -320,8 +320,16 @@ export default function GenerarContrato() {
     dispatch(contractActions.fetchRequest())
   }, [dispatch])
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [form, setForm] = useState(emptyForm)
   const [currentContract, setCurrentContract] = useState(null) // { id, name }
+
+  // On mount: restore contract from URL ?id=
+  useEffect(() => {
+    const id = searchParams.get('id')
+    if (id) dispatch(contractActions.loadRequest({ id }))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [errors, setErrors] = useState({})
 
   // Notes
@@ -347,6 +355,15 @@ export default function GenerarContrato() {
     }
     prevLoadingRef.current = contractLoading
   }, [contractLoading, currentDoc])
+
+  // Sync contract ID to URL
+  useEffect(() => {
+    if (currentContract?.id) {
+      setSearchParams({ id: currentContract.id }, { replace: true })
+    } else {
+      setSearchParams({}, { replace: true })
+    }
+  }, [currentContract?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load notes and attachments when contract changes
   useEffect(() => {
