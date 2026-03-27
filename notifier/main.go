@@ -20,7 +20,7 @@ import (
 const (
 	projectID   = "cashflow-9cbbc"
 	bogotaTZ    = "America/Bogota"
-	colVehicles = "taxi_vehiculos"
+	colVehicles = "CashFlow_taxi_vehiculos"
 	colTokens   = "fcm_tokens"
 )
 
