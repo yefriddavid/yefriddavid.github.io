@@ -17,6 +17,7 @@ export const getSettlements = async () => {
       amount: data.amount,
       date: data.date,
       comment: data.comment ?? null,
+      paid_at: data.paid_at ?? null,
     }
   })
 }
@@ -33,13 +34,14 @@ export const addSettlement = async ({ driver, plate, amount, date, comment }) =>
   return ref.id
 }
 
-export const updateSettlement = async (id, { driver, plate, amount, date, comment }) => {
+export const updateSettlement = async (id, { driver, plate, amount, date, comment, paid_at }) => {
   await updateDoc(doc(db, COL, id), {
     driver,
     plate: plate?.toUpperCase() ?? '',
     amount: Number(amount),
     date,
     comment: comment || null,
+    paid_at: paid_at || null,
   })
 }
 

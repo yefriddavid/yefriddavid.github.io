@@ -50,6 +50,7 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
     plate: data.plate || '',
     amount: data.amount || '',
     comment: data.comment || '',
+    paid_at: data.paid_at || '',
   })
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -87,6 +88,9 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
           <StandardField label={t('taxis.settlements.fields.comment')}>
             <textarea className={SF.textarea} value={form.comment || ''} onChange={set('comment')} rows={3} />
           </StandardField>
+          <StandardField label="Pagado el">
+            <input className={SF.input} type="datetime-local" value={form.paid_at || ''} onChange={set('paid_at')} />
+          </StandardField>
         </StandardForm>
       </div>
     )
@@ -106,6 +110,7 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
           <DetailRow label={t('taxis.settlements.fields.driver')} value={data.driver} />
           <DetailRow label={t('taxis.settlements.fields.plate')} value={data.plate} mono />
           <DetailRow label={t('taxis.settlements.fields.comment')} value={data.comment} />
+          <DetailRow label="Pagado el" value={data.paid_at ? new Date(data.paid_at).toLocaleString('es-CO') : null} />
         </DetailSection>
         <DetailSection title={t('taxis.settlements.fields.driver')}>
           {driver ? (
@@ -530,25 +535,35 @@ const Taxis = () => {
     const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
     const todayNum = now.getDate()
 
-    for (let day = todayNum; day <= daysInMonth; day++) {
-      const dayStr = `${periodPrefix}${String(day).padStart(2, '0')}`
-      const jsDay = new Date(period.year, period.month - 1, day).getDay()
-      const isSunday = jsDay === 0
-      const isHoliday = colombianHolidaysCalc.has(dayStr)
+    for (const driver of drivers.filter((d) => d.active !== false && d.defaultVehicle)) {
+      const plate = driver.defaultVehicle
+      const vehicle = vehiclesMap.get(plate)
+      const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
+      const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
 
-      for (const driver of drivers.filter((d) => d.active !== false && d.defaultVehicle)) {
-        const plate = driver.defaultVehicle
-        const vehicle = vehiclesMap.get(plate)
-        const restr = vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-        const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+      const driverStartDay = driver.startDate?.startsWith(periodPrefix)
+        ? parseInt(driver.startDate.slice(-2), 10) : 1
+      const driverEndDay = driver.endDate?.startsWith(periodPrefix)
+        ? parseInt(driver.endDate.slice(-2), 10) : daysInMonth
+
+      const startDay = Math.max(todayNum, driverStartDay)
+      const endDay = Math.min(daysInMonth, driverEndDay)
+      if (startDay > endDay) continue
+
+      const driverRows = rowsByDriver[driver.name] || []
+
+      for (let day = startDay; day <= endDay; day++) {
         if (restrictedDays.has(day)) continue
 
-        const driverRows = rowsByDriver[driver.name] || []
+        const dayStr = `${periodPrefix}${String(day).padStart(2, '0')}`
         const alreadySettled = driverRows.some(
           (r) => r.date?.startsWith(periodPrefix) && parseInt(r.date.slice(-2), 10) === day,
         )
         if (alreadySettled) continue
 
+        const jsDay = new Date(period.year, period.month - 1, day).getDay()
+        const isSunday = jsDay === 0
+        const isHoliday = colombianHolidaysCalc.has(dayStr)
         const amount = (isSunday || isHoliday)
           ? (driver.defaultAmountSunday || 0)
           : (driver.defaultAmount || 0)
@@ -556,7 +571,7 @@ const Taxis = () => {
         rows.push({ date: dayStr, plate, driver: driver.name, amount, isHoliday, isSunday })
       }
     }
-    return rows
+    return rows.sort((a, b) => a.date.localeCompare(b.date))
   }, [isCurrentPeriod, drivers, vehiclesMap, rowsByDriver, period, daysInMonth, now, colombianHolidaysCalc])
 
   const settlementAbbr = t('taxis.settlements.settlementAbbr')
@@ -1000,28 +1015,28 @@ const Taxis = () => {
         </CCol>
       </CRow>
 
-        {isCurrentPeriod && totalRemaining !== null && (
+        {(
           <CRow className="mb-3">
             <CCol xs={6} sm={2}>
-            <CCard>
+            <CCard style={!isCurrentPeriod ? { opacity: 0.5 } : undefined}>
               <CCardBody style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.pendingDrivers')}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: pendingRows.length > 0 ? '#e67700' : '#2f9e44', marginBottom: 4 }}>
-                  {fmt(pendingRows.reduce((s, r) => s + r.amount, 0))}
+                <div style={{ fontSize: 22, fontWeight: 700, color: isCurrentPeriod && pendingRows.length > 0 ? '#e67700' : '#2f9e44', marginBottom: 4 }}>
+                  {isCurrentPeriod ? fmt(pendingRows.reduce((s, r) => s + r.amount, 0)) : '--'}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--cui-secondary-color)', marginBottom: 8 }}>
-                  {t('taxis.settlements.summary.remainingDays', { days: daysInMonth - now.getDate() })}
+                  {isCurrentPeriod ? t('taxis.settlements.summary.remainingDays', { days: daysInMonth - now.getDate() }) : '--'}
                 </div>
                 <CButton
                   size="sm"
                   color="warning"
                   variant="outline"
-                  disabled={pendingRows.length === 0}
+                  disabled={!isCurrentPeriod || pendingRows.length === 0}
                   onClick={() => setPendingModalOpen(true)}
                 >
-                  {`${pendingRows.length} pendientes`}
+                  {isCurrentPeriod ? `${pendingRows.length} pendientes` : '--'}
                 </CButton>
               </CCardBody>
             </CCard>
