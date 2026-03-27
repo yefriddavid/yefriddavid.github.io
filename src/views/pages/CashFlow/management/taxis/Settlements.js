@@ -224,13 +224,21 @@ const Taxis = () => {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState(null)
-  const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
+  const [period, setPeriod] = useState(() => {
+    try {
+      const stored = localStorage.getItem('settlements_period')
+      if (stored) return JSON.parse(stored)
+    } catch {}
+    return { month: now.getMonth() + 1, year: now.getFullYear() }
+  })
   const [driverFilter, setDriverFilter] = useState(new Set())
   const [plateFilter, setPlateFilter] = useState('')
-  const [dayFilter, setDayFilter] = useState('')
+  const [dayFilter, setDayFilter] = useState(new Set())
   const [driverDropOpen, setDriverDropOpen] = useState(false)
+  const [dayDropOpen, setDayDropOpen] = useState(false)
   const driverDropRef = useRef(null)
-  const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('settlements_viewMode') || 'detail')
+  const dayDropRef = useRef(null)
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('settlements_viewMode') || 'detail')
   const [editingRow, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null)
   const [editingNote, setEditingNote] = useState(null) // { date, driver }
@@ -267,6 +275,13 @@ const Taxis = () => {
     return next
   })
 
+  const toggleDayFilter = (day) => setDayFilter((prev) => {
+    const next = new Set(prev)
+    if (next.has(day)) next.delete(day)
+    else next.add(day)
+    return next
+  })
+
   const records = settlementsData ?? []
   const drivers = driversData ?? []
   const vehicles = vehiclesData ?? []
@@ -292,6 +307,10 @@ const Taxis = () => {
   }, [dispatch, period.year, period.month])
 
   useEffect(() => {
+    localStorage.setItem('settlements_period', JSON.stringify(period))
+  }, [period])
+
+  useEffect(() => {
     if (!driverDropOpen) return
     const handler = (e) => {
       if (!driverDropRef.current?.contains(e.target)) setDriverDropOpen(false)
@@ -299,6 +318,15 @@ const Taxis = () => {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [driverDropOpen])
+
+  useEffect(() => {
+    if (!dayDropOpen) return
+    const handler = (e) => {
+      if (!dayDropRef.current?.contains(e.target)) setDayDropOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [dayDropOpen])
 
   useEffect(() => {
     if (!auditDriverDropOpen) return
@@ -399,7 +427,7 @@ const Taxis = () => {
     if (y !== period.year || m !== period.month) return false
     if (driverFilter.size > 0 && !driverFilter.has(r.driver)) return false
     if (plateFilter && r.plate !== plateFilter) return false
-    if (dayFilter && r.date?.split('-')[2] !== String(dayFilter).padStart(2, '0')) return false
+    if (dayFilter.size > 0 && !dayFilter.has(Number(r.date?.split('-')[2]))) return false
     return true
   })
 
@@ -607,7 +635,7 @@ const Taxis = () => {
     })
   )
   const auditFilteredDays = auditDays.filter((day) => {
-    if (dayFilter && day.d !== Number(dayFilter)) return false
+    if (dayFilter.size > 0 && !dayFilter.has(day.d)) return false
     if (auditStatusFilter.size > 0 && !auditStatusFilter.has(day.status)) return false
     if (auditPlateFilter && !day.settledVehicles.includes(auditPlateFilter) && !day.missingVehicles.includes(auditPlateFilter) && !day.picoPlacaVehicles.includes(auditPlateFilter)) return false
     if (auditDriverFilter.size > 0 && !day.settled.some((dr) => auditDriverFilter.has(dr)) && !day.missing.some((dr) => auditDriverFilter.has(dr)) && !day.picoPlacaDrivers.some((dr) => auditDriverFilter.has(dr))) return false
@@ -1063,7 +1091,7 @@ const Taxis = () => {
               size="sm"
               style={{ width: 120 }}
               value={period.month}
-              onChange={(e) => { setPeriod((p) => ({ ...p, month: Number(e.target.value) })); setDayFilter('') }}
+              onChange={(e) => { setPeriod((p) => ({ ...p, month: Number(e.target.value) })); setDayFilter(new Set()) }}
             >
               {months.map((name, i) => (
                 <option key={i + 1} value={i + 1}>{name}</option>
@@ -1073,7 +1101,7 @@ const Taxis = () => {
               size="sm"
               style={{ width: 90 }}
               value={period.year}
-              onChange={(e) => { setPeriod((p) => ({ ...p, year: Number(e.target.value) })); setDayFilter('') }}
+              onChange={(e) => { setPeriod((p) => ({ ...p, year: Number(e.target.value) })); setDayFilter(new Set()) }}
             >
               {availableYears.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -1132,28 +1160,65 @@ const Taxis = () => {
             )}
             {(viewMode === 'detail' || viewMode === 'audit') && (
               <>
-                <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.audit.colDay')}</span>
-                <CFormSelect
-                  size="sm"
-                  style={{ width: 75 }}
-                  value={dayFilter}
-                  onChange={(e) => setDayFilter(e.target.value)}
-                >
-                  <option value="">{t('taxis.settlements.all')}</option>
-                  {Array.from(
-                    new Set(
-                      records
-                        .filter((r) => {
-                          const [y, m] = (r.date || '').split('-').map(Number)
-                          return y === period.year && m === period.month
-                        })
-                        .map((r) => Number(r.date?.split('-')[2]))
-                        .filter(Boolean),
-                    ),
-                  ).sort((a, b) => a - b).map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </CFormSelect>
+                <div ref={dayDropRef} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setDayDropOpen((v) => !v)}
+                    style={{
+                      fontSize: 12, minWidth: 80, padding: '4px 10px',
+                      borderRadius: 6, border: '1px solid var(--cui-secondary)',
+                      background: dayFilter.size > 0 ? '#e8f0fb' : '#fff',
+                      color: dayFilter.size > 0 ? '#1e3a5f' : 'var(--cui-secondary)',
+                      cursor: 'pointer', fontWeight: dayFilter.size > 0 ? 600 : 400,
+                    }}
+                  >
+                    {t('taxis.settlements.audit.colDay')}{dayFilter.size > 0 ? ` (${dayFilter.size})` : ''} ▾
+                  </button>
+                  {dayDropOpen && (
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 1050,
+                      background: '#fff', border: '1px solid var(--cui-border-color)',
+                      borderRadius: 8, padding: '8px 12px', minWidth: 120, maxHeight: 260, overflowY: 'auto',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                    }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', paddingBottom: 6, borderBottom: '1px solid var(--cui-border-color)', marginBottom: 6 }}>
+                        <input
+                          type="checkbox"
+                          checked={dayFilter.size === 0}
+                          onChange={() => setDayFilter(new Set())}
+                        />
+                        {t('taxis.settlements.all')}
+                      </label>
+                      {Array.from(
+                        new Set(
+                          records
+                            .filter((r) => {
+                              const [y, m] = (r.date || '').split('-').map(Number)
+                              return y === period.year && m === period.month
+                            })
+                            .map((r) => Number(r.date?.split('-')[2]))
+                            .filter(Boolean),
+                        ),
+                      ).sort((a, b) => a - b).map((d) => (
+                        <label key={d} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '3px 0' }}>
+                          <input
+                            type="checkbox"
+                            checked={dayFilter.has(d)}
+                            onChange={() => toggleDayFilter(d)}
+                          />
+                          {d}
+                        </label>
+                      ))}
+                      <div style={{ paddingTop: 8, marginTop: 6, borderTop: '1px solid var(--cui-border-color)', textAlign: 'right' }}>
+                        <button
+                          onClick={() => setDayDropOpen(false)}
+                          style={{ fontSize: 11, fontWeight: 600, padding: '3px 12px', borderRadius: 4, border: '1px solid #1e3a5f', background: '#1e3a5f', color: '#fff', cursor: 'pointer' }}
+                        >
+                          {t('taxis.settlements.accept')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>{t('taxis.settlements.fields.vehicle')}</span>
                 <CFormSelect
                   size="sm"
@@ -1170,16 +1235,16 @@ const Taxis = () => {
             )}
           </div>
           <div className="d-flex align-items-center gap-1">
-            <CButton size="sm" color="secondary" variant={viewMode === 'detail' ? undefined : 'outline'} onClick={() => { setViewMode('detail'); sessionStorage.setItem('settlements_viewMode', 'detail') }} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'detail' ? undefined : 'outline'} onClick={() => { setViewMode('detail'); localStorage.setItem('settlements_viewMode', 'detail') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewDetail')}
             </CButton>
-            <CButton size="sm" color="secondary" variant={viewMode === 'byDriver' ? undefined : 'outline'} onClick={() => { setViewMode('byDriver'); sessionStorage.setItem('settlements_viewMode', 'byDriver') }} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'byDriver' ? undefined : 'outline'} onClick={() => { setViewMode('byDriver'); localStorage.setItem('settlements_viewMode', 'byDriver') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewByDriver')}
             </CButton>
-            <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => { setViewMode('byVehicle'); sessionStorage.setItem('settlements_viewMode', 'byVehicle') }} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="secondary" variant={viewMode === 'byVehicle' ? undefined : 'outline'} onClick={() => { setViewMode('byVehicle'); localStorage.setItem('settlements_viewMode', 'byVehicle') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewByVehicle')}
             </CButton>
-            <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => { setViewMode('audit'); sessionStorage.setItem('settlements_viewMode', 'audit') }} style={{ fontSize: 12 }}>
+            <CButton size="sm" color="warning" variant={viewMode === 'audit' ? undefined : 'outline'} onClick={() => { setViewMode('audit'); localStorage.setItem('settlements_viewMode', 'audit') }} style={{ fontSize: 12 }}>
               {t('taxis.settlements.viewAudit')}
             </CButton>
           </div>
