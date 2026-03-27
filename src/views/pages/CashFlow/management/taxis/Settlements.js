@@ -1188,17 +1188,7 @@ const Taxis = () => {
                         />
                         {t('taxis.settlements.all')}
                       </label>
-                      {Array.from(
-                        new Set(
-                          records
-                            .filter((r) => {
-                              const [y, m] = (r.date || '').split('-').map(Number)
-                              return y === period.year && m === period.month
-                            })
-                            .map((r) => Number(r.date?.split('-')[2]))
-                            .filter(Boolean),
-                        ),
-                      ).sort((a, b) => a - b).map((d) => (
+                      {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => (
                         <label key={d} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '3px 0' }}>
                           <input
                             type="checkbox"
