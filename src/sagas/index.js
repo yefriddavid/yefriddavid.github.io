@@ -9,6 +9,7 @@ import sagaTaxiSettlements from './CashFlow/taxiSettlementSagas'
 import sagaTaxiPartners from './CashFlow/taxiPartnerSagas'
 import sagaTaxiDistributions from './CashFlow/taxiDistributionSagas'
 import sagaTaxiAuditNotes from './CashFlow/taxiAuditNoteSagas'
+import sagaTaxiPeriodNotes from './CashFlow/taxiPeriodNoteSagas'
 import sagaProfile from './profileSagas'
 import sagaUsers from './usersSagas'
 import sagaContratoProperties from './Contratos/propertySagas'
@@ -28,6 +29,7 @@ export default function* rootSagas() {
     sagaTaxiPartners(),
     sagaTaxiDistributions(),
     sagaTaxiAuditNotes(),
+    sagaTaxiPeriodNotes(),
     sagaProfile(),
     sagaUsers(),
     sagaContratoProperties(),

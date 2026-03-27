@@ -10,6 +10,7 @@ import taxiSettlement from './CashFlow/taxiSettlementReducer'
 import taxiPartner from './CashFlow/taxiPartnerReducer'
 import taxiDistribution from './CashFlow/taxiDistributionReducer'
 import taxiAuditNote from './CashFlow/taxiAuditNoteReducer'
+import taxiPeriodNote from './CashFlow/taxiPeriodNoteReducer'
 import profile from './profileReducer'
 import users from './usersReducer'
 import contratoProperty from './Contratos/propertyReducer'
@@ -29,6 +30,7 @@ const combinedReducers = combineReducers({
   taxiPartner,
   taxiDistribution,
   taxiAuditNote,
+  taxiPeriodNote,
   profile,
   users,
   contratoProperty,

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail, Summary, TotalItem } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CButton, CCollapse, CFormSelect, CRow, CCol,
@@ -13,7 +13,7 @@ import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/CashFlow/taxiExpenseActions'
 import { updateExpense } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
 import { getVehicles } from 'src/services/providers/firebase/CashFlow/taxiVehicles'
-import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
+import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 
 const CATEGORIES = ['Administración', 'Combustible', 'Mantenimiento', 'Préstamos', 'Repuestos', 'Lavado', 'Multa', 'Otro']

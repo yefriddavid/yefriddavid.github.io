@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid'
 import {
   CCard, CCardHeader, CCardBody, CSpinner, CBadge,
   CButton, CCollapse, CModal, CModalHeader, CModalTitle,
@@ -13,7 +13,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/CashFlow/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/CashFlow/taxiDriverActions'
-import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
+import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 import './masters.scss'
 

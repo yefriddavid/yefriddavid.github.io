@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid'
 import {
   CCard, CCardHeader, CCardBody, CSpinner, CBadge, CAlert,
   CButton, CCollapse,
@@ -9,7 +9,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as usersActions from 'src/actions/usersActions'
-import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
+import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import { sendUserPasswordReset } from 'src/services/providers/firebase/users'
 
 const ROLES = ['superAdmin', 'manager', 'conductor']
