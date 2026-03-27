@@ -1,24 +1,26 @@
 import { db } from '../settings'
 import {
   collection, addDoc, getDocs, deleteDoc, doc, updateDoc,
-  orderBy, query, serverTimestamp, where,
+  query, serverTimestamp, where,
 } from 'firebase/firestore'
 
 const COL = 'CashFlow_taxi_period_notes'
 
 export const fetchPeriodNotes = async (period) => {
-  const q = query(collection(db, COL), where('period', '==', period), orderBy('createdAt', 'asc'))
+  const q = query(collection(db, COL), where('period', '==', period))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      period: data.period,
-      text: data.text,
-      createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
-      updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? null,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        period: data.period,
+        text: data.text,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? null,
+      }
+    })
+    .sort((a, b) => (a.createdAt ?? '').localeCompare(b.createdAt ?? ''))
 }
 
 export const createPeriodNote = async ({ period, text }) => {
