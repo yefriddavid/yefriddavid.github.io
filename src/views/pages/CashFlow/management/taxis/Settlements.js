@@ -9,7 +9,7 @@ import {
   CModal, CModalHeader, CModalTitle, CModalBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTrash, cilPlus, cilX, cilReload, cilPencil } from '@coreui/icons'
+import { cilTrash, cilPlus, cilX, cilReload, cilPencil, cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
 import * as taxiSettlementActions from 'src/actions/CashFlow/taxiSettlementActions'
@@ -735,7 +735,7 @@ const Taxis = () => {
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cui-secondary-color)', letterSpacing: '.03em', textTransform: 'uppercase' }}>
           Resumen del período
         </span>
-        <span style={{ fontSize: 16, color: 'var(--cui-secondary-color)', transition: 'transform .2s', display: 'inline-block', transform: summaryOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▾</span>
+        <CIcon icon={summaryOpen ? cilChevronBottom : cilChevronRight} size="sm" style={{ color: 'var(--cui-secondary-color)' }} />
       </div>
 
       <CCollapse visible={summaryOpen}>
