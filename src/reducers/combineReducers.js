@@ -18,6 +18,7 @@ import contratoBankAccount from './Contratos/bankAccountReducer'
 import contratoOwner from './Contratos/ownerReducer'
 import contrato from './Contratos/contractReducer'
 import contratoNote from './Contratos/contractNoteReducer'
+import contratoAttachment from './Contratos/contractAttachmentReducer'
 import transaction from './CashFlow/transactionReducer'
 
 const combinedReducers = combineReducers({
@@ -40,6 +41,7 @@ const combinedReducers = combineReducers({
   contratoOwner,
   contrato,
   contratoNote,
+  contratoAttachment,
   transaction,
 })
 

@@ -6,8 +6,74 @@ import * as bankAccountActions from 'src/actions/Contratos/bankAccountActions'
 import * as ownerActions from 'src/actions/Contratos/ownerActions'
 import * as contractActions from 'src/actions/Contratos/contractActions'
 import * as contractNoteActions from 'src/actions/Contratos/contractNoteActions'
+import * as contractAttachmentActions from 'src/actions/Contratos/contractAttachmentActions'
 import { generateContractPdf, buildContractHtml } from './contractPdf'
 import './GenerarContrato.scss'
+
+// ── Attachment helpers ─────────────────────────────────────────────────────────
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
+
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 1200
+      let { width, height } = img
+      if (width > MAX) {
+        height = Math.round((height * MAX) / width)
+        width = MAX
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.65))
+    }
+    img.onerror = reject
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+async function pdfToSingleImage(file) {
+  const pdfjsLib = await import('pdfjs-dist')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/legacy/build/pdf.worker.js',
+    import.meta.url,
+  ).toString()
+  const arrayBuffer = await file.arrayBuffer()
+  const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const pageCount = pdfDoc.numPages
+  const scale = 1.5
+  const pageCanvases = []
+  let totalHeight = 0
+  let maxWidth = 0
+
+  for (let i = 1; i <= pageCount; i++) {
+    const page = await pdfDoc.getPage(i)
+    const viewport = page.getViewport({ scale })
+    const canvas = document.createElement('canvas')
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise
+    pageCanvases.push(canvas)
+    totalHeight += viewport.height
+    maxWidth = Math.max(maxWidth, viewport.width)
+  }
+
+  const final = document.createElement('canvas')
+  final.width = maxWidth
+  final.height = totalHeight
+  const ctx = final.getContext('2d')
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, maxWidth, totalHeight)
+  let y = 0
+  for (const pc of pageCanvases) {
+    ctx.drawImage(pc, 0, y)
+    y += pc.height
+  }
+  return final.toDataURL('image/jpeg', 0.65)
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -234,6 +300,11 @@ export default function GenerarContrato() {
   const contractError = useSelector((s) => s.contrato.isError)
   const contractNotes = useSelector((s) => s.contratoNote.notes)
   const contractNoteSaving = useSelector((s) => s.contratoNote.saving)
+  const attachments = useSelector((s) => s.contratoAttachment.data)
+  const attachmentSaving = useSelector((s) => s.contratoAttachment.saving)
+  const attachmentFetching = useSelector((s) => s.contratoAttachment.fetching)
+  const [attachDragOver, setAttachDragOver] = useState(false)
+  const attachInputRef = useRef(null)
 
   useEffect(() => {
     if (!localStorage.getItem('token')) navigate('/login', { replace: true })
@@ -275,9 +346,10 @@ export default function GenerarContrato() {
     prevLoadingRef.current = contractLoading
   }, [contractLoading, currentDoc])
 
-  // Load notes when contract changes
+  // Load notes and attachments when contract changes
   useEffect(() => {
     if (currentContract?.id) {
+      dispatch(contractAttachmentActions.fetchRequest({ contractId: currentContract.id }))
       dispatch(contractNoteActions.fetchRequest({ contractId: currentContract.id }))
       setNewNoteText('')
       setEditingNoteId(null)
@@ -634,6 +706,33 @@ export default function GenerarContrato() {
     }
   }
 
+  // Attachment upload handler
+  const handleAttachFiles = async (files) => {
+    if (!currentContract) return
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_FILE_BYTES) {
+        showToast(`"${file.name}" supera el límite de 5 MB.`, 'error')
+        continue
+      }
+      const isPdf = file.type === 'application/pdf'
+      const isImage = file.type.startsWith('image/')
+      if (!isPdf && !isImage) {
+        showToast(`"${file.name}" no es una imagen ni PDF.`, 'error')
+        continue
+      }
+      try {
+        const data = isPdf ? await pdfToSingleImage(file) : await compressImage(file)
+        dispatch(contractAttachmentActions.createRequest({
+          contractId: currentContract.id,
+          filename: file.name,
+          data,
+        }))
+      } catch (e) {
+        showToast(`Error procesando "${file.name}": ${e.message}`, 'error')
+      }
+    }
+  }
+
   // Sidebar active section
   const [activeSection, setActiveSection] = useState('sec-inquilino')
   const sectionIds = [
@@ -643,6 +742,7 @@ export default function GenerarContrato() {
     'sec-inmueble',
     'sec-contrato',
     'sec-cuenta',
+    'sec-adjuntos',
   ]
 
   useEffect(() => {
@@ -694,6 +794,7 @@ export default function GenerarContrato() {
               ['#sec-contrato', 'Contrato'],
               ['#sec-cuenta', 'Cuenta bancaria'],
               currentContract && ['#sec-notas', 'Notas'],
+              currentContract && ['#sec-adjuntos', 'Adjuntos'],
             ].filter(Boolean).map(([href, label]) => (
               <li key={href}>
                 <a
@@ -1441,6 +1542,82 @@ export default function GenerarContrato() {
                     </div>
                   </div>
                 </div>
+              </section>
+            )}
+
+            {/* ADJUNTOS */}
+            {currentContract && (
+              <section className="c-card" id="sec-adjuntos">
+                <div className="c-card-header">
+                  <div className="c-card-icon">
+                    <IcoDoc />
+                  </div>
+                  <h2 className="c-card-title">Adjuntos</h2>
+                </div>
+
+                {/* Drop zone */}
+                <div
+                  className={`c-attach-zone${attachDragOver ? ' drag-over' : ''}`}
+                  onClick={() => attachInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setAttachDragOver(true) }}
+                  onDragLeave={() => setAttachDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setAttachDragOver(false)
+                    handleAttachFiles(e.dataTransfer.files)
+                  }}
+                >
+                  {attachmentSaving ? (
+                    <IcoSpinner />
+                  ) : (
+                    <>
+                      <span className="c-attach-zone__icon">📎</span>
+                      <span className="c-attach-zone__label">
+                        Arrastra imágenes o PDF aquí, o <u>haz clic</u> para seleccionar
+                      </span>
+                      <span className="c-attach-zone__hint">JPG · PNG · PDF — máx. 5 MB</span>
+                    </>
+                  )}
+                  <input
+                    ref={attachInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleAttachFiles(e.target.files)}
+                  />
+                </div>
+
+                {/* Attachment list */}
+                {attachmentFetching ? (
+                  <div className="c-attach-loading"><IcoSpinner /></div>
+                ) : attachments.length === 0 ? (
+                  <p className="c-attach-empty">Sin adjuntos para este contrato.</p>
+                ) : (
+                  <div className="c-attach-list">
+                    {attachments.map((att) => (
+                      <div key={att.id} className="c-attach-item">
+                        <img
+                          src={att.data}
+                          alt={att.filename}
+                          className="c-attach-thumb"
+                          onClick={() => window.open(att.data, '_blank')}
+                        />
+                        <span className="c-attach-name" title={att.filename}>
+                          {att.filename}
+                        </span>
+                        <button
+                          type="button"
+                          className="c-attach-delete"
+                          title="Eliminar adjunto"
+                          onClick={() => dispatch(contractAttachmentActions.deactivateRequest({ id: att.id }))}
+                        >
+                          <IcoTrash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 
