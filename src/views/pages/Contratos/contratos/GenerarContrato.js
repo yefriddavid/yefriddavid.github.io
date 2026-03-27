@@ -305,6 +305,8 @@ export default function GenerarContrato() {
   const attachmentFetching = useSelector((s) => s.contratoAttachment.fetching)
   const [attachDragOver, setAttachDragOver] = useState(false)
   const attachInputRef = useRef(null)
+  const [lightbox, setLightbox] = useState(null) // { src, filename }
+  const [deletingAttachId, setDeletingAttachId] = useState(null)
 
   useEffect(() => {
     if (!localStorage.getItem('token')) navigate('/login', { replace: true })
@@ -1601,7 +1603,7 @@ export default function GenerarContrato() {
                           src={att.data}
                           alt={att.filename}
                           className="c-attach-thumb"
-                          onClick={() => window.open(att.data, '_blank')}
+                          onClick={() => setLightbox({ src: att.data, filename: att.filename })}
                         />
                         <span className="c-attach-name" title={att.filename}>
                           {att.filename}
@@ -1610,9 +1612,13 @@ export default function GenerarContrato() {
                           type="button"
                           className="c-attach-delete"
                           title="Eliminar adjunto"
-                          onClick={() => dispatch(contractAttachmentActions.deactivateRequest({ id: att.id }))}
+                          disabled={deletingAttachId === att.id}
+                          onClick={() => {
+                            setDeletingAttachId(att.id)
+                            dispatch(contractAttachmentActions.deactivateRequest({ id: att.id }))
+                          }}
                         >
-                          <IcoTrash />
+                          {deletingAttachId === att.id ? <IcoSpinner /> : <IcoTrash />}
                         </button>
                       </div>
                     ))}
@@ -1882,6 +1888,26 @@ export default function GenerarContrato() {
                   <div className="spinner" />
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="c-overlay c-overlay--lightbox"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="c-lightbox" onClick={(e) => e.stopPropagation()}>
+            <div className="c-lightbox-topbar">
+              <span>{lightbox.filename}</span>
+              <button type="button" onClick={() => setLightbox(null)}>
+                <IcoClose />
+              </button>
+            </div>
+            <div className="c-lightbox-body">
+              <img src={lightbox.src} alt={lightbox.filename} className="c-lightbox-img" />
             </div>
           </div>
         </div>

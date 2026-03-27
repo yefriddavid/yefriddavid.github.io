@@ -4,7 +4,6 @@ import {
   addDoc,
   getDocs,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
@@ -14,14 +13,12 @@ import {
 const COL = 'Contratos_contract_attachments'
 
 export const getAttachments = async (contractId) => {
-  const q = query(
-    collection(db, COL),
-    where('contractId', '==', contractId),
-    where('active', '==', true),
-    orderBy('createdAt', 'asc'),
-  )
+  const q = query(collection(db, COL), where('contractId', '==', contractId))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((r) => r.active !== false)
+    .sort((a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0))
 }
 
 export const addAttachment = async (payload) => {

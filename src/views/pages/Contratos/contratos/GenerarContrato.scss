@@ -1076,3 +1076,60 @@
     &:hover { color: #c0392b; background: #fdecea; }
   }
 }
+
+// ── Lightbox ─────────────────────────────────────────────────────────────────
+
+.contratos-page {
+  .c-overlay--lightbox {
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .c-lightbox {
+    background: #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .c-lightbox-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #111;
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.6);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+      &:hover { color: #fff; background: rgba(255,255,255,0.1); }
+      svg { width: 18px; height: 18px; }
+    }
+  }
+
+  .c-lightbox-body {
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .c-lightbox-img {
+    max-width: 100%;
+    display: block;
+    border-radius: 4px;
+  }
+}
