@@ -5,6 +5,7 @@ import * as propertyActions from 'src/actions/Contratos/propertyActions'
 import * as bankAccountActions from 'src/actions/Contratos/bankAccountActions'
 import * as ownerActions from 'src/actions/Contratos/ownerActions'
 import * as contractActions from 'src/actions/Contratos/contractActions'
+import * as contractNoteActions from 'src/actions/Contratos/contractNoteActions'
 import { generateContractPdf, buildContractHtml } from './contractPdf'
 import './GenerarContrato.scss'
 
@@ -208,6 +209,11 @@ const IcoCheck = () => (
     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
   </svg>
 )
+const IcoNote = () => (
+  <svg viewBox="0 0 24 24">
+    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12zM7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z" />
+  </svg>
+)
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
@@ -226,6 +232,8 @@ export default function GenerarContrato() {
   const contractSaving = useSelector((s) => s.contrato.saving)
   const contractLoading = useSelector((s) => s.contrato.loading)
   const contractError = useSelector((s) => s.contrato.isError)
+  const contractNotes = useSelector((s) => s.contratoNote.notes)
+  const contractNoteSaving = useSelector((s) => s.contratoNote.saving)
 
   useEffect(() => {
     if (!localStorage.getItem('token')) navigate('/login', { replace: true })
@@ -242,6 +250,11 @@ export default function GenerarContrato() {
   const [form, setForm] = useState(emptyForm)
   const [currentContract, setCurrentContract] = useState(null) // { id, name }
   const [errors, setErrors] = useState({})
+
+  // Notes
+  const [newNoteText, setNewNoteText] = useState('')
+  const [editingNoteId, setEditingNoteId] = useState(null)
+  const [editingNoteText, setEditingNoteText] = useState('')
 
   // Toast
   const [toast, setToast] = useState(null)
@@ -261,6 +274,15 @@ export default function GenerarContrato() {
     }
     prevLoadingRef.current = contractLoading
   }, [contractLoading, currentDoc])
+
+  // Load notes when contract changes
+  useEffect(() => {
+    if (currentContract?.id) {
+      dispatch(contractNoteActions.fetchRequest({ contractId: currentContract.id }))
+      setNewNoteText('')
+      setEditingNoteId(null)
+    }
+  }, [currentContract?.id, dispatch])
 
   // Detect save/clone completion
   const prevSavingRef = useRef(false)
@@ -671,7 +693,8 @@ export default function GenerarContrato() {
               ['#sec-inmueble', 'Inmueble'],
               ['#sec-contrato', 'Contrato'],
               ['#sec-cuenta', 'Cuenta bancaria'],
-            ].map(([href, label]) => (
+              currentContract && ['#sec-notas', 'Notas'],
+            ].filter(Boolean).map(([href, label]) => (
               <li key={href}>
                 <a
                   href={href}
@@ -1278,6 +1301,148 @@ export default function GenerarContrato() {
                 </div>
               </div>
             </section>
+
+            {/* NOTAS */}
+            {currentContract && (
+              <section className="c-card" id="sec-notas">
+                <div className="c-card-header">
+                  <div className="c-card-icon">
+                    <IcoNote />
+                  </div>
+                  <h2>Notas</h2>
+                  <p>Observaciones del contrato</p>
+                </div>
+                <div className="c-notes-list">
+                  {contractNotes.length === 0 && (
+                    <div className="c-notes-empty">Sin notas para este contrato.</div>
+                  )}
+                  {contractNotes.map((note) => (
+                    <div key={note.id} className={`c-note-item${note.resolved ? ' resolved' : ''}`}>
+                      {/* Checkbox de resuelto */}
+                      <button
+                        type="button"
+                        className={`c-note-cb${note.resolved ? ' checked' : ''}`}
+                        title={note.resolved ? 'Desmarcar' : 'Marcar como resuelto'}
+                        onClick={() =>
+                          dispatch(contractNoteActions.updateRequest({
+                            id: note.id,
+                            text: note.text,
+                            resolved: !note.resolved,
+                          }))
+                        }
+                      >
+                        <IcoCheck />
+                      </button>
+
+                      {/* Contenido */}
+                      <div className="c-note-body">
+                        {editingNoteId === note.id ? (
+                          <div className="c-note-edit">
+                            <textarea
+                              className="c-note-textarea"
+                              value={editingNoteText}
+                              onChange={(e) => setEditingNoteText(e.target.value)}
+                              autoFocus
+                            />
+                            <div className="c-note-inline-actions">
+                              <button
+                                type="button"
+                                className="c-note-btn-sm primary"
+                                disabled={contractNoteSaving || !editingNoteText.trim()}
+                                onClick={() => {
+                                  dispatch(contractNoteActions.updateRequest({
+                                    id: note.id,
+                                    text: editingNoteText.trim(),
+                                    resolved: note.resolved,
+                                  }))
+                                  setEditingNoteId(null)
+                                }}
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                type="button"
+                                className="c-note-btn-sm ghost"
+                                onClick={() => setEditingNoteId(null)}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="c-note-text">{note.text}</p>
+                        )}
+                        <div className="c-note-foot">
+                          <span className="c-note-meta">
+                            {note.updatedAt && note.updatedAt !== note.createdAt
+                              ? `Editado ${new Date(note.updatedAt).toLocaleString('es-CO')}`
+                              : note.createdAt
+                                ? new Date(note.createdAt).toLocaleString('es-CO')
+                                : ''}
+                          </span>
+                          {editingNoteId !== note.id && (
+                            <div className="c-note-actions">
+                              <button
+                                type="button"
+                                className="c-note-icon-btn"
+                                title="Editar"
+                                onClick={() => { setEditingNoteId(note.id); setEditingNoteText(note.text) }}
+                              >
+                                <IcoPencil />
+                              </button>
+                              <button
+                                type="button"
+                                className="c-note-icon-btn danger"
+                                title="Eliminar"
+                                onClick={() => dispatch(contractNoteActions.deleteRequest({ id: note.id }))}
+                              >
+                                <IcoTrash />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Nueva nota */}
+                  <div className="c-note-add">
+                    <textarea
+                      className="c-note-textarea"
+                      placeholder="Escribir una nota…"
+                      value={newNoteText}
+                      onChange={(e) => setNewNoteText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && newNoteText.trim()) {
+                          dispatch(contractNoteActions.createRequest({
+                            contractId: currentContract.id,
+                            text: newNoteText.trim(),
+                          }))
+                          setNewNoteText('')
+                        }
+                      }}
+                    />
+                    <div className="c-note-add-footer">
+                      <span className="c-note-hint">Ctrl + Enter para guardar</span>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        disabled={contractNoteSaving || !newNoteText.trim()}
+                        onClick={() => {
+                          dispatch(contractNoteActions.createRequest({
+                            contractId: currentContract.id,
+                            text: newNoteText.trim(),
+                          }))
+                          setNewNoteText('')
+                        }}
+                      >
+                        <IcoPlus /> Agregar nota
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* SUBMIT BAR */}
             <div className="c-submit-bar">
