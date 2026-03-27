@@ -27,7 +27,7 @@ export default defineConfig(() => {
   } catch {}
 
   return {
-    base: './',
+    base: '/',
     define: {
       __COMMIT_HASH__: JSON.stringify(gitHash),
     },
@@ -89,8 +89,8 @@ export default defineConfig(() => {
           background_color: '#ffffff',
           display: 'standalone',
           orientation: 'portrait-primary',
-          start_url: './',
-          scope: './',
+          start_url: '/',
+          scope: '/',
           icons: [
             {
               src: 'icons/icon.svg',

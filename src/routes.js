@@ -22,6 +22,7 @@ const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
+const Transactions = React.lazy(() => import('./views/pages/CashFlow/movements/Transactions'))
 const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
@@ -66,9 +67,9 @@ const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
 //const Charts = React.lazy(() => import('./views/charts/Charts'))
 
 // Icons
-const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'))
-const Flags = React.lazy(() => import('./views/icons/flags/Flags'))
-const Brands = React.lazy(() => import('./views/icons/brands/Brands'))
+//const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'))
+//const Flags = React.lazy(() => import('./views/icons/flags/Flags'))
+//const Brands = React.lazy(() => import('./views/icons/brands/Brands'))
 
 // Notifications
 //const Alerts = React.lazy(() => import('./views/notifications/alerts/Alerts'))
@@ -93,6 +94,7 @@ const routes = [
   { path: '/cash_flow/management/taxis/partners', name: 'Partners', element: Partners },
   { path: '/cash_flow/management/taxis/profit-sharing', name: 'Distributions', element: Distributions },
   { path: '/cash_flow/management/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
+  { path: '/cash_flow/management/transactions', name: 'Transactions', element: Transactions },
   { path: '/cash_flow/management/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
   { path: '/cash_flow/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
   { path: '/cash_flow/management/push-subscribers', name: 'Push Subscribers', element: PushSubscribers, roles: ['superAdmin'] },

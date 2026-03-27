@@ -16,6 +16,7 @@ import sagaContratoProperties from './Contratos/propertySagas'
 import sagaContratoBankAccounts from './Contratos/bankAccountSagas'
 import sagaContratoOwners from './Contratos/ownerSagas'
 import sagaContratos from './Contratos/contractSagas'
+import sagaTransactions from './CashFlow/transactionSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -36,5 +37,6 @@ export default function* rootSagas() {
     sagaContratoBankAccounts(),
     sagaContratoOwners(),
     sagaContratos(),
+    sagaTransactions(),
   ])
 }

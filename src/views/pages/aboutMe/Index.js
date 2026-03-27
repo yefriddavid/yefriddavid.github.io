@@ -161,7 +161,7 @@ const AboutMe = () => {
         <div className="about__hero-content">
           <div className="about__tag">Available for work</div>
 
-          <a href="/#/login" style={{ textDecoration: 'none' }}>
+          <a href="/login" style={{ textDecoration: 'none' }}>
             <h1 className="about__name">David Rios</h1>
           </a>
 

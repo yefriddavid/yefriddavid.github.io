@@ -17,6 +17,7 @@ import contratoProperty from './Contratos/propertyReducer'
 import contratoBankAccount from './Contratos/bankAccountReducer'
 import contratoOwner from './Contratos/ownerReducer'
 import contrato from './Contratos/contractReducer'
+import transaction from './CashFlow/transactionReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -37,6 +38,7 @@ const combinedReducers = combineReducers({
   contratoBankAccount,
   contratoOwner,
   contrato,
+  transaction,
 })
 
 export default combinedReducers

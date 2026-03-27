@@ -51,6 +51,12 @@ const getNav = (t, role) => {
           to: '/cash_flow/management/payments',
           icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
         },
+        {
+          component: CNavItem,
+          name: 'Transacciones',
+          to: '/cash_flow/management/transactions',
+          icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+        },
         ...(isSuperAdmin ? [
           {
             component: CNavItem,
