@@ -14,7 +14,7 @@ import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/CashFlow/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/CashFlow/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
-import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
+import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import './masters.scss'
 
 const MONTHS = [

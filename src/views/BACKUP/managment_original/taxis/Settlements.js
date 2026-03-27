@@ -9,7 +9,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilReload, cilPencil } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
-import DetailPanel, { DetailSection, DetailRow } from 'src/components/DetailPanel'
+import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import * as taxiSettlementActions from 'src/actions/CashFlow/taxiSettlementActions'
 import * as taxiDriverActions from 'src/actions/CashFlow/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/CashFlow/taxiVehicleActions'
