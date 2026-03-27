@@ -1,7 +1,7 @@
 import { db } from '../settings'
 import { collection, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore'
 
-const COL = 'taxi_audit_notas'
+const COL = 'CashFlow_taxi_audit_notas'
 
 const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
 

@@ -4,7 +4,7 @@ import {
 } from 'firebase/firestore'
 
 
-const COL = 'taxi_gastos'
+const COL = 'CashFlow_taxi_gastos'
 
 export const fetchExpenses = async () => {
   const q = query(collection(db, COL), orderBy('date', 'desc'))

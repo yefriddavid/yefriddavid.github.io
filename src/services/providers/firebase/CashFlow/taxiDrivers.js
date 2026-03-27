@@ -3,7 +3,7 @@ import {
   collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp, updateDoc,
 } from 'firebase/firestore'
 
-const COL = 'taxi_conductores'
+const COL = 'CashFlow_taxi_conductores'
 
 export const getDrivers = async () => {
   const q = query(collection(db, COL), orderBy('name', 'asc'))
