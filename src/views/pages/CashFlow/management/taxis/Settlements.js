@@ -239,6 +239,13 @@ const Taxis = () => {
   const [byDriverModalOpen, setByDriverModalOpen] = useState(false)
   const [expensesModalOpen, setExpensesModalOpen] = useState(false)
   const [pendingModalOpen, setPendingModalOpen] = useState(false)
+  const [summaryOpen, setSummaryOpen] = useState(() => localStorage.getItem('settlements_summaryOpen') !== 'false')
+
+  const toggleSummary = () => setSummaryOpen((prev) => {
+    const next = !prev
+    localStorage.setItem('settlements_summaryOpen', String(next))
+    return next
+  })
   const [checkedExpenses, setCheckedExpenses] = useState(new Set())
   const [auditDriverDropOpen, setAuditDriverDropOpen] = useState(false)
   const auditDriverDropRef = useRef(null)
@@ -718,16 +725,30 @@ const Taxis = () => {
         </div>
       )}
 
-      <CRow className="mb-3 d-none d-sm-flex">
-        <CCol sm={2}>
-          <CCard className="text-center">
-            <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.totalSettled')}</div>
+      <div
+        onClick={toggleSummary}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          cursor: 'pointer', padding: '6px 4px', marginBottom: 8, userSelect: 'none',
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cui-secondary-color)', letterSpacing: '.03em', textTransform: 'uppercase' }}>
+          Resumen del período
+        </span>
+        <span style={{ fontSize: 16, color: 'var(--cui-secondary-color)', transition: 'transform .2s', display: 'inline-block', transform: summaryOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▾</span>
+      </div>
+
+      <CCollapse visible={summaryOpen}>
+        <CRow className="mb-3">
+          <CCol xs={6} sm={2}>
+            <CCard className="text-center">
+              <CCardBody>
+                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.totalSettled')}</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={2}>
+        <CCol xs={6} sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
@@ -744,7 +765,7 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={2}>
+        <CCol xs={6} sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.deficit')}</div>
@@ -761,7 +782,7 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={2}>
+        <CCol xs={6} sm={2}>
           <CCard style={{ height: '100%' }}>
             <CCardBody style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.totalExpenses')}</div>
@@ -850,7 +871,7 @@ const Taxis = () => {
             </CModalBody>
           </CModal>
         </CCol>
-        <CCol sm={2}>
+        <CCol xs={6} sm={2}>
           <CCard className="text-center">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>{t('taxis.settlements.summary.net')}</div>
@@ -860,7 +881,7 @@ const Taxis = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={2}>
+        <CCol xs={6} sm={2}>
           <CCard style={{ height: '100%' }}>
             <CCardBody style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 8 }}>{t('taxis.settlements.summary.byDriver')}</div>
@@ -942,9 +963,9 @@ const Taxis = () => {
         </CCol>
       </CRow>
 
-      {isCurrentPeriod && totalRemaining !== null && (
-        <CRow className="mb-3 d-none d-sm-flex">
-          <CCol sm={2}>
+        {isCurrentPeriod && totalRemaining !== null && (
+          <CRow className="mb-3">
+            <CCol xs={6} sm={2}>
             <CCard>
               <CCardBody style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
@@ -1016,9 +1037,10 @@ const Taxis = () => {
                 )}
               </CModalBody>
             </CModal>
-          </CCol>
-        </CRow>
-      )}
+            </CCol>
+          </CRow>
+        )}
+      </CCollapse>
 
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between flex-wrap gap-2">
