@@ -4,7 +4,8 @@ import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
 import { CButton, CCard, CCardBody, CCardHeader, CModal, CModalBody, CModalHeader, CModalTitle, CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/services/providers/firebase/CashFlow/transactions'
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, addTransaction } from 'src/services/providers/firebase/CashFlow/transactions'
+import { fetchAccounts } from 'src/services/providers/api/accounts'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 
@@ -32,6 +33,173 @@ const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n ?? 0)
 
 const EMPTY_FORM = { type: 'expense', category: '', description: '', amount: '', date: now.toISOString().slice(0, 10) }
+
+// ── Legacy category guesser ────────────────────────────────────────────────────
+const CATEGORY_KEYWORDS = [
+  { keywords: ['arriendo', 'alquiler', 'administracion', 'administración'], category: 'Hogar' },
+  { keywords: ['agua', 'acueducto', 'alcantarillado', 'aseo'], category: 'Servicios públicos' },
+  { keywords: ['energia', 'energía', 'luz', 'epm', 'electricidad'], category: 'Servicios públicos' },
+  { keywords: ['gas', 'naturgas'], category: 'Servicios públicos' },
+  { keywords: ['internet', 'wifi', 'claro', 'tigo', 'movistar', 'telefono', 'teléfono', 'celular'], category: 'Servicios públicos' },
+  { keywords: ['mercado', 'supermercado', 'rappi', 'exito', 'éxito', 'carulla', 'comida'], category: 'Alimentación' },
+  { keywords: ['transporte', 'gasolina', 'parqueadero', 'peaje', 'uber', 'taxi'], category: 'Transporte' },
+  { keywords: ['salud', 'medico', 'médico', 'eps', 'farmacia', 'drogueria', 'droguería'], category: 'Salud' },
+  { keywords: ['educacion', 'educación', 'colegio', 'universidad', 'curso'], category: 'Educación' },
+]
+
+function guessCategory(accountName) {
+  const lower = (accountName || '').toLowerCase()
+  for (const { keywords, category } of CATEGORY_KEYWORDS) {
+    if (keywords.some((k) => lower.includes(k))) return category
+  }
+  return 'Otros'
+}
+
+function toISODate(rawDate) {
+  if (!rawDate) return now.toISOString().slice(0, 10)
+  // Try to parse formats like "2026-03-15" or "Mar 15, 2026"
+  const d = new Date(rawDate)
+  if (!isNaN(d)) return d.toISOString().slice(0, 10)
+  return rawDate
+}
+
+// ── Migration modal ────────────────────────────────────────────────────────────
+function MigrationModal({ onClose, onDone }) {
+  const [status, setStatus] = useState('idle') // idle | loading | preview | migrating | done
+  const [rows, setRows] = useState([]) // mapped transactions
+  const [progress, setProgress] = useState(0)
+  const [error, setError] = useState(null)
+
+  const fetchLegacy = async () => {
+    setStatus('loading')
+    setError(null)
+    try {
+      const response = await fetchAccounts({ month: 3, year: 2026, noEmptyAccounts: false, type: 'Outcoming' })
+      const accounts = response?.data?.items ?? []
+      const mapped = []
+      accounts.forEach((account) => {
+        const payments = account.payments?.items ?? []
+        payments.forEach((payment) => {
+          mapped.push({
+            type: 'expense',
+            category: guessCategory(account.name),
+            description: account.name,
+            amount: Number(payment.value || 0),
+            date: toISODate(payment.date),
+            _legacy_payment_id: payment.paymentId,
+            _legacy_account_id: account.accountId,
+          })
+        })
+      })
+      setRows(mapped)
+      setStatus('preview')
+    } catch (e) {
+      setError(e.message)
+      setStatus('idle')
+    }
+  }
+
+  const migrate = async () => {
+    setStatus('migrating')
+    setProgress(0)
+    let done = 0
+    for (const row of rows) {
+      const { _legacy_payment_id: _a, _legacy_account_id: _b, ...payload } = row
+      await addTransaction(payload)
+      done++
+      setProgress(Math.round((done / rows.length) * 100))
+    }
+    setStatus('done')
+    onDone()
+  }
+
+  return (
+    <CModal visible onClose={onClose} size="lg" alignment="center">
+      <CModalHeader>
+        <CModalTitle>Migrar datos de marzo (legado → Firebase)</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+        {status === 'idle' && (
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <p style={{ color: 'var(--cui-secondary-color)', marginBottom: 20 }}>
+              Esto traerá todos los pagos registrados en <b>marzo 2026</b> desde la API legacy y los importará como gastos en Firebase.
+            </p>
+            {error && <p style={{ color: '#e03131', marginBottom: 12 }}>{error}</p>}
+            <CButton color="primary" onClick={fetchLegacy}>Obtener datos del legado</CButton>
+          </div>
+        )}
+
+        {status === 'loading' && (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <CSpinner color="primary" />
+            <p style={{ marginTop: 12 }}>Consultando API legacy…</p>
+          </div>
+        )}
+
+        {status === 'preview' && (
+          <>
+            <p style={{ marginBottom: 12, fontSize: 13 }}>
+              Se encontraron <b>{rows.length}</b> pagos. Revisa el mapeo antes de confirmar:
+            </p>
+            <div style={{ maxHeight: 360, overflowY: 'auto', border: '1px solid var(--cui-border-color)', borderRadius: 6 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead style={{ background: '#1e3a5f', position: 'sticky', top: 0 }}>
+                  <tr>
+                    {['Fecha', 'Descripción', 'Categoría', 'Monto'].map((h) => (
+                      <th key={h} style={{ padding: '7px 12px', color: '#fff', textAlign: 'left', fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                      <td style={{ padding: '6px 12px' }}>{r.date}</td>
+                      <td style={{ padding: '6px 12px' }}>{r.description}</td>
+                      <td style={{ padding: '6px 12px' }}>
+                        <select
+                          value={r.category}
+                          onChange={(e) => setRows((prev) => prev.map((row, j) => j === i ? { ...row, category: e.target.value } : row))}
+                          style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--cui-border-color)' }}
+                        >
+                          {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </td>
+                      <td style={{ padding: '6px 12px', fontWeight: 600, color: '#e03131' }}>{fmt(r.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+              <CButton color="secondary" variant="outline" onClick={onClose}>Cancelar</CButton>
+              <CButton color="primary" onClick={migrate} disabled={rows.length === 0}>
+                Importar {rows.length} registros a Firebase
+              </CButton>
+            </div>
+          </>
+        )}
+
+        {status === 'migrating' && (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <CSpinner color="primary" />
+            <p style={{ marginTop: 12 }}>Guardando en Firebase… {progress}%</p>
+            <div style={{ background: '#f1f5f9', borderRadius: 8, height: 8, margin: '12px auto', maxWidth: 300 }}>
+              <div style={{ background: '#1e3a5f', height: '100%', borderRadius: 8, width: `${progress}%`, transition: 'width 0.3s' }} />
+            </div>
+          </div>
+        )}
+
+        {status === 'done' && (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
+            <p style={{ fontWeight: 700, color: '#2f9e44' }}>{rows.length} transacciones importadas exitosamente.</p>
+            <CButton color="primary" onClick={onClose} style={{ marginTop: 12 }}>Cerrar</CButton>
+          </div>
+        )}
+      </CModalBody>
+    </CModal>
+  )
+}
 
 // ── Transaction form ───────────────────────────────────────────────────────────
 function TransactionForm({ initial, saving, onSave, onCancel }) {
@@ -135,6 +303,7 @@ export default function Transactions() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [formModal, setFormModal] = useState(null) // null | { mode: 'create' | 'edit', initial?: {} }
+  const [migrationOpen, setMigrationOpen] = useState(false)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -189,9 +358,14 @@ export default function Transactions() {
       <CCard className="mb-3">
         <CCardHeader style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
           <strong>Transacciones</strong>
-          <CButton size="sm" color="primary" onClick={() => setFormModal({ mode: 'create' })}>
-            + Nueva transacción
-          </CButton>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <CButton size="sm" color="secondary" variant="outline" onClick={() => setMigrationOpen(true)}>
+              ↓ Migrar legado
+            </CButton>
+            <CButton size="sm" color="primary" onClick={() => setFormModal({ mode: 'create' })}>
+              + Nueva transacción
+            </CButton>
+          </div>
         </CCardHeader>
         <CCardBody>
           {/* Summary strip */}
@@ -363,6 +537,17 @@ export default function Transactions() {
           )}
         </CCardBody>
       </CCard>
+
+      {/* Migration modal */}
+      {migrationOpen && (
+        <MigrationModal
+          onClose={() => setMigrationOpen(false)}
+          onDone={() => {
+            setMigrationOpen(false)
+            dispatch(transactionActions.fetchRequest({ year }))
+          }}
+        />
+      )}
 
       {/* Form modal */}
       <CModal visible={!!formModal} onClose={() => setFormModal(null)} alignment="center">

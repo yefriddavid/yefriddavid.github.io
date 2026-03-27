@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Mi Admin</title>
+    <script>
+      // GitHub Pages SPA redirect hack — spa-github-pages approach (segmentCount=0 for user site at root)
+      // When GitHub Pages 404s on a direct URL like /management/taxis, this page
+      // encodes the path into a query string and redirects to the root so the app can restore it.
+      var segmentCount = 0
+      var l = window.location
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      )
+    </script>
+  </head>
+  <body></body>
+</html>

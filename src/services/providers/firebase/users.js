@@ -26,16 +26,20 @@ export const getUserForAuth = async (username) => {
 export const getUser = async (username) => {
   const snap = await getDoc(doc(db, COL, username))
   if (!snap.exists()) return null
-  const { passwordHash: _, ...rest } = snap.data()
-  return { username: snap.id, ...rest }
+  const { passwordHash: _, createdAt, ...rest } = snap.data()
+  return {
+    username: snap.id,
+    ...rest,
+    createdAt: createdAt?.toDate().toISOString() ?? null,
+  }
 }
 
 export const getAllUsers = async () => {
   const q = query(collection(db, COL), orderBy('name', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => {
-    const { passwordHash: _, ...rest } = d.data()
-    return { username: d.id, ...rest }
+    const { passwordHash: _, createdAt, ...rest } = d.data()
+    return { username: d.id, ...rest, createdAt: createdAt?.toDate().toISOString() ?? null }
   })
 }
 
