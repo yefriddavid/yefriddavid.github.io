@@ -296,6 +296,7 @@ export default function GenerarContrato() {
   const contractsList = useSelector((s) => s.contrato.list)
   const currentDoc = useSelector((s) => s.contrato.current)
   const contractSaving = useSelector((s) => s.contrato.saving)
+  const pageLoading = properties === null || owners === null || bankAccounts === null || contractsList === null
   const contractLoading = useSelector((s) => s.contrato.loading)
   const contractError = useSelector((s) => s.contrato.isError)
   const contractNotes = useSelector((s) => s.contratoNote.notes)
@@ -786,6 +787,14 @@ export default function GenerarContrato() {
 
   return (
     <div className="contratos-page">
+      {pageLoading && (
+        <div className="c-page-loader">
+          <div className="c-page-loader-box">
+            <div className="c-page-loader-ring" />
+            <span>Cargando datos…</span>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="contratos-header">
         <h1>{titleText}</h1>
