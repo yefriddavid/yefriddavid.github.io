@@ -100,7 +100,7 @@ export default function Eggs() {
         noDataText={fetching ? 'Loading…' : 'No records.'}
       >
         <Column dataField="name" caption="Name" minWidth={120} />
-        <Column dataField="date" caption="Date" dataType="date" width={110} />
+        <Column dataField="date" caption="Date" dataType="date" width={110} defaultSortOrder="desc" />
         <Column dataField="quantity" caption="Quantity" dataType="number" width={100} />
         <Column
           dataField="price"
