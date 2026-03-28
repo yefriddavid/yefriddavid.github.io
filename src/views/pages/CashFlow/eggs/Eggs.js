@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   CButton,
@@ -214,12 +214,7 @@ export default function Eggs() {
         dataSource={filtered}
         keyExpr="id"
         noDataText={fetching ? 'Loading…' : 'No records.'}
-        onOptionChanged={(e) => {
-          if (e.name === 'editing') {
-            const changes = gridRef.current?.instance?.option('editing.changes') ?? []
-            setHasPendingChanges(changes.length > 0)
-          }
-        }}
+        onEditingStart={() => setHasPendingChanges(true)}
         onSaving={(e) => {
           setHasPendingChanges(false)
           e.changes.forEach((change) => {
