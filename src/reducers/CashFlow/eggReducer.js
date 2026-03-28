@@ -43,6 +43,9 @@ const eggSlice = createSlice({
         state.isError = true
       })
 
+      .addCase(eggActions.updateRequest, (state) => {
+        state.saving = true
+      })
       .addCase(eggActions.successRequestUpdate, (state, { payload }) => {
         if (state.data) {
           state.data = state.data.map((e) => (e.id === payload.id ? { ...e, ...payload } : e))

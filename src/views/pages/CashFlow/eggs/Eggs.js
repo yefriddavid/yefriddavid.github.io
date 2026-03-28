@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   CButton,
@@ -11,7 +11,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash, cilPencil } from '@coreui/icons'
-import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
+import { Column, Editing, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
 import * as eggActions from 'src/actions/CashFlow/eggActions'
 
@@ -33,6 +33,47 @@ export default function Eggs() {
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [editingId, setEditingId] = useState(null)
+
+  const gridRef = useRef(null)
+  const [hasPendingChanges, setHasPendingChanges] = useState(false)
+  const [toast, setToast] = useState(false)
+  const toastTimer = useRef(null)
+  const prevSaving = useRef(false)
+
+  useEffect(() => {
+    if (prevSaving.current && !saving) {
+      setToast(true)
+      clearTimeout(toastTimer.current)
+      toastTimer.current = setTimeout(() => setToast(false), 3000)
+    }
+    prevSaving.current = saving
+  }, [saving])
+
+  const [filterYear, setFilterYear] = useState('')
+  const [filterMonth, setFilterMonth] = useState('')
+  const [filterDate, setFilterDate] = useState('')
+  const [filterOp, setFilterOp] = useState('=')
+
+  const years = useMemo(() => {
+    if (!eggs) return []
+    const set = new Set(eggs.map((e) => e.date?.slice(0, 4)).filter(Boolean))
+    return [...set].sort((a, b) => b - a)
+  }, [eggs])
+
+  const filtered = useMemo(() => {
+    if (!eggs) return []
+    return eggs.filter((e) => {
+      const d = e.date ?? ''
+      if (filterYear && !d.startsWith(filterYear)) return false
+      if (filterMonth && d.slice(5, 7) !== filterMonth.padStart(2, '0')) return false
+      if (filterDate) {
+        if (filterOp === '=' && d !== filterDate) return false
+        if (filterOp === '>' && d <= filterDate) return false
+        if (filterOp === '<' && d >= filterDate) return false
+      }
+      return true
+    })
+  }, [eggs, filterYear, filterMonth, filterDate, filterOp])
 
   useEffect(() => {
     dispatch(eggActions.fetchRequest())
@@ -86,21 +127,137 @@ export default function Eggs() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '8px 16px' }}>
         <CButton color="primary" size="sm" onClick={openCreate}>
           <CIcon icon={cilPlus} className="me-1" />
           New Egg
         </CButton>
-        {fetching && <CSpinner size="sm" />}
+
+        <select
+          className="form-select form-select-sm"
+          style={{ width: 90 }}
+          value={filterYear}
+          onChange={(e) => setFilterYear(e.target.value)}
+        >
+          <option value="">All years</option>
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+
+        <select
+          className="form-select form-select-sm"
+          style={{ width: 120 }}
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        >
+          <option value="">All months</option>
+          {['January','February','March','April','May','June','July','August','September','October','November','December']
+            .map((m, i) => <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>)}
+        </select>
+
+        <select
+          className="form-select form-select-sm"
+          style={{ width: 60 }}
+          value={filterOp}
+          onChange={(e) => setFilterOp(e.target.value)}
+        >
+          <option value="=">=</option>
+          <option value=">">&gt;</option>
+          <option value="<">&lt;</option>
+        </select>
+
+        <input
+          className="form-control form-control-sm"
+          type="date"
+          style={{ width: 145 }}
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+        />
+
+        {(filterYear || filterMonth || filterDate) && (
+          <CButton
+            color="secondary"
+            variant="outline"
+            size="sm"
+            onClick={() => { setFilterYear(''); setFilterMonth(''); setFilterDate(''); setFilterOp('=') }}
+          >
+            Clear
+          </CButton>
+        )}
+
+        {hasPendingChanges && !saving && (
+          <CButton
+            color="success"
+            size="sm"
+            onClick={() => gridRef.current?.instance?.saveEditData()}
+          >
+            Save changes
+          </CButton>
+        )}
+        {(fetching || saving) && <CSpinner size="sm" />}
+
+        {toast && (
+          <span style={{
+            fontSize: 13,
+            color: '#2e7d32',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+          }}>
+            ✓ Saved successfully
+          </span>
+        )}
       </div>
 
       <StandardGrid
-        dataSource={eggs ?? []}
+        ref={gridRef}
+        dataSource={filtered}
         keyExpr="id"
         noDataText={fetching ? 'Loading…' : 'No records.'}
+        onOptionChanged={(e) => {
+          if (e.name === 'editing') {
+            const changes = gridRef.current?.instance?.option('editing.changes') ?? []
+            setHasPendingChanges(changes.length > 0)
+          }
+        }}
+        onSaving={(e) => {
+          setHasPendingChanges(false)
+          e.changes.forEach((change) => {
+            if (change.type === 'update') {
+              const original = (eggs ?? []).find((r) => r.id === change.key) ?? {}
+              const updated = { ...original, ...change.data }
+              dispatch(eggActions.updateRequest({ id: change.key, ...updated }))
+            }
+          })
+        }}
       >
+        <Editing
+          mode="batch"
+          allowUpdating={true}
+          startEditAction="dblClick"
+          selectTextOnEditStart={true}
+        />
+        <Column
+          caption="#"
+          width={50}
+          allowSorting={false}
+          allowFiltering={false}
+          allowEditing={false}
+          cellRender={({ rowIndex }) => rowIndex + 1}
+        />
         <Column dataField="name" caption="Name" minWidth={120} />
-        <Column dataField="date" caption="Date" dataType="date" width={110} defaultSortOrder="desc" />
+        <Column
+          dataField="date"
+          caption="Date"
+          dataType="date"
+          width={150}
+          defaultSortOrder="desc"
+          customizeText={({ value }) =>
+            value
+              ? new Date(value).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
+              : ''
+          }
+        />
         <Column dataField="quantity" caption="Quantity" dataType="number" width={100} />
         <Column
           dataField="price"
@@ -118,6 +275,15 @@ export default function Eggs() {
           allowFiltering={false}
           calculateCellValue={(row) => (row.quantity != null && row.price != null ? row.quantity * row.price : null)}
           customizeText={({ value }) => (value != null ? fmt(value) : '')}
+          setCellValue={(newData, value, currentRowData) => {
+            const p = currentRowData.price
+            const q = currentRowData.quantity
+            if (p && p !== 0) {
+              newData.quantity = value / p
+            } else if (q && q !== 0) {
+              newData.price = value / q
+            }
+          }}
         />
         <Summary
           calculateCustomSummary={(options) => {
@@ -142,6 +308,7 @@ export default function Eggs() {
           width={80}
           allowSorting={false}
           allowFiltering={false}
+          allowEditing={false}
           cellRender={({ data }) => (
             <div style={{ display: 'flex', gap: 4 }}>
               <CButton
