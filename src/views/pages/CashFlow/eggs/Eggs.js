@@ -53,6 +53,7 @@ export default function Eggs() {
   const [filterMonth, setFilterMonth] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [filterOp, setFilterOp] = useState('=')
+  const [currentPrice, setCurrentPrice] = useState('')
 
   const years = useMemo(() => {
     if (!eggs) return []
@@ -193,6 +194,16 @@ export default function Eggs() {
             Save changes
           </CButton>
         )}
+
+        <input
+          className="form-control form-control-sm"
+          type="number"
+          min="0"
+          style={{ width: 130 }}
+          value={currentPrice}
+          onChange={(e) => setCurrentPrice(e.target.value)}
+          placeholder="Current price"
+        />
         {(fetching || saving) && <CSpinner size="sm" />}
 
         {toast && (
@@ -280,12 +291,38 @@ export default function Eggs() {
             }
           }}
         />
+        <Column
+          caption="P/L"
+          width={120}
+          allowSorting={false}
+          allowFiltering={false}
+          allowEditing={false}
+          cellRender={({ data }) => {
+            const cp = parseFloat(currentPrice)
+            if (!currentPrice || isNaN(cp) || data.price == null || data.quantity == null) return null
+            const pl = (cp - data.price) * data.quantity
+            const positive = pl >= 0
+            return (
+              <span style={{ color: positive ? '#2e7d32' : '#c62828', fontWeight: 600 }}>
+                {positive ? '▲' : '▼'} {fmt(Math.abs(pl))}
+              </span>
+            )
+          }}
+        />
         <Summary
           calculateCustomSummary={(options) => {
-            if (options.name !== 'grandTotal') return
-            if (options.summaryProcess === 'start') options.totalValue = 0
-            if (options.summaryProcess === 'calculate') {
-              options.totalValue += (options.value?.quantity ?? 0) * (options.value?.price ?? 0)
+            if (options.name === 'grandTotal') {
+              if (options.summaryProcess === 'start') options.totalValue = 0
+              if (options.summaryProcess === 'calculate') {
+                options.totalValue += (options.value?.quantity ?? 0) * (options.value?.price ?? 0)
+              }
+            }
+            if (options.name === 'plTotal') {
+              const cp = parseFloat(currentPrice)
+              if (options.summaryProcess === 'start') options.totalValue = 0
+              if (options.summaryProcess === 'calculate' && !isNaN(cp)) {
+                options.totalValue += (cp - (options.value?.price ?? 0)) * (options.value?.quantity ?? 0)
+              }
             }
           }}
         >
@@ -295,6 +332,16 @@ export default function Eggs() {
             summaryType="custom"
             showInColumn="totalCol"
             customizeText={({ value }) => fmt(value)}
+          />
+          <TotalItem
+            name="plTotal"
+            summaryType="custom"
+            showInColumn="P/L"
+            customizeText={({ value }) => {
+              if (!currentPrice) return ''
+              const positive = value >= 0
+              return `${positive ? '▲' : '▼'} ${fmt(Math.abs(value))}`
+            }}
           />
         </Summary>
 
