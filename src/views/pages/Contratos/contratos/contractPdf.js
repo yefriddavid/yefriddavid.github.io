@@ -371,7 +371,7 @@ ${watermark}
     <pre><div class="info">
 _________________________________________
 ${ownerUpper}
-CC No. ${owner.identification?.number || ''} De ${owner.identification?.city || ''}
+CC No. ________________________ De ____________________________
 </div></pre>
   </div>
 
@@ -380,7 +380,7 @@ CC No. ${owner.identification?.number || ''} De ${owner.identification?.city || 
     <pre><div class="info">
 _________________________________________
 ${tenantUpper}
-CC No. ${tenant.identification?.number || ''} De ${tenant.identification?.city || ''}
+CC No. ________________________ De ____________________________
 </div></pre>
   </div>
 
@@ -389,7 +389,8 @@ CC No. ${tenant.identification?.number || ''} De ${tenant.identification?.city |
     <pre><div class="info">
 _________________________________________
 ${guarantorUpper}
-CC No. ${guarantor.identification?.number || ''} De ${guarantor.identification?.city || ''}
+CC No. ________________________ De ____________________________
+
 </div></pre>
   </div>
 
