@@ -117,7 +117,7 @@ export default function Eggs() {
       const t = parseFloat(field === 'total' ? val : prev.total)
       if (field === 'quantity' && !isNaN(q) && !isNaN(p)) next.total = (q * p).toFixed(2)
       if (field === 'price' && !isNaN(q) && !isNaN(p)) next.total = (q * p).toFixed(2)
-      if (field === 'total' && !isNaN(t) && !isNaN(p) && p !== 0) next.quantity = (t / p).toFixed(4)
+      if (field === 'total' && !isNaN(t) && !isNaN(p) && p !== 0) next.quantity = (t / p).toFixed(6)
       if (field === 'total' && !isNaN(t) && !isNaN(q) && q !== 0 && (isNaN(p) || p === 0)) next.price = (t / q).toFixed(2)
       return next
     })
@@ -367,6 +367,7 @@ export default function Eggs() {
                 className="form-control form-control-sm"
                 type="number"
                 min="0"
+                step="0.000001"
                 value={form.quantity}
                 onChange={handleNumeric('quantity')}
                 placeholder="0"
