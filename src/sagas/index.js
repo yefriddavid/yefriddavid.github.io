@@ -18,6 +18,7 @@ import sagaContratoOwners from './Contratos/ownerSagas'
 import sagaContratos from './Contratos/contractSagas'
 import sagaContratoNotes from './Contratos/contractNoteSagas'
 import sagaContratoAttachments from './Contratos/contractAttachmentSagas'
+import sagaEggs from './CashFlow/eggSagas'
 import sagaTransactions from './CashFlow/transactionSagas'
 
 export default function* rootSagas() {
@@ -41,6 +42,7 @@ export default function* rootSagas() {
     sagaContratos(),
     sagaContratoNotes(),
     sagaContratoAttachments(),
+    sagaEggs(),
     sagaTransactions(),
   ])
 }

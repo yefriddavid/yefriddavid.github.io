@@ -27,6 +27,8 @@ const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
+const Eggs = React.lazy(() => import('./views/pages/CashFlow/eggs/Eggs'))
+
 // Tools
 const IncreaseDecrease = React.lazy(() => import('./views/pages/tools/increase-decrease/IncreaseDecrease'))
 const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
@@ -100,6 +102,7 @@ const routes = [
   { path: '/cash_flow/management/push-subscribers', name: 'Push Subscribers', element: PushSubscribers, roles: ['superAdmin'] },
   { path: '/cash_flow/profile', name: 'Profile', element: Profile },
 
+  { path: '/cash_flow/eggs', name: 'Eggs', element: Eggs },
   { path: '/cash_flow/tools/adjustments', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
   { path: '/cash_flow/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },
 
