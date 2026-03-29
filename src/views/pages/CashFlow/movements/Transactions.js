@@ -690,7 +690,7 @@ export default function Transactions() {
         type: account.type === 'Outcoming' ? 'expense' : 'income',
         category: account.category || '',
         description: account.name,
-        amount: '',
+        amount: account.defaultValue || '',
         date: defaultDate,
         accountMasterId: account.id,
         accountMasterName: account.name,

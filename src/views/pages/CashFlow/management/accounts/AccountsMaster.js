@@ -37,6 +37,7 @@ const EMPTY_FORM = {
   code: '',
   name: '',
   description: '',
+  defaultValue: '',
   active: true,
 }
 
@@ -200,6 +201,18 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             </select>
           </div>
         )}
+
+        <div className="payment-form__field">
+          <label className="payment-form__label">Valor por defecto (COP)</label>
+          <input
+            className="payment-form__input"
+            type="number"
+            value={form.defaultValue}
+            onChange={set('defaultValue')}
+            placeholder="0 — opcional"
+            min="0"
+          />
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
           <div className="payment-form__field">
@@ -411,6 +424,25 @@ export default function AccountsMaster() {
               <Column dataField="code" caption="Código" width={90} />
               <Column dataField="name" caption="Nombre" minWidth={200} />
               <Column dataField="description" caption="Descripción" minWidth={200} />
+              <Column
+                dataField="defaultValue"
+                caption="Valor por defecto"
+                width={150}
+                alignment="right"
+                cellRender={({ value }) =>
+                  value ? (
+                    <span style={{ fontWeight: 600, color: '#1e3a5f' }}>
+                      {new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                      }).format(value)}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#adb5bd', fontSize: 11 }}>—</span>
+                  )
+                }
+              />
               <Column
                 dataField="active"
                 caption="Estado"
