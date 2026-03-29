@@ -922,7 +922,8 @@ export default function AccountStatus() {
       </div>
 
       {/* Total paid */}
-      {totalPaid > 0 && (
+      {/*totalPaid > 0 && ( */}
+      {
         <div
           style={{
             background: '#eef4ff',
@@ -935,10 +936,10 @@ export default function AccountStatus() {
             alignItems: 'center',
           }}
         >
-          <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Total pagado</span>
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f' }}>{fmt(totalPaid)}</span>
+          <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Total</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f' }}>{fmt(totalPaid + totalPending)}</span>
         </div>
-      )}
+      }
 
       {/* Filter tabs */}
       <div
