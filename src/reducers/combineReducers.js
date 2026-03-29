@@ -21,6 +21,7 @@ import contratoNote from './Contratos/contractNoteReducer'
 import contratoAttachment from './Contratos/contractAttachmentReducer'
 import egg from './CashFlow/eggReducer'
 import transaction from './CashFlow/transactionReducer'
+import accountsMaster from './CashFlow/accountsMasterReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -45,6 +46,7 @@ const combinedReducers = combineReducers({
   contratoAttachment,
   egg,
   transaction,
+  accountsMaster,
 })
 
 export default combinedReducers

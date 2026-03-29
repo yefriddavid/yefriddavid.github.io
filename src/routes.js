@@ -6,6 +6,9 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 
 // Managment
 const Accounts = React.lazy(() => import('./views/pages/CashFlow/management/accounts/Accounts'))
+const AccountsMaster = React.lazy(
+  () => import('./views/pages/CashFlow/management/accounts/AccountsMaster'),
+)
 const Settlements = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Settlements'))
 const Drivers = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Drivers'))
 const Vehicles = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Vehicles'))
@@ -13,11 +16,15 @@ const Expenses = React.lazy(() => import('./views/pages/CashFlow/management/taxi
 const Summary = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Summary'))
 const TaxisHome = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Home'))
 const Partners = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Partners'))
-const Distributions = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Distributions'))
+const Distributions = React.lazy(
+  () => import('./views/pages/CashFlow/management/taxis/Distributions'),
+)
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/pages/CashFlow/management/users/Users'))
-const PushSubscribers = React.lazy(() => import('./views/pages/CashFlow/management/users/PushSubscribers'))
+const PushSubscribers = React.lazy(
+  () => import('./views/pages/CashFlow/management/users/PushSubscribers'),
+)
 const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 
 // Movements
@@ -30,9 +37,10 @@ const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 const Eggs = React.lazy(() => import('./views/pages/CashFlow/eggs/Eggs'))
 
 // Tools
-const IncreaseDecrease = React.lazy(() => import('./views/pages/tools/increase-decrease/IncreaseDecrease'))
+const IncreaseDecrease = React.lazy(
+  () => import('./views/pages/tools/increase-decrease/IncreaseDecrease'),
+)
 const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
-
 
 // Base
 //const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -85,25 +93,89 @@ const routes = [
   //  { path: '/', exact: true, name: 'Home' },
   //{ path: '/', exact: true, element: AbountMe },
   { path: '/cash_flow/dashboard', name: 'Dashboard', tKey: 'nav.dashboard', element: Dashboard },
-  { path: '/cash_flow/management/accounts', name: 'Accounts', tKey: 'nav.accounts', element: Accounts },
-  { path: '/cash_flow/management/taxis', name: 'Taxis', tKey: 'nav.taxiManagement', element: TaxisHome },
-  { path: '/cash_flow/management/taxis/home', name: 'Home', tKey: 'nav.taxiHome', element: TaxisHome },
-  { path: '/cash_flow/management/taxis/settlements', name: 'Settlements', tKey: 'nav.liquidaciones', element: Settlements },
-  { path: '/cash_flow/management/taxis/drivers', name: 'Drivers', tKey: 'nav.conductores', element: Drivers },
-  { path: '/cash_flow/management/taxis/vehicles', name: 'Vehicles', tKey: 'nav.vehiculos', element: Vehicles },
-  { path: '/cash_flow/management/taxis/expenses', name: 'Expenses', tKey: 'nav.taxiExpenses', element: Expenses },
-  { path: '/cash_flow/management/taxis/summary', name: 'Summary', tKey: 'nav.taxiResumen', element: Summary },
+  {
+    path: '/cash_flow/management/accounts',
+    name: 'Accounts',
+    tKey: 'nav.accounts',
+    element: Accounts,
+  },
+  {
+    path: '/cash_flow/management/taxis',
+    name: 'Taxis',
+    tKey: 'nav.taxiManagement',
+    element: TaxisHome,
+  },
+  {
+    path: '/cash_flow/management/taxis/home',
+    name: 'Home',
+    tKey: 'nav.taxiHome',
+    element: TaxisHome,
+  },
+  {
+    path: '/cash_flow/management/taxis/settlements',
+    name: 'Settlements',
+    tKey: 'nav.liquidaciones',
+    element: Settlements,
+  },
+  {
+    path: '/cash_flow/management/taxis/drivers',
+    name: 'Drivers',
+    tKey: 'nav.conductores',
+    element: Drivers,
+  },
+  {
+    path: '/cash_flow/management/taxis/vehicles',
+    name: 'Vehicles',
+    tKey: 'nav.vehiculos',
+    element: Vehicles,
+  },
+  {
+    path: '/cash_flow/management/taxis/expenses',
+    name: 'Expenses',
+    tKey: 'nav.taxiExpenses',
+    element: Expenses,
+  },
+  {
+    path: '/cash_flow/management/taxis/summary',
+    name: 'Summary',
+    tKey: 'nav.taxiResumen',
+    element: Summary,
+  },
   { path: '/cash_flow/management/taxis/partners', name: 'Partners', element: Partners },
-  { path: '/cash_flow/management/taxis/profit-sharing', name: 'Distributions', element: Distributions },
-  { path: '/cash_flow/management/payments', name: 'Payments', tKey: 'nav.payments', element: Payments },
+  {
+    path: '/cash_flow/management/taxis/profit-sharing',
+    name: 'Distributions',
+    element: Distributions,
+  },
+  {
+    path: '/cash_flow/management/payments',
+    name: 'Payments',
+    tKey: 'nav.payments',
+    element: Payments,
+  },
   { path: '/cash_flow/management/transactions', name: 'Transactions', element: Transactions },
+  {
+    path: '/cash_flow/management/accounts-master',
+    name: 'Accounts Master',
+    element: AccountsMaster,
+  },
   { path: '/cash_flow/management/reports', name: 'Reports', tKey: 'nav.reports', element: Reports },
   { path: '/cash_flow/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
-  { path: '/cash_flow/management/push-subscribers', name: 'Push Subscribers', element: PushSubscribers, roles: ['superAdmin'] },
+  {
+    path: '/cash_flow/management/push-subscribers',
+    name: 'Push Subscribers',
+    element: PushSubscribers,
+    roles: ['superAdmin'],
+  },
   { path: '/cash_flow/profile', name: 'Profile', element: Profile },
 
   { path: '/cash_flow/eggs', name: 'Eggs', element: Eggs },
-  { path: '/cash_flow/tools/adjustments', name: 'Increase Decrease', tKey: 'nav.increaseDecrease', element: IncreaseDecrease },
+  {
+    path: '/cash_flow/tools/adjustments',
+    name: 'Increase Decrease',
+    tKey: 'nav.increaseDecrease',
+    element: IncreaseDecrease,
+  },
   { path: '/cash_flow/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },
