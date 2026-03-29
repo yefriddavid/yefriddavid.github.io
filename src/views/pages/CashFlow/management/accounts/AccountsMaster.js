@@ -41,7 +41,7 @@ const EMPTY_FORM = {
   active: true,
 }
 
-const PERIOD_OPTIONS = ['Mensuales', 'Anuales', 'N/A']
+const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Anuales', 'N/A']
 const TYPE_OPTIONS = ['Outcoming', 'Incoming']
 const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 
@@ -185,7 +185,10 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
           </div>
         </div>
 
-        {(form.period === 'Anuales' || form.period === 'N/A') && (
+        {(form.period === 'Anuales' ||
+          form.period === 'Trimestrales' ||
+          form.period === 'Cuatrimestrales' ||
+          form.period === 'N/A') && (
           <div className="payment-form__field">
             <label className="payment-form__label">Mes de inicio / aplica</label>
             <select
