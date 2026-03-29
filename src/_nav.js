@@ -1,21 +1,27 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
+  cilBalanceScale,
+  cilBarChart,
+  cilBasket,
   cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilNotes,
-  cilPeople,
-  cilSpeedometer,
-  cilTask,
-  cilUser,
+  cilBook,
+  cilCalendarCheck,
   cilCarAlt,
-  cilMoney,
-  cilDescription,
-  cilSettings,
-  cilLayers,
+  cilCash,
+  cilCheck,
+  cilCreditCard,
   cilFile,
-  cilPhone,
+  cilFolder,
+  cilGroup,
+  cilHome,
+  cilList,
+  cilPeople,
+  cilSettings,
+  cilSpeedometer,
+  cilSwapHorizontal,
+  cilTransfer,
+  cilUser,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -38,37 +44,37 @@ const getNav = (t, role) => {
     items.push({
       component: CNavGroup,
       name: t('nav.management'),
-      icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilFolder} customClassName="nav-icon" />,
       items: [
-        {
+        /*{
           component: CNavItem,
           name: t('nav.accounts'),
           to: '/cash_flow/management/accounts',
-          icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+          icon: <CIcon icon={cilList} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.payments'),
           to: '/cash_flow/management/payments',
-          icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
-        },
+          icon: <CIcon icon={cilCreditCard} customClassName="nav-icon" />,
+        },*/
         {
           component: CNavItem,
           name: 'Transacciones',
           to: '/cash_flow/management/transactions',
-          icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+          icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Maestro de Cuentas',
           to: '/cash_flow/management/accounts-master',
-          icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+          icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Estado de Cuentas',
           to: '/cash_flow/management/account-status',
-          icon: <CIcon icon={cilPhone} customClassName="nav-icon" />,
+          icon: <CIcon icon={cilCheck} customClassName="nav-icon" />,
         },
         ...(isSuperAdmin
           ? [
@@ -76,7 +82,7 @@ const getNav = (t, role) => {
                 component: CNavItem,
                 name: t('nav.users'),
                 to: '/cash_flow/management/users',
-                icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+                icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
               },
               {
                 component: CNavItem,
@@ -100,7 +106,7 @@ const getNav = (t, role) => {
           component: CNavItem,
           name: t('nav.increaseDecrease'),
           to: '/cash_flow/tools/adjustments',
-          icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+          icon: <CIcon icon={cilBalanceScale} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
@@ -121,13 +127,13 @@ const getNav = (t, role) => {
         component: CNavItem,
         name: t('nav.taxiHome'),
         to: '/cash_flow/management/taxis/home',
-        icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: t('nav.liquidaciones'),
         to: '/cash_flow/management/taxis/settlements',
-        icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
       },
       ...(isManager
         ? [
@@ -147,13 +153,13 @@ const getNav = (t, role) => {
               component: CNavItem,
               name: t('nav.taxiExpenses'),
               to: '/cash_flow/management/taxis/expenses',
-              icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+              icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.taxiResumen'),
               to: '/cash_flow/management/taxis/summary',
-              icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+              icon: <CIcon icon={cilBarChart} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
@@ -165,7 +171,7 @@ const getNav = (t, role) => {
               component: CNavItem,
               name: t('nav.distributions'),
               to: '/cash_flow/management/taxis/profit-sharing',
-              icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+              icon: <CIcon icon={cilTransfer} customClassName="nav-icon" />,
             },
           ]
         : []),
@@ -176,7 +182,7 @@ const getNav = (t, role) => {
     component: CNavItem,
     name: 'Eggs',
     to: '/cash_flow/eggs',
-    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
   })
 
   items.push({
