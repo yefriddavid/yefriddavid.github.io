@@ -464,6 +464,206 @@ function TransactionForm({ initial, saving, onSave, onCancel }) {
   )
 }
 
+// ── Annual overview ────────────────────────────────────────────────────────────
+const MONTHS_SHORT = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+]
+
+function AnnualView({ masters, transactions, year }) {
+  const todayYear = now.getFullYear()
+  const todayMonth = now.getMonth() + 1
+
+  const paymentMap = useMemo(() => {
+    const map = {}
+    if (!transactions) return map
+    transactions.forEach((t) => {
+      if (!t.accountMasterId) return
+      const match = t.date?.match(/^(\d{4})-(\d{2})/)
+      if (!match) return
+      if (parseInt(match[1]) !== year) return
+      const m = parseInt(match[2])
+      if (!map[t.accountMasterId]) map[t.accountMasterId] = {}
+      map[t.accountMasterId][m] = (map[t.accountMasterId][m] || 0) + (t.amount || 0)
+    })
+    return map
+  }, [transactions, year])
+
+  const activeMasters = useMemo(() => (masters ?? []).filter((a) => a.active), [masters])
+
+  const monthTotals = useMemo(() => {
+    const totals = Array(12).fill(0)
+    activeMasters.forEach((account) => {
+      for (let m = 1; m <= 12; m++) {
+        totals[m - 1] += paymentMap[account.id]?.[m] || 0
+      }
+    })
+    return totals
+  }, [activeMasters, paymentMap])
+
+  const yearTotal = monthTotals.reduce((s, t) => s + t, 0)
+
+  const thStyle = {
+    padding: '8px 6px',
+    color: '#fff',
+    fontWeight: 600,
+    textAlign: 'center',
+    whiteSpace: 'nowrap',
+    fontSize: 11,
+  }
+  const tdBase = {
+    padding: '6px 6px',
+    textAlign: 'right',
+    fontSize: 11,
+    whiteSpace: 'nowrap',
+  }
+
+  return (
+    <div style={{ overflowX: 'auto', border: '1px solid #e9ecef', borderRadius: 8 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead>
+          <tr style={{ background: '#1e3a5f' }}>
+            <th style={{ ...thStyle, textAlign: 'left', minWidth: 160, padding: '8px 12px' }}>
+              Cuenta
+            </th>
+            {MONTHS_SHORT.map((m) => (
+              <th key={m} style={{ ...thStyle, minWidth: 72 }}>
+                {m}
+              </th>
+            ))}
+            <th style={{ ...thStyle, minWidth: 90 }}>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {activeMasters.map((account, idx) => {
+            const accountTotal = Array.from(
+              { length: 12 },
+              (_, i) => paymentMap[account.id]?.[i + 1] || 0,
+            ).reduce((s, v) => s + v, 0)
+
+            return (
+              <tr
+                key={account.id}
+                style={{
+                  borderBottom: '1px solid #f1f5f9',
+                  background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+                }}
+              >
+                <td
+                  style={{
+                    padding: '7px 12px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: '#1a1a2e',
+                    whiteSpace: 'nowrap',
+                    maxWidth: 200,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {account.name}
+                </td>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const month = i + 1
+                  const applies = isApplicableToMonth(account, month)
+                  const paid = paymentMap[account.id]?.[month] || 0
+                  const isPast = year < todayYear || (year === todayYear && month <= todayMonth)
+
+                  if (!applies) {
+                    return (
+                      <td
+                        key={month}
+                        style={{ ...tdBase, background: '#f1f5f9', color: '#dee2e6' }}
+                      />
+                    )
+                  }
+                  if (paid > 0) {
+                    return (
+                      <td
+                        key={month}
+                        style={{
+                          ...tdBase,
+                          background: '#f0fdf4',
+                          color: '#2f9e44',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {fmt(paid)}
+                      </td>
+                    )
+                  }
+                  if (isPast) {
+                    return (
+                      <td
+                        key={month}
+                        style={{ ...tdBase, background: '#fff5f5', color: '#e03131' }}
+                      >
+                        —
+                      </td>
+                    )
+                  }
+                  return (
+                    <td key={month} style={{ ...tdBase, color: '#adb5bd' }}>
+                      {account.defaultValue ? fmt(account.defaultValue) : '—'}
+                    </td>
+                  )
+                })}
+                <td
+                  style={{
+                    ...tdBase,
+                    fontWeight: 700,
+                    color: accountTotal > 0 ? '#1e3a5f' : '#adb5bd',
+                    background: accountTotal > 0 ? '#eef4ff' : undefined,
+                  }}
+                >
+                  {accountTotal > 0 ? fmt(accountTotal) : '—'}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+        <tfoot>
+          <tr style={{ background: '#1e3a5f', fontWeight: 700 }}>
+            <td style={{ padding: '8px 12px', color: '#fff', fontSize: 12 }}>Total</td>
+            {monthTotals.map((total, i) => (
+              <td
+                key={i}
+                style={{
+                  ...tdBase,
+                  color: total > 0 ? '#fff' : 'rgba(255,255,255,0.35)',
+                  fontWeight: 700,
+                }}
+              >
+                {total > 0 ? fmt(total) : '—'}
+              </td>
+            ))}
+            <td
+              style={{
+                ...tdBase,
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: 13,
+              }}
+            >
+              {fmt(yearTotal)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  )
+}
+
 // ── Summary card ───────────────────────────────────────────────────────────────
 function SummaryCard({ label, value, color, bg, sub }) {
   return (
@@ -962,6 +1162,7 @@ export default function Transactions() {
             {[
               { key: 'maestro', label: `Maestro del mes (${applicableMasters.length})` },
               { key: 'transactions', label: 'Otras transacciones' },
+              { key: 'anual', label: `Anual ${year}` },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -1312,6 +1513,19 @@ export default function Transactions() {
                     />
                   </Summary>
                 </StandardGrid>
+              )}
+            </>
+          )}
+
+          {/* Tab: Anual */}
+          {activeTab === 'anual' && (
+            <>
+              {fetchingMasters && !masters ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
+                  <CSpinner color="primary" />
+                </div>
+              ) : (
+                <AnnualView masters={masters} transactions={data} year={year} />
               )}
             </>
           )}
