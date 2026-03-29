@@ -71,10 +71,14 @@ function isApplicableToMonth(account, month) {
     const idx = MONTH_NAMES.indexOf(account.monthStartAt)
     return idx + 1 === month
   }
-  if (account.period === 'Trimestrales' || account.period === 'Cuatrimestrales') {
+  if (
+    account.period === 'Trimestrales' ||
+    account.period === 'Cuatrimestrales' ||
+    account.period === 'Semestrales'
+  ) {
     const startMonth = MONTH_NAMES.indexOf(account.monthStartAt) + 1
     if (startMonth === 0) return false
-    const interval = account.period === 'Trimestrales' ? 3 : 4
+    const interval = account.period === 'Trimestrales' ? 3 : account.period === 'Cuatrimestrales' ? 4 : 6
     return (month - startMonth + 12) % interval === 0
   }
   // N/A — always show
