@@ -5,6 +5,7 @@ import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
 import { MONTH_NAMES } from 'src/services/providers/firebase/CashFlow/accountsMaster'
 import AttachmentViewer from 'src/components/App/AttachmentViewer'
+import { processAttachmentFile } from 'src/utils/fileHelpers'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
@@ -31,77 +32,6 @@ const fmt = (n) =>
     currency: 'COP',
     minimumFractionDigits: 0,
   }).format(n ?? 0)
-
-// ── File helpers ───────────────────────────────────────────────────────────────
-const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
-
-async function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      const MAX = 1200
-      let { width, height } = img
-      if (width > MAX || height > MAX) {
-        if (width > height) {
-          height = Math.round((height * MAX) / width)
-          width = MAX
-        } else {
-          width = Math.round((width * MAX) / height)
-          height = MAX
-        }
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
-      resolve(canvas.toDataURL('image/jpeg', 0.75))
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-async function pdfToSingleImage(file) {
-  const pdfjsLib = await import('pdfjs-dist')
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/legacy/build/pdf.worker.js',
-    import.meta.url,
-  ).toString()
-  const arrayBuffer = await file.arrayBuffer()
-  const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-  const pageCount = pdfDoc.numPages
-  const scale = 1.5
-  const pageCanvases = []
-  let totalHeight = 0
-  let maxWidth = 0
-
-  for (let i = 1; i <= pageCount; i++) {
-    const page = await pdfDoc.getPage(i)
-    const viewport = page.getViewport({ scale })
-    const canvas = document.createElement('canvas')
-    canvas.width = viewport.width
-    canvas.height = viewport.height
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise
-    pageCanvases.push(canvas)
-    totalHeight += viewport.height
-    maxWidth = Math.max(maxWidth, viewport.width)
-  }
-
-  const final = document.createElement('canvas')
-  final.width = maxWidth
-  final.height = totalHeight
-  const ctx = final.getContext('2d')
-  ctx.fillStyle = '#fff'
-  ctx.fillRect(0, 0, maxWidth, totalHeight)
-  let y = 0
-  for (const pc of pageCanvases) {
-    ctx.drawImage(pc, 0, y)
-    y += pc.height
-  }
-  return final.toDataURL('image/jpeg', 0.65)
-}
 
 // ── Domain helpers ─────────────────────────────────────────────────────────────
 function isApplicableToMonth(account, month) {
@@ -160,21 +90,9 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
     const file = e.target.files?.[0]
     if (!file) return
     setFileError('')
-
-    if (file.size > MAX_FILE_BYTES) {
-      setFileError(`El archivo supera el límite de 5 MB.`)
-      return
-    }
-    const isPdf = file.type === 'application/pdf'
-    const isImage = file.type.startsWith('image/')
-    if (!isPdf && !isImage) {
-      setFileError('Solo se permiten imágenes o PDF.')
-      return
-    }
-
     setProcessing(true)
     try {
-      const data = isPdf ? await pdfToSingleImage(file) : await compressImage(file)
+      const data = await processAttachmentFile(file)
       setAttachment(data)
       setAttachName(file.name)
     } catch (err) {
@@ -454,10 +372,20 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
 }
 
 // ── Account card ───────────────────────────────────────────────────────────────
-function AccountCard({ account, payments, monthStr, onPay, onViewAttachment }) {
+function AccountCard({
+  account,
+  payments,
+  monthStr,
+  onPay,
+  onViewAttachment,
+  onAttach,
+  attachingId,
+}) {
   const status = getStatus(account, payments, monthStr)
   const canPay = status.label !== 'Pagado'
   const paidPayment = payments.find((p) => p.attachment)
+  const firstPayment = payments[0]
+  const isAttaching = attachingId === firstPayment?.id
 
   return (
     <div
@@ -569,24 +497,58 @@ function AccountCard({ account, payments, monthStr, onPay, onViewAttachment }) {
             {paidPayment?.note && (
               <div
                 style={{
-                  fontSize: 11, color: '#6c757d', maxWidth: 120, textAlign: 'right',
-                  fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  fontSize: 11,
+                  color: '#6c757d',
+                  maxWidth: 120,
+                  textAlign: 'right',
+                  fontStyle: 'italic',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {paidPayment.note}
               </div>
             )}
-            {paidPayment?.attachment && (
+            {paidPayment?.attachment ? (
               <button
                 onClick={() => onViewAttachment(paidPayment.attachment, paidPayment.attachmentName)}
                 style={{
-                  padding: '4px 10px', borderRadius: 20,
-                  border: '1px solid #86efac', background: '#f0fdf4',
-                  color: '#2f9e44', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                  padding: '4px 10px',
+                  borderRadius: 20,
+                  border: '1px solid #86efac',
+                  background: '#f0fdf4',
+                  color: '#2f9e44',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
                 }}
               >
                 📎 Ver adjunto
               </button>
+            ) : (
+              firstPayment && (
+                <button
+                  onClick={() => onAttach(firstPayment)}
+                  disabled={isAttaching}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 20,
+                    border: '1px solid #dee2e6',
+                    background: '#f8f9fa',
+                    color: '#6c757d',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: isAttaching ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+                  {isAttaching ? 'Procesando…' : 'Adjuntar'}
+                </button>
+              )
             )}
           </>
         ) : (
@@ -630,6 +592,9 @@ export default function AccountStatus() {
   const [filter, setFilter] = useState('all')
   const [paying, setPaying] = useState(null)
   const [viewer, setViewer] = useState(null) // { src, filename }
+  const [attachingTx, setAttachingTx] = useState(null) // transaction being attached to
+  const [attachProcessing, setAttachProcessing] = useState(false)
+  const attachRef = useRef()
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -705,6 +670,33 @@ export default function AccountStatus() {
   const handleSavePayment = (payload) => {
     dispatch(transactionActions.createRequest(payload))
     setPaying(null)
+  }
+
+  const handleAttach = (transaction) => {
+    setAttachingTx(transaction)
+    attachRef.current.value = ''
+    attachRef.current.click()
+  }
+
+  const handleAttachFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !attachingTx) return
+    setAttachProcessing(true)
+    try {
+      const data = await processAttachmentFile(file)
+      dispatch(
+        transactionActions.updateRequest({
+          ...attachingTx,
+          attachment: data,
+          attachmentName: file.name,
+        }),
+      )
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setAttachProcessing(false)
+      setAttachingTx(null)
+    }
   }
 
   const prevSaving = React.useRef(saving)
@@ -895,9 +887,20 @@ export default function AccountStatus() {
             monthStr={monthStr}
             onPay={setPaying}
             onViewAttachment={(src, filename) => setViewer({ src, filename })}
+            onAttach={handleAttach}
+            attachingId={attachProcessing ? attachingTx?.id : null}
           />
         ))
       )}
+
+      {/* Hidden input for attaching to existing transactions */}
+      <input
+        ref={attachRef}
+        type="file"
+        accept="image/*,application/pdf"
+        style={{ display: 'none' }}
+        onChange={handleAttachFile}
+      />
 
       {/* Pay modal */}
       {paying && (

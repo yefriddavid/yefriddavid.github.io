@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import AttachmentViewer from 'src/components/App/AttachmentViewer'
+import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
@@ -484,10 +485,22 @@ function SummaryCard({ label, value, color, bg, sub }) {
 }
 
 // ── Maestro row ────────────────────────────────────────────────────────────────
-function MaestroRow({ account, payments, monthStr, onPay, onViewPayment, onViewAttachment, onDelete }) {
+function MaestroRow({
+  account,
+  payments,
+  monthStr,
+  onPay,
+  onViewPayment,
+  onViewAttachment,
+  onDelete,
+  onAttach,
+  attachingId,
+}) {
   const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
   const isPaid = paid > 0
   const paidPayment = payments.find((p) => p.attachment)
+  const firstPayment = payments[0]
+  const isAttaching = attachingId === firstPayment?.id
   const isOverdue =
     !isPaid &&
     (() => {
@@ -545,9 +558,14 @@ function MaestroRow({ account, payments, monthStr, onPay, onViewPayment, onViewA
       </td>
       <td style={{ padding: '8px 12px', textAlign: 'center' }}>
         <div style={{ display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
-          {paidPayment?.attachment && (
+          {paidPayment?.attachment ? (
             <button
-              onClick={() => onViewAttachment(paidPayment.attachment, paidPayment.attachmentName || 'adjunto.jpg')}
+              onClick={() =>
+                onViewAttachment(
+                  paidPayment.attachment,
+                  paidPayment.attachmentName || 'adjunto.jpg',
+                )
+              }
               title="Ver adjunto"
               style={{
                 background: 'none',
@@ -559,6 +577,27 @@ function MaestroRow({ account, payments, monthStr, onPay, onViewPayment, onViewA
             >
               📎
             </button>
+          ) : (
+            firstPayment && (
+              <button
+                onClick={() => onAttach(firstPayment)}
+                disabled={isAttaching}
+                title="Adjuntar"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '2px 4px',
+                  cursor: isAttaching ? 'not-allowed' : 'pointer',
+                  fontSize: 11,
+                  color: '#adb5bd',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+              </button>
+            )
           )}
           {isPaid ? (
             <button
@@ -628,6 +667,9 @@ export default function Transactions() {
   const [migrationOpen, setMigrationOpen] = useState(false)
   const [viewer, setViewer] = useState(null) // { src, filename }
   const [activeTab, setActiveTab] = useState('maestro') // 'maestro' | 'transactions'
+  const [attachingTx, setAttachingTx] = useState(null)
+  const [attachProcessing, setAttachProcessing] = useState(false)
+  const attachRef = useRef()
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -736,6 +778,33 @@ export default function Transactions() {
 
   const handleViewPayment = (transaction) => {
     setFormModal({ mode: 'edit', initial: transaction })
+  }
+
+  const handleAttach = (transaction) => {
+    setAttachingTx(transaction)
+    attachRef.current.value = ''
+    attachRef.current.click()
+  }
+
+  const handleAttachFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !attachingTx) return
+    setAttachProcessing(true)
+    try {
+      const data = await processAttachmentFile(file)
+      dispatch(
+        transactionActions.updateRequest({
+          ...attachingTx,
+          attachment: data,
+          attachmentName: file.name,
+        }),
+      )
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setAttachProcessing(false)
+      setAttachingTx(null)
+    }
   }
 
   return (
@@ -939,6 +1008,8 @@ export default function Transactions() {
                           onViewPayment={handleViewPayment}
                           onViewAttachment={(src, filename) => setViewer({ src, filename })}
                           onDelete={handleDelete}
+                          onAttach={handleAttach}
+                          attachingId={attachProcessing ? attachingTx?.id : null}
                         />
                       ))}
                     </tbody>
@@ -1110,12 +1181,48 @@ export default function Transactions() {
                       row.attachment ? (
                         <button
                           title="Ver adjunto"
-                          onClick={() => setViewer({ src: row.attachment, filename: row.attachmentName || 'adjunto.jpg' })}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '2px 4px' }}
+                          onClick={() =>
+                            setViewer({
+                              src: row.attachment,
+                              filename: row.attachmentName || 'adjunto.jpg',
+                            })
+                          }
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: 16,
+                            padding: '2px 4px',
+                          }}
                         >
                           📎
                         </button>
-                      ) : null
+                      ) : (
+                        <button
+                          title="Adjuntar"
+                          onClick={() => handleAttach(row)}
+                          disabled={attachProcessing && attachingTx?.id === row.id}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '2px 4px',
+                            cursor:
+                              attachProcessing && attachingTx?.id === row.id
+                                ? 'not-allowed'
+                                : 'pointer',
+                            fontSize: 13,
+                            color: '#adb5bd',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {attachProcessing && attachingTx?.id === row.id ? (
+                            <CSpinner size="sm" style={{ width: 10, height: 10 }} />
+                          ) : (
+                            '📎'
+                          )}
+                        </button>
+                      )
                     }
                   />
                   <Column
@@ -1190,6 +1297,15 @@ export default function Transactions() {
           }}
         />
       )}
+
+      {/* Hidden input for attaching to existing transactions */}
+      <input
+        ref={attachRef}
+        type="file"
+        accept="image/*,application/pdf"
+        style={{ display: 'none' }}
+        onChange={handleAttachFile}
+      />
 
       {/* Attachment viewer */}
       {viewer && (
