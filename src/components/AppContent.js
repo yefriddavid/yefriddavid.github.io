@@ -10,6 +10,10 @@ import useNotifications from '../hooks/useNotifications'
 const AppContent = () => {
   const token = localStorage.getItem('token')
   const role = useSelector((s) => s.profile.data?.role ?? null)
+  const landingPage =
+    useSelector((s) => s.profile.data?.landingPage) ||
+    localStorage.getItem('landingPage') ||
+    '/cash_flow/dashboard'
 
   useNotifications()
 
@@ -17,7 +21,8 @@ const AppContent = () => {
     return (
       <CContainer className="px-2" fluid>
         <Routes>
-          <Route path="/*" element={<Navigate to={{ pathname: '/login' }} />} />
+          <Route path="/" element={<Navigate to="/abountMe" replace />} />
+          <Route path="/*" element={<Navigate to="/login" replace />} />
         </Routes>
       </CContainer>
     )
@@ -45,8 +50,8 @@ const AppContent = () => {
               />
             ) : null,
           )}
-          <Route path="/" element={<Navigate to="/abountMe" replace />} />
-          <Route path="/cash_flow" element={<Navigate to="/abountMe" replace />} />
+          <Route path="/" element={<Navigate to={landingPage} replace />} />
+          <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
         </Routes>
       </Suspense>
     </CContainer>

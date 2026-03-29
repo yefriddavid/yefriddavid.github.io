@@ -66,11 +66,12 @@ export const updateUser = async (username, { name, role, email, active }) => {
   })
 }
 
-// Partial update — used by Profile page (only name/email, no role/active)
-export const updateOwnProfile = async (username, { name, email }) => {
+// Partial update — used by Profile page (only name/email/landingPage, no role/active)
+export const updateOwnProfile = async (username, { name, email, landingPage }) => {
   await updateDoc(doc(db, COL, username), {
     name,
     email: email || null,
+    landingPage: landingPage || null,
   })
 }
 

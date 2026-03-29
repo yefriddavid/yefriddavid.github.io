@@ -1,10 +1,22 @@
 import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert,
-} from '@coreui/react'
+import { CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
 import { changeOwnPassword } from 'src/services/providers/firebase/users'
+
+const LANDING_PAGES = [
+  { value: '/cash_flow/dashboard', label: 'Dashboard' },
+  { value: '/cash_flow/management/transactions', label: 'Transacciones' },
+  { value: '/cash_flow/management/account-status', label: 'Estado de Cuentas' },
+  { value: '/cash_flow/management/accounts-master', label: 'Maestro de Cuentas' },
+  { value: '/cash_flow/management/accounts', label: 'Cuentas' },
+  { value: '/cash_flow/management/payments', label: 'Pagos' },
+  { value: '/cash_flow/management/taxis/home', label: 'Taxi — Inicio' },
+  { value: '/cash_flow/management/taxis/settlements', label: 'Taxi — Liquidaciones' },
+  { value: '/cash_flow/tools/adjustments', label: 'Herramientas — Ajustes' },
+  { value: '/cash_flow/tools/visits', label: 'Herramientas — Visitas' },
+  { value: '/cash_flow/eggs', label: 'Eggs' },
+]
 
 const ROLE_LABELS = {
   superAdmin: 'Super Admin',
@@ -18,7 +30,8 @@ const ROLE_COLORS = {
   conductor: 'secondary',
 }
 
-const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
+const DEFAULT_AVATAR =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
 
 const Profile = () => {
   const dispatch = useDispatch()
@@ -45,7 +58,11 @@ const Profile = () => {
   }
 
   const startEdit = () => {
-    setForm({ name: profile.name ?? '', email: profile.email ?? '' })
+    setForm({
+      name: profile.name ?? '',
+      email: profile.email ?? '',
+      landingPage: profile.landingPage ?? '/cash_flow/dashboard',
+    })
     setEditing(true)
   }
 
@@ -56,25 +73,42 @@ const Profile = () => {
 
   const saveEdit = () => {
     dispatch(authActions.updateProfile({ username: profile.username, ...form }))
+    localStorage.setItem('landingPage', form.landingPage || '/cash_flow/dashboard')
     setEditing(false)
     setForm(null)
   }
 
   const handleChangePassword = async () => {
     setPwError(null)
-    if (!pwForm.current) { setPwError('Ingresa tu contraseña actual'); return }
-    if (!pwForm.next) { setPwError('Ingresa la nueva contraseña'); return }
-    if (pwForm.next.length < 6) { setPwError('Mínimo 6 caracteres'); return }
-    if (pwForm.next !== pwForm.confirm) { setPwError('Las contraseñas no coinciden'); return }
+    if (!pwForm.current) {
+      setPwError('Ingresa tu contraseña actual')
+      return
+    }
+    if (!pwForm.next) {
+      setPwError('Ingresa la nueva contraseña')
+      return
+    }
+    if (pwForm.next.length < 6) {
+      setPwError('Mínimo 6 caracteres')
+      return
+    }
+    if (pwForm.next !== pwForm.confirm) {
+      setPwError('Las contraseñas no coinciden')
+      return
+    }
     setPwLoading(true)
     try {
       await changeOwnPassword(profile.username, pwForm.current, pwForm.next)
       setPwSuccess(true)
       setPwForm({ current: '', next: '', confirm: '' })
-      setTimeout(() => { setChangingPw(false); setPwSuccess(false) }, 2000)
+      setTimeout(() => {
+        setChangingPw(false)
+        setPwSuccess(false)
+      }, 2000)
     } catch (e) {
       let msg = e.message
-      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Contraseña actual incorrecta'
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
+        msg = 'Contraseña actual incorrecta'
       if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde.'
       setPwError(msg)
     } finally {
@@ -119,10 +153,17 @@ const Profile = () => {
               }}
             />
             {avatarLoading && (
-              <div style={{
-                position: 'absolute', inset: 0, borderRadius: '50%',
-                background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <CSpinner size="sm" color="light" />
               </div>
             )}
@@ -176,6 +217,21 @@ const Profile = () => {
                 placeholder="correo@ejemplo.com"
               />
             </div>
+            <div>
+              <label className="form-label small fw-semibold">Página de inicio</label>
+              <select
+                className="form-select"
+                value={form.landingPage}
+                onChange={(e) => setForm((p) => ({ ...p, landingPage: e.target.value }))}
+              >
+                {LANDING_PAGES.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <div className="form-text">Página a la que irás después de iniciar sesión.</div>
+            </div>
             <div className="d-flex gap-2 pt-1">
               <CButton color="primary" size="sm" onClick={saveEdit} disabled={loading}>
                 {loading ? <CSpinner size="sm" /> : 'Guardar'}
@@ -190,7 +246,9 @@ const Profile = () => {
             <table className="table table-sm table-borderless mb-3">
               <tbody>
                 <tr>
-                  <td className="text-secondary small" style={{ width: 100 }}>Nombre</td>
+                  <td className="text-secondary small" style={{ width: 100 }}>
+                    Nombre
+                  </td>
                   <td className="fw-medium">{profile.name || '—'}</td>
                 </tr>
                 <tr>
@@ -213,13 +271,29 @@ const Profile = () => {
                     </CBadge>
                   </td>
                 </tr>
+                <tr>
+                  <td className="text-secondary small">Página de inicio</td>
+                  <td className="fw-medium">
+                    {LANDING_PAGES.find((p) => p.value === profile.landingPage)?.label ??
+                      'Dashboard'}
+                  </td>
+                </tr>
               </tbody>
             </table>
             <div className="d-flex gap-2">
               <CButton size="sm" color="primary" variant="outline" onClick={startEdit}>
                 Editar información
               </CButton>
-              <CButton size="sm" color="secondary" variant="outline" onClick={() => { setChangingPw((v) => !v); setPwError(null); setPwSuccess(false) }}>
+              <CButton
+                size="sm"
+                color="secondary"
+                variant="outline"
+                onClick={() => {
+                  setChangingPw((v) => !v)
+                  setPwError(null)
+                  setPwSuccess(false)
+                }}
+              >
                 Cambiar contraseña
               </CButton>
             </div>
@@ -230,7 +304,9 @@ const Profile = () => {
         {changingPw && (
           <div className="mt-3 pt-3 border-top d-flex flex-column gap-3">
             <div className="fw-semibold small">Cambiar contraseña</div>
-            {pwSuccess && <div style={{ color: '#2eb85c', fontSize: 13 }}>¡Contraseña actualizada!</div>}
+            {pwSuccess && (
+              <div style={{ color: '#2eb85c', fontSize: 13 }}>¡Contraseña actualizada!</div>
+            )}
             {pwError && <div style={{ color: '#e55353', fontSize: 13 }}>{pwError}</div>}
             <div>
               <label className="form-label small fw-semibold">Contraseña actual</label>
@@ -266,10 +342,25 @@ const Profile = () => {
               />
             </div>
             <div className="d-flex gap-2">
-              <CButton size="sm" color="primary" onClick={handleChangePassword} disabled={pwLoading}>
+              <CButton
+                size="sm"
+                color="primary"
+                onClick={handleChangePassword}
+                disabled={pwLoading}
+              >
                 {pwLoading ? <CSpinner size="sm" /> : 'Guardar'}
               </CButton>
-              <CButton size="sm" color="secondary" variant="outline" onClick={() => { setChangingPw(false); setPwError(null) }}>Cancelar</CButton>
+              <CButton
+                size="sm"
+                color="secondary"
+                variant="outline"
+                onClick={() => {
+                  setChangingPw(false)
+                  setPwError(null)
+                }}
+              >
+                Cancelar
+              </CButton>
             </div>
           </div>
         )}
