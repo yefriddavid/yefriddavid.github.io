@@ -623,17 +623,24 @@ export default function AccountStatus() {
     return map
   }, [transactions, monthStr])
 
-  const { paid, pending, overdue } = useMemo(() => {
+  const { paid, pending, overdue, totalPending, totalOverdue } = useMemo(() => {
     let p = 0,
       pe = 0,
-      ov = 0
+      ov = 0,
+      tpe = 0,
+      tov = 0
     applicable.forEach((a) => {
       const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
       if (s.label === 'Pagado') p++
-      else if (s.label === 'Vencido') ov++
-      else pe++
+      else if (s.label === 'Vencido') {
+        ov++
+        tov += a.defaultValue || 0
+      } else {
+        pe++
+        tpe += a.defaultValue || 0
+      }
     })
-    return { paid: p, pending: pe, overdue: ov }
+    return { paid: p, pending: pe, overdue: ov, totalPending: tpe, totalOverdue: tov }
   }, [applicable, masterPaymentsMap, monthStr])
 
   const totalPaid = useMemo(
@@ -780,15 +787,30 @@ export default function AccountStatus() {
         style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}
       >
         {[
-          { label: 'Pagadas', value: paid, color: '#2f9e44', bg: '#f0fdf4', border: '#86efac' },
+          {
+            label: 'Pagadas',
+            value: paid,
+            total: totalPaid,
+            color: '#2f9e44',
+            bg: '#f0fdf4',
+            border: '#86efac',
+          },
           {
             label: 'Pendientes',
             value: pending,
+            total: totalPending,
             color: '#f59f00',
             bg: '#fff9db',
             border: '#ffe066',
           },
-          { label: 'Vencidas', value: overdue, color: '#e03131', bg: '#fff5f5', border: '#fca5a5' },
+          {
+            label: 'Vencidas',
+            value: overdue,
+            total: totalOverdue,
+            color: '#e03131',
+            bg: '#fff5f5',
+            border: '#fca5a5',
+          },
         ].map((s) => (
           <div
             key={s.label}
@@ -806,6 +828,20 @@ export default function AccountStatus() {
             <div style={{ fontSize: 11, color: s.color, marginTop: 3, fontWeight: 600 }}>
               {s.label}
             </div>
+            {s.total > 0 && (
+              <div
+                style={{
+                  fontSize: 10,
+                  color: s.color,
+                  marginTop: 4,
+                  opacity: 0.85,
+                  paddingLeft: 4,
+                  paddingRight: 4,
+                }}
+              >
+                {fmt(s.total)}
+              </div>
+            )}
           </div>
         ))}
       </div>
