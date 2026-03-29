@@ -15,6 +15,7 @@ import {
   cilSettings,
   cilLayers,
   cilFile,
+  cilPhone,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -62,6 +63,12 @@ const getNav = (t, role) => {
           name: 'Maestro de Cuentas',
           to: '/cash_flow/management/accounts-master',
           icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Estado de Cuentas',
+          to: '/cash_flow/management/account-status',
+          icon: <CIcon icon={cilPhone} customClassName="nav-icon" />,
         },
         ...(isSuperAdmin
           ? [

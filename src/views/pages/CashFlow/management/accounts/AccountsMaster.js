@@ -389,10 +389,33 @@ export default function AccountsMaster() {
               noDataText="Sin cuentas maestras registradas"
               style={{ margin: 0 }}
             >
+              <Column dataField="code" caption="Código" width={90} />
+              <Column dataField="name" caption="Nombre" minWidth={200} />
+              {/*}<Column dataField="description" caption="Descripción" minWidth={200} />*/}
+              <Column
+                dataField="defaultValue"
+                caption="Valor por defecto"
+                width={150}
+                alignment="right"
+                hidingPriority={0}
+                cellRender={({ value }) =>
+                  value ? (
+                    <span style={{ fontWeight: 600, color: '#1e3a5f' }}>
+                      {new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                      }).format(value)}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#adb5bd', fontSize: 11 }}>—</span>
+                  )
+                }
+              />
               <Column dataField="type" caption="Tipo" width={110} />
               <Column dataField="period" caption="Período" width={110} />
-              <Column dataField="definition" caption="Definición" width={120} />
-              <Column
+              {/*<Column dataField="definition" caption="Definición" width={120} />*/}
+              {/*<Column
                 dataField="classification"
                 caption="Clasificación"
                 width={130}
@@ -411,45 +434,26 @@ export default function AccountsMaster() {
                     {value}
                   </span>
                 )}
-              />
-              <Column dataField="category" caption="Categoría" width={150} />
+                />*/}
+              {/*<Column dataField="category" caption="Categoría" width={150} />*/}
               <Column
                 dataField="maxDatePay"
                 caption="Día máx. pago"
                 width={120}
                 alignment="center"
               />
-              <Column dataField="monthStartAt" caption="Mes inicio" width={120} />
+              {/*}<Column dataField="monthStartAt" caption="Mes inicio" width={120} />*/}
               <Column dataField="paymentMethod" caption="Método pago" width={130} />
-              <Column dataField="code" caption="Código" width={90} />
-              <Column dataField="name" caption="Nombre" minWidth={200} />
-              <Column dataField="description" caption="Descripción" minWidth={200} />
-              <Column
-                dataField="defaultValue"
-                caption="Valor por defecto"
-                width={150}
-                alignment="right"
-                cellRender={({ value }) =>
-                  value ? (
-                    <span style={{ fontWeight: 600, color: '#1e3a5f' }}>
-                      {new Intl.NumberFormat('es-CO', {
-                        style: 'currency',
-                        currency: 'COP',
-                        minimumFractionDigits: 0,
-                      }).format(value)}
-                    </span>
-                  ) : (
-                    <span style={{ color: '#adb5bd', fontSize: 11 }}>—</span>
-                  )
-                }
-              />
               <Column
                 dataField="active"
                 caption="Estado"
                 width={90}
                 alignment="center"
-                cellRender={({ value }) => (
+                cellRender={({ value, data: row }) => (
                   <span
+                    onClick={() =>
+                      dispatch(accountsMasterActions.updateRequest({ ...row, active: !row.active }))
+                    }
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
@@ -458,6 +462,8 @@ export default function AccountsMaster() {
                       background: value ? '#f0fdf4' : '#fff5f5',
                       color: value ? '#2f9e44' : '#e03131',
                       border: `1px solid ${value ? '#86efac' : '#fca5a5'}`,
+                      cursor: 'pointer',
+                      userSelect: 'none',
                     }}
                   >
                     {value ? 'Activo' : 'Inactivo'}

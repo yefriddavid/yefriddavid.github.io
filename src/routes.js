@@ -30,6 +30,7 @@ const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 // Movements
 const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
 const Transactions = React.lazy(() => import('./views/pages/CashFlow/movements/Transactions'))
+const AccountStatus = React.lazy(() => import('./views/pages/CashFlow/movements/AccountStatus'))
 const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
@@ -154,6 +155,7 @@ const routes = [
     element: Payments,
   },
   { path: '/cash_flow/management/transactions', name: 'Transactions', element: Transactions },
+  { path: '/cash_flow/management/account-status', name: 'Account Status', element: AccountStatus },
   {
     path: '/cash_flow/management/accounts-master',
     name: 'Accounts Master',
