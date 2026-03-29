@@ -78,7 +78,8 @@ function isApplicableToMonth(account, month) {
   ) {
     const startMonth = MONTH_NAMES.indexOf(account.monthStartAt) + 1
     if (startMonth === 0) return false
-    const interval = account.period === 'Trimestrales' ? 3 : account.period === 'Cuatrimestrales' ? 4 : 6
+    const interval =
+      account.period === 'Trimestrales' ? 3 : account.period === 'Cuatrimestrales' ? 4 : 6
     return (month - startMonth + 12) % interval === 0
   }
   // N/A — always show
@@ -508,9 +509,8 @@ function MaestroRow({
 }) {
   const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
   const isPaid = paid > 0
-  const paidPayment = payments.find((p) => p.attachment)
-  const firstPayment = payments[0]
-  const isAttaching = attachingId === firstPayment?.id
+  const isPartial = isPaid && account.defaultValue > 0 && paid < account.defaultValue
+  const canPay = !isPaid || isPartial
   const isOverdue =
     !isPaid &&
     (() => {
@@ -520,11 +520,26 @@ function MaestroRow({
       return today > dueDate
     })()
 
+  const statusLabel = isPartial
+    ? 'Parcial'
+    : isPaid
+      ? 'Pagado'
+      : isOverdue
+        ? 'Vencido'
+        : 'Pendiente'
+  const statusColors = {
+    Pagado: { bg: '#f0fdf4', color: '#2f9e44', border: '#86efac' },
+    Parcial: { bg: '#f0f9ff', color: '#0ea5e9', border: '#7dd3fc' },
+    Vencido: { bg: '#fff5f5', color: '#e03131', border: '#fca5a5' },
+    Pendiente: { bg: '#fff9db', color: '#f59f00', border: '#ffe066' },
+  }
+  const sc = statusColors[statusLabel]
+
   return (
     <tr
       style={{
         borderBottom: '1px solid #f1f5f9',
-        background: isPaid ? '#f0fdf4' : isOverdue ? '#fff5f5' : '#fff',
+        background: isPaid && !isPartial ? '#f0fdf4' : isOverdue ? '#fff5f5' : '#fff',
       }}
     >
       <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{account.name}</td>
@@ -558,73 +573,93 @@ function MaestroRow({
             fontWeight: 700,
             borderRadius: 4,
             padding: '2px 8px',
-            background: isPaid ? '#f0fdf4' : isOverdue ? '#fff5f5' : '#fff9db',
-            color: isPaid ? '#2f9e44' : isOverdue ? '#e03131' : '#f59f00',
-            border: `1px solid ${isPaid ? '#86efac' : isOverdue ? '#fca5a5' : '#ffe066'}`,
+            background: sc.bg,
+            color: sc.color,
+            border: `1px solid ${sc.border}`,
           }}
         >
-          {isPaid ? 'Pagado' : isOverdue ? 'Vencido' : 'Pendiente'}
+          {statusLabel}
         </span>
       </td>
-      <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
-          {paidPayment?.attachment ? (
-            <button
-              onClick={() =>
-                onViewAttachment(
-                  paidPayment.attachment,
-                  paidPayment.attachmentName || 'adjunto.jpg',
-                )
-              }
-              title="Ver adjunto"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 16,
-                padding: '2px 4px',
-              }}
-            >
-              📎
-            </button>
-          ) : (
-            firstPayment && (
-              <button
-                onClick={() => onAttach(firstPayment)}
-                disabled={isAttaching}
-                title="Adjuntar"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '2px 4px',
-                  cursor: isAttaching ? 'not-allowed' : 'pointer',
-                  fontSize: 11,
-                  color: '#adb5bd',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
+      <td style={{ padding: '8px 12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {payments.map((p) => {
+            const isAttaching = attachingId === p.id
+            return (
+              <div
+                key={p.id}
+                style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'nowrap' }}
               >
-                {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
-              </button>
+                <span style={{ fontSize: 11, color: '#2f9e44', fontWeight: 600, minWidth: 70 }}>
+                  {fmt(p.amount)}
+                </span>
+                {p.attachment ? (
+                  <button
+                    onClick={() =>
+                      onViewAttachment(p.attachment, p.attachmentName || 'adjunto.jpg')
+                    }
+                    title="Ver adjunto"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: 15,
+                      padding: '2px 4px',
+                    }}
+                  >
+                    📎
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onAttach(p)}
+                    disabled={isAttaching}
+                    title="Adjuntar"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '2px 4px',
+                      cursor: isAttaching ? 'not-allowed' : 'pointer',
+                      fontSize: 11,
+                      color: '#adb5bd',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+                  </button>
+                )}
+                <button
+                  onClick={() => onViewPayment(p)}
+                  style={{
+                    fontSize: 11,
+                    padding: '3px 8px',
+                    borderRadius: 5,
+                    border: '1px solid #86efac',
+                    background: '#f0fdf4',
+                    color: '#2f9e44',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Ver
+                </button>
+                <button
+                  onClick={() => onDelete(p)}
+                  title="Eliminar pago"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#e03131',
+                    fontSize: 14,
+                    padding: '2px 4px',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             )
-          )}
-          {isPaid ? (
-            <button
-              onClick={() => onViewPayment(payments[0])}
-              style={{
-                fontSize: 11,
-                padding: '3px 10px',
-                borderRadius: 5,
-                border: '1px solid #86efac',
-                background: '#f0fdf4',
-                color: '#2f9e44',
-                cursor: 'pointer',
-              }}
-            >
-              Ver
-            </button>
-          ) : (
+          })}
+          {canPay && (
             <button
               onClick={() => onPay(account)}
               style={{
@@ -636,25 +671,11 @@ function MaestroRow({
                 color: '#fff',
                 cursor: 'pointer',
                 fontWeight: 600,
+                alignSelf: 'flex-start',
+                marginTop: payments.length > 0 ? 2 : 0,
               }}
             >
               Pagar
-            </button>
-          )}
-          {isPaid && (
-            <button
-              onClick={() => onDelete(payments[0])}
-              title="Eliminar pago"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#e03131',
-                fontSize: 15,
-                padding: '2px 4px',
-              }}
-            >
-              ✕
             </button>
           )}
         </div>

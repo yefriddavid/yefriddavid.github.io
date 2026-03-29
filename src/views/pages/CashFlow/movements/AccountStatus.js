@@ -45,7 +45,8 @@ function isApplicableToMonth(account, month) {
   ) {
     const startMonth = MONTH_NAMES.indexOf(account.monthStartAt) + 1
     if (startMonth === 0) return false
-    const interval = account.period === 'Trimestrales' ? 3 : account.period === 'Cuatrimestrales' ? 4 : 6
+    const interval =
+      account.period === 'Trimestrales' ? 3 : account.period === 'Cuatrimestrales' ? 4 : 6
     return (month - startMonth + 12) % interval === 0
   }
   return true
@@ -53,6 +54,8 @@ function isApplicableToMonth(account, month) {
 
 function getStatus(account, payments, monthStr) {
   const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
+  if (paid > 0 && account.defaultValue > 0 && paid < account.defaultValue)
+    return { label: 'Parcial', color: '#0ea5e9', bg: '#f0f9ff', border: '#7dd3fc', paid }
   if (paid > 0) return { label: 'Pagado', color: '#2f9e44', bg: '#f0fdf4', border: '#86efac', paid }
   const today = new Date()
   const [y, m] = monthStr.split('-').map(Number)
@@ -387,15 +390,13 @@ function AccountCard({
   payments,
   monthStr,
   onPay,
+  onDelete,
   onViewAttachment,
   onAttach,
   attachingId,
 }) {
   const status = getStatus(account, payments, monthStr)
   const canPay = status.label !== 'Pagado'
-  const paidPayment = payments.find((p) => p.attachment)
-  const firstPayment = payments[0]
-  const isAttaching = attachingId === firstPayment?.id
 
   return (
     <div
@@ -406,187 +407,241 @@ function AccountCard({
         marginBottom: 10,
         borderLeft: `4px solid ${status.border}`,
         boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
       }}
     >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: '50%',
-          background: status.bg,
-          border: `2px solid ${status.border}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          fontSize: 18,
-        }}
-      >
-        {status.label === 'Pagado' ? '✓' : status.label === 'Vencido' ? '!' : '·'}
-      </div>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div
           style={{
-            fontSize: 15,
-            fontWeight: 600,
-            color: '#1a1a2e',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: status.bg,
+            border: `2px solid ${status.border}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            fontSize: 18,
           }}
         >
-          {account.name}
+          {status.label === 'Pagado'
+            ? '✓'
+            : status.label === 'Parcial'
+              ? '½'
+              : status.label === 'Vencido'
+                ? '!'
+                : '·'}
         </div>
-        <div
-          style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}
-        >
-          {account.category && (
-            <span
-              style={{
-                fontSize: 11,
-                color: '#6c757d',
-                background: '#f1f5f9',
-                borderRadius: 4,
-                padding: '1px 6px',
-              }}
-            >
-              {account.category}
-            </span>
-          )}
-          {account.maxDatePay && (
-            <span style={{ fontSize: 11, color: '#6c757d' }}>día {account.maxDatePay}</span>
-          )}
-          {account.paymentMethod && account.paymentMethod !== 'Cash' && (
-            <span
-              style={{
-                fontSize: 11,
-                color: '#6c757d',
-                background: '#e9ecef',
-                borderRadius: 4,
-                padding: '1px 6px',
-              }}
-            >
-              {account.paymentMethod}
-            </span>
-          )}
-        </div>
-      </div>
 
-      <div
-        style={{
-          textAlign: 'right',
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: 6,
-        }}
-      >
-        {status.paid > 0 ? (
-          <>
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                borderRadius: 20,
-                padding: '3px 10px',
-                background: status.bg,
-                color: status.color,
-                border: `1px solid ${status.border}`,
-              }}
-            >
-              {status.label}
-            </span>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44' }}>
-              {fmt(status.paid)}
-            </div>
-            {paidPayment?.note && (
-              <div
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: '#1a1a2e',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {account.name}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              marginTop: 4,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
+            {account.category && (
+              <span
                 style={{
                   fontSize: 11,
                   color: '#6c757d',
-                  maxWidth: 120,
-                  textAlign: 'right',
-                  fontStyle: 'italic',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  background: '#f1f5f9',
+                  borderRadius: 4,
+                  padding: '1px 6px',
                 }}
               >
-                {paidPayment.note}
-              </div>
+                {account.category}
+              </span>
             )}
-            {paidPayment?.attachment ? (
-              <button
-                onClick={() => onViewAttachment(paidPayment.attachment, paidPayment.attachmentName)}
+            {account.maxDatePay && (
+              <span style={{ fontSize: 11, color: '#6c757d' }}>día {account.maxDatePay}</span>
+            )}
+            {account.paymentMethod && account.paymentMethod !== 'Cash' && (
+              <span
                 style={{
-                  padding: '4px 10px',
-                  borderRadius: 20,
-                  border: '1px solid #86efac',
-                  background: '#f0fdf4',
-                  color: '#2f9e44',
                   fontSize: 11,
-                  fontWeight: 700,
-                  cursor: 'pointer',
+                  color: '#6c757d',
+                  background: '#e9ecef',
+                  borderRadius: 4,
+                  padding: '1px 6px',
                 }}
               >
-                📎 Ver adjunto
-              </button>
-            ) : (
-              firstPayment && (
+                {account.paymentMethod}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 4,
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              borderRadius: 20,
+              padding: '3px 10px',
+              background: status.bg,
+              color: status.color,
+              border: `1px solid ${status.border}`,
+            }}
+          >
+            {status.label}
+          </span>
+          {account.defaultValue > 0 && (
+            <div style={{ fontSize: 11, color: '#adb5bd' }}>{fmt(account.defaultValue)}</div>
+          )}
+          {canPay && (
+            <button
+              onClick={() => onPay(account)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                border: 'none',
+                background: '#1e3a5f',
+                color: '#fff',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Pagar
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Individual payments list */}
+      {payments.length > 0 && (
+        <div style={{ marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
+          {payments.map((p) => {
+            const isAttaching = attachingId === p.id
+            return (
+              <div
+                key={p.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginBottom: 6,
+                  padding: '4px 6px',
+                  borderRadius: 8,
+                  background: '#f8f9fa',
+                }}
+              >
+                <span
+                  style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44', flex: 1, minWidth: 0 }}
+                >
+                  {fmt(p.amount)}
+                </span>
+                {p.date && (
+                  <span style={{ fontSize: 11, color: '#adb5bd', whiteSpace: 'nowrap' }}>
+                    {p.date}
+                  </span>
+                )}
+                {p.note && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: '#6c757d',
+                      fontStyle: 'italic',
+                      maxWidth: 80,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {p.note}
+                  </span>
+                )}
+                {p.attachment ? (
+                  <button
+                    onClick={() => onViewAttachment(p.attachment, p.attachmentName)}
+                    title="Ver adjunto"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: 15,
+                      padding: '2px 4px',
+                    }}
+                  >
+                    📎
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onAttach(p)}
+                    disabled={isAttaching}
+                    title="Adjuntar"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '2px 4px',
+                      cursor: isAttaching ? 'not-allowed' : 'pointer',
+                      fontSize: 13,
+                      color: '#adb5bd',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+                  </button>
+                )}
                 <button
-                  onClick={() => onAttach(firstPayment)}
-                  disabled={isAttaching}
+                  onClick={() => onDelete(p)}
+                  title="Eliminar pago"
                   style={{
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    border: '1px solid #dee2e6',
-                    background: '#f8f9fa',
-                    color: '#6c757d',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: isAttaching ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#e03131',
+                    fontSize: 14,
+                    padding: '2px 4px',
                   }}
                 >
-                  {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
-                  {isAttaching ? 'Procesando…' : 'Adjuntar'}
+                  ✕
                 </button>
-              )
-            )}
-          </>
-        ) : (
-          <>
-            {account.defaultValue > 0 && (
-              <div style={{ fontSize: 12, color: '#adb5bd' }}>{fmt(account.defaultValue)}</div>
-            )}
-            {canPay && (
-              <button
-                onClick={() => onPay(account)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 20,
-                  border: 'none',
-                  background: '#1e3a5f',
-                  color: '#fff',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Pagar
-              </button>
-            )}
-          </>
-        )}
-      </div>
+              </div>
+            )
+          })}
+          {status.label === 'Parcial' && (
+            <div
+              style={{
+                fontSize: 11,
+                color: '#0ea5e9',
+                fontWeight: 600,
+                textAlign: 'right',
+                marginTop: 2,
+              }}
+            >
+              Pendiente: {fmt((account.defaultValue || 0) - status.paid)}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -645,6 +700,9 @@ export default function AccountStatus() {
       else if (s.label === 'Vencido') {
         ov++
         tov += a.defaultValue || 0
+      } else if (s.label === 'Parcial') {
+        pe++
+        tpe += (a.defaultValue || 0) - s.paid
       } else {
         pe++
         tpe += a.defaultValue || 0
@@ -666,7 +724,8 @@ export default function AccountStatus() {
       if (filter === 'all') return true
       const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
       if (filter === 'paid') return s.label === 'Pagado'
-      if (filter === 'pending') return s.label === 'Pendiente' || s.label === 'Vencido'
+      if (filter === 'pending')
+        return s.label === 'Pendiente' || s.label === 'Vencido' || s.label === 'Parcial'
       return true
     })
   }, [applicable, masterPaymentsMap, monthStr, filter])
@@ -687,6 +746,12 @@ export default function AccountStatus() {
   const handleSavePayment = (payload) => {
     dispatch(transactionActions.createRequest(payload))
     setPaying(null)
+  }
+
+  const handleDelete = (transaction) => {
+    if (window.confirm(`¿Eliminar este pago de ${fmt(transaction.amount)}?`)) {
+      dispatch(transactionActions.deleteRequest({ id: transaction.id }))
+    }
   }
 
   const handleAttach = (transaction) => {
@@ -932,6 +997,7 @@ export default function AccountStatus() {
             payments={masterPaymentsMap[account.id] ?? []}
             monthStr={monthStr}
             onPay={setPaying}
+            onDelete={handleDelete}
             onViewAttachment={(src, filename) => setViewer({ src, filename })}
             onAttach={handleAttach}
             attachingId={attachProcessing ? attachingTx?.id : null}
