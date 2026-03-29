@@ -49,9 +49,189 @@ function getStatus(account, payments, monthStr) {
   return { label: 'Pendiente', color: '#f59f00', bg: '#fff9db', border: '#ffe066', paid: 0 }
 }
 
+// ── Pay modal ──────────────────────────────────────────────────────────────────
+function PayModal({ account, year, month, saving, onSave, onClose }) {
+  const defaultDate = (() => {
+    const d = new Date(year, month - 1, account.maxDatePay || 15)
+    // if date is in the future use it, else use today
+    return d > new Date() ? d.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+  })()
+
+  const [amount, setAmount] = useState(account.defaultValue || '')
+  const [date, setDate] = useState(defaultDate)
+
+  const handleSave = () => {
+    if (!amount || !date) return
+    onSave({
+      type: account.type === 'Outcoming' ? 'expense' : 'income',
+      category: account.category || '',
+      description: account.name,
+      amount: Number(String(amount).replace(/\D/g, '')),
+      date,
+      accountMasterId: account.id,
+    })
+  }
+
+  return (
+    // backdrop
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.45)',
+        zIndex: 1050,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+      }}
+    >
+      {/* sheet */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          maxWidth: 540,
+          background: '#fff',
+          borderRadius: '20px 20px 0 0',
+          padding: '24px 20px 36px',
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
+        }}
+      >
+        {/* drag handle */}
+        <div
+          style={{
+            width: 40,
+            height: 4,
+            borderRadius: 2,
+            background: '#dee2e6',
+            margin: '0 auto 20px',
+          }}
+        />
+
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+          Registrar pago
+        </div>
+        <div style={{ fontSize: 13, color: '#6c757d', marginBottom: 24 }}>{account.name}</div>
+
+        {/* Amount */}
+        <label
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#6c757d',
+            display: 'block',
+            marginBottom: 6,
+          }}
+        >
+          MONTO (COP)
+        </label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+          min="0"
+          autoFocus
+          style={{
+            width: '100%',
+            fontSize: 28,
+            fontWeight: 700,
+            color: '#1e3a5f',
+            border: 'none',
+            borderBottom: '2px solid #dee2e6',
+            outline: 'none',
+            padding: '4px 0 10px',
+            marginBottom: 20,
+            background: 'transparent',
+          }}
+        />
+
+        {/* Date */}
+        <label
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#6c757d',
+            display: 'block',
+            marginBottom: 6,
+          }}
+        >
+          FECHA
+        </label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          style={{
+            width: '100%',
+            fontSize: 16,
+            color: '#1a1a2e',
+            border: 'none',
+            borderBottom: '2px solid #dee2e6',
+            outline: 'none',
+            padding: '4px 0 10px',
+            marginBottom: 28,
+            background: 'transparent',
+          }}
+        />
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: '14px',
+              borderRadius: 12,
+              border: '1px solid #dee2e6',
+              background: '#fff',
+              fontSize: 15,
+              fontWeight: 600,
+              color: '#6c757d',
+              cursor: 'pointer',
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || !amount}
+            style={{
+              flex: 2,
+              padding: '14px',
+              borderRadius: 12,
+              border: 'none',
+              background: !amount ? '#e9ecef' : '#1e3a5f',
+              fontSize: 15,
+              fontWeight: 700,
+              color: !amount ? '#adb5bd' : '#fff',
+              cursor: !amount ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            {saving ? (
+              <CSpinner
+                size="sm"
+                style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
+              />
+            ) : (
+              'Guardar pago'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Account card ───────────────────────────────────────────────────────────────
-function AccountCard({ account, payments, monthStr }) {
+function AccountCard({ account, payments, monthStr, onPay }) {
   const status = getStatus(account, payments, monthStr)
+  const canPay = status.label !== 'Pagado'
 
   return (
     <div
@@ -135,30 +315,59 @@ function AccountCard({ account, payments, monthStr }) {
       </div>
 
       {/* Right side */}
-      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <span
-          style={{
-            display: 'inline-block',
-            fontSize: 12,
-            fontWeight: 700,
-            borderRadius: 20,
-            padding: '3px 10px',
-            background: status.bg,
-            color: status.color,
-            border: `1px solid ${status.border}`,
-          }}
-        >
-          {status.label}
-        </span>
-        {status.paid > 0 && (
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44', marginTop: 4 }}>
-            {fmt(status.paid)}
-          </div>
-        )}
-        {status.paid === 0 && account.defaultValue > 0 && (
-          <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 4 }}>
-            {fmt(account.defaultValue)}
-          </div>
+      <div
+        style={{
+          textAlign: 'right',
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 6,
+        }}
+      >
+        {status.paid > 0 ? (
+          <>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                borderRadius: 20,
+                padding: '3px 10px',
+                background: status.bg,
+                color: status.color,
+                border: `1px solid ${status.border}`,
+              }}
+            >
+              {status.label}
+            </span>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44' }}>
+              {fmt(status.paid)}
+            </div>
+          </>
+        ) : (
+          <>
+            {account.defaultValue > 0 && (
+              <div style={{ fontSize: 12, color: '#adb5bd' }}>{fmt(account.defaultValue)}</div>
+            )}
+            {canPay && (
+              <button
+                onClick={() => onPay(account)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                  border: 'none',
+                  background: '#1e3a5f',
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Pagar
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -168,12 +377,13 @@ function AccountCard({ account, payments, monthStr }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountStatus() {
   const dispatch = useDispatch()
-  const { data: transactions, fetching } = useSelector((s) => s.transaction)
+  const { data: transactions, fetching, saving } = useSelector((s) => s.transaction)
   const { data: masters, fetching: fetchingMasters } = useSelector((s) => s.accountsMaster)
 
   const [year, setYear] = useState(CURRENT_YEAR)
   const [month, setMonth] = useState(CURRENT_MONTH)
-  const [filter, setFilter] = useState('all') // 'all' | 'pending' | 'paid'
+  const [filter, setFilter] = useState('all')
+  const [paying, setPaying] = useState(null) // account being paid
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -247,6 +457,18 @@ export default function AccountStatus() {
     } else setMonth((m) => m + 1)
   }
 
+  const handleSavePayment = (payload) => {
+    dispatch(transactionActions.createRequest(payload))
+    setPaying(null)
+  }
+
+  // close modal when saving completes
+  const prevSaving = React.useRef(saving)
+  useEffect(() => {
+    if (prevSaving.current && !saving) setPaying(null)
+    prevSaving.current = saving
+  }, [saving])
+
   const loading = (fetching && !transactions) || (fetchingMasters && !masters)
 
   return (
@@ -319,12 +541,7 @@ export default function AccountStatus() {
 
       {/* Summary strip */}
       <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 8,
-          marginBottom: 16,
-        }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}
       >
         {[
           { label: 'Pagadas', value: paid, color: '#2f9e44', bg: '#f0fdf4', border: '#86efac' },
@@ -420,14 +637,7 @@ export default function AccountStatus() {
           <CSpinner color="primary" />
         </div>
       ) : filtered.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '48px 24px',
-            color: '#adb5bd',
-            fontSize: 14,
-          }}
-        >
+        <div style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}>
           {applicable.length === 0
             ? 'No hay cuentas configuradas para este mes.'
             : 'Sin cuentas en este filtro.'}
@@ -439,8 +649,21 @@ export default function AccountStatus() {
             account={account}
             payments={masterPaymentsMap[account.id] ?? []}
             monthStr={monthStr}
+            onPay={setPaying}
           />
         ))
+      )}
+
+      {/* Pay modal (bottom sheet) */}
+      {paying && (
+        <PayModal
+          account={paying}
+          year={year}
+          month={month}
+          saving={saving}
+          onSave={handleSavePayment}
+          onClose={() => setPaying(null)}
+        />
       )}
     </div>
   )
