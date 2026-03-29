@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
@@ -31,6 +31,78 @@ const fmt = (n) =>
     minimumFractionDigits: 0,
   }).format(n ?? 0)
 
+// ── File helpers ───────────────────────────────────────────────────────────────
+const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
+
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const MAX = 1200
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) {
+          height = Math.round((height * MAX) / width)
+          width = MAX
+        } else {
+          width = Math.round((width * MAX) / height)
+          height = MAX
+        }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+      resolve(canvas.toDataURL('image/jpeg', 0.75))
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
+async function pdfToSingleImage(file) {
+  const pdfjsLib = await import('pdfjs-dist')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/legacy/build/pdf.worker.js',
+    import.meta.url,
+  ).toString()
+  const arrayBuffer = await file.arrayBuffer()
+  const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const pageCount = pdfDoc.numPages
+  const scale = 1.5
+  const pageCanvases = []
+  let totalHeight = 0
+  let maxWidth = 0
+
+  for (let i = 1; i <= pageCount; i++) {
+    const page = await pdfDoc.getPage(i)
+    const viewport = page.getViewport({ scale })
+    const canvas = document.createElement('canvas')
+    canvas.width = viewport.width
+    canvas.height = viewport.height
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise
+    pageCanvases.push(canvas)
+    totalHeight += viewport.height
+    maxWidth = Math.max(maxWidth, viewport.width)
+  }
+
+  const final = document.createElement('canvas')
+  final.width = maxWidth
+  final.height = totalHeight
+  const ctx = final.getContext('2d')
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, maxWidth, totalHeight)
+  let y = 0
+  for (const pc of pageCanvases) {
+    ctx.drawImage(pc, 0, y)
+    y += pc.height
+  }
+  return final.toDataURL('image/jpeg', 0.65)
+}
+
+// ── Domain helpers ─────────────────────────────────────────────────────────────
 function isApplicableToMonth(account, month) {
   if (!account.active) return false
   if (account.period === 'Mensuales') return true
@@ -49,31 +121,87 @@ function getStatus(account, payments, monthStr) {
   return { label: 'Pendiente', color: '#f59f00', bg: '#fff9db', border: '#ffe066', paid: 0 }
 }
 
-// ── Pay modal ──────────────────────────────────────────────────────────────────
+const fieldLabel = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: '#6c757d',
+  display: 'block',
+  marginBottom: 6,
+  letterSpacing: '0.04em',
+}
+const fieldInput = {
+  width: '100%',
+  color: '#1a1a2e',
+  border: 'none',
+  borderBottom: '2px solid #dee2e6',
+  outline: 'none',
+  padding: '4px 0 10px',
+  background: 'transparent',
+}
+
+// ── Pay modal (bottom sheet) ───────────────────────────────────────────────────
 function PayModal({ account, year, month, saving, onSave, onClose }) {
   const defaultDate = (() => {
     const d = new Date(year, month - 1, account.maxDatePay || 15)
-    // if date is in the future use it, else use today
     return d > new Date() ? d.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
   })()
 
   const [amount, setAmount] = useState(account.defaultValue || '')
   const [date, setDate] = useState(defaultDate)
+  const [note, setNote] = useState('')
+  const [attachment, setAttachment] = useState(null) // base64 string
+  const [attachName, setAttachName] = useState('')
+  const [processing, setProcessing] = useState(false)
+  const [fileError, setFileError] = useState('')
+  const fileRef = useRef()
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFileError('')
+
+    if (file.size > MAX_FILE_BYTES) {
+      setFileError(`El archivo supera el límite de 5 MB.`)
+      return
+    }
+    const isPdf = file.type === 'application/pdf'
+    const isImage = file.type.startsWith('image/')
+    if (!isPdf && !isImage) {
+      setFileError('Solo se permiten imágenes o PDF.')
+      return
+    }
+
+    setProcessing(true)
+    try {
+      const data = isPdf ? await pdfToSingleImage(file) : await compressImage(file)
+      setAttachment(data)
+      setAttachName(file.name)
+    } catch (err) {
+      setFileError(`Error procesando archivo: ${err.message}`)
+    } finally {
+      setProcessing(false)
+    }
+  }
 
   const handleSave = () => {
     if (!amount || !date) return
-    onSave({
+    const payload = {
       type: account.type === 'Outcoming' ? 'expense' : 'income',
       category: account.category || '',
       description: account.name,
       amount: Number(String(amount).replace(/\D/g, '')),
       date,
       accountMasterId: account.id,
-    })
+    }
+    if (note.trim()) payload.note = note.trim()
+    if (attachment) {
+      payload.attachment = attachment
+      payload.attachmentName = attachName
+    }
+    onSave(payload)
   }
 
   return (
-    // backdrop
     <div
       onClick={onClose}
       style={{
@@ -86,7 +214,6 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
         justifyContent: 'center',
       }}
     >
-      {/* sheet */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -96,6 +223,8 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
           borderRadius: '20px 20px 0 0',
           padding: '24px 20px 36px',
           boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
+          maxHeight: '92vh',
+          overflowY: 'auto',
         }}
       >
         {/* drag handle */}
@@ -115,17 +244,7 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
         <div style={{ fontSize: 13, color: '#6c757d', marginBottom: 24 }}>{account.name}</div>
 
         {/* Amount */}
-        <label
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#6c757d',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          MONTO (COP)
-        </label>
+        <label style={fieldLabel}>MONTO (COP)</label>
         <input
           type="number"
           value={amount}
@@ -134,47 +253,152 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
           min="0"
           autoFocus
           style={{
-            width: '100%',
+            ...fieldInput,
             fontSize: 28,
             fontWeight: 700,
             color: '#1e3a5f',
-            border: 'none',
-            borderBottom: '2px solid #dee2e6',
-            outline: 'none',
-            padding: '4px 0 10px',
             marginBottom: 20,
-            background: 'transparent',
           }}
         />
 
         {/* Date */}
-        <label
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#6c757d',
-            display: 'block',
-            marginBottom: 6,
-          }}
-        >
-          FECHA
-        </label>
+        <label style={fieldLabel}>FECHA</label>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          style={{ ...fieldInput, fontSize: 16, marginBottom: 20 }}
+        />
+
+        {/* Note */}
+        <label style={fieldLabel}>NOTA (opcional)</label>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Agregar una nota..."
+          rows={2}
           style={{
-            width: '100%',
-            fontSize: 16,
-            color: '#1a1a2e',
-            border: 'none',
+            ...fieldInput,
+            fontSize: 14,
+            resize: 'none',
+            marginBottom: 20,
             borderBottom: '2px solid #dee2e6',
-            outline: 'none',
-            padding: '4px 0 10px',
-            marginBottom: 28,
-            background: 'transparent',
+            fontFamily: 'inherit',
           }}
         />
+
+        {/* Attachment */}
+        <label style={fieldLabel}>ADJUNTO (opcional)</label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*,application/pdf"
+          style={{ display: 'none' }}
+          onChange={handleFile}
+        />
+
+        {!attachment && !processing && (
+          <button
+            onClick={() => fileRef.current?.click()}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: 10,
+              marginBottom: 8,
+              border: '2px dashed #dee2e6',
+              background: '#fafafa',
+              fontSize: 13,
+              color: '#6c757d',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>📎</span> Adjuntar imagen o PDF
+          </button>
+        )}
+
+        {processing && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 0',
+              marginBottom: 8,
+            }}
+          >
+            <CSpinner size="sm" />
+            <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando archivo…</span>
+          </div>
+        )}
+
+        {fileError && (
+          <div style={{ fontSize: 12, color: '#e03131', marginBottom: 8 }}>{fileError}</div>
+        )}
+
+        {attachment && (
+          <div style={{ marginBottom: 20, position: 'relative' }}>
+            <img
+              src={attachment}
+              alt="adjunto"
+              style={{
+                width: '100%',
+                borderRadius: 10,
+                border: '1px solid #dee2e6',
+                display: 'block',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                display: 'flex',
+                gap: 6,
+              }}
+            >
+              <button
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: 'rgba(0,0,0,0.55)',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cambiar
+              </button>
+              <button
+                onClick={() => {
+                  setAttachment(null)
+                  setAttachName('')
+                }}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: 'rgba(220,53,69,0.85)',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Quitar
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4, paddingLeft: 2 }}>
+              {attachName}
+            </div>
+          </div>
+        )}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
@@ -196,17 +420,17 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || !amount}
+            disabled={saving || !amount || processing}
             style={{
               flex: 2,
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: !amount ? '#e9ecef' : '#1e3a5f',
+              background: !amount || processing ? '#e9ecef' : '#1e3a5f',
               fontSize: 15,
               fontWeight: 700,
-              color: !amount ? '#adb5bd' : '#fff',
-              cursor: !amount ? 'not-allowed' : 'pointer',
+              color: !amount || processing ? '#adb5bd' : '#fff',
+              cursor: !amount || processing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -247,7 +471,6 @@ function AccountCard({ account, payments, monthStr, onPay }) {
         gap: 12,
       }}
     >
-      {/* Status dot */}
       <div
         style={{
           width: 44,
@@ -265,7 +488,6 @@ function AccountCard({ account, payments, monthStr, onPay }) {
         {status.label === 'Pagado' ? '✓' : status.label === 'Vencido' ? '!' : '·'}
       </div>
 
-      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
@@ -314,7 +536,6 @@ function AccountCard({ account, payments, monthStr, onPay }) {
         </div>
       </div>
 
-      {/* Right side */}
       <div
         style={{
           textAlign: 'right',
@@ -383,7 +604,7 @@ export default function AccountStatus() {
   const [year, setYear] = useState(CURRENT_YEAR)
   const [month, setMonth] = useState(CURRENT_MONTH)
   const [filter, setFilter] = useState('all')
-  const [paying, setPaying] = useState(null) // account being paid
+  const [paying, setPaying] = useState(null)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -449,7 +670,6 @@ export default function AccountStatus() {
       setYear((y) => y - 1)
     } else setMonth((m) => m - 1)
   }
-
   const nextMonth = () => {
     if (month === 12) {
       setMonth(1)
@@ -462,7 +682,6 @@ export default function AccountStatus() {
     setPaying(null)
   }
 
-  // close modal when saving completes
   const prevSaving = React.useRef(saving)
   useEffect(() => {
     if (prevSaving.current && !saving) setPaying(null)
@@ -654,7 +873,7 @@ export default function AccountStatus() {
         ))
       )}
 
-      {/* Pay modal (bottom sheet) */}
+      {/* Pay modal */}
       {paying && (
         <PayModal
           account={paying}
