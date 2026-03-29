@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
@@ -483,9 +484,10 @@ function SummaryCard({ label, value, color, bg, sub }) {
 }
 
 // ── Maestro row ────────────────────────────────────────────────────────────────
-function MaestroRow({ account, payments, monthStr, onPay, onViewPayment }) {
+function MaestroRow({ account, payments, monthStr, onPay, onViewPayment, onViewAttachment, onDelete }) {
   const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
   const isPaid = paid > 0
+  const paidPayment = payments.find((p) => p.attachment)
   const isOverdue =
     !isPaid &&
     (() => {
@@ -542,38 +544,71 @@ function MaestroRow({ account, payments, monthStr, onPay, onViewPayment }) {
         </span>
       </td>
       <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-        {isPaid ? (
-          <button
-            onClick={() => onViewPayment(payments[0])}
-            style={{
-              fontSize: 11,
-              padding: '3px 10px',
-              borderRadius: 5,
-              border: '1px solid #86efac',
-              background: '#f0fdf4',
-              color: '#2f9e44',
-              cursor: 'pointer',
-            }}
-          >
-            Ver
-          </button>
-        ) : (
-          <button
-            onClick={() => onPay(account)}
-            style={{
-              fontSize: 11,
-              padding: '3px 10px',
-              borderRadius: 5,
-              border: '1px solid #1e3a5f',
-              background: '#1e3a5f',
-              color: '#fff',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            Pagar
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'center' }}>
+          {paidPayment?.attachment && (
+            <button
+              onClick={() => onViewAttachment(paidPayment.attachment, paidPayment.attachmentName || 'adjunto.jpg')}
+              title="Ver adjunto"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 16,
+                padding: '2px 4px',
+              }}
+            >
+              📎
+            </button>
+          )}
+          {isPaid ? (
+            <button
+              onClick={() => onViewPayment(payments[0])}
+              style={{
+                fontSize: 11,
+                padding: '3px 10px',
+                borderRadius: 5,
+                border: '1px solid #86efac',
+                background: '#f0fdf4',
+                color: '#2f9e44',
+                cursor: 'pointer',
+              }}
+            >
+              Ver
+            </button>
+          ) : (
+            <button
+              onClick={() => onPay(account)}
+              style={{
+                fontSize: 11,
+                padding: '3px 10px',
+                borderRadius: 5,
+                border: '1px solid #1e3a5f',
+                background: '#1e3a5f',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Pagar
+            </button>
+          )}
+          {isPaid && (
+            <button
+              onClick={() => onDelete(payments[0])}
+              title="Eliminar pago"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#e03131',
+                fontSize: 15,
+                padding: '2px 4px',
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   )
@@ -591,6 +626,7 @@ export default function Transactions() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [formModal, setFormModal] = useState(null) // null | { mode: 'create' | 'edit', initial?: {} }
   const [migrationOpen, setMigrationOpen] = useState(false)
+  const [viewer, setViewer] = useState(null) // { src, filename }
   const [activeTab, setActiveTab] = useState('maestro') // 'maestro' | 'transactions'
 
   useEffect(() => {
@@ -901,6 +937,8 @@ export default function Transactions() {
                           monthStr={monthStr}
                           onPay={handlePayMaster}
                           onViewPayment={handleViewPayment}
+                          onViewAttachment={(src, filename) => setViewer({ src, filename })}
+                          onDelete={handleDelete}
                         />
                       ))}
                     </tbody>
@@ -1064,6 +1102,23 @@ export default function Transactions() {
                     )}
                   />
                   <Column
+                    caption="📎"
+                    width={46}
+                    alignment="center"
+                    allowSorting={false}
+                    cellRender={({ data: row }) =>
+                      row.attachment ? (
+                        <button
+                          title="Ver adjunto"
+                          onClick={() => setViewer({ src: row.attachment, filename: row.attachmentName || 'adjunto.jpg' })}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '2px 4px' }}
+                        >
+                          📎
+                        </button>
+                      ) : null
+                    }
+                  />
+                  <Column
                     caption=""
                     width={80}
                     alignment="center"
@@ -1133,6 +1188,15 @@ export default function Transactions() {
             setMigrationOpen(false)
             dispatch(transactionActions.fetchRequest({ year }))
           }}
+        />
+      )}
+
+      {/* Attachment viewer */}
+      {viewer && (
+        <AttachmentViewer
+          src={viewer.src}
+          filename={viewer.filename}
+          onClose={() => setViewer(null)}
         />
       )}
 

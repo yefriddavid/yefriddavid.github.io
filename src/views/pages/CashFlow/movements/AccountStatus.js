@@ -4,6 +4,7 @@ import { CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
 import { MONTH_NAMES } from 'src/services/providers/firebase/CashFlow/accountsMaster'
+import AttachmentViewer from 'src/components/App/AttachmentViewer'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
@@ -453,9 +454,10 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
 }
 
 // ── Account card ───────────────────────────────────────────────────────────────
-function AccountCard({ account, payments, monthStr, onPay }) {
+function AccountCard({ account, payments, monthStr, onPay, onViewAttachment }) {
   const status = getStatus(account, payments, monthStr)
   const canPay = status.label !== 'Pagado'
+  const paidPayment = payments.find((p) => p.attachment)
 
   return (
     <div
@@ -564,6 +566,28 @@ function AccountCard({ account, payments, monthStr, onPay }) {
             <div style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44' }}>
               {fmt(status.paid)}
             </div>
+            {paidPayment?.note && (
+              <div
+                style={{
+                  fontSize: 11, color: '#6c757d', maxWidth: 120, textAlign: 'right',
+                  fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
+              >
+                {paidPayment.note}
+              </div>
+            )}
+            {paidPayment?.attachment && (
+              <button
+                onClick={() => onViewAttachment(paidPayment.attachment, paidPayment.attachmentName)}
+                style={{
+                  padding: '4px 10px', borderRadius: 20,
+                  border: '1px solid #86efac', background: '#f0fdf4',
+                  color: '#2f9e44', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                📎 Ver adjunto
+              </button>
+            )}
           </>
         ) : (
           <>
@@ -605,6 +629,7 @@ export default function AccountStatus() {
   const [month, setMonth] = useState(CURRENT_MONTH)
   const [filter, setFilter] = useState('all')
   const [paying, setPaying] = useState(null)
+  const [viewer, setViewer] = useState(null) // { src, filename }
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -869,6 +894,7 @@ export default function AccountStatus() {
             payments={masterPaymentsMap[account.id] ?? []}
             monthStr={monthStr}
             onPay={setPaying}
+            onViewAttachment={(src, filename) => setViewer({ src, filename })}
           />
         ))
       )}
@@ -882,6 +908,15 @@ export default function AccountStatus() {
           saving={saving}
           onSave={handleSavePayment}
           onClose={() => setPaying(null)}
+        />
+      )}
+
+      {/* Attachment viewer */}
+      {viewer && (
+        <AttachmentViewer
+          src={viewer.src}
+          filename={viewer.filename}
+          onClose={() => setViewer(null)}
         />
       )}
     </div>
