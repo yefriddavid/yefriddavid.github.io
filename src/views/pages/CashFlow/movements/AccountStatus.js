@@ -223,6 +223,7 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
       description: account.name,
       amount: Number(String(amount).replace(/\D/g, '')),
       date,
+      accountMonth: `${year}-${String(month).padStart(2, '0')}`,
       accountMasterId: account.id,
     }
     if (note.trim()) payload.note = note.trim()
@@ -809,7 +810,8 @@ export default function AccountStatus() {
     if (!transactions) return {}
     const map = {}
     transactions.forEach((t) => {
-      if (t.accountMasterId && t.date?.startsWith(monthStr)) {
+      const period = t.accountMonth ?? t.date?.slice(0, 7)
+      if (t.accountMasterId && period === monthStr) {
         if (!map[t.accountMasterId]) map[t.accountMasterId] = []
         map[t.accountMasterId].push(t)
       }
