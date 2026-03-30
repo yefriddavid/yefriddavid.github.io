@@ -496,6 +496,7 @@ function AccountCard({
   onPay,
   onDetail,
   onDelete,
+  onUpdate,
   onViewAttachment,
   onAttach,
   attachingId,
@@ -504,6 +505,24 @@ function AccountCard({
   const status = getStatus(account, payments, monthStr)
   const canPay = status.label !== 'Pagado'
   const isSaving = savingId === account.id
+  const [editing, setEditing] = useState(null) // { id, amount, note }
+
+  const startEdit = (p) => setEditing({ id: p.id, amount: p.amount, note: p.note ?? '' })
+  const cancelEdit = () => setEditing(null)
+
+  const saveEdit = (p) => {
+    const newAmount = Number(String(editing.amount).replace(/\D/g, ''))
+    const newNote = editing.note.trim()
+    if (!newAmount) return
+    const hasChanges = newAmount !== p.amount || newNote !== (p.note ?? '')
+    if (hasChanges) onUpdate({ ...p, amount: newAmount, note: newNote })
+    setEditing(null)
+  }
+
+  const isDirty = (p) =>
+    editing?.id === p.id &&
+    (Number(String(editing.amount).replace(/\D/g, '')) !== p.amount ||
+      editing.note.trim() !== (p.note ?? ''))
 
   return (
     <div
@@ -662,91 +681,169 @@ function AccountCard({
         <div style={{ marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
           {payments.map((p) => {
             const isAttaching = attachingId === p.id
+            const isEditing = editing?.id === p.id
             return (
               <div
                 key={p.id}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
                   marginBottom: 6,
-                  padding: '4px 6px',
+                  padding: '6px 8px',
                   borderRadius: 8,
-                  background: '#f8f9fa',
+                  background: isEditing ? '#f0f6ff' : '#f8f9fa',
+                  border: isEditing ? '1px solid #c5d8ff' : '1px solid transparent',
+                  transition: 'all 0.15s',
                 }}
               >
-                <span
-                  style={{ fontSize: 13, fontWeight: 700, color: '#2f9e44', flex: 1, minWidth: 0 }}
-                >
-                  {fmt(p.amount)}
-                </span>
-                {p.date && (
-                  <span style={{ fontSize: 11, color: '#adb5bd', whiteSpace: 'nowrap' }}>
-                    {p.date}
-                  </span>
-                )}
-                {p.note && (
+                {/* View row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span
+                    onClick={() => !isEditing && startEdit(p)}
+                    title="Editar"
                     style={{
-                      fontSize: 11,
-                      color: '#6c757d',
-                      fontStyle: 'italic',
-                      maxWidth: 80,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {p.note}
-                  </span>
-                )}
-                {p.attachment ? (
-                  <button
-                    onClick={() => onViewAttachment(p.attachment, p.attachmentName)}
-                    title="Ver adjunto"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: 15,
-                      padding: '2px 4px',
-                    }}
-                  >
-                    📎
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onAttach(p)}
-                    disabled={isAttaching}
-                    title="Adjuntar"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '2px 4px',
-                      cursor: isAttaching ? 'not-allowed' : 'pointer',
                       fontSize: 13,
-                      color: '#adb5bd',
-                      display: 'flex',
-                      alignItems: 'center',
+                      fontWeight: 700,
+                      color: '#2f9e44',
+                      flex: 1,
+                      minWidth: 0,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textDecorationStyle: 'dotted',
+                      textDecorationColor: '#adb5bd',
                     }}
                   >
-                    {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
-                  </button>
+                    {fmt(p.amount)}
+                  </span>
+                  {p.date && (
+                    <span style={{ fontSize: 11, color: '#adb5bd', whiteSpace: 'nowrap' }}>
+                      {p.date}
+                    </span>
+                  )}
+                  {!isEditing && p.note && (
+                    <span
+                      onClick={() => startEdit(p)}
+                      title="Editar nota"
+                      style={{
+                        fontSize: 11,
+                        color: '#6c757d',
+                        fontStyle: 'italic',
+                        maxWidth: 80,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {p.note}
+                    </span>
+                  )}
+                  {p.attachment ? (
+                    <button
+                      onClick={() => onViewAttachment(p.attachment, p.attachmentName)}
+                      title="Ver adjunto"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: '2px 4px' }}
+                    >
+                      📎
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onAttach(p)}
+                      disabled={isAttaching}
+                      title="Adjuntar"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: '2px 4px',
+                        cursor: isAttaching ? 'not-allowed' : 'pointer',
+                        fontSize: 13,
+                        color: '#adb5bd',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+                    </button>
+                  )}
+                  {!isEditing && (
+                    <button
+                      onClick={() => onDelete(p)}
+                      title="Eliminar pago"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e03131', fontSize: 14, padding: '2px 4px' }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Edit row */}
+                {isEditing && (
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <input
+                      type="number"
+                      value={editing.amount}
+                      onChange={(e) => setEditing((prev) => ({ ...prev, amount: e.target.value }))}
+                      autoFocus
+                      style={{
+                        width: '100%',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: '#1e3a5f',
+                        border: 'none',
+                        borderBottom: '2px solid #1e3a5f',
+                        background: 'transparent',
+                        outline: 'none',
+                        padding: '2px 0',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={editing.note}
+                      onChange={(e) => setEditing((prev) => ({ ...prev, note: e.target.value }))}
+                      placeholder="Nota (opcional)"
+                      style={{
+                        width: '100%',
+                        fontSize: 12,
+                        color: '#6c757d',
+                        border: 'none',
+                        borderBottom: '1px solid #dee2e6',
+                        background: 'transparent',
+                        outline: 'none',
+                        padding: '2px 0',
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 2 }}>
+                      <button
+                        onClick={cancelEdit}
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: 6,
+                          border: '1px solid #dee2e6',
+                          background: '#fff',
+                          fontSize: 12,
+                          color: '#6c757d',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => saveEdit(p)}
+                        disabled={!isDirty(p)}
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: 6,
+                          border: 'none',
+                          background: isDirty(p) ? '#1e3a5f' : '#e9ecef',
+                          color: isDirty(p) ? '#fff' : '#adb5bd',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: isDirty(p) ? 'pointer' : 'not-allowed',
+                        }}
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                  </div>
                 )}
-                <button
-                  onClick={() => onDelete(p)}
-                  title="Eliminar pago"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#e03131',
-                    fontSize: 14,
-                    padding: '2px 4px',
-                  }}
-                >
-                  ✕
-                </button>
               </div>
             )
           })}
@@ -881,6 +978,10 @@ export default function AccountStatus() {
 
   const handleSavePayment = (payload) => {
     dispatch(transactionActions.createRequest(payload))
+  }
+
+  const handleUpdate = (transaction) => {
+    dispatch(transactionActions.updateRequest(transaction))
   }
 
   const handleDelete = (transaction) => {
@@ -1168,6 +1269,7 @@ export default function AccountStatus() {
             onPay={setPaying}
             onDetail={setDetail}
             onDelete={handleDelete}
+            onUpdate={handleUpdate}
             onViewAttachment={(src, filename) => setViewer({ src, filename })}
             onAttach={handleAttach}
             attachingId={attachProcessing ? attachingTx?.id : null}
