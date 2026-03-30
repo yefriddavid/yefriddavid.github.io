@@ -1,4 +1,4 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { put, call, all, takeLatest, select } from 'redux-saga/effects'
 import * as actions from '../../actions/CashFlow/accountsMasterActions'
 import * as service from '../../services/providers/firebase/CashFlow/accountsMaster'
 
@@ -42,11 +42,27 @@ function* deleteAccountMaster({ payload }) {
   }
 }
 
+function* seedAccountsMaster({ payload }) {
+  try {
+    const items = payload
+    for (let i = 0; i < items.length; i++) {
+      yield call(service.addAccountMaster, items[i])
+      yield put(actions.seedProgressUpdate(Math.round(((i + 1) / items.length) * 100)))
+    }
+    const data = yield call(service.getAccountsMaster)
+    yield put(actions.successRequestFetch(data))
+    yield put(actions.seedComplete())
+  } catch (e) {
+    yield put(actions.seedError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchAccountsMaster),
     takeLatest(actions.createRequest, createAccountMaster),
     takeLatest(actions.updateRequest, updateAccountMaster),
     takeLatest(actions.deleteRequest, deleteAccountMaster),
+    takeLatest(actions.seedRequest, seedAccountsMaster),
   ])
 }

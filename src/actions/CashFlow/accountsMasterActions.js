@@ -19,3 +19,8 @@ export const deleteRequest = createAction('request delete cashflow account maste
 export const beginRequestDelete = createAction('begin request delete cashflow account master')
 export const successRequestDelete = createAction('request delete cashflow account master success')
 export const errorRequestDelete = createAction('request delete cashflow account master error')
+
+export const seedRequest = createAction('request seed cashflow accounts master')
+export const seedProgressUpdate = createAction('seed progress cashflow accounts master')
+export const seedComplete = createAction('seed complete cashflow accounts master')
+export const seedError = createAction('seed error cashflow accounts master')

@@ -42,11 +42,27 @@ function* deleteTransaction({ payload }) {
   }
 }
 
+function* importTransactions({ payload }) {
+  try {
+    const items = payload
+    for (let i = 0; i < items.length; i++) {
+      yield call(service.addTransaction, items[i])
+      yield put(actions.importProgressUpdate(Math.round(((i + 1) / items.length) * 100)))
+    }
+    const currentYear = new Date().getFullYear()
+    const data = yield call(service.getTransactions, currentYear)
+    yield put(actions.importComplete(data))
+  } catch (e) {
+    yield put(actions.importError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchTransactions),
     takeLatest(actions.createRequest, createTransaction),
     takeLatest(actions.updateRequest, updateTransaction),
     takeLatest(actions.deleteRequest, deleteTransaction),
+    takeLatest(actions.importRequest, importTransactions),
   ])
 }

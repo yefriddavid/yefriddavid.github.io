@@ -14,20 +14,7 @@ import {
 
 const COL = 'CashFlow_Transactions'
 
-export const EXPENSE_CATEGORIES = [
-  'Alimentación',
-  'Transporte',
-  'Servicios públicos',
-  'Salud',
-  'Educación',
-  'Entretenimiento',
-  'Ropa y calzado',
-  'Hogar',
-  'Tecnología',
-  'Otros',
-]
-
-export const INCOME_CATEGORIES = ['Salario', 'Freelance', 'Inversiones', 'Alquiler', 'Otros']
+export { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
 
 export const getTransactions = async (year) => {
   const q = query(

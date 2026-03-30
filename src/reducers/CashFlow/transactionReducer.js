@@ -3,7 +3,7 @@ import * as actions from '../../actions/CashFlow/transactionActions'
 
 const transactionSlice = createSlice({
   name: 'transaction',
-  initialState: { data: null, fetching: false, saving: false, error: {}, isError: false },
+  initialState: { data: null, fetching: false, saving: false, error: {}, isError: false, importing: false, importProgress: 0 },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -56,6 +56,24 @@ const transactionSlice = createSlice({
         if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
       })
       .addCase(actions.errorRequestDelete, (state, { payload }) => {
+        state.error = payload
+        state.isError = true
+      })
+
+      .addCase(actions.importRequest, (state) => {
+        state.importing = true
+        state.importProgress = 0
+      })
+      .addCase(actions.importProgressUpdate, (state, { payload }) => {
+        state.importProgress = payload
+      })
+      .addCase(actions.importComplete, (state, { payload }) => {
+        state.importing = false
+        state.importProgress = 100
+        state.data = payload
+      })
+      .addCase(actions.importError, (state, { payload }) => {
+        state.importing = false
         state.error = payload
         state.isError = true
       })

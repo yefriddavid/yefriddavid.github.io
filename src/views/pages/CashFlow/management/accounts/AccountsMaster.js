@@ -14,14 +14,8 @@ import {
   CSpinner,
 } from '@coreui/react'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import {
-  ACCOUNT_CATEGORIES,
-  PAYMENT_METHODS,
-  MONTH_NAMES,
-  MONTH_LABELS,
-  addAccountMaster,
-} from 'src/services/providers/firebase/CashFlow/accountsMaster'
-import { SEED_ACCOUNTS } from 'src/services/providers/firebase/CashFlow/accountsMasterSeed'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, MONTH_NAMES, MONTH_LABELS } from 'src/constants/cashFlow'
+import { SEED_ACCOUNTS } from 'src/constants/accountsMasterSeed'
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
 
@@ -296,11 +290,9 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountsMaster() {
   const dispatch = useDispatch()
-  const { data, fetching, saving } = useSelector((s) => s.accountsMaster)
+  const { data, fetching, saving, seeding, seedProgress } = useSelector((s) => s.accountsMaster)
   const [formModal, setFormModal] = useState(null) // null | { mode: 'create' | 'edit', initial?: {} }
   const [typeFilter, setTypeFilter] = useState('all')
-  const [seeding, setSeeding] = useState(false)
-  const [seedProgress, setSeedProgress] = useState(0)
 
   useEffect(() => {
     dispatch(accountsMasterActions.fetchRequest())
@@ -327,23 +319,14 @@ export default function AccountsMaster() {
     }
   }
 
-  const handleSeed = async () => {
+  const handleSeed = () => {
     if (
       !window.confirm(
         `¿Cargar ${SEED_ACCOUNTS.length} cuentas de ejemplo? Esto agregará los registros a la colección actual.`,
       )
     )
       return
-    setSeeding(true)
-    setSeedProgress(0)
-    let done = 0
-    for (const account of SEED_ACCOUNTS) {
-      await addAccountMaster(account)
-      done++
-      setSeedProgress(Math.round((done / SEED_ACCOUNTS.length) * 100))
-    }
-    setSeeding(false)
-    dispatch(accountsMasterActions.fetchRequest())
+    dispatch(accountsMasterActions.seedRequest(SEED_ACCOUNTS))
   }
 
   return (

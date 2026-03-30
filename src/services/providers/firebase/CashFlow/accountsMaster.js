@@ -13,53 +13,7 @@ import {
 
 const COL = 'CashFlow_AccountsMaster'
 
-export const ACCOUNT_CATEGORIES = [
-  'Gastos Fijos',
-  'Servicios',
-  'Impuestos',
-  'Salarios',
-  'Prestamos',
-  'Ayudas',
-  'Ocio',
-  'Gastos Ocasionales',
-  'Alimentación',
-  'Transporte',
-  'Salud',
-  'Educación',
-  'Otros',
-]
-
-export const PAYMENT_METHODS = ['Cash', 'Deel Card', 'Transferencia', 'Débito automático']
-
-export const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-
-export const MONTH_LABELS = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
+export { MONTH_NAMES, MONTH_LABELS, ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 
 export const getAccountsMaster = async () => {
   const q = query(collection(db, COL), orderBy('name'))

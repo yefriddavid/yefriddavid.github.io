@@ -17,12 +17,7 @@ import {
 } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import {
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
-  addTransaction,
-} from 'src/services/providers/firebase/CashFlow/transactions'
-import { MONTH_NAMES } from 'src/services/providers/firebase/CashFlow/accountsMaster'
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, MONTH_NAMES } from 'src/constants/cashFlow'
 import { fetchAccounts } from 'src/services/providers/api/accounts'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
@@ -134,10 +129,20 @@ function toISODate(rawDate) {
 
 // ── Migration modal ────────────────────────────────────────────────────────────
 function MigrationModal({ onClose, onDone }) {
+  const dispatch = useDispatch()
+  const { importing, importProgress } = useSelector((s) => s.transaction)
   const [status, setStatus] = useState('idle')
   const [rows, setRows] = useState([])
-  const [progress, setProgress] = useState(0)
   const [error, setError] = useState(null)
+
+  const prevImporting = React.useRef(importing)
+  React.useEffect(() => {
+    if (prevImporting.current && !importing) {
+      setStatus('done')
+      onDone()
+    }
+    prevImporting.current = importing
+  }, [importing, onDone])
 
   const fetchLegacy = async () => {
     setStatus('loading')
@@ -173,18 +178,10 @@ function MigrationModal({ onClose, onDone }) {
     }
   }
 
-  const migrate = async () => {
+  const migrate = () => {
     setStatus('migrating')
-    setProgress(0)
-    let done = 0
-    for (const row of rows) {
-      const { _legacy_payment_id: _a, _legacy_account_id: _b, ...payload } = row
-      await addTransaction(payload)
-      done++
-      setProgress(Math.round((done / rows.length) * 100))
-    }
-    setStatus('done')
-    onDone()
+    const items = rows.map(({ _legacy_payment_id: _a, _legacy_account_id: _b, ...payload }) => payload)
+    dispatch(transactionActions.importRequest(items))
   }
 
   return (
@@ -301,7 +298,7 @@ function MigrationModal({ onClose, onDone }) {
         {status === 'migrating' && (
           <div style={{ textAlign: 'center', padding: 40 }}>
             <CSpinner color="primary" />
-            <p style={{ marginTop: 12 }}>Guardando en Firebase… {progress}%</p>
+            <p style={{ marginTop: 12 }}>Guardando en Firebase… {importProgress}%</p>
             <div
               style={{
                 background: '#f1f5f9',
@@ -316,7 +313,7 @@ function MigrationModal({ onClose, onDone }) {
                   background: '#1e3a5f',
                   height: '100%',
                   borderRadius: 8,
-                  width: `${progress}%`,
+                  width: `${importProgress}%`,
                   transition: 'width 0.3s',
                 }}
               />

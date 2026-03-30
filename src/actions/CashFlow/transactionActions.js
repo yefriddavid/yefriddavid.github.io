@@ -19,3 +19,8 @@ export const deleteRequest = createAction('request delete cashflow transaction')
 export const beginRequestDelete = createAction('begin request delete cashflow transaction')
 export const successRequestDelete = createAction('request delete cashflow transaction success')
 export const errorRequestDelete = createAction('request delete cashflow transaction error')
+
+export const importRequest = createAction('request import cashflow transactions')
+export const importProgressUpdate = createAction('import progress cashflow transactions')
+export const importComplete = createAction('import complete cashflow transactions')
+export const importError = createAction('import error cashflow transactions')
