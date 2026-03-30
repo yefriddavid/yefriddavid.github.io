@@ -88,8 +88,9 @@ const fieldInput = {
 // ── Pay modal (bottom sheet) ───────────────────────────────────────────────────
 function PayModal({ account, year, month, saving, onSave, onClose }) {
   const defaultDate = (() => {
-    const d = new Date(year, month - 1, account.maxDatePay || 15)
-    return d > new Date() ? d.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+    const lastDay = new Date(year, month, 0).getDate()
+    const day = Math.min(account.maxDatePay || 15, lastDay)
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   })()
 
   const [amount, setAmount] = useState(account.defaultValue || '')

@@ -37,7 +37,14 @@ export const getTransactions = async (year) => {
     orderBy('date', 'desc'),
   )
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      ...data,
+      created_at: data.created_at?.toMillis?.() ?? null,
+    }
+  })
 }
 
 export const addTransaction = async (payload) => {
