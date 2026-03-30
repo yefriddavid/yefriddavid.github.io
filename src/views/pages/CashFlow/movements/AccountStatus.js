@@ -661,6 +661,7 @@ export default function AccountStatus() {
   const [year, setYear] = useState(CURRENT_YEAR)
   const [month, setMonth] = useState(CURRENT_MONTH)
   const [filter, setFilter] = useState('all')
+  const [typeTab, setTypeTab] = useState('Outcoming')
   const [paying, setPaying] = useState(null)
   const [viewer, setViewer] = useState(null) // { src, filename }
   const [attachingTx, setAttachingTx] = useState(null) // transaction being attached to
@@ -679,8 +680,8 @@ export default function AccountStatus() {
 
   const applicable = useMemo(() => {
     if (!masters) return []
-    return masters.filter((a) => isApplicableToMonth(a, month))
-  }, [masters, month])
+    return masters.filter((a) => isApplicableToMonth(a, month) && a.type === typeTab)
+  }, [masters, month, typeTab])
 
   const masterPaymentsMap = useMemo(() => {
     if (!transactions) return {}
@@ -719,10 +720,11 @@ export default function AccountStatus() {
 
   const totalPaid = useMemo(
     () =>
-      Object.values(masterPaymentsMap)
-        .flat()
-        .reduce((s, t) => s + (t.amount || 0), 0),
-    [masterPaymentsMap],
+      applicable.reduce((sum, a) => {
+        const payments = masterPaymentsMap[a.id] ?? []
+        return sum + payments.reduce((s, t) => s + (t.amount || 0), 0)
+      }, 0),
+    [applicable, masterPaymentsMap],
   )
 
   const filtered = useMemo(() => {
@@ -806,6 +808,33 @@ export default function AccountStatus() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
+      {/* Type tabs */}
+      <div style={{ display: 'flex', gap: 8, padding: '16px 0 4px' }}>
+        {[
+          { key: 'Outcoming', label: 'Egresos' },
+          { key: 'Incoming', label: 'Ingresos' },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => { setTypeTab(t.key); setFilter('all') }}
+            style={{
+              flex: 1,
+              padding: '9px 0',
+              border: 'none',
+              borderRadius: 10,
+              fontSize: 13,
+              fontWeight: typeTab === t.key ? 700 : 500,
+              cursor: 'pointer',
+              background: typeTab === t.key ? '#1e3a5f' : '#e9ecef',
+              color: typeTab === t.key ? '#fff' : '#6c757d',
+              transition: 'all 0.15s',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Month navigator */}
       <div
         style={{
