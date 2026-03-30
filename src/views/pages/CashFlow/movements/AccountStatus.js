@@ -397,9 +397,11 @@ function AccountCard({
   onViewAttachment,
   onAttach,
   attachingId,
+  savingId,
 }) {
   const status = getStatus(account, payments, monthStr)
   const canPay = status.label !== 'Pagado'
+  const isSaving = savingId === account.id
 
   return (
     <div
@@ -521,7 +523,7 @@ function AccountCard({
           )}
           {canPay && (
             <button
-              onClick={() => onPay(account)}
+              onClick={() => !isSaving && onPay(account)}
               style={{
                 padding: '6px 14px',
                 borderRadius: 20,
@@ -530,11 +532,19 @@ function AccountCard({
                 color: '#fff',
                 fontSize: 12,
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: isSaving ? 'not-allowed' : 'pointer',
                 whiteSpace: 'nowrap',
+                minWidth: 60,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              Pagar
+              {isSaving ? (
+                <CSpinner size="sm" style={{ width: 14, height: 14, borderColor: '#fff', borderRightColor: 'transparent' }} />
+              ) : (
+                'Pagar'
+              )}
             </button>
           )}
         </div>
@@ -755,7 +765,6 @@ export default function AccountStatus() {
 
   const handleSavePayment = (payload) => {
     dispatch(transactionActions.createRequest(payload))
-    setPaying(null)
   }
 
   const handleDelete = (transaction) => {
@@ -872,6 +881,9 @@ export default function AccountStatus() {
             {MONTH_LABELS[month - 1]}
           </div>
           <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
+          <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>
+            {now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' }).replace(/^\w/, (c) => c.toUpperCase())}
+          </div>
         </div>
 
         <button
@@ -1039,6 +1051,7 @@ export default function AccountStatus() {
             onViewAttachment={(src, filename) => setViewer({ src, filename })}
             onAttach={handleAttach}
             attachingId={attachProcessing ? attachingTx?.id : null}
+            savingId={saving ? paying?.id : null}
           />
         ))
       )}
