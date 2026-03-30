@@ -948,6 +948,25 @@ export default function AccountStatus() {
     [applicable, masterPaymentsMap],
   )
 
+  const { totalIncome, totalExpenses } = useMemo(() => {
+    if (!masters) return { totalIncome: 0, totalExpenses: 0 }
+    let income = 0
+    let expenses = 0
+    masters
+      .filter((a) => isApplicableToMonth(a, month))
+      .forEach((a) => {
+        const payments = masterPaymentsMap[a.id] ?? []
+        const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
+        if (a.type === 'Incoming') {
+          income += Math.max(paid, a.defaultValue || 0)
+        } else {
+          // paid + remaining pending/overdue = max(paid, defaultValue)
+          expenses += Math.max(paid, a.defaultValue || 0)
+        }
+      })
+    return { totalIncome: income, totalExpenses: expenses }
+  }, [masters, month, masterPaymentsMap, monthStr])
+
   const filtered = useMemo(() => {
     return applicable
       .filter((a) => {
@@ -1034,6 +1053,44 @@ export default function AccountStatus() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
+      {/* Balance strip */}
+      {(totalIncome > 0 || totalExpenses > 0) && (() => {
+        const balance = totalIncome - totalExpenses
+        const isPositive = balance >= 0
+        return (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 14px',
+              borderRadius: 12,
+              marginTop: 12,
+              background: isPositive ? '#f0fdf4' : '#fff5f5',
+              border: `1px solid ${isPositive ? '#86efac' : '#fca5a5'}`,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 500 }}>
+                Ingresos − Egresos
+              </span>
+              <span style={{ fontSize: 11, color: '#adb5bd' }}>
+                {fmt(totalIncome)} − {fmt(totalExpenses)}
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 800,
+                color: isPositive ? '#2f9e44' : '#e03131',
+              }}
+            >
+              {isPositive ? '+' : ''}{fmt(balance)}
+            </span>
+          </div>
+        )
+      })()}
+
       {/* Type tabs */}
       <div style={{ display: 'flex', gap: 8, padding: '16px 0 4px' }}>
         {[
