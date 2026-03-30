@@ -173,7 +173,10 @@ function PayModal({ account, year, month, saving, onSave, onClose }) {
         <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
           Registrar pago
         </div>
-        <div style={{ fontSize: 13, color: '#6c757d', marginBottom: 24 }}>{account.name}</div>
+        <div style={{ fontSize: 13, color: '#6c757d', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 4 }}>
+          {account.important && <span style={{ color: '#e03131', fontSize: 13 }}>★</span>}
+          {account.name}
+        </div>
 
         {/* Amount */}
         <label style={fieldLabel}>MONTO (COP)</label>
@@ -445,6 +448,9 @@ function AccountCard({
               textOverflow: 'ellipsis',
             }}
           >
+            {account.important && (
+              <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1, flexShrink: 0 }}>★</span>
+            )}
             {account.name}
           </div>
           <div

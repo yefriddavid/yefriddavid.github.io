@@ -383,6 +383,9 @@ function TransactionForm({ initial, saving, onSave, onCancel }) {
                 color: '#1e3a5f',
               }}
             >
+              {initial.accountMasterImportant && (
+                <span style={{ color: '#e03131', fontSize: 13, marginRight: 4 }}>★</span>
+              )}
               {initial.accountMasterName}
             </div>
           </div>
@@ -1003,6 +1006,7 @@ export default function Transactions() {
         date: defaultDate,
         accountMasterId: account.id,
         accountMasterName: account.name,
+        accountMasterImportant: account.important,
       },
     })
   }

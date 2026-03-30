@@ -39,6 +39,7 @@ const EMPTY_FORM = {
   description: '',
   defaultValue: '',
   active: true,
+  important: false,
 }
 
 const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A']
@@ -253,6 +254,23 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             <option value="false">Inactivo</option>
           </select>
         </div>
+
+        <div
+          className="payment-form__field"
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+          onClick={() => setForm((prev) => ({ ...prev, important: !prev.important }))}
+        >
+          <input
+            type="checkbox"
+            checked={!!form.important}
+            onChange={(e) => setForm((prev) => ({ ...prev, important: e.target.checked }))}
+            style={{ width: 18, height: 18, accentColor: '#e03131', cursor: 'pointer', flexShrink: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <label className="payment-form__label" style={{ marginBottom: 0, cursor: 'pointer' }}>
+            <span style={{ color: '#e03131', marginRight: 4 }}>★</span>Importante
+          </label>
+        </div>
       </div>
 
       <div className="payment-form__actions">
@@ -394,7 +412,19 @@ export default function AccountsMaster() {
               style={{ margin: 0 }}
             >
               <Column dataField="code" caption="Código" width={90} />
-              <Column dataField="name" caption="Nombre" minWidth={200} />
+              <Column
+                dataField="name"
+                caption="Nombre"
+                minWidth={200}
+                cellRender={({ value, data: row }) => (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {row.important && (
+                      <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1 }}>★</span>
+                    )}
+                    {value}
+                  </span>
+                )}
+              />
               {/*}<Column dataField="description" caption="Descripción" minWidth={200} />*/}
               <Column
                 dataField="defaultValue"
