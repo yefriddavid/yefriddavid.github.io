@@ -157,6 +157,13 @@ body[data-app-theme="blue"] {
     position: fixed !important;
     z-index: 1050;
   }
+
+  .header {
+    transition: transform 0.3s ease;
+    &.header--hidden {
+      transform: translateY(-100%);
+    }
+  }
 }
 
 @media (max-width: 767.98px) {

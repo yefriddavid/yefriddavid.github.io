@@ -41,10 +41,21 @@ const AppHeader = () => {
   const hasUpdate = useVersionCheck()
 
   useEffect(() => {
-    document.addEventListener('scroll', () => {
-      headerRef.current &&
-        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
-    })
+    let lastScrollY = window.scrollY
+    const onScroll = () => {
+      const currentScrollY = document.documentElement.scrollTop
+      headerRef.current?.classList.toggle('shadow-sm', currentScrollY > 0)
+      if (window.innerWidth <= 991) {
+        if (currentScrollY > lastScrollY && currentScrollY > 60) {
+          headerRef.current?.classList.add('header--hidden')
+        } else {
+          headerRef.current?.classList.remove('header--hidden')
+        }
+      }
+      lastScrollY = currentScrollY
+    }
+    document.addEventListener('scroll', onScroll)
+    return () => document.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
