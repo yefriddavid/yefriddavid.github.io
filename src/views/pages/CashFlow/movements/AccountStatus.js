@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import { CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
@@ -671,10 +672,15 @@ export default function AccountStatus() {
   const { data: transactions, fetching, saving } = useSelector((s) => s.transaction)
   const { data: masters, fetching: fetchingMasters } = useSelector((s) => s.accountsMaster)
 
-  const [year, setYear] = useState(CURRENT_YEAR)
-  const [month, setMonth] = useState(CURRENT_MONTH)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const typeTab = searchParams.get('tab') === 'Incoming' ? 'Incoming' : 'Outcoming'
+  const setTypeTab = (value) => setSearchParams((prev) => { prev.set('tab', value); return prev })
+
+  const year = Number(searchParams.get('year')) || CURRENT_YEAR
+  const month = Number(searchParams.get('month')) || CURRENT_MONTH
+  const setYear = (value) => setSearchParams((prev) => { prev.set('year', value); return prev })
+  const setMonth = (value) => setSearchParams((prev) => { prev.set('month', value); return prev })
   const [filter, setFilter] = useState('all')
-  const [typeTab, setTypeTab] = useState('Outcoming')
   const [paying, setPaying] = useState(null)
   const [viewer, setViewer] = useState(null) // { src, filename }
   const [attachingTx, setAttachingTx] = useState(null) // transaction being attached to
@@ -755,15 +761,17 @@ export default function AccountStatus() {
 
   const prevMonth = () => {
     if (month === 1) {
-      setMonth(12)
-      setYear((y) => y - 1)
-    } else setMonth((m) => m - 1)
+      setSearchParams((prev) => { prev.set('month', 12); prev.set('year', year - 1); return prev })
+    } else {
+      setMonth(month - 1)
+    }
   }
   const nextMonth = () => {
     if (month === 12) {
-      setMonth(1)
-      setYear((y) => y + 1)
-    } else setMonth((m) => m + 1)
+      setSearchParams((prev) => { prev.set('month', 1); prev.set('year', year + 1); return prev })
+    } else {
+      setMonth(month + 1)
+    }
   }
 
   const handleSavePayment = (payload) => {
