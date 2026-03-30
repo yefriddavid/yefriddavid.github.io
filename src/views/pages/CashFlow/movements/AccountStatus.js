@@ -908,7 +908,7 @@ export default function AccountStatus() {
 
       {/* Summary strip */}
       <div
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}
+        style={{ padding: '10px 0px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}
       >
         {[
           {
