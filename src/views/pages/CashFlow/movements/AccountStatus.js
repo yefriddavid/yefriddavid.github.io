@@ -453,7 +453,7 @@ function AccountCard({
             }}
           >
             {account.important && (
-              <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1, flexShrink: 0 }}>★</span>
+              <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1, flexShrink: 0 }}>★ {' '}</span>
             )}
             {account.name}
           </div>
