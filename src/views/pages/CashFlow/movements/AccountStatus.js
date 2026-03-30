@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import { MONTH_NAMES } from 'src/services/providers/firebase/CashFlow/accountsMaster'
+import { MONTH_NAMES, MONTH_LABELS } from 'src/services/providers/firebase/CashFlow/accountsMaster'
 import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { cilCalendar } from '@coreui/icons'
@@ -14,7 +14,7 @@ const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
 const CURRENT_MONTH = now.getMonth() + 1
 
-const MONTH_LABELS = [
+  /*const MONTH_LABELS = [
   'Enero',
   'Febrero',
   'Marzo',
@@ -27,7 +27,7 @@ const MONTH_LABELS = [
   'Octubre',
   'Noviembre',
   'Diciembre',
-]
+]*/
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', {
@@ -84,6 +84,102 @@ const fieldInput = {
   outline: 'none',
   padding: '4px 0 10px',
   background: 'transparent',
+}
+
+// ── Detail modal (bottom sheet) ───────────────────────────────────────────────
+function DetailModal({ account, onClose }) {
+  const periodLabel = account.period || '—'
+  const startMonthLabel = account.monthStartAt
+    ? MONTH_LABELS[MONTH_NAMES.indexOf(account.monthStartAt)] ?? account.monthStartAt
+    : null
+
+  const rows = [
+    { label: 'Tipo', value: account.type === 'Outcoming' ? 'Egreso' : 'Ingreso' },
+    { label: 'Categoría', value: account.category || '—' },
+    { label: 'Período', value: startMonthLabel ? `${periodLabel} (desde ${startMonthLabel})` : periodLabel },
+    { label: 'Valor por defecto', value: account.defaultValue ? fmt(account.defaultValue) : '—' },
+    { label: 'Fecha límite de pago', value: account.maxDatePay ? `Día ${account.maxDatePay}` : '—' },
+    { label: 'Método de pago', value: account.paymentMethod || '—' },
+    { label: 'Estado', value: account.active ? 'Activa' : 'Inactiva' },
+  ]
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.45)',
+        zIndex: 1050,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          maxWidth: 540,
+          background: '#fff',
+          borderRadius: '20px 20px 0 0',
+          padding: '24px 20px 36px',
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+        }}
+      >
+        {/* drag handle */}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#dee2e6', margin: '0 auto 20px' }} />
+
+        {/* Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          {account.important && <span style={{ color: '#e03131', fontSize: 16 }}>★</span>}
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e' }}>{account.name}</div>
+        </div>
+
+        {/* Fields */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {rows.map(({ label, value }) => (
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '11px 0',
+                borderBottom: '1px solid #f1f5f9',
+              }}
+            >
+              <span style={{ fontSize: 13, color: '#6c757d', fontWeight: 500 }}>{label}</span>
+              <span style={{ fontSize: 13, color: '#1a1a2e', fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 24,
+            width: '100%',
+            padding: '14px',
+            borderRadius: 12,
+            border: '1px solid #dee2e6',
+            background: '#fff',
+            fontSize: 15,
+            fontWeight: 600,
+            color: '#6c757d',
+            cursor: 'pointer',
+          }}
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  )
 }
 
 // ── Pay modal (bottom sheet) ───────────────────────────────────────────────────
@@ -397,6 +493,7 @@ function AccountCard({
   payments,
   monthStr,
   onPay,
+  onDetail,
   onDelete,
   onViewAttachment,
   onAttach,
@@ -445,6 +542,7 @@ function AccountCard({
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
+            onClick={() => onDetail(account)}
             style={{
               fontSize: 15,
               fontWeight: 600,
@@ -452,6 +550,10 @@ function AccountCard({
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              textDecorationStyle: 'dotted',
+              textDecorationColor: '#adb5bd',
             }}
           >
             {account.important && (
@@ -682,6 +784,7 @@ export default function AccountStatus() {
   const setMonth = (value) => setSearchParams((prev) => { prev.set('month', value); return prev })
   const [filter, setFilter] = useState('all')
   const [paying, setPaying] = useState(null)
+  const [detail, setDetail] = useState(null)
   const [viewer, setViewer] = useState(null) // { src, filename }
   const [attachingTx, setAttachingTx] = useState(null) // transaction being attached to
   const [attachProcessing, setAttachProcessing] = useState(false)
@@ -1061,6 +1164,7 @@ export default function AccountStatus() {
             payments={masterPaymentsMap[account.id] ?? []}
             monthStr={monthStr}
             onPay={setPaying}
+            onDetail={setDetail}
             onDelete={handleDelete}
             onViewAttachment={(src, filename) => setViewer({ src, filename })}
             onAttach={handleAttach}
@@ -1078,6 +1182,9 @@ export default function AccountStatus() {
         style={{ display: 'none' }}
         onChange={handleAttachFile}
       />
+
+      {/* Detail modal */}
+      {detail && <DetailModal account={detail} onClose={() => setDetail(null)} />}
 
       {/* Pay modal */}
       {paying && (
