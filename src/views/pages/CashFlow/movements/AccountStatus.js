@@ -55,7 +55,24 @@ function isApplicableToMonth(account, month) {
   return true
 }
 
-function getStatus(account, payments, monthStr) {
+function getStatus(account, payments, monthStr, cumulativePaid = null) {
+  const target = account.targetAmount > 0 ? account.targetAmount : null
+
+  if (target !== null) {
+    const totalPaid = cumulativePaid ?? payments.reduce((s, t) => s + (t.amount || 0), 0)
+    const remaining = target - totalPaid
+    if (remaining <= 0)
+      return { label: 'Pagado', color: '#2f9e44', bg: '#f0fdf4', border: '#86efac', paid: totalPaid, remaining: 0 }
+    if (totalPaid > 0)
+      return { label: 'Parcial', color: '#0ea5e9', bg: '#f0f9ff', border: '#7dd3fc', paid: totalPaid, remaining }
+    const today = new Date()
+    const [y, m] = monthStr.split('-').map(Number)
+    const due = new Date(y, m - 1, account.maxDatePay || 31)
+    if (today > due)
+      return { label: 'Vencido', color: '#e03131', bg: '#fff5f5', border: '#fca5a5', paid: 0, remaining }
+    return { label: 'Pendiente', color: '#f59f00', bg: '#fff9db', border: '#ffe066', paid: 0, remaining }
+  }
+
   const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
   if (paid > 0 && account.defaultValue > 0 && paid < account.defaultValue)
     return { label: 'Parcial', color: '#0ea5e9', bg: '#f0f9ff', border: '#7dd3fc', paid }
@@ -493,6 +510,7 @@ function AccountCard({
   account,
   payments,
   monthStr,
+  cumulativePaid,
   onPay,
   onDetail,
   onDelete,
@@ -502,7 +520,8 @@ function AccountCard({
   attachingId,
   savingId,
 }) {
-  const status = getStatus(account, payments, monthStr)
+  const isDebt = account.targetAmount > 0
+  const status = getStatus(account, payments, monthStr, isDebt ? cumulativePaid : null)
   const canPay = status.label !== 'Pagado'
   const isSaving = savingId === account.id
   const [editing, setEditing] = useState(null) // { id, amount, note }
@@ -675,6 +694,36 @@ function AccountCard({
           )}
         </div>
       </div>
+
+      {/* Debt progress bar */}
+      {isDebt && (
+        <div style={{ marginTop: 10, padding: '8px 0 2px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: '#6c757d' }}>
+              Pagado: <strong style={{ color: '#1a1a2e' }}>{fmt(cumulativePaid)}</strong>
+            </span>
+            <span style={{ fontSize: 11, color: '#6c757d' }}>
+              Saldo: <strong style={{ color: status.remaining > 0 ? '#e03131' : '#2f9e44' }}>
+                {fmt(status.remaining ?? 0)}
+              </strong> / {fmt(account.targetAmount)}
+            </span>
+          </div>
+          <div style={{ height: 6, background: '#e9ecef', borderRadius: 4, overflow: 'hidden' }}>
+            <div
+              style={{
+                height: '100%',
+                borderRadius: 4,
+                background: status.remaining <= 0 ? '#2f9e44' : '#0ea5e9',
+                width: `${Math.min(100, (cumulativePaid / account.targetAmount) * 100)}%`,
+                transition: 'width 0.4s ease',
+              }}
+            />
+          </div>
+          <div style={{ fontSize: 10, color: '#adb5bd', textAlign: 'right', marginTop: 3 }}>
+            {Math.round((cumulativePaid / account.targetAmount) * 100)}% completado
+          </div>
+        </div>
+      )}
 
       {/* Individual payments list */}
       {payments.length > 0 && (
@@ -898,10 +947,26 @@ export default function AccountStatus() {
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
 
+  const cumulativePaymentsMap = useMemo(() => {
+    if (!transactions) return {}
+    const map = {}
+    transactions.forEach((t) => {
+      if (!t.accountMasterId) return
+      map[t.accountMasterId] = (map[t.accountMasterId] ?? 0) + (t.amount || 0)
+    })
+    return map
+  }, [transactions])
+
   const applicable = useMemo(() => {
     if (!masters) return []
-    return masters.filter((a) => isApplicableToMonth(a, month) && a.type === typeTab)
-  }, [masters, month, typeTab])
+    return masters.filter((a) => {
+      if (a.type !== typeTab || !a.active) return false
+      if (a.targetAmount > 0) {
+        return (cumulativePaymentsMap[a.id] ?? 0) < a.targetAmount
+      }
+      return isApplicableToMonth(a, month)
+    })
+  }, [masters, month, typeTab, cumulativePaymentsMap])
 
   const masterPaymentsMap = useMemo(() => {
     if (!transactions) return {}
@@ -923,7 +988,7 @@ export default function AccountStatus() {
       tpe = 0,
       tov = 0
     applicable.forEach((a) => {
-      const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
+      const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr, a.targetAmount > 0 ? (cumulativePaymentsMap[a.id] ?? 0) : null)
       if (s.label === 'Pagado') p++
       else if (s.label === 'Vencido') {
         ov++
@@ -937,7 +1002,7 @@ export default function AccountStatus() {
       }
     })
     return { paid: p, pending: pe, overdue: ov, totalPending: tpe, totalOverdue: tov }
-  }, [applicable, masterPaymentsMap, monthStr])
+  }, [applicable, masterPaymentsMap, monthStr, cumulativePaymentsMap])
 
   const totalPaid = useMemo(
     () =>
@@ -971,7 +1036,7 @@ export default function AccountStatus() {
     return applicable
       .filter((a) => {
         if (filter === 'all') return true
-        const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
+        const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr, a.targetAmount > 0 ? (cumulativePaymentsMap[a.id] ?? 0) : null)
         if (filter === 'paid') return s.label === 'Pagado'
         if (filter === 'pending')
           return s.label === 'Pendiente' || s.label === 'Vencido' || s.label === 'Parcial'
@@ -1323,6 +1388,7 @@ export default function AccountStatus() {
             account={account}
             payments={masterPaymentsMap[account.id] ?? []}
             monthStr={monthStr}
+            cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
             onPay={setPaying}
             onDetail={setDetail}
             onDelete={handleDelete}

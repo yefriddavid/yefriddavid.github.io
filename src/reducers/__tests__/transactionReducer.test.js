@@ -8,6 +8,8 @@ const initial = {
   saving: false,
   error: {},
   isError: false,
+  importing: false,
+  importProgress: 0,
 }
 
 const makeTx = (overrides = {}) => ({

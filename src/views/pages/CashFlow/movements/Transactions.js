@@ -500,8 +500,26 @@ function AnnualView({ masters, transactions, year }) {
   }, [transactions, year])
 
   const activeMasters = useMemo(() => (masters ?? []).filter((a) => a.active), [masters])
-  const outcomingMasters = useMemo(() => activeMasters.filter((a) => a.type === 'Outcoming'), [activeMasters])
-  const incomingMasters = useMemo(() => activeMasters.filter((a) => a.type === 'Incoming'), [activeMasters])
+  const debtMasters = useMemo(() => activeMasters.filter((a) => a.targetAmount > 0), [activeMasters])
+  const outcomingMasters = useMemo(
+    () => activeMasters.filter((a) => a.type === 'Outcoming' && !(a.targetAmount > 0)),
+    [activeMasters],
+  )
+  const incomingMasters = useMemo(
+    () => activeMasters.filter((a) => a.type === 'Incoming' && !(a.targetAmount > 0)),
+    [activeMasters],
+  )
+
+  // cumulative payments across ALL years (no year filter) for debt accounts
+  const cumulativeDebtMap = useMemo(() => {
+    const map = {}
+    if (!transactions) return map
+    transactions.forEach((t) => {
+      if (!t.accountMasterId) return
+      map[t.accountMasterId] = (map[t.accountMasterId] ?? 0) + (t.amount || 0)
+    })
+    return map
+  }, [transactions])
 
   const calcMonthTotals = (accounts) => {
     const totals = Array(12).fill(0)
@@ -635,29 +653,105 @@ function AnnualView({ masters, transactions, year }) {
   )
 
   return (
-    <div style={{ overflowX: 'auto', border: '1px solid #e9ecef', borderRadius: 8 }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-        <thead>{colHeader}</thead>
-        <tbody>
-          {outcomingMasters.length > 0 && (
-            <>
-              {renderSectionHeader('Egresos', '#e03131')}
-              {renderRows(outcomingMasters)}
-            </>
-          )}
-          {incomingMasters.length > 0 && (
-            <>
-              {renderSectionHeader('Ingresos', '#2f9e44')}
-              {renderRows(incomingMasters)}
-            </>
-          )}
-        </tbody>
-        <tfoot>
-          {outcomingMasters.length > 0 && renderTotalsRow(outcomingTotals, 'Total Egresos', '#c0392b')}
-          {incomingMasters.length > 0 && renderTotalsRow(incomingTotals, 'Total Ingresos', '#2f9e44')}
-        </tfoot>
-      </table>
-    </div>
+    <>
+      <div style={{ overflowX: 'auto', border: '1px solid #e9ecef', borderRadius: 8 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead>{colHeader}</thead>
+          <tbody>
+            {outcomingMasters.length > 0 && (
+              <>
+                {renderSectionHeader('Egresos', '#e03131')}
+                {renderRows(outcomingMasters)}
+              </>
+            )}
+            {incomingMasters.length > 0 && (
+              <>
+                {renderSectionHeader('Ingresos', '#2f9e44')}
+                {renderRows(incomingMasters)}
+              </>
+            )}
+          </tbody>
+          <tfoot>
+            {outcomingMasters.length > 0 && renderTotalsRow(outcomingTotals, 'Total Egresos', '#c0392b')}
+            {incomingMasters.length > 0 && renderTotalsRow(incomingTotals, 'Total Ingresos', '#2f9e44')}
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Debt accounts section */}
+      {debtMasters.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: '#7c3aed',
+              background: '#7c3aed18',
+              borderTop: '2px solid #7c3aed',
+              borderBottom: '1px solid #7c3aed40',
+              padding: '6px 12px',
+              borderRadius: '8px 8px 0 0',
+            }}
+          >
+            Deudas activas
+          </div>
+          <div style={{ border: '1px solid #e9ecef', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden' }}>
+            {debtMasters.map((account, idx) => {
+              const cumPaid = cumulativeDebtMap[account.id] ?? 0
+              const remaining = Math.max(0, account.targetAmount - cumPaid)
+              const pct = Math.min(100, Math.round((cumPaid / account.targetAmount) * 100))
+              const isDone = remaining <= 0
+              return (
+                <div
+                  key={account.id}
+                  style={{
+                    padding: '14px 16px',
+                    background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+                    borderBottom: idx < debtMasters.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                    <div>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>
+                        {account.important && <span style={{ color: '#e03131', marginRight: 4 }}>★</span>}
+                        {account.name}
+                      </span>
+                      {account.category && (
+                        <span style={{ marginLeft: 8, fontSize: 11, color: '#6c757d' }}>{account.category}</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: isDone ? '#2f9e44' : '#7c3aed' }}>
+                      {isDone ? 'Saldada' : `Saldo: ${fmt(remaining)}`}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 12, color: '#6c757d' }}>
+                    <span>Meta: <strong style={{ color: '#1a1a2e' }}>{fmt(account.targetAmount)}</strong></span>
+                    <span>Pagado: <strong style={{ color: '#2f9e44' }}>{fmt(cumPaid)}</strong></span>
+                    <span>Restante: <strong style={{ color: isDone ? '#2f9e44' : '#e03131' }}>{fmt(remaining)}</strong></span>
+                  </div>
+                  <div style={{ marginTop: 8, height: 8, background: '#e9ecef', borderRadius: 4, overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        height: '100%',
+                        borderRadius: 4,
+                        background: isDone ? '#2f9e44' : '#7c3aed',
+                        width: `${pct}%`,
+                        transition: 'width 0.4s ease',
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginTop: 4, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
+                    {pct}% completado
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

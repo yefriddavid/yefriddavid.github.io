@@ -22,6 +22,7 @@ import '../../../movements/payments/ItemDetail.scss'
 const EMPTY_FORM = {
   type: 'Outcoming',
   period: 'Mensuales',
+  targetAmount: '',
   definition: '',
   classification: 'dispensable',
   category: '',
@@ -208,6 +209,23 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             type="number"
             value={form.defaultValue}
             onChange={set('defaultValue')}
+            placeholder="0 — opcional"
+            min="0"
+          />
+        </div>
+
+        <div className="payment-form__field">
+          <label className="payment-form__label">
+            Deuda total a pagar (COP)
+            <span style={{ fontSize: 11, color: '#6c757d', fontWeight: 400, marginLeft: 6 }}>
+              — dejar vacío si no es una deuda
+            </span>
+          </label>
+          <input
+            className="payment-form__input"
+            type="number"
+            value={form.targetAmount}
+            onChange={set('targetAmount')}
             placeholder="0 — opcional"
             min="0"
           />
