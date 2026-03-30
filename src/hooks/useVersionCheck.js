@@ -9,7 +9,8 @@ const useVersionCheck = () => {
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch('./version.json?t=' + Date.now())
+        // const res = await fetch('./version.json?t=' + Date.now())
+        const res = await fetch('/version.json?t=' + Date.now())
         if (!res.ok) return
         const { version } = await res.json()
         if (currentVersion.current === null) {
