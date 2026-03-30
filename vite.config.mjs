@@ -137,6 +137,7 @@ export default defineConfig(() => {
       environment: 'node',
       include: ['src/**/*.test.js'],
       setupFiles: ['src/__tests__/setup.js'],
+      exclude: ["node_modules", "/mnt/Zeus/Workspace/me/sources/My-Admin/src/views/BACKUP/management/taxis/__tests__/*"],
       alias: {
         'firebase/messaging': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-messaging.js'),
       },
