@@ -726,14 +726,16 @@ export default function AccountStatus() {
   )
 
   const filtered = useMemo(() => {
-    return applicable.filter((a) => {
-      if (filter === 'all') return true
-      const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
-      if (filter === 'paid') return s.label === 'Pagado'
-      if (filter === 'pending')
-        return s.label === 'Pendiente' || s.label === 'Vencido' || s.label === 'Parcial'
-      return true
-    })
+    return applicable
+      .filter((a) => {
+        if (filter === 'all') return true
+        const s = getStatus(a, masterPaymentsMap[a.id] ?? [], monthStr)
+        if (filter === 'paid') return s.label === 'Pagado'
+        if (filter === 'pending')
+          return s.label === 'Pendiente' || s.label === 'Vencido' || s.label === 'Parcial'
+        return true
+      })
+      .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
   }, [applicable, masterPaymentsMap, monthStr, filter])
 
   const prevMonth = () => {
