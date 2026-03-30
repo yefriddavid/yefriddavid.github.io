@@ -280,6 +280,11 @@ const IcoNote = () => (
     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12zM7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z" />
   </svg>
 )
+const IcoShare = () => (
+  <svg viewBox="0 0 24 24">
+    <path d="M18 16c-.79 0-1.5.31-2.03.81L8.91 12.7A3.15 3.15 0 0 0 9 12c0-.24-.04-.47-.09-.7l7-4.07A2.99 2.99 0 0 0 18 8a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.09 9.77A2.99 2.99 0 0 0 6 9a3 3 0 1 0 3 3c0-.24-.04-.47-.09-.7l7-4.07A2.99 2.99 0 0 0 18 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+  </svg>
+)
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
@@ -1927,10 +1932,45 @@ export default function GenerarContrato() {
         >
           <div className="c-lightbox" onClick={(e) => e.stopPropagation()}>
             <div className="c-lightbox-topbar">
-              <span>{lightbox.filename}</span>
-              <button type="button" onClick={() => setLightbox(null)}>
-                <IcoClose />
-              </button>
+              <span className="c-lightbox-filename">{lightbox.filename}</span>
+              <div className="c-lightbox-actions">
+                {/* Download */}
+                <a
+                  href={lightbox.src}
+                  download={lightbox.filename}
+                  className="c-lightbox-btn"
+                  title="Descargar"
+                >
+                  <IcoDownload />
+                </a>
+                {/* Share */}
+                <button
+                  type="button"
+                  className="c-lightbox-btn"
+                  title="Compartir"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(lightbox.src)
+                      const blob = await res.blob()
+                      const file = new File([blob], lightbox.filename, { type: blob.type })
+                      if (navigator.canShare?.({ files: [file] })) {
+                        await navigator.share({ files: [file], title: lightbox.filename })
+                      } else {
+                        const a = document.createElement('a')
+                        a.href = lightbox.src
+                        a.download = lightbox.filename
+                        a.click()
+                      }
+                    } catch (_) {}
+                  }}
+                >
+                  <IcoShare />
+                </button>
+                {/* Close */}
+                <button type="button" className="c-lightbox-btn" title="Cerrar" onClick={() => setLightbox(null)}>
+                  <IcoClose />
+                </button>
+              </div>
             </div>
             <div className="c-lightbox-body">
               <img src={lightbox.src} alt={lightbox.filename} className="c-lightbox-img" />

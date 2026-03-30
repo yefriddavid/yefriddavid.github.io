@@ -1142,18 +1142,36 @@
     background: #111;
     color: rgba(255,255,255,0.8);
     font-size: 13px;
-    button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: rgba(255,255,255,0.6);
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      border-radius: 4px;
-      &:hover { color: #fff; background: rgba(255,255,255,0.1); }
-      svg { width: 18px; height: 18px; }
-    }
+    gap: 12px;
+  }
+
+  .c-lightbox-filename {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .c-lightbox-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .c-lightbox-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: color 0.15s, background 0.15s;
+    &:hover { color: #fff; background: rgba(255,255,255,0.12); }
+    svg { width: 18px; height: 18px; fill: currentColor; }
   }
 
   .c-lightbox-body {
