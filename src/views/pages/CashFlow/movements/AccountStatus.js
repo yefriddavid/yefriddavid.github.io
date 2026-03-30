@@ -6,6 +6,8 @@ import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActio
 import { MONTH_NAMES } from 'src/services/providers/firebase/CashFlow/accountsMaster'
 import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { cilCalendar } from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
@@ -877,11 +879,14 @@ export default function AccountStatus() {
         </button>
 
         <div style={{ textAlign: 'center' }}>
+
           <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>
             {MONTH_LABELS[month - 1]}
           </div>
           <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
           <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>
+              <CIcon icon={cilCalendar} size="sm" />
+              { ' ' }
             {now.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' }).replace(/^\w/, (c) => c.toUpperCase())}
           </div>
         </div>
