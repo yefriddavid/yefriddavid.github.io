@@ -525,9 +525,8 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
       </div>
 
       {/* Items preview */}
-      {project.items?.length > 0 && (
-        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
-          {project.items.map((item) => (
+      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
+        {project.items?.length > 0 && project.items.map((item) => (
             <div
               key={item.id}
               style={{
@@ -543,17 +542,33 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
                   fontSize: 13, color: '#6c757d', flex: 1,
                 })
               ) : (
-                <span
-                  onClick={() => startItemEdit(item)}
-                  title="Toca para editar"
-                  style={{
-                    fontSize: 13, color: '#6c757d', flex: 1, cursor: 'text',
-                    borderBottom: '1px dashed transparent',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                >
-                  {item.origen || <em style={{ color: '#adb5bd' }}>sin nombre</em>}
+                <span style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: 4 }}>
+                  <button
+                    onClick={() => {
+                      const updatedItems = project.items.filter((it) => it.id !== item.id)
+                      onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+                    }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#e03131', fontSize: 13, lineHeight: 1, padding: '0 2px',
+                      flexShrink: 0,
+                    }}
+                    title="Eliminar aporte"
+                  >
+                    ×
+                  </button>
+                  <span
+                    onClick={() => startItemEdit(item)}
+                    title="Toca para editar"
+                    style={{
+                      fontSize: 13, color: '#6c757d', cursor: 'text',
+                      borderBottom: '1px dashed transparent',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+                  >
+                    {item.origen || <em style={{ color: '#adb5bd' }}>sin nombre</em>}
+                  </span>
                 </span>
               )}
               {editingValueId === item.id ? (
@@ -596,9 +611,31 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
                 </span>
               )}
             </div>
-          ))}
-        </div>
-      )}
+        ))}
+
+        {/* Add item inline */}
+        <button
+          onClick={() => {
+            const newItem = { id: uid(), origen: '', value: 0 }
+            const updatedItems = [...(project.items ?? []), newItem]
+            onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+            setTimeout(() => startItemEdit(newItem), 50)
+          }}
+          style={{
+            width: '100%',
+            marginTop: 6,
+            padding: '5px 0',
+            border: '1px dashed #dee2e6',
+            borderRadius: 8,
+            background: 'transparent',
+            fontSize: 12,
+            color: '#adb5bd',
+            cursor: 'pointer',
+          }}
+        >
+          + aporte
+        </button>
+      </div>
 
       {/* Remaining */}
       {remaining !== null && (
