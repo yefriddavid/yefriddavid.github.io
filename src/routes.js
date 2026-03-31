@@ -42,6 +42,9 @@ const IncreaseDecrease = React.lazy(
   () => import('./views/pages/tools/increase-decrease/IncreaseDecrease'),
 )
 const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
+const SalaryDistribution = React.lazy(
+  () => import('./views/pages/CashFlow/tools/SalaryDistribution'),
+)
 
 // Base
 //const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -179,6 +182,11 @@ const routes = [
     element: IncreaseDecrease,
   },
   { path: '/cash_flow/tools/visits', name: 'Visits', tKey: 'nav.visits', element: Visits },
+  {
+    path: '/cash_flow/tools/salary-distribution',
+    name: 'Salary Distribution',
+    element: SalaryDistribution,
+  },
 
   /*{ path: '/theme/typography', name: 'Typography', element: Typography },
   { path: '/base', name: 'Base', element: Cards, exact: true },

@@ -114,6 +114,12 @@ const getNav = (t, role) => {
           to: '/cash_flow/tools/visits',
           icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
         },
+        {
+          component: CNavItem,
+          name: 'Salary Distribution',
+          to: '/cash_flow/tools/salary-distribution',
+          icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
+        },
       ],
     })
   }
