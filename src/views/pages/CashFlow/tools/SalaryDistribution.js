@@ -1,29 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { CCard, CCardBody, CCardHeader } from '@coreui/react'
-
-const STORAGE_KEY = 'salary-distribution-config'
-const DEFAULT_CONFIG = {
-  salary: 5000,
-  invert: 2000,
-  rows: [
-    { id: 1, name: 'car', type: 'percent', value: 10 },
-    { id: 2, name: 'col', type: 'percent', value: 20 },
-    { id: 3, name: 'ocio', type: 'remainder', value: 0 },
-  ],
-}
-
-function loadConfig() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : DEFAULT_CONFIG
-  } catch {
-    return DEFAULT_CONFIG
-  }
-}
-
-function saveConfig(config) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-}
+import React, { useEffect, useCallback, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import * as actions from 'src/actions/CashFlow/salaryDistributionActions'
 
 const fmt = (n) =>
   Number(n).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
@@ -47,64 +24,90 @@ function computeDistribution(salary, invert, rows) {
     }
   }
 
-  // Keep original order
   return rows.map((r) => results.find((res) => res.id === r.id)).filter(Boolean)
 }
 
 let nextId = Date.now()
 
 export default function SalaryDistribution() {
-  const [config, setConfig] = useState(loadConfig)
+  const dispatch = useDispatch()
+  const { data: config, fetching, saving } = useSelector((s) => s.salaryDistribution)
 
-  const { salary, invert, rows } = config
-
+  // Load on mount
   useEffect(() => {
-    saveConfig(config)
-  }, [config])
+    dispatch(actions.fetchRequest())
+  }, [dispatch])
 
-  const update = useCallback((patch) => setConfig((c) => ({ ...c, ...patch })), [])
+  // Debounced save — fires 600ms after last change
+  const saveTimer = useRef(null)
+  const scheduleSave = useCallback(
+    (newConfig) => {
+      clearTimeout(saveTimer.current)
+      saveTimer.current = setTimeout(() => dispatch(actions.saveRequest(newConfig)), 600)
+    },
+    [dispatch],
+  )
+
+  const update = useCallback(
+    (patch) => {
+      const newConfig = { ...config, ...patch }
+      dispatch(actions.successRequestSave(newConfig))
+      scheduleSave(newConfig)
+    },
+    [config, dispatch, scheduleSave],
+  )
 
   const updateRow = useCallback(
-    (id, patch) =>
-      setConfig((c) => ({
-        ...c,
-        rows: c.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-      })),
-    [],
+    (id, patch) => {
+      const newConfig = {
+        ...config,
+        rows: config.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+      }
+      dispatch(actions.successRequestSave(newConfig))
+      scheduleSave(newConfig)
+    },
+    [config, dispatch, scheduleSave],
   )
 
   const addRow = useCallback(() => {
     const hasRemainder = config.rows.some((r) => r.type === 'remainder')
-    setConfig((c) => ({
-      ...c,
+    const newConfig = {
+      ...config,
       rows: [
-        ...c.rows,
-        {
-          id: ++nextId,
-          name: '',
-          type: hasRemainder ? 'value' : 'remainder',
-          value: 0,
-        },
+        ...config.rows,
+        { id: ++nextId, name: '', type: hasRemainder ? 'value' : 'remainder', value: 0 },
       ],
-    }))
-  }, [config.rows])
+    }
+    dispatch(actions.successRequestSave(newConfig))
+    scheduleSave(newConfig)
+  }, [config, dispatch, scheduleSave])
 
   const removeRow = useCallback(
-    (id) => setConfig((c) => ({ ...c, rows: c.rows.filter((r) => r.id !== id) })),
-    [],
+    (id) => {
+      const newConfig = { ...config, rows: config.rows.filter((r) => r.id !== id) }
+      dispatch(actions.successRequestSave(newConfig))
+      scheduleSave(newConfig)
+    },
+    [config, dispatch, scheduleSave],
   )
 
-  const moveRow = useCallback((id, dir) => {
-    setConfig((c) => {
-      const rows = [...c.rows]
+  const moveRow = useCallback(
+    (id, dir) => {
+      const rows = [...config.rows]
       const idx = rows.findIndex((r) => r.id === id)
       const newIdx = idx + dir
-      if (newIdx < 0 || newIdx >= rows.length) return c
+      if (newIdx < 0 || newIdx >= rows.length) return
       ;[rows[idx], rows[newIdx]] = [rows[newIdx], rows[idx]]
-      return { ...c, rows }
-    })
-  }, [])
+      const newConfig = { ...config, rows }
+      dispatch(actions.successRequestSave(newConfig))
+      scheduleSave(newConfig)
+    },
+    [config, dispatch, scheduleSave],
+  )
 
+  if (fetching || !config) return null
+
+  const { salary, invert, rows } = config
   const distribution = computeDistribution(salary, invert, rows)
   const base = salary - invert
   const totalPercent = rows.filter((r) => r.type === 'percent').reduce((s, r) => s + Number(r.value), 0)
@@ -132,7 +135,10 @@ export default function SalaryDistribution() {
 
   return (
     <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-      <h5 style={{ fontWeight: 700, marginBottom: 16, color: '#1a1a2e' }}>Salary Distribution</h5>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h5 style={{ fontWeight: 700, margin: 0, color: '#1a1a2e' }}>Salary Distribution</h5>
+        {saving && <span style={{ fontSize: 11, color: '#adb5bd' }}>Guardando…</span>}
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
         {/* Salary */}
@@ -183,11 +189,12 @@ export default function SalaryDistribution() {
           </span>
         </div>
 
+        <div style={{ overflowX: 'auto' }}>
         {/* Header */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 110px 90px 60px',
+            gridTemplateColumns: '1fr 110px 90px 110px 60px',
             gap: 8,
             padding: '8px 14px',
             background: '#f8f9fa',
@@ -197,11 +204,13 @@ export default function SalaryDistribution() {
             color: '#adb5bd',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
+            minWidth: 480,
           }}
         >
           <span>Nombre</span>
           <span>Tipo</span>
-          <span>%</span>
+          <span>Valor</span>
+          <span>Target</span>
           <span />
         </div>
 
@@ -210,12 +219,13 @@ export default function SalaryDistribution() {
             key={row.id}
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 110px 90px 60px',
+              gridTemplateColumns: '1fr 110px 90px 110px 60px',
               gap: 8,
               padding: '8px 14px',
               alignItems: 'center',
               borderBottom: idx < rows.length - 1 ? '1px solid #f8f9fa' : 'none',
               background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+              minWidth: 480,
             }}
           >
             <input
@@ -257,68 +267,59 @@ export default function SalaryDistribution() {
             ) : (
               <span style={{ fontSize: 12, color: '#adb5bd', paddingLeft: 8 }}>auto</span>
             )}
+            <select
+              style={{ ...inputStyle, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}
+              value={row.target ?? ''}
+              onChange={(e) => updateRow(row.id, { target: e.target.value })}
+            >
+              <option value="">—</option>
+              <option value="bnc col">bnc col</option>
+              <option value="col-bnc">col-bnc</option>
+              <option value="bnc arg">bnc arg</option>
+            </select>
             <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => moveRow(row.id, -1)}
                 disabled={idx === 0}
                 style={{
-                  border: 'none',
-                  background: 'none',
+                  border: 'none', background: 'none',
                   cursor: idx === 0 ? 'default' : 'pointer',
                   color: idx === 0 ? '#dee2e6' : '#6c757d',
-                  fontSize: 14,
-                  padding: '2px 4px',
+                  fontSize: 14, padding: '2px 4px',
                 }}
                 title="Subir"
-              >
-                ↑
-              </button>
+              >↑</button>
               <button
                 onClick={() => moveRow(row.id, 1)}
                 disabled={idx === rows.length - 1}
                 style={{
-                  border: 'none',
-                  background: 'none',
+                  border: 'none', background: 'none',
                   cursor: idx === rows.length - 1 ? 'default' : 'pointer',
                   color: idx === rows.length - 1 ? '#dee2e6' : '#6c757d',
-                  fontSize: 14,
-                  padding: '2px 4px',
+                  fontSize: 14, padding: '2px 4px',
                 }}
                 title="Bajar"
-              >
-                ↓
-              </button>
+              >↓</button>
               <button
                 onClick={() => removeRow(row.id)}
                 style={{
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  color: '#e03131',
-                  fontSize: 16,
-                  padding: '2px 4px',
-                  lineHeight: 1,
+                  border: 'none', background: 'none', cursor: 'pointer',
+                  color: '#e03131', fontSize: 16, padding: '2px 4px', lineHeight: 1,
                 }}
                 title="Eliminar"
-              >
-                ×
-              </button>
+              >×</button>
             </div>
           </div>
         ))}
+
+        </div>{/* end scroll wrapper */}
 
         <div style={{ padding: '10px 14px' }}>
           <button
             onClick={addRow}
             style={{
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '6px 14px',
-              borderRadius: 6,
-              border: '1px dashed #ced4da',
-              background: '#f8f9fa',
-              cursor: 'pointer',
-              color: '#495057',
+              fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 6,
+              border: '1px dashed #ced4da', background: '#f8f9fa', cursor: 'pointer', color: '#495057',
             }}
           >
             + Agregar fila
@@ -330,40 +331,27 @@ export default function SalaryDistribution() {
       <div style={{ background: '#fff', border: '1px solid #e9ecef', borderRadius: 8, overflow: 'hidden' }}>
         <div
           style={{
-            padding: '10px 14px',
-            background: '#1a1a2e',
-            color: '#fff',
-            fontSize: 12,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
+            padding: '10px 14px', background: '#1a1a2e', color: '#fff',
+            fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}
         >
           Resultado
         </div>
 
-        {/* Salary row */}
         <ResultRow label="Salario" amount={salary} color="#2f9e44" bg="#f0fff4" />
         <ResultRow label="Inversión" amount={-invert} color="#7c3aed" note={`(−${fmt(invert)})`} bg="#faf5ff" />
 
-        {/* Divider */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '8px 14px',
-            background: '#f8f9fa',
-            borderTop: '2px solid #1a1a2e',
-            borderBottom: '2px solid #1a1a2e',
-            fontWeight: 700,
-            fontSize: 13,
+            display: 'flex', justifyContent: 'space-between', padding: '8px 14px',
+            background: '#f8f9fa', borderTop: '2px solid #1a1a2e', borderBottom: '2px solid #1a1a2e',
+            fontWeight: 700, fontSize: 13,
           }}
         >
           <span>Resto a distribuir</span>
           <span style={{ color: base < 0 ? '#e03131' : '#1a1a2e' }}>{fmt(base)}</span>
         </div>
 
-        {/* Distribution rows */}
         {distribution.map((row, idx) => {
           const badge =
             row.type === 'percent' ? `${row.value}%` : row.type === 'value' ? fmt(row.value) : 'restante'
@@ -371,41 +359,29 @@ export default function SalaryDistribution() {
             <div
               key={row.id}
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto auto',
-                gap: 8,
-                padding: '10px 14px',
-                alignItems: 'center',
+                display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8,
+                padding: '10px 14px', alignItems: 'center',
                 background: idx % 2 === 0 ? '#fff' : '#fafbfc',
                 borderBottom: idx < distribution.length - 1 ? '1px solid #f1f5f9' : 'none',
               }}
             >
-              <div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>
-                  {row.name || <span style={{ color: '#adb5bd', fontStyle: 'italic' }}>Sin nombre</span>}
-                </span>
-              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>
+                {row.name || <span style={{ color: '#adb5bd', fontStyle: 'italic' }}>Sin nombre</span>}
+              </span>
               <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: 10,
-                  background:
-                    row.type === 'remainder' ? '#e9ecef' : row.type === 'value' ? '#fff3cd' : '#e8f4fd',
-                  color:
-                    row.type === 'remainder' ? '#6c757d' : row.type === 'value' ? '#856404' : '#0c63e4',
+                  fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+                  background: row.type === 'remainder' ? '#e9ecef' : row.type === 'value' ? '#fff3cd' : '#e8f4fd',
+                  color: row.type === 'remainder' ? '#6c757d' : row.type === 'value' ? '#856404' : '#0c63e4',
                 }}
               >
                 {badge}
               </span>
               <span
                 style={{
-                  fontSize: 15,
-                  fontWeight: 700,
+                  fontSize: 15, fontWeight: 700,
                   color: row.amount < 0 ? '#e03131' : '#1a1a2e',
-                  minWidth: 100,
-                  textAlign: 'right',
+                  minWidth: 100, textAlign: 'right',
                 }}
               >
                 {fmt(row.amount)}
@@ -422,7 +398,7 @@ export default function SalaryDistribution() {
       </div>
 
       <p style={{ marginTop: 12, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
-        Configuración guardada automáticamente en este navegador.
+        Configuración guardada en IndexedDB de este navegador.
       </p>
     </div>
   )
@@ -432,12 +408,8 @@ function ResultRow({ label, amount, color, note, bg }) {
   return (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 14px',
-        background: bg ?? '#fff',
-        borderBottom: '1px solid #f1f5f9',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '10px 14px', background: bg ?? '#fff', borderBottom: '1px solid #f1f5f9',
       }}
     >
       <span style={{ fontSize: 13, color: '#495057' }}>
