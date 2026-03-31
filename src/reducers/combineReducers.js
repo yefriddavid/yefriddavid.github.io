@@ -23,6 +23,7 @@ import egg from './CashFlow/eggReducer'
 import transaction from './CashFlow/transactionReducer'
 import accountsMaster from './CashFlow/accountsMasterReducer'
 import salaryDistribution from './CashFlow/salaryDistributionReducer'
+import accountStatusNote from './CashFlow/accountStatusNoteReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -49,6 +50,7 @@ const combinedReducers = combineReducers({
   transaction,
   accountsMaster,
   salaryDistribution,
+  accountStatusNote,
 })
 
 export default combinedReducers
