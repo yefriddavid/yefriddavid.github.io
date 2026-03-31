@@ -742,7 +742,7 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MyProjects() {
   const dispatch = useDispatch()
-  const { projects, loading, saving, syncing, syncingAll } = useSelector((s) => s.myProject)
+  const { projects, loading, saving, syncing, syncingAll, importing } = useSelector((s) => s.myProject)
 
   const [sheet, setSheet] = useState(null) // null | 'new' | project object
 
@@ -796,16 +796,37 @@ export default function MyProjects() {
             {projects.length} proyecto{projects.length !== 1 ? 's' : ''}
           </div>
         </div>
-        <button
-          onClick={() => setSheet('new')}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            border: 'none',
-            background: '#1e3a5f',
-            color: '#fff',
-            fontSize: 22,
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            onClick={() => dispatch(actions.importRequest())}
+            disabled={importing}
+            title="Importar desde Firebase"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              border: '1px solid #dee2e6',
+              background: '#fff',
+              color: importing ? '#adb5bd' : '#1e3a5f',
+              fontSize: 18,
+              cursor: importing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {importing ? <CSpinner size="sm" /> : '☁️'}
+          </button>
+          <button
+            onClick={() => setSheet('new')}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              border: 'none',
+              background: '#1e3a5f',
+              color: '#fff',
+              fontSize: 22,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -814,6 +835,7 @@ export default function MyProjects() {
         >
           +
         </button>
+        </div>
       </div>
 
       {/* Grand total */}

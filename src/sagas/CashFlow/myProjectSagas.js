@@ -56,6 +56,18 @@ function* syncAllProjects({ payload }) {
   }
 }
 
+function* importFromFirebase() {
+  try {
+    const projects = yield call(fb.fetchAllFromFirebase)
+    for (const project of projects) {
+      yield call(idb.saveProject, project)
+    }
+    yield put(actions.importSuccess(projects))
+  } catch (e) {
+    yield put(actions.importError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.loadRequest, loadProjects),
@@ -63,5 +75,6 @@ export default function* rootSagas() {
     takeLatest(actions.deleteRequest, deleteProject),
     takeLatest(actions.syncRequest, syncProject),
     takeLatest(actions.syncAllRequest, syncAllProjects),
+    takeLatest(actions.importRequest, importFromFirebase),
   ])
 }

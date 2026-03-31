@@ -9,6 +9,7 @@ const myProjectSlice = createSlice({
     saving: false,
     syncing: false,
     syncingAll: false,
+    importing: false,
     isError: false,
     errorMessage: null,
   },
@@ -64,6 +65,15 @@ const myProjectSlice = createSlice({
       })
       .addCase(actions.syncAllError, (state, { payload }) => {
         state.syncingAll = false; state.isError = true; state.errorMessage = payload
+      })
+
+      .addCase(actions.importRequest, (state) => { state.importing = true; state.isError = false })
+      .addCase(actions.importSuccess, (state, { payload }) => {
+        state.projects = payload
+        state.importing = false
+      })
+      .addCase(actions.importError, (state, { payload }) => {
+        state.importing = false; state.isError = true; state.errorMessage = payload
       })
   },
 })
