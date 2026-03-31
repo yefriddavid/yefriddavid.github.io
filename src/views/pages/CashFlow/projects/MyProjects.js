@@ -512,12 +512,27 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
               {project.description}
             </div>
           )}
+          {/* 2 — cuánto falta */}
+          {goal > 0 && (
+            <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, color: '#adb5bd' }}>Falta:</span>
+              <span style={{
+                fontSize: 13, fontWeight: 800,
+                color: remaining <= 0 ? '#2f9e44' : '#e67700',
+              }}>
+                {remaining <= 0 ? '✅ Listo' : fmt(remaining)}
+              </span>
+            </div>
+          )}
           {project.date && (
-            <div style={{ fontSize: 12, color: '#6c757d', marginTop: editingName ? 4 : 0 }}>📅 {project.date}</div>
+            <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>📅 {project.date}</div>
           )}
         </div>
+        {/* 1 — valor total del proyecto (goal) */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e3a5f' }}>{fmt(total)}</div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e3a5f' }}>
+            {goal > 0 ? fmt(goal) : fmt(total)}
+          </div>
           <div style={{ fontSize: 10, fontWeight: 600, color: isSynced ? '#2f9e44' : '#f59f00', marginTop: 2 }}>
             {isSynced ? '● Sincronizado' : '○ Local'}
           </div>
