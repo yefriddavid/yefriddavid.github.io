@@ -436,6 +436,10 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
   const [localOrigen, setLocalOrigen] = useState('')
   const [editingValueId, setEditingValueId] = useState(null)
   const [localValue, setLocalValue] = useState('')
+  const [editingGoal, setEditingGoal] = useState(false)
+  const [localGoal, setLocalGoal] = useState('')
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [localNotes, setLocalNotes] = useState('')
 
   const commitName = () => {
     setEditingName(false)
@@ -457,6 +461,20 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
       it.id === item.id ? { ...it, origen: trimmed } : it,
     )
     onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const commitGoal = () => {
+    setEditingGoal(false)
+    const num = Number(String(localGoal).replace(/\D/g, ''))
+    if (num === Number(project.goal)) return
+    onSave({ ...project, goal: num, updatedAt: now(), syncedAt: null })
+  }
+
+  const commitNotes = () => {
+    setEditingNotes(false)
+    const trimmed = localNotes.trim()
+    if (trimmed === (project.notes ?? '')) return
+    onSave({ ...project, notes: trimmed, updatedAt: now(), syncedAt: null })
   }
 
   const startValueEdit = (item) => {
@@ -538,8 +556,36 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
               </span>
             </div>
           )}
-          {project.notes && (
-            <div style={{ fontSize: 11, color: '#adb5bd', marginTop: 2, fontStyle: 'italic' }}>{project.notes}</div>
+          {editingNotes ? (
+            <textarea
+              autoFocus
+              value={localNotes}
+              rows={2}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={commitNotes}
+              onKeyDown={(e) => e.key === 'Escape' && commitNotes()}
+              style={{
+                width: '100%', marginTop: 2, border: 'none',
+                borderBottom: '2px solid #1e3a5f', outline: 'none',
+                background: 'transparent', fontSize: 11, color: '#6c757d',
+                fontStyle: 'italic', resize: 'none', fontFamily: 'inherit',
+                padding: '0 0 2px',
+              }}
+            />
+          ) : (
+            <div
+              onClick={() => { setLocalNotes(project.notes ?? ''); setEditingNotes(true) }}
+              title="Toca para editar"
+              style={{
+                fontSize: 11, color: project.notes ? '#adb5bd' : '#dee2e6',
+                marginTop: 2, fontStyle: 'italic', cursor: 'text',
+                borderBottom: '1px dashed transparent', minHeight: 14,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+            >
+              {project.notes || 'Agregar descripción…'}
+            </div>
           )}
           {project.date && (
             <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>📅 {project.date}</div>
@@ -547,9 +593,35 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
         </div>
         {/* 1 — valor total del proyecto (goal) */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e3a5f' }}>
-            {goal > 0 ? fmt(goal) : fmt(total)}
-          </div>
+          {editingGoal ? (
+            <input
+              autoFocus
+              type="number"
+              min="0"
+              value={localGoal}
+              onChange={(e) => setLocalGoal(e.target.value)}
+              onBlur={commitGoal}
+              onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+              style={{
+                border: 'none', borderBottom: '2px solid #1e3a5f', outline: 'none',
+                background: 'transparent', fontSize: 17, fontWeight: 800,
+                color: '#1e3a5f', textAlign: 'right', width: 130, padding: '0 0 2px',
+              }}
+            />
+          ) : (
+            <div
+              onClick={() => { setLocalGoal(String(project.goal ?? '')); setEditingGoal(true) }}
+              title="Toca para editar"
+              style={{
+                fontSize: 17, fontWeight: 800, color: '#1e3a5f', cursor: 'text',
+                borderBottom: '1px dashed transparent',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#c5d8ff')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+            >
+              {goal > 0 ? fmt(goal) : fmt(total)}
+            </div>
+          )}
           <div style={{ fontSize: 10, fontWeight: 600, color: isSynced ? '#2f9e44' : '#f59f00', marginTop: 2 }}>
             {isSynced ? '● Sincronizado' : '○ Local'}
           </div>
