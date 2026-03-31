@@ -22,6 +22,7 @@
 - [Estado global (Redux)](#estado-global-redux)
 - [Internacionalización](#internacionalización)
 - [Caché de vouchers](#caché-de-vouchers)
+- [Rutas y archivos](#rutas-y-archivos)
 - [Despliegue](#despliegue)
 
 ---
@@ -250,6 +251,42 @@ Cargas siguientes
 ```
 
 Para forzar recarga de un voucher individual existe el botón de refresh (⟳) en cada card de pago, que llama a `clearCache(paymentId)` antes de ir a Firestore.
+
+---
+
+## Rutas y archivos
+
+Mapa de cada ruta de la aplicación al archivo fuente que la renderiza.
+
+| Ruta (`#/...`) | Archivo fuente | Notas |
+|---|---|---|
+| `/cash_flow/dashboard` | `src/views/pages/dashboard/Dashboard.js` | Dashboard principal |
+| `/cash_flow/management/accounts` | `src/views/pages/CashFlow/management/accounts/Accounts.js` | CRUD cuentas (DevExtreme DataGrid) |
+| `/cash_flow/management/accounts-master` | `src/views/pages/CashFlow/management/accounts/AccountsMaster.js` | Cuentas maestra |
+| `/cash_flow/management/taxis` | `src/views/pages/CashFlow/management/taxis/Home.js` | Inicio módulo taxis |
+| `/cash_flow/management/taxis/home` | `src/views/pages/CashFlow/management/taxis/Home.js` | Inicio módulo taxis |
+| `/cash_flow/management/taxis/settlements` | `src/views/pages/CashFlow/management/taxis/Settlements.js` | Liquidaciones diarias |
+| `/cash_flow/management/taxis/drivers` | `src/views/pages/CashFlow/management/taxis/Drivers.js` | Conductores |
+| `/cash_flow/management/taxis/vehicles` | `src/views/pages/CashFlow/management/taxis/Vehicles.js` | Vehículos |
+| `/cash_flow/management/taxis/expenses` | `src/views/pages/CashFlow/management/taxis/Expenses.js` | Gastos de taxis |
+| `/cash_flow/management/taxis/summary` | `src/views/pages/CashFlow/management/taxis/Summary.js` | Resumen financiero taxis |
+| `/cash_flow/management/taxis/partners` | `src/views/pages/CashFlow/management/taxis/Partners.js` | Socios |
+| `/cash_flow/management/taxis/profit-sharing` | `src/views/pages/CashFlow/management/taxis/Distributions.js` | Distribución de utilidades |
+| `/cash_flow/management/payments` | `src/views/pages/movements/payments/Payments.js` | Pagos + vouchers (Apps Script + Firestore) |
+| `/cash_flow/management/transactions` | `src/views/pages/CashFlow/movements/Transactions.js` | Transacciones |
+| `/cash_flow/management/account-status` | `src/views/pages/CashFlow/movements/AccountStatus.js` | Estado de cuenta |
+| `/cash_flow/management/reports` | `src/views/pages/reports/Reports.js` | Visor de comprobantes (Firestore) |
+| `/cash_flow/management/users` | `src/views/pages/CashFlow/management/users/Users.js` | Usuarios (solo `superAdmin`) |
+| `/cash_flow/management/push-subscribers` | `src/views/pages/CashFlow/management/users/PushSubscribers.js` | Suscriptores FCM (solo `superAdmin`) |
+| `/cash_flow/profile` | `src/views/pages/profile/Profile.js` | Perfil del usuario |
+| `/cash_flow/eggs` | `src/views/pages/CashFlow/eggs/Eggs.js` | Easter egg |
+| `/cash_flow/tools/adjustments` | `src/views/pages/tools/increase-decrease/IncreaseDecrease.js` | Herramienta aumento/disminución |
+| `/cash_flow/tools/visits` | `src/views/pages/tools/visits/Visits.js` | Registro de visitas (Firestore) |
+| `/cash_flow/tools/salary-distribution` | `src/views/pages/CashFlow/tools/SalaryDistribution.js` | Distribución de salarios |
+| `/about-me` | `src/views/pages/aboutMe/Index.js` | Portfolio público (Matrix rain, cursor glow) — fuera del layout |
+| `/login` | `src/views/pages/login/` | Login — fuera del layout |
+
+> Las rutas bajo `/cash_flow/management/users` y `/cash_flow/management/push-subscribers` requieren rol `superAdmin`. Todas las demás rutas autenticadas están envueltas en `DefaultLayout` (`src/layout/DefaultLayout.js`).
 
 ---
 
