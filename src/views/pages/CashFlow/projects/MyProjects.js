@@ -114,6 +114,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
   const [description, setDescription] = useState(initial?.description ?? '')
   const [date, setDate] = useState(initial?.date ?? '')
   const [goal, setGoal] = useState(initial?.goal ?? '')
+  const [notes, setNotes] = useState(initial?.notes ?? '')
   const [items, setItems] = useState(
     initial?.items?.length ? initial.items : [{ id: uid(), origen: '', value: '' }],
   )
@@ -147,6 +148,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
       description: description.trim(),
       date: date.trim(),
       goal: Number(goal) || 0,
+      notes: notes.trim(),
       items: cleanItems,
       createdAt: initial?.createdAt ?? now(),
       updatedAt: now(),
@@ -196,6 +198,16 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 placeholder="Ej: Octubre 1 2026"
+              />
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label style={fieldLabel}>DESCRIPCIÓN</label>
+              <textarea
+                style={{ ...fieldInput, resize: 'none', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5 }}
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Notas u observaciones del proyecto…"
               />
             </div>
             <div style={{ marginBottom: 18 }}>
@@ -525,6 +537,9 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
                 {remaining <= 0 ? '✅ Listo' : fmt(remaining)}
               </span>
             </div>
+          )}
+          {project.notes && (
+            <div style={{ fontSize: 11, color: '#adb5bd', marginTop: 2, fontStyle: 'italic' }}>{project.notes}</div>
           )}
           {project.date && (
             <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>📅 {project.date}</div>
