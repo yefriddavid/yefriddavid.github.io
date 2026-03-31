@@ -23,6 +23,7 @@ import sagaTransactions from './CashFlow/transactionSagas'
 import sagaAccountsMaster from './CashFlow/accountsMasterSagas'
 import sagaSalaryDistribution from './CashFlow/salaryDistributionSagas'
 import sagaAccountStatusNotes from './CashFlow/accountStatusNoteSagas'
+import sagaMyProjects from './CashFlow/myProjectSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -50,5 +51,6 @@ export default function* rootSagas() {
     sagaAccountsMaster(),
     sagaSalaryDistribution(),
     sagaAccountStatusNotes(),
+    sagaMyProjects(),
   ])
 }

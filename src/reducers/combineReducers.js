@@ -24,6 +24,7 @@ import transaction from './CashFlow/transactionReducer'
 import accountsMaster from './CashFlow/accountsMasterReducer'
 import salaryDistribution from './CashFlow/salaryDistributionReducer'
 import accountStatusNote from './CashFlow/accountStatusNoteReducer'
+import myProject from './CashFlow/myProjectReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -51,6 +52,7 @@ const combinedReducers = combineReducers({
   accountsMaster,
   salaryDistribution,
   accountStatusNote,
+  myProject,
 })
 
 export default combinedReducers

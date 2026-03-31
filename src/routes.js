@@ -36,6 +36,7 @@ const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
 
 const Eggs = React.lazy(() => import('./views/pages/CashFlow/eggs/Eggs'))
+const MyProjects = React.lazy(() => import('./views/pages/CashFlow/projects/MyProjects'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
@@ -175,6 +176,7 @@ const routes = [
   { path: '/cash_flow/profile', name: 'Profile', element: Profile },
 
   { path: '/cash_flow/eggs', name: 'Eggs', element: Eggs },
+  { path: '/cash_flow/projects', name: 'My Projects', element: MyProjects },
   {
     path: '/cash_flow/tools/adjustments',
     name: 'Increase Decrease',

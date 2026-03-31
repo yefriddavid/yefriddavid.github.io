@@ -15,6 +15,7 @@ import {
   cilFolder,
   cilGroup,
   cilHome,
+  cilLightbulb,
   cilList,
   cilPeople,
   cilSettings,
@@ -119,6 +120,12 @@ const getNav = (t, role) => {
           name: 'Salary Distribution',
           to: '/cash_flow/tools/salary-distribution',
           icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'My Projects',
+          to: '/cash_flow/projects',
+          icon: <CIcon icon={cilLightbulb} customClassName="nav-icon" />,
         },
       ],
     })
