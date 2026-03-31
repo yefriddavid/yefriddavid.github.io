@@ -113,9 +113,11 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
   const [tab, setTab] = useState('info')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [date, setDate] = useState(initial?.date ?? '')
+  const [goal, setGoal] = useState(initial?.goal ?? '')
   const [items, setItems] = useState(
     initial?.items?.length ? initial.items : [{ id: uid(), origen: '', value: '' }],
   )
+  const [focusedValueId, setFocusedValueId] = useState(null)
 
   const addItem = () =>
     setItems((prev) => [...prev, { id: uid(), origen: '', value: '' }])
@@ -144,6 +146,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
       id: initial?.id ?? uid(),
       description: description.trim(),
       date: date.trim(),
+      goal: Number(goal) || 0,
       items: cleanItems,
       createdAt: initial?.createdAt ?? now(),
       updatedAt: now(),
@@ -193,6 +196,17 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 placeholder="Ej: Octubre 1 2026"
+              />
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label style={fieldLabel}>VALOR TOTAL DEL PROYECTO (COP)</label>
+              <input
+                style={fieldInput}
+                type="number"
+                min="0"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="Ej: 50000000"
               />
             </div>
             {total > 0 && (
@@ -297,9 +311,17 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                   }}
                 />
                 <input
-                  type="number"
-                  value={item.value}
+                  type={focusedValueId === item.id ? 'number' : 'text'}
+                  value={
+                    focusedValueId === item.id
+                      ? item.value
+                      : item.value
+                        ? new Intl.NumberFormat('es-CO').format(Number(item.value))
+                        : ''
+                  }
                   onChange={(e) => updateItem(item.id, 'value', e.target.value)}
+                  onFocus={() => setFocusedValueId(item.id)}
+                  onBlur={() => setFocusedValueId(null)}
                   placeholder="0"
                   min="0"
                   style={{
@@ -388,9 +410,74 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
 }
 
 // ── Project card ──────────────────────────────────────────────────────────────
-function ProjectCard({ project, syncing, onEdit, onDelete, onSync }) {
+function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
   const total = totalOf(project.items)
+  const goal = Number(project.goal) || 0
+  const remaining = goal > 0 ? goal - total : null
   const isSynced = !!project.syncedAt
+
+  const [editingName, setEditingName] = useState(false)
+  const [localName, setLocalName] = useState(project.description)
+  const [editingItemId, setEditingItemId] = useState(null)
+  const [localOrigen, setLocalOrigen] = useState('')
+  const [editingValueId, setEditingValueId] = useState(null)
+  const [localValue, setLocalValue] = useState('')
+
+  const commitName = () => {
+    setEditingName(false)
+    const trimmed = localName.trim()
+    if (!trimmed || trimmed === project.description) return
+    onSave({ ...project, description: trimmed, updatedAt: now(), syncedAt: null })
+  }
+
+  const startItemEdit = (item) => {
+    setEditingItemId(item.id)
+    setLocalOrigen(item.origen)
+  }
+
+  const commitItem = (item) => {
+    setEditingItemId(null)
+    const trimmed = localOrigen.trim()
+    if (trimmed === item.origen) return
+    const updatedItems = project.items.map((it) =>
+      it.id === item.id ? { ...it, origen: trimmed } : it,
+    )
+    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const startValueEdit = (item) => {
+    setEditingValueId(item.id)
+    setLocalValue(String(item.value ?? ''))
+  }
+
+  const commitValue = (item) => {
+    setEditingValueId(null)
+    const num = Number(String(localValue).replace(/\D/g, ''))
+    if (num === Number(item.value)) return
+    const updatedItems = project.items.map((it) =>
+      it.id === item.id ? { ...it, value: num } : it,
+    )
+    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const inlineInput = (value, onChange, onBlur, styles = {}) => (
+    <input
+      autoFocus
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
+      onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+      style={{
+        border: 'none',
+        borderBottom: '2px solid #1e3a5f',
+        outline: 'none',
+        background: 'transparent',
+        padding: '0 0 2px',
+        width: '100%',
+        ...styles,
+      }}
+    />
+  )
 
   return (
     <div
@@ -406,23 +493,32 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>
-            {project.description}
-          </div>
+          {editingName ? (
+            inlineInput(localName, setLocalName, commitName, {
+              fontSize: 15, fontWeight: 700, color: '#1a1a2e',
+            })
+          ) : (
+            <div
+              onClick={() => setEditingName(true)}
+              title="Toca para editar"
+              style={{
+                fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 2,
+                cursor: 'text',
+                borderBottom: '1px dashed transparent',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+            >
+              {project.description}
+            </div>
+          )}
           {project.date && (
-            <div style={{ fontSize: 12, color: '#6c757d' }}>📅 {project.date}</div>
+            <div style={{ fontSize: 12, color: '#6c757d', marginTop: editingName ? 4 : 0 }}>📅 {project.date}</div>
           )}
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: 17, fontWeight: 800, color: '#1e3a5f' }}>{fmt(total)}</div>
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              color: isSynced ? '#2f9e44' : '#f59f00',
-              marginTop: 2,
-            }}
-          >
+          <div style={{ fontSize: 10, fontWeight: 600, color: isSynced ? '#2f9e44' : '#f59f00', marginTop: 2 }}>
             {isSynced ? '● Sincronizado' : '○ Local'}
           </div>
         </div>
@@ -442,10 +538,109 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync }) {
                 borderBottom: '1px solid #f8f9fa',
               }}
             >
-              <span style={{ fontSize: 13, color: '#6c757d' }}>{item.origen}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{fmt(item.value)}</span>
+              {editingItemId === item.id ? (
+                inlineInput(localOrigen, setLocalOrigen, () => commitItem(item), {
+                  fontSize: 13, color: '#6c757d', flex: 1,
+                })
+              ) : (
+                <span
+                  onClick={() => startItemEdit(item)}
+                  title="Toca para editar"
+                  style={{
+                    fontSize: 13, color: '#6c757d', flex: 1, cursor: 'text',
+                    borderBottom: '1px dashed transparent',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+                >
+                  {item.origen || <em style={{ color: '#adb5bd' }}>sin nombre</em>}
+                </span>
+              )}
+              {editingValueId === item.id ? (
+                <input
+                  autoFocus
+                  type="number"
+                  min="0"
+                  value={localValue}
+                  onChange={(e) => setLocalValue(e.target.value)}
+                  onBlur={() => commitValue(item)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                  style={{
+                    border: 'none',
+                    borderBottom: '2px solid #1e3a5f',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: '#1e3a5f',
+                    textAlign: 'right',
+                    width: 110,
+                    marginLeft: 8,
+                    flexShrink: 0,
+                    padding: '0 0 2px',
+                  }}
+                />
+              ) : (
+                <span
+                  onClick={() => startValueEdit(item)}
+                  title="Toca para editar"
+                  style={{
+                    fontSize: 13, fontWeight: 600, color: '#1a1a2e',
+                    marginLeft: 8, flexShrink: 0, cursor: 'text',
+                    borderBottom: '1px dashed transparent',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+                >
+                  {fmt(item.value)}
+                </span>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Remaining */}
+      {remaining !== null && (
+        <div
+          style={{
+            borderTop: project.items?.length > 0 ? 'none' : '1px solid #f1f5f9',
+            paddingTop: project.items?.length > 0 ? 0 : 8,
+            marginBottom: 10,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              padding: '8px 10px',
+              borderRadius: 10,
+              background: remaining <= 0 ? '#f0fdf4' : '#fff8e1',
+              border: `1px solid ${remaining <= 0 ? '#86efac' : '#ffe066'}`,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 600 }}>Costo total</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{fmt(goal)}</span>
+            </div>
+            <div
+              style={{
+                borderTop: '1px solid rgba(0,0,0,0.07)',
+                paddingTop: 6,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 600, color: remaining <= 0 ? '#2f9e44' : '#e67700' }}>
+                {remaining <= 0 ? '✅ Meta alcanzada' : '⏳ Falta'}
+              </span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: remaining <= 0 ? '#2f9e44' : '#e67700' }}>
+                {remaining <= 0 ? fmt(0) : fmt(remaining)}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -663,6 +858,7 @@ export default function MyProjects() {
             onEdit={setSheet}
             onDelete={handleDelete}
             onSync={handleSync}
+            onSave={(updated) => dispatch(actions.saveRequest(updated))}
           />
         ))
       )}
