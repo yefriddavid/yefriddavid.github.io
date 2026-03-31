@@ -32,6 +32,7 @@ const EMPTY_FORM = {
   code: '',
   name: '',
   description: '',
+  notes: '',
   defaultValue: '',
   active: true,
   important: false,
@@ -83,7 +84,19 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             type="text"
             value={form.description}
             onChange={set('description')}
-            placeholder="Descripción"
+            placeholder="Descripción corta"
+          />
+        </div>
+
+        <div className="payment-form__field">
+          <label className="payment-form__label">Notas</label>
+          <textarea
+            className="payment-form__input"
+            value={form.notes}
+            onChange={set('notes')}
+            placeholder="Comentarios u observaciones adicionales…"
+            rows={3}
+            style={{ resize: 'vertical', lineHeight: 1.5 }}
           />
         </div>
 
@@ -311,6 +324,7 @@ export default function AccountsMaster() {
   const { data, fetching, saving, seeding, seedProgress } = useSelector((s) => s.accountsMaster)
   const [formModal, setFormModal] = useState(null) // null | { mode: 'create' | 'edit', initial?: {} }
   const [typeFilter, setTypeFilter] = useState('all')
+  const [nameSearch, setNameSearch] = useState('')
 
   useEffect(() => {
     dispatch(accountsMasterActions.fetchRequest())
@@ -318,6 +332,7 @@ export default function AccountsMaster() {
 
   const filtered = (data ?? []).filter((r) => {
     if (typeFilter !== 'all' && r.type !== typeFilter) return false
+    if (nameSearch && !r.name?.toLowerCase().includes(nameSearch.toLowerCase())) return false
     return true
   })
 
@@ -379,6 +394,20 @@ export default function AccountsMaster() {
                 <CSpinner size="sm" /> Cargando… {seedProgress}%
               </span>
             )}
+            <input
+              type="text"
+              value={nameSearch}
+              onChange={(e) => setNameSearch(e.target.value)}
+              placeholder="Buscar por nombre…"
+              style={{
+                fontSize: 13,
+                padding: '4px 10px',
+                borderRadius: 6,
+                border: '1px solid var(--cui-secondary)',
+                background: '#fff',
+                width: 200,
+              }}
+            />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -411,6 +440,8 @@ export default function AccountsMaster() {
               dataSource={filtered}
               noDataText="Sin cuentas maestras registradas"
               style={{ margin: 0 }}
+              pager={{ visible: false }}
+              paging={{ enabled: false }}
             >
               <Column dataField="code" caption="Código" width={90} />
               <Column
@@ -479,6 +510,33 @@ export default function AccountsMaster() {
               />
               {/*}<Column dataField="monthStartAt" caption="Mes inicio" width={120} />*/}
               <Column dataField="paymentMethod" caption="Método pago" width={130} />
+              <Column
+                dataField="notes"
+                caption="Notas"
+                minWidth={120}
+                hidingPriority={1}
+                cellRender={({ value }) =>
+                  value ? (
+                    <span
+                      title={value}
+                      style={{
+                        display: 'block',
+                        maxWidth: 180,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: 12,
+                        color: '#495057',
+                        cursor: 'default',
+                      }}
+                    >
+                      {value}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  )
+                }
+              />
               <Column
                 dataField="active"
                 caption="Estado"
