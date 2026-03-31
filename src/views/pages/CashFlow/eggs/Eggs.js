@@ -53,7 +53,7 @@ export default function Eggs() {
   const [filterMonth, setFilterMonth] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [filterOp, setFilterOp] = useState('=')
-  const [currentPrice, setCurrentPrice] = useState('')
+  const [currentPrice, setCurrentPrice] = useState(() => localStorage.getItem('eggs_currentPrice') ?? '')
 
   const years = useMemo(() => {
     if (!eggs) return []
@@ -201,7 +201,7 @@ export default function Eggs() {
           min="0"
           style={{ width: 130 }}
           value={currentPrice}
-          onChange={(e) => setCurrentPrice(e.target.value)}
+          onChange={(e) => { setCurrentPrice(e.target.value); localStorage.setItem('eggs_currentPrice', e.target.value) }}
           placeholder="Current price"
         />
         {(fetching || saving) && <CSpinner size="sm" />}
