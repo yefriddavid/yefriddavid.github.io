@@ -1747,17 +1747,6 @@ export default function AccountStatus() {
         </div>
       }
 
-      {/* Period notes */}
-      <PeriodNotes
-        period={monthStr}
-        notes={periodNotes}
-        fetching={fetchingNotes}
-        saving={savingNotes}
-        onAdd={handleAddNote}
-        onToggle={handleToggleNote}
-        onDelete={handleDeleteNote}
-      />
-
       {/* Filter tabs */}
       <div
         style={{
@@ -1869,6 +1858,21 @@ export default function AccountStatus() {
           onClose={() => setViewer(null)}
         />
       )}
+
+      {/* Period notes */}
+          {!fetching && (
+      <PeriodNotes
+        period={monthStr}
+        notes={periodNotes}
+        fetching={fetchingNotes}
+        saving={savingNotes}
+        onAdd={handleAddNote}
+        onToggle={handleToggleNote}
+        onDelete={handleDeleteNote}
+      />
+          )}
     </div>
+
+
   )
 }
