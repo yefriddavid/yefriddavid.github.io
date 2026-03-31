@@ -1742,7 +1742,7 @@ export default function AccountStatus() {
             alignItems: 'center',
           }}
         >
-          <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Total</span>
+          <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Total:</span>
           <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f' }}>{fmt(totalPaid + totalPending + totalOverdue)}</span>
         </div>
       }
