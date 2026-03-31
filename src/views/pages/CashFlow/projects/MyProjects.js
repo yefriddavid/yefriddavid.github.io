@@ -410,7 +410,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
 }
 
 // ── Project card ──────────────────────────────────────────────────────────────
-function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
+function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClone }) {
   const total = totalOf(project.items)
   const goal = Number(project.goal) || 0
   const remaining = goal > 0 ? goal - total : null
@@ -418,6 +418,8 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
 
   const [editingName, setEditingName] = useState(false)
   const [localName, setLocalName] = useState(project.description)
+  const [cloning, setCloning] = useState(false)
+  const [cloneName, setCloneName] = useState('')
   const [editingItemId, setEditingItemId] = useState(null)
   const [localOrigen, setLocalOrigen] = useState('')
   const [editingValueId, setEditingValueId] = useState(null)
@@ -673,8 +675,8 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 600 }}>Costo total</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{fmt(goal)}</span>
+              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 600 }}>Tengo</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{fmt(total)}</span>
             </div>
             <div
               style={{
@@ -692,6 +694,58 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
                 {remaining <= 0 ? fmt(0) : fmt(remaining)}
               </span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clone prompt */}
+      {cloning && (
+        <div style={{ marginBottom: 10, padding: '10px 12px', borderRadius: 10, background: '#f8f9fa', border: '1px solid #dee2e6' }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#6c757d', marginBottom: 6 }}>NOMBRE DEL NUEVO PROYECTO</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              autoFocus
+              type="text"
+              value={cloneName}
+              onChange={(e) => setCloneName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && cloneName.trim()) {
+                  onClone(project, cloneName.trim())
+                  setCloning(false)
+                }
+                if (e.key === 'Escape') setCloning(false)
+              }}
+              style={{
+                flex: 1, border: 'none', borderBottom: '2px solid #1e3a5f',
+                outline: 'none', background: 'transparent', fontSize: 14,
+                color: '#1a1a2e', padding: '2px 0',
+              }}
+            />
+            <button
+              onClick={() => {
+                if (cloneName.trim()) onClone(project, cloneName.trim())
+                setCloning(false)
+              }}
+              disabled={!cloneName.trim()}
+              style={{
+                padding: '4px 12px', borderRadius: 8, border: 'none',
+                background: cloneName.trim() ? '#1e3a5f' : '#e9ecef',
+                color: cloneName.trim() ? '#fff' : '#adb5bd',
+                fontSize: 13, fontWeight: 700, cursor: cloneName.trim() ? 'pointer' : 'not-allowed',
+                flexShrink: 0,
+              }}
+            >
+              Clonar
+            </button>
+            <button
+              onClick={() => setCloning(false)}
+              style={{
+                padding: '4px 10px', borderRadius: 8, border: '1px solid #dee2e6',
+                background: '#fff', fontSize: 13, color: '#6c757d', cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
@@ -749,6 +803,16 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave }) {
         >
           🗑
         </button>
+        <button
+          onClick={() => { setCloneName(project.description); setCloning(true) }}
+          title="Clonar proyecto"
+          style={{
+            padding: '8px 12px', borderRadius: 8, border: 'none',
+            background: '#f8f9fa', fontSize: 13, color: '#6c757d', cursor: 'pointer',
+          }}
+        >
+          ⎘
+        </button>
       </div>
     </div>
   )
@@ -782,6 +846,18 @@ export default function MyProjects() {
 
   const handleSyncAll = () => {
     dispatch(actions.syncAllRequest(projects))
+  }
+
+  const handleClone = (project, name) => {
+    const clone = {
+      ...project,
+      id: uid(),
+      description: name,
+      createdAt: now(),
+      updatedAt: now(),
+      syncedAt: null,
+    }
+    dispatch(actions.saveRequest(clone))
   }
 
   const unsyncedCount = projects.filter((p) => !p.syncedAt).length
@@ -933,6 +1009,7 @@ export default function MyProjects() {
             onDelete={handleDelete}
             onSync={handleSync}
             onSave={(updated) => dispatch(actions.saveRequest(updated))}
+            onClone={handleClone}
           />
         ))
       )}
