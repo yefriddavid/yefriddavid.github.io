@@ -126,6 +126,15 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
   const removeItem = (id) =>
     setItems((prev) => prev.filter((it) => it.id !== id))
 
+  const moveItem = (idx, dir) =>
+    setItems((prev) => {
+      const next = [...prev]
+      const target = idx + dir
+      if (target < 0 || target >= next.length) return prev
+      ;[next[idx], next[target]] = [next[target], next[idx]]
+      return next
+    })
+
   const handleSave = () => {
     if (!description.trim()) return
     const cleanItems = items
@@ -212,12 +221,13 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 120px 32px',
+                gridTemplateColumns: '24px 1fr 110px 32px',
                 gap: 8,
                 marginBottom: 8,
                 padding: '0 2px',
               }}
             >
+              <span />
               <span style={{ fontSize: 11, fontWeight: 700, color: '#adb5bd', letterSpacing: '0.05em' }}>ORIGEN</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#adb5bd', letterSpacing: '0.05em', textAlign: 'right' }}>VALOR (COP)</span>
               <span />
@@ -228,7 +238,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                 key={item.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 120px 32px',
+                  gridTemplateColumns: '24px 1fr 110px 32px',
                   gap: 8,
                   alignItems: 'center',
                   marginBottom: 10,
@@ -238,6 +248,40 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                   border: '1px solid #e9ecef',
                 }}
               >
+                {/* Order controls */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <button
+                    onClick={() => moveItem(idx, -1)}
+                    disabled={idx === 0}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: idx === 0 ? 'default' : 'pointer',
+                      color: idx === 0 ? '#dee2e6' : '#6c757d',
+                      fontSize: 11,
+                      lineHeight: 1,
+                      padding: '1px 0',
+                    }}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => moveItem(idx, 1)}
+                    disabled={idx === items.length - 1}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: idx === items.length - 1 ? 'default' : 'pointer',
+                      color: idx === items.length - 1 ? '#dee2e6' : '#6c757d',
+                      fontSize: 11,
+                      lineHeight: 1,
+                      padding: '1px 0',
+                    }}
+                  >
+                    ▼
+                  </button>
+                </div>
+
                 <input
                   type="text"
                   value={item.origen}
