@@ -164,6 +164,16 @@ export default function SalaryDistribution() {
             value={invert}
             onChange={(e) => update({ invert: Number(e.target.value) })}
           />
+          <select
+            style={{ ...inputStyle, marginTop: 8, cursor: 'pointer' }}
+            value={config.invertTarget ?? ''}
+            onChange={(e) => update({ invertTarget: e.target.value })}
+          >
+            <option value="">— Target —</option>
+            <option value="bnc col">bnc col</option>
+            <option value="col-bnc">col-bnc</option>
+            <option value="bnc arg">bnc arg</option>
+          </select>
           <div style={{ marginTop: 6, fontSize: 20, fontWeight: 700, color: '#7c3aed', textAlign: 'right' }}>
             {fmt(invert)}
           </div>
@@ -397,9 +407,63 @@ export default function SalaryDistribution() {
         )}
       </div>
 
+      {/* Target summary */}
+      <TargetSummary distribution={distribution} invert={invert} invertTarget={config.invertTarget} />
+
       <p style={{ marginTop: 12, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
         Configuración guardada en IndexedDB de este navegador.
       </p>
+    </div>
+  )
+}
+
+function TargetSummary({ distribution, invert, invertTarget }) {
+  const totals = {}
+
+  if (invert > 0) {
+    const key = invertTarget || '__none__'
+    totals[key] = (totals[key] ?? 0) + invert
+  }
+
+  distribution.forEach((row) => {
+    const key = row.target || '__none__'
+    totals[key] = (totals[key] ?? 0) + (row.amount || 0)
+  })
+
+  const entries = Object.entries(totals).sort(([a], [b]) => {
+    if (a === '__none__') return 1
+    if (b === '__none__') return -1
+    return a.localeCompare(b)
+  })
+
+  if (entries.length === 0) return null
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e9ecef', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
+      <div
+        style={{
+          padding: '10px 14px', background: '#1a1a2e', color: '#fff',
+          fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}
+      >
+        Total por target
+      </div>
+      {entries.map(([key, amount], idx) => (
+        <div
+          key={key}
+          style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '10px 14px',
+            background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+            borderBottom: idx < entries.length - 1 ? '1px solid #f1f5f9' : 'none',
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 600, color: key === '__none__' ? '#adb5bd' : '#1a1a2e' }}>
+            {key === '__none__' ? 'Sin target' : key}
+          </span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{fmt(amount)}</span>
+        </div>
+      ))}
     </div>
   )
 }
