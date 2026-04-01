@@ -24,6 +24,7 @@ export const fetchAllFromFirebase = async () => {
       goal: data.goal ?? 0,
       notes: data.notes ?? '',
       items: data.items ?? [],
+      projectNotes: data.projectNotes ?? [],
       createdAt: data.createdAt ?? null,
       updatedAt: data.updatedAt ?? null,
       syncedAt: data.syncedAt?.toDate?.()?.toISOString() ?? null,

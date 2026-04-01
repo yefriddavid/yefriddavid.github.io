@@ -119,6 +119,21 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
     initial?.items?.length ? initial.items : [{ id: uid(), origen: '', value: '' }],
   )
   const [focusedValueId, setFocusedValueId] = useState(null)
+  const [projectNotes, setProjectNotes] = useState(initial?.projectNotes ?? [])
+  const [newNoteText, setNewNoteText] = useState('')
+  const [newNoteRef, setNewNoteRef] = useState('')
+
+  const addNote = () => {
+    if (!newNoteText.trim()) return
+    setProjectNotes((prev) => [
+      ...prev,
+      { id: uid(), text: newNoteText.trim(), reference: newNoteRef.trim(), createdAt: now() },
+    ])
+    setNewNoteText('')
+    setNewNoteRef('')
+  }
+
+  const removeNote = (id) => setProjectNotes((prev) => prev.filter((n) => n.id !== id))
 
   const addItem = () =>
     setItems((prev) => [...prev, { id: uid(), origen: '', value: '' }])
@@ -150,6 +165,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
       goal: Number(goal) || 0,
       notes: notes.trim(),
       items: cleanItems,
+      projectNotes,
       createdAt: initial?.createdAt ?? now(),
       updatedAt: now(),
       syncedAt: initial?.syncedAt ?? null,
@@ -173,6 +189,9 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
           <button style={tabBtn(tab === 'info')} onClick={() => setTab('info')}>Información</button>
           <button style={tabBtn(tab === 'items')} onClick={() => setTab('items')}>
             Aportes{items.filter((i) => i.origen).length > 0 ? ` (${items.filter((i) => i.origen).length})` : ''}
+          </button>
+          <button style={tabBtn(tab === 'notes')} onClick={() => setTab('notes')}>
+            Notas{projectNotes.length > 0 ? ` (${projectNotes.length})` : ''}
           </button>
         </div>
 
@@ -401,6 +420,88 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
           </div>
         )}
 
+        {/* Notes tab */}
+        {tab === 'notes' && (
+          <div>
+            {projectNotes.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#adb5bd', fontSize: 13 }}>
+                Sin notas aún
+              </div>
+            )}
+            {projectNotes.map((note) => (
+              <div
+                key={note.id}
+                style={{
+                  background: '#f8f9fa',
+                  border: '1px solid #e9ecef',
+                  borderRadius: 10,
+                  padding: '10px 12px',
+                  marginBottom: 8,
+                  position: 'relative',
+                }}
+              >
+                <button
+                  onClick={() => removeNote(note.id)}
+                  style={{
+                    position: 'absolute', top: 8, right: 8,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#e03131', fontSize: 16, lineHeight: 1, padding: 0,
+                  }}
+                >×</button>
+                <div style={{ fontSize: 14, color: '#1a1a2e', marginBottom: 4, paddingRight: 20 }}>
+                  {note.text}
+                </div>
+                {note.reference && (
+                  <div style={{ fontSize: 12, color: '#1e3a5f', marginBottom: 4 }}>
+                    🔗 {note.reference}
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: '#adb5bd' }}>
+                  {new Date(note.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
+              </div>
+            ))}
+
+            {/* Add note form */}
+            <div style={{ background: '#fff', border: '1px solid #dee2e6', borderRadius: 10, padding: '12px', marginTop: 4 }}>
+              <div style={{ marginBottom: 10 }}>
+                <label style={fieldLabel}>NOTA *</label>
+                <textarea
+                  style={{ ...fieldInput, resize: 'none', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5 }}
+                  rows={2}
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  placeholder="Escribe una nota…"
+                />
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <label style={fieldLabel}>REFERENCIA</label>
+                <input
+                  style={fieldInput}
+                  type="text"
+                  value={newNoteRef}
+                  onChange={(e) => setNewNoteRef(e.target.value)}
+                  placeholder="URL, libro, persona…"
+                />
+              </div>
+              <button
+                onClick={addNote}
+                disabled={!newNoteText.trim()}
+                style={{
+                  width: '100%', padding: '9px', borderRadius: 9,
+                  border: 'none',
+                  background: newNoteText.trim() ? '#1e3a5f' : '#e9ecef',
+                  color: newNoteText.trim() ? '#fff' : '#adb5bd',
+                  fontSize: 13, fontWeight: 700,
+                  cursor: newNoteText.trim() ? 'pointer' : 'not-allowed',
+                }}
+              >
+                + Agregar nota
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
           <button style={btnGhost} onClick={onClose}>Cancelar</button>
@@ -440,6 +541,10 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
   const [localGoal, setLocalGoal] = useState('')
   const [editingNotes, setEditingNotes] = useState(false)
   const [localNotes, setLocalNotes] = useState('')
+  const [showProjectNotes, setShowProjectNotes] = useState(false)
+  const [addingNote, setAddingNote] = useState(false)
+  const [newNoteText, setNewNoteText] = useState('')
+  const [newNoteRef, setNewNoteRef] = useState('')
 
   const commitName = () => {
     setEditingName(false)
@@ -490,6 +595,21 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
       it.id === item.id ? { ...it, value: num } : it,
     )
     onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const cardNotes = project.projectNotes ?? []
+
+  const saveCardNote = () => {
+    if (!newNoteText.trim()) return
+    const note = { id: uid(), text: newNoteText.trim(), reference: newNoteRef.trim(), createdAt: now() }
+    onSave({ ...project, projectNotes: [...cardNotes, note], updatedAt: now(), syncedAt: null })
+    setNewNoteText('')
+    setNewNoteRef('')
+    setAddingNote(false)
+  }
+
+  const deleteCardNote = (noteId) => {
+    onSave({ ...project, projectNotes: cardNotes.filter((n) => n.id !== noteId), updatedAt: now(), syncedAt: null })
   }
 
   const inlineInput = (value, onChange, onBlur, styles = {}) => (
@@ -784,6 +904,129 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
           </div>
         </div>
       )}
+
+      {/* Project notes section */}
+      <div style={{ marginBottom: 10 }}>
+        <button
+          onClick={() => setShowProjectNotes((v) => !v)}
+          style={{
+            width: '100%',
+            padding: '7px 10px',
+            borderRadius: 8,
+            border: '1px solid #e9ecef',
+            background: showProjectNotes ? '#f8f9fa' : '#fff',
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#6c757d',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>📝 Notas{cardNotes.length > 0 ? ` (${cardNotes.length})` : ''}</span>
+          <span style={{ fontSize: 10 }}>{showProjectNotes ? '▲' : '▼'}</span>
+        </button>
+
+        {showProjectNotes && (
+          <div style={{ padding: '10px 4px 4px' }}>
+            {cardNotes.map((note) => (
+              <div
+                key={note.id}
+                style={{
+                  background: '#f8f9fa',
+                  border: '1px solid #e9ecef',
+                  borderRadius: 10,
+                  padding: '8px 10px',
+                  marginBottom: 6,
+                  position: 'relative',
+                }}
+              >
+                <button
+                  onClick={() => deleteCardNote(note.id)}
+                  style={{
+                    position: 'absolute', top: 6, right: 8,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#e03131', fontSize: 15, lineHeight: 1, padding: 0,
+                  }}
+                >×</button>
+                <div style={{ fontSize: 13, color: '#1a1a2e', marginBottom: 2, paddingRight: 18 }}>
+                  {note.text}
+                </div>
+                {note.reference && (
+                  <div style={{ fontSize: 11, color: '#1e3a5f', marginBottom: 2 }}>
+                    🔗 {note.reference}
+                  </div>
+                )}
+                <div style={{ fontSize: 10, color: '#adb5bd' }}>
+                  {new Date(note.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
+              </div>
+            ))}
+
+            {addingNote ? (
+              <div style={{ background: '#fff', border: '1px solid #dee2e6', borderRadius: 10, padding: '10px' }}>
+                <input
+                  autoFocus
+                  type="text"
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+                  placeholder="Nota…"
+                  style={{
+                    width: '100%', border: 'none', borderBottom: '2px solid #1e3a5f',
+                    outline: 'none', background: 'transparent', fontSize: 13,
+                    color: '#1a1a2e', padding: '2px 0 6px', marginBottom: 8,
+                  }}
+                />
+                <input
+                  type="text"
+                  value={newNoteRef}
+                  onChange={(e) => setNewNoteRef(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && saveCardNote()}
+                  placeholder="Referencia (opcional)…"
+                  style={{
+                    width: '100%', border: 'none', borderBottom: '1px solid #dee2e6',
+                    outline: 'none', background: 'transparent', fontSize: 12,
+                    color: '#6c757d', padding: '2px 0 6px', marginBottom: 8,
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={saveCardNote}
+                    disabled={!newNoteText.trim()}
+                    style={{
+                      flex: 1, padding: '6px', borderRadius: 8, border: 'none',
+                      background: newNoteText.trim() ? '#1e3a5f' : '#e9ecef',
+                      color: newNoteText.trim() ? '#fff' : '#adb5bd',
+                      fontSize: 12, fontWeight: 700,
+                      cursor: newNoteText.trim() ? 'pointer' : 'not-allowed',
+                    }}
+                  >Guardar</button>
+                  <button
+                    onClick={() => { setAddingNote(false); setNewNoteText(''); setNewNoteRef('') }}
+                    style={{
+                      padding: '6px 10px', borderRadius: 8, border: '1px solid #dee2e6',
+                      background: '#fff', fontSize: 12, color: '#6c757d', cursor: 'pointer',
+                    }}
+                  >✕</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingNote(true)}
+                style={{
+                  width: '100%', padding: '7px', borderRadius: 8,
+                  border: '1px dashed #dee2e6', background: 'transparent',
+                  fontSize: 12, color: '#adb5bd', cursor: 'pointer',
+                }}
+              >
+                + Agregar nota
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Clone prompt */}
       {cloning && (
