@@ -1,9 +1,12 @@
+// REFACTORED — logic split into sub-components. See siblings in this folder.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
 import {
+  CButtonGroup,
+  CFormCheck,
   CCard,
   CCardBody,
   CCardHeader,
@@ -47,13 +50,13 @@ import {
   getColombianHolidays,
   auditNoteId,
   buildAuditDay,
-} from './auditHelpers'
+} from '../auditHelpers'
 import * as XLSX from 'xlsx'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import '../../../movements/payments/Payments.scss'
-import '../../../movements/payments/ItemDetail.scss'
-import './Taxis.scss'
+import '../../../../movements/payments/Payments.scss'
+import '../../../../movements/payments/ItemDetail.scss'
+import '../Taxis.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', {
@@ -1298,6 +1301,16 @@ const Taxis = () => {
     return auditAccent[day.status]
   }
 
+
+  //var selected = "edicion"
+
+const [selected, setSelected] = useState('edicion')
+
+  const handleChange = (e) => {
+    setSelected(e.target.value)
+  }
+
+
   return (
     <>
       {loadingSettlements && savingRef.current && (
@@ -2150,6 +2163,7 @@ const Taxis = () => {
             )}
           </div>
           <div className="d-flex align-items-center gap-1">
+            Mode:
             <CButton
               size="sm"
               color="secondary"
@@ -2906,6 +2920,73 @@ const Taxis = () => {
                     ✕ Limpiar
                   </button>
                 )}
+                <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+                  Mode:
+
+
+
+<CButtonGroup role="group" aria-label="Basic checkbox toggle button group">
+        {/* Botón Edición (Verde) */}
+        <CFormCheck
+          type="radio"
+          button={{ color: 'success', variant: 'outline' }}
+          name="options"
+          id="btn-edicion"
+          value="edicion"
+          label="Edición 1"
+          autoComplete="off"
+          checked={selected === 'edicion'}
+          onChange={handleChange}
+        />
+
+        {/* Botón Simulacro (Rojo) */}
+        <CFormCheck
+          type="radio"
+          button={{ color: 'danger', variant: 'outline' }}
+          name="options"
+          id="btn-simulacro"
+          value="simulacro"
+          label="Simulacro"
+          autoComplete="off"
+          checked={selected === 'simulacro'}
+          onChange={handleChange}
+          style={{ borderRadius: '10px' }}
+        />
+      </CButtonGroup>
+
+
+
+                  {/*<button
+                  onClick={() => {}}
+                    style={{
+                      fontSize: 11,
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      border: '1px solid #2f9e44',
+                      background: 'none',
+                      color: '#2f9e44',
+                      cursor: 'pointer',
+                    }}
+                    title="Editar Planillas"
+                  >
+                    Edición
+                  </button>
+                  <button
+                  onClick={() => {}}
+                    style={{
+                      fontSize: 11,
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      border: '1px solid #e03131',
+                      background: 'none',
+                      color: '#e03131',
+                      cursor: 'pointer',
+                    }}
+                    title="Simular Planillas"
+                  >
+                    Simulacro
+                  </button>*/}
+                </div>
                 <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
                   <button
                     onClick={exportAuditToExcel}

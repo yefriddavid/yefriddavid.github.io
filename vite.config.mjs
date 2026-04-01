@@ -123,6 +123,10 @@ export default defineConfig(() => {
           find: 'src/',
           replacement: `${path.resolve(__dirname, 'src')}/`,
         },
+        {
+          find: '@appComponents',
+          replacement: path.resolve(__dirname, 'src/components/App'),
+        },
       ],
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.scss'],
     },

@@ -13,7 +13,14 @@
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run build 2>&1)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run build 2>&1)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run build)",
-      "Bash(npx skills:*)"
+      "Bash(npx skills:*)",
+      "Bash(node_modules/.bin/eslint --fix \\\\\n  src/views/pages/Contratos/contratos/GenerarContrato.js \\\\\n  src/views/pages/Contratos/contratos/contractPdf.js \\\\\n  src/sagas/Contratos/propertySagas.js \\\\\n  src/sagas/Contratos/bankAccountSagas.js \\\\\n  src/sagas/Contratos/contractSagas.js \\\\\n  src/services/providers/firebase/Contratos/properties.js \\\\\n  src/services/providers/firebase/Contratos/bankAccounts.js \\\\\n  src/services/providers/firebase/Contratos/contracts.js \\\\\n  src/actions/Contratos/propertyActions.js \\\\\n  src/actions/Contratos/bankAccountActions.js \\\\\n  src/actions/Contratos/contractActions.js \\\\\n  src/reducers/Contratos/propertyReducer.js \\\\\n  src/reducers/Contratos/bankAccountReducer.js \\\\\n  src/reducers/Contratos/contractReducer.js \\\\\n  src/reducers/combineReducers.js \\\\\n  src/sagas/index.js 2>&1)",
+      "Bash(node_modules/.bin/eslint \\\\\n  src/views/pages/Contratos/contratos/GenerarContrato.js \\\\\n  src/views/pages/Contratos/contratos/contractPdf.js \\\\\n  src/sagas/Contratos/*.js \\\\\n  src/services/providers/firebase/Contratos/*.js \\\\\n  src/actions/Contratos/*.js \\\\\n  src/reducers/Contratos/*.js \\\\\n  src/reducers/combineReducers.js \\\\\n  src/sagas/index.js 2>&1)",
+      "Bash(node_modules/.bin/eslint --fix \\\\\n  src/views/pages/Contratos/contratos/GenerarContrato.js \\\\\n  src/services/providers/firebase/Contratos/owners.js \\\\\n  src/actions/Contratos/ownerActions.js \\\\\n  src/reducers/Contratos/ownerReducer.js \\\\\n  src/sagas/Contratos/ownerSagas.js \\\\\n  src/reducers/combineReducers.js \\\\\n  src/sagas/index.js 2>&1)",
+      "Bash(node_modules/.bin/eslint \\\\\n  src/views/pages/Contratos/contratos/GenerarContrato.js \\\\\n  src/services/providers/firebase/Contratos/owners.js \\\\\n  src/actions/Contratos/ownerActions.js \\\\\n  src/reducers/Contratos/ownerReducer.js \\\\\n  src/sagas/Contratos/ownerSagas.js 2>&1)",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(grep -v \"✖\\\\|problems\\\\|^$\\\\|AccountStatus\")"
     ]
   }
 }

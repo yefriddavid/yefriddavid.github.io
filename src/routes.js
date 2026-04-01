@@ -9,7 +9,7 @@ const Accounts = React.lazy(() => import('./views/pages/CashFlow/management/acco
 const AccountsMaster = React.lazy(
   () => import('./views/pages/CashFlow/management/accounts/AccountsMaster'),
 )
-const Settlements = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Settlements'))
+const Settlements = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Settlements/Index'))
 const Drivers = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Drivers'))
 const Vehicles = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Vehicles'))
 const Expenses = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Expenses'))
