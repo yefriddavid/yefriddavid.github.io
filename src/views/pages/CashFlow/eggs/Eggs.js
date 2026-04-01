@@ -168,17 +168,21 @@ export default function Eggs() {
   // Summary
   const summary = useMemo(() => {
     const cp = parseFloat(currentPrice)
-    let totalInvested = 0
-    let totalPL = 0
-    let totalQty = 0
+    const hasPL = !isNaN(cp) && !!currentPrice
+    let totalInvested = 0, totalPL = 0, totalQty = 0
+    let greenInvested = 0, greenPL = 0, greenQty = 0
     filtered.forEach((e) => {
       const qty = e.quantity ?? 0
       const price = e.price ?? 0
       totalInvested += qty * price
       totalQty += qty
-      if (!isNaN(cp)) totalPL += (cp - price) * qty
+      if (hasPL) {
+        const pl = (cp - price) * qty
+        totalPL += pl
+        if (pl >= 0) { greenInvested += qty * price; greenPL += pl; greenQty += qty }
+      }
     })
-    return { totalInvested, totalPL, totalQty, hasPL: !isNaN(cp) && !!currentPrice }
+    return { totalInvested, totalPL, totalQty, hasPL, greenInvested, greenPL, greenQty }
   }, [filtered, currentPrice])
 
   const openCreate = () => { setForm(EMPTY); setEditingId(null); setModalOpen(true) }
@@ -322,7 +326,7 @@ export default function Eggs() {
       )}
 
       {/* Summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: summary.hasPL ? '1fr 1fr 1fr' : '1fr 1fr', gap: 8, marginBottom: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
         <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', border: '1px solid #e9ecef' }}>
           <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 3 }}>CANTIDAD</div>
           <div style={{ fontSize: 15, fontWeight: 800, color: '#1a1a2e' }}>
@@ -342,6 +346,27 @@ export default function Eggs() {
             <div style={{ fontSize: 10, color: '#6c757d', fontWeight: 600, marginBottom: 3 }}>P/L TOTAL</div>
             <div style={{ fontSize: 15, fontWeight: 800, color: summary.totalPL >= 0 ? '#2f9e44' : '#e03131' }}>
               {summary.totalPL >= 0 ? '▲' : '▼'} {fmt(Math.abs(summary.totalPL))}
+            </div>
+          </div>
+        )}
+        {summary.hasPL && summary.greenQty > 0 && (
+          <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 12px', border: '1px solid #86efac' }}>
+            <div style={{ fontSize: 10, color: '#2f9e44', fontWeight: 600, marginBottom: 3 }}>● INVERTIDO EN VERDES</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#2f9e44' }}>{fmt(summary.greenInvested)}</div>
+          </div>
+        )}
+        {summary.hasPL && summary.greenQty > 0 && (
+          <div style={{ gridColumn: '1 / -1', background: '#f0fdf4', borderRadius: 10, padding: '10px 12px', border: '1px solid #86efac' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 10, color: '#2f9e44', fontWeight: 600, marginBottom: 3 }}>● GANANCIA EN VERDES</div>
+                <div style={{ fontSize: 11, color: '#adb5bd' }}>
+                  {new Intl.NumberFormat('es-CO', { maximumFractionDigits: 4 }).format(summary.greenQty)} unidades
+                </div>
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#2f9e44' }}>
+                ▲ {fmt(summary.greenPL)}
+              </div>
             </div>
           </div>
         )}
