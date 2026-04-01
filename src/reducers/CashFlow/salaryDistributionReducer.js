@@ -1,14 +1,26 @@
 import { createSlice } from '@reduxjs/toolkit'
 import * as actions from '../../actions/CashFlow/salaryDistributionActions'
 
-const DEFAULT_CONFIG = {
-  salary: 5000,
-  invert: 2000,
-  rows: [
-    { id: 1, name: 'car', type: 'percent', value: 10 },
-    { id: 2, name: 'col', type: 'percent', value: 20 },
-    { id: 3, name: 'ocio', type: 'remainder', value: 0 },
-  ],
+const DEFAULT_DISTRIBUTIONS = [
+  {
+    id: 'default',
+    name: 'Principal',
+    salary: 5000,
+    invert: 2000,
+    invertTarget: '',
+    rows: [
+      { id: 1, name: 'car', type: 'percent', value: 10 },
+      { id: 2, name: 'col', type: 'percent', value: 20 },
+      { id: 3, name: 'ocio', type: 'remainder', value: 0 },
+    ],
+  },
+]
+
+function migrate(payload) {
+  if (!payload) return DEFAULT_DISTRIBUTIONS
+  if (Array.isArray(payload)) return payload
+  // Old single-config format — wrap in array
+  return [{ id: 'default', name: 'Principal', ...payload }]
 }
 
 const salaryDistributionSlice = createSlice({
@@ -28,11 +40,11 @@ const salaryDistributionSlice = createSlice({
         state.isError = false
       })
       .addCase(actions.successRequestFetch, (state, { payload }) => {
-        state.data = payload ?? DEFAULT_CONFIG
+        state.data = migrate(payload)
         state.fetching = false
       })
       .addCase(actions.errorRequestFetch, (state, { payload }) => {
-        state.data = DEFAULT_CONFIG
+        state.data = DEFAULT_DISTRIBUTIONS
         state.error = payload
         state.fetching = false
         state.isError = true

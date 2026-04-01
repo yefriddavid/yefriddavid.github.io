@@ -1,9 +1,11 @@
-import React, { useEffect, useCallback, useRef } from 'react'
+import React, { useEffect, useCallback, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/CashFlow/salaryDistributionActions'
 
 const fmt = (n) =>
   Number(n).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+
+const uid = () => crypto.randomUUID()
 
 function computeDistribution(salary, invert, rows) {
   const base = salary - invert
@@ -31,83 +33,126 @@ let nextId = Date.now()
 
 export default function SalaryDistribution() {
   const dispatch = useDispatch()
-  const { data: config, fetching, saving } = useSelector((s) => s.salaryDistribution)
+  const { data: distributions, fetching, saving } = useSelector((s) => s.salaryDistribution)
+  const [activeId, setActiveId] = useState(null)
+  const [editingTabId, setEditingTabId] = useState(null)
+  const [editingTabName, setEditingTabName] = useState('')
 
   // Load on mount
   useEffect(() => {
     dispatch(actions.fetchRequest())
   }, [dispatch])
 
-  // Debounced save — fires 600ms after last change
+  // Set first active when data loads
+  useEffect(() => {
+    if (distributions?.length && !activeId) {
+      setActiveId(distributions[0].id)
+    }
+  }, [distributions, activeId])
+
+  const activeConfig = distributions?.find((d) => d.id === activeId) ?? distributions?.[0]
+
+  // Debounced save
   const saveTimer = useRef(null)
   const scheduleSave = useCallback(
-    (newConfig) => {
+    (newDists) => {
       clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => dispatch(actions.saveRequest(newConfig)), 600)
+      saveTimer.current = setTimeout(() => dispatch(actions.saveRequest(newDists)), 600)
     },
     [dispatch],
   )
 
-  const update = useCallback(
+  const patchActive = useCallback(
     (patch) => {
-      const newConfig = { ...config, ...patch }
-      dispatch(actions.successRequestSave(newConfig))
-      scheduleSave(newConfig)
+      if (!activeConfig) return
+      const newDists = distributions.map((d) => (d.id === activeConfig.id ? { ...d, ...patch } : d))
+      dispatch(actions.successRequestSave(newDists))
+      scheduleSave(newDists)
     },
-    [config, dispatch, scheduleSave],
+    [distributions, activeConfig, dispatch, scheduleSave],
   )
+
+  const update = useCallback((patch) => patchActive(patch), [patchActive])
 
   const updateRow = useCallback(
     (id, patch) => {
-      const newConfig = {
-        ...config,
-        rows: config.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-      }
-      dispatch(actions.successRequestSave(newConfig))
-      scheduleSave(newConfig)
+      if (!activeConfig) return
+      patchActive({ rows: activeConfig.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)) })
     },
-    [config, dispatch, scheduleSave],
+    [activeConfig, patchActive],
   )
 
   const addRow = useCallback(() => {
-    const hasRemainder = config.rows.some((r) => r.type === 'remainder')
-    const newConfig = {
-      ...config,
-      rows: [
-        ...config.rows,
-        { id: ++nextId, name: '', type: hasRemainder ? 'value' : 'remainder', value: 0 },
-      ],
-    }
-    dispatch(actions.successRequestSave(newConfig))
-    scheduleSave(newConfig)
-  }, [config, dispatch, scheduleSave])
+    if (!activeConfig) return
+    const hasRemainder = activeConfig.rows.some((r) => r.type === 'remainder')
+    patchActive({
+      rows: [...activeConfig.rows, { id: ++nextId, name: '', type: hasRemainder ? 'value' : 'remainder', value: 0 }],
+    })
+  }, [activeConfig, patchActive])
 
   const removeRow = useCallback(
     (id) => {
-      const newConfig = { ...config, rows: config.rows.filter((r) => r.id !== id) }
-      dispatch(actions.successRequestSave(newConfig))
-      scheduleSave(newConfig)
+      if (!activeConfig) return
+      patchActive({ rows: activeConfig.rows.filter((r) => r.id !== id) })
     },
-    [config, dispatch, scheduleSave],
+    [activeConfig, patchActive],
   )
 
   const moveRow = useCallback(
     (id, dir) => {
-      const rows = [...config.rows]
+      if (!activeConfig) return
+      const rows = [...activeConfig.rows]
       const idx = rows.findIndex((r) => r.id === id)
       const newIdx = idx + dir
       if (newIdx < 0 || newIdx >= rows.length) return
       ;[rows[idx], rows[newIdx]] = [rows[newIdx], rows[idx]]
-      const newConfig = { ...config, rows }
-      dispatch(actions.successRequestSave(newConfig))
-      scheduleSave(newConfig)
+      patchActive({ rows })
     },
-    [config, dispatch, scheduleSave],
+    [activeConfig, patchActive],
   )
 
-  if (fetching || !config) return null
+  const addDistribution = useCallback(() => {
+    const newDist = {
+      id: uid(),
+      name: 'Nueva',
+      salary: 0,
+      invert: 0,
+      invertTarget: '',
+      rows: [{ id: ++nextId, name: '', type: 'remainder', value: 0 }],
+    }
+    const newDists = [...(distributions ?? []), newDist]
+    dispatch(actions.successRequestSave(newDists))
+    scheduleSave(newDists)
+    setActiveId(newDist.id)
+  }, [distributions, dispatch, scheduleSave])
 
-  const { salary, invert, rows } = config
+  const removeDistribution = useCallback(
+    (id) => {
+      if (!distributions || distributions.length <= 1) return
+      const newDists = distributions.filter((d) => d.id !== id)
+      dispatch(actions.successRequestSave(newDists))
+      scheduleSave(newDists)
+      if (activeId === id) setActiveId(newDists[0].id)
+    },
+    [distributions, activeId, dispatch, scheduleSave],
+  )
+
+  const commitTabRename = useCallback(
+    (id) => {
+      const trimmed = editingTabName.trim()
+      if (trimmed) {
+        const newDists = distributions.map((d) => (d.id === id ? { ...d, name: trimmed } : d))
+        dispatch(actions.successRequestSave(newDists))
+        scheduleSave(newDists)
+      }
+      setEditingTabId(null)
+    },
+    [editingTabName, distributions, dispatch, scheduleSave],
+  )
+
+  if (fetching || !distributions || !activeConfig) return null
+
+  const { salary, invert, rows } = activeConfig
   const distribution = computeDistribution(salary, invert, rows)
   const base = salary - invert
   const totalPercent = rows.filter((r) => r.type === 'percent').reduce((s, r) => s + Number(r.value), 0)
@@ -140,6 +185,100 @@ export default function SalaryDistribution() {
         {saving && <span style={{ fontSize: 11, color: '#adb5bd' }}>Guardando…</span>}
       </div>
 
+      {/* Distribution tabs */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 0,
+          marginBottom: 20,
+          overflowX: 'auto',
+          borderBottom: '2px solid #e9ecef',
+        }}
+      >
+        {distributions.map((d) => (
+          <div
+            key={d.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '8px 14px',
+              borderBottom: d.id === activeConfig.id ? '2px solid #1e3a5f' : '2px solid transparent',
+              marginBottom: -2,
+              cursor: 'pointer',
+              background: d.id === activeConfig.id ? '#f8f9fa' : 'transparent',
+              borderRadius: '6px 6px 0 0',
+              flexShrink: 0,
+            }}
+            onClick={() => setActiveId(d.id)}
+          >
+            {editingTabId === d.id ? (
+              <input
+                autoFocus
+                value={editingTabName}
+                onChange={(e) => setEditingTabName(e.target.value)}
+                onBlur={() => commitTabRename(d.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTabRename(d.id)
+                  if (e.key === 'Escape') setEditingTabId(null)
+                }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  border: 'none', borderBottom: '2px solid #1e3a5f', outline: 'none',
+                  background: 'transparent', fontSize: 13, fontWeight: 600,
+                  color: '#1a1a2e', width: 100, padding: '0 0 1px',
+                }}
+              />
+            ) : (
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: d.id === activeConfig.id ? 700 : 500,
+                  color: d.id === activeConfig.id ? '#1e3a5f' : '#6c757d',
+                  userSelect: 'none',
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation()
+                  setEditingTabId(d.id)
+                  setEditingTabName(d.name)
+                }}
+                title="Doble clic para renombrar"
+              >
+                {d.name}
+              </span>
+            )}
+            {distributions.length > 1 && d.id === activeConfig.id && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (window.confirm(`¿Eliminar distribución "${d.name}"?`)) removeDistribution(d.id)
+                }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#e03131', fontSize: 14, lineHeight: 1, padding: '0 0 0 4px',
+                }}
+                title="Eliminar distribución"
+              >×</button>
+            )}
+          </div>
+        ))}
+        <button
+          onClick={addDistribution}
+          style={{
+            padding: '8px 12px',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: '#6c757d',
+            fontSize: 18,
+            lineHeight: 1,
+            flexShrink: 0,
+            marginBottom: -2,
+          }}
+          title="Agregar distribución"
+        >+</button>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
         {/* Salary */}
         <div style={{ background: '#fff', border: '1px solid #e9ecef', borderRadius: 8, padding: 14 }}>
@@ -166,7 +305,7 @@ export default function SalaryDistribution() {
           />
           <select
             style={{ ...inputStyle, marginTop: 8, cursor: 'pointer' }}
-            value={config.invertTarget ?? ''}
+            value={activeConfig.invertTarget ?? ''}
             onChange={(e) => update({ invertTarget: e.target.value })}
           >
             <option value="">— Target —</option>
@@ -200,129 +339,128 @@ export default function SalaryDistribution() {
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-        {/* Header */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 110px 90px 110px 60px',
-            gap: 8,
-            padding: '8px 14px',
-            background: '#f8f9fa',
-            borderBottom: '1px solid #f1f5f9',
-            fontSize: 11,
-            fontWeight: 600,
-            color: '#adb5bd',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            minWidth: 480,
-          }}
-        >
-          <span>Nombre</span>
-          <span>Tipo</span>
-          <span>Valor</span>
-          <span>Target</span>
-          <span />
-        </div>
-
-        {rows.map((row, idx) => (
+          {/* Header */}
           <div
-            key={row.id}
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 110px 90px 110px 60px',
               gap: 8,
               padding: '8px 14px',
-              alignItems: 'center',
-              borderBottom: idx < rows.length - 1 ? '1px solid #f8f9fa' : 'none',
-              background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+              background: '#f8f9fa',
+              borderBottom: '1px solid #f1f5f9',
+              fontSize: 11,
+              fontWeight: 600,
+              color: '#adb5bd',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
               minWidth: 480,
             }}
           >
-            <input
-              style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
-              type="text"
-              value={row.name}
-              placeholder="Nombre"
-              onChange={(e) => updateRow(row.id, { name: e.target.value })}
-            />
-            <select
-              style={{ ...inputStyle, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}
-              value={row.type}
-              onChange={(e) => updateRow(row.id, { type: e.target.value })}
+            <span>Nombre</span>
+            <span>Tipo</span>
+            <span>Valor</span>
+            <span>Target</span>
+            <span />
+          </div>
+
+          {rows.map((row, idx) => (
+            <div
+              key={row.id}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 110px 90px 110px 60px',
+                gap: 8,
+                padding: '8px 14px',
+                alignItems: 'center',
+                borderBottom: idx < rows.length - 1 ? '1px solid #f8f9fa' : 'none',
+                background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+                minWidth: 480,
+              }}
             >
-              <option value="percent">Porcentaje</option>
-              <option value="value">Valor fijo</option>
-              <option value="remainder">Restante</option>
-            </select>
-            {row.type === 'percent' ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <input
+                style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
+                type="text"
+                value={row.name}
+                placeholder="Nombre"
+                onChange={(e) => updateRow(row.id, { name: e.target.value })}
+              />
+              <select
+                style={{ ...inputStyle, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}
+                value={row.type}
+                onChange={(e) => updateRow(row.id, { type: e.target.value })}
+              >
+                <option value="percent">Porcentaje</option>
+                <option value="value">Valor fijo</option>
+                <option value="remainder">Restante</option>
+              </select>
+              {row.type === 'percent' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input
+                    style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={row.value}
+                    onChange={(e) => updateRow(row.id, { value: Number(e.target.value) })}
+                  />
+                  <span style={{ fontSize: 13, color: '#6c757d' }}>%</span>
+                </div>
+              ) : row.type === 'value' ? (
                 <input
                   style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
                   type="number"
                   min={0}
-                  max={100}
                   value={row.value}
                   onChange={(e) => updateRow(row.id, { value: Number(e.target.value) })}
                 />
-                <span style={{ fontSize: 13, color: '#6c757d' }}>%</span>
+              ) : (
+                <span style={{ fontSize: 12, color: '#adb5bd', paddingLeft: 8 }}>auto</span>
+              )}
+              <select
+                style={{ ...inputStyle, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}
+                value={row.target ?? ''}
+                onChange={(e) => updateRow(row.id, { target: e.target.value })}
+              >
+                <option value="">—</option>
+                <option value="bnc col">bnc col</option>
+                <option value="col-bnc">col-bnc</option>
+                <option value="bnc arg">bnc arg</option>
+              </select>
+              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => moveRow(row.id, -1)}
+                  disabled={idx === 0}
+                  style={{
+                    border: 'none', background: 'none',
+                    cursor: idx === 0 ? 'default' : 'pointer',
+                    color: idx === 0 ? '#dee2e6' : '#6c757d',
+                    fontSize: 14, padding: '2px 4px',
+                  }}
+                  title="Subir"
+                >↑</button>
+                <button
+                  onClick={() => moveRow(row.id, 1)}
+                  disabled={idx === rows.length - 1}
+                  style={{
+                    border: 'none', background: 'none',
+                    cursor: idx === rows.length - 1 ? 'default' : 'pointer',
+                    color: idx === rows.length - 1 ? '#dee2e6' : '#6c757d',
+                    fontSize: 14, padding: '2px 4px',
+                  }}
+                  title="Bajar"
+                >↓</button>
+                <button
+                  onClick={() => removeRow(row.id)}
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer',
+                    color: '#e03131', fontSize: 16, padding: '2px 4px', lineHeight: 1,
+                  }}
+                  title="Eliminar"
+                >×</button>
               </div>
-            ) : row.type === 'value' ? (
-              <input
-                style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
-                type="number"
-                min={0}
-                value={row.value}
-                onChange={(e) => updateRow(row.id, { value: Number(e.target.value) })}
-              />
-            ) : (
-              <span style={{ fontSize: 12, color: '#adb5bd', paddingLeft: 8 }}>auto</span>
-            )}
-            <select
-              style={{ ...inputStyle, padding: '4px 8px', fontSize: 13, cursor: 'pointer' }}
-              value={row.target ?? ''}
-              onChange={(e) => updateRow(row.id, { target: e.target.value })}
-            >
-              <option value="">—</option>
-              <option value="bnc col">bnc col</option>
-              <option value="col-bnc">col-bnc</option>
-              <option value="bnc arg">bnc arg</option>
-            </select>
-            <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => moveRow(row.id, -1)}
-                disabled={idx === 0}
-                style={{
-                  border: 'none', background: 'none',
-                  cursor: idx === 0 ? 'default' : 'pointer',
-                  color: idx === 0 ? '#dee2e6' : '#6c757d',
-                  fontSize: 14, padding: '2px 4px',
-                }}
-                title="Subir"
-              >↑</button>
-              <button
-                onClick={() => moveRow(row.id, 1)}
-                disabled={idx === rows.length - 1}
-                style={{
-                  border: 'none', background: 'none',
-                  cursor: idx === rows.length - 1 ? 'default' : 'pointer',
-                  color: idx === rows.length - 1 ? '#dee2e6' : '#6c757d',
-                  fontSize: 14, padding: '2px 4px',
-                }}
-                title="Bajar"
-              >↓</button>
-              <button
-                onClick={() => removeRow(row.id)}
-                style={{
-                  border: 'none', background: 'none', cursor: 'pointer',
-                  color: '#e03131', fontSize: 16, padding: '2px 4px', lineHeight: 1,
-                }}
-                title="Eliminar"
-              >×</button>
             </div>
-          </div>
-        ))}
-
-        </div>{/* end scroll wrapper */}
+          ))}
+        </div>
 
         <div style={{ padding: '10px 14px' }}>
           <button
@@ -345,7 +483,7 @@ export default function SalaryDistribution() {
             fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}
         >
-          Resultado
+          Resultado — {activeConfig.name}
         </div>
 
         <ResultRow label="Salario" amount={salary} color="#2f9e44" bg="#f0fff4" />
@@ -402,13 +540,13 @@ export default function SalaryDistribution() {
 
         {!hasRemainder && (
           <div style={{ padding: '8px 14px', background: '#fff8e1', fontSize: 12, color: '#e67700' }}>
-            Sin fila de tipo "Restante" — el sobrante no está asignado.
+            {'Sin fila de tipo "Restante" — el sobrante no está asignado.'}
           </div>
         )}
       </div>
 
       {/* Target summary */}
-      <TargetSummary distribution={distribution} invert={invert} invertTarget={config.invertTarget} />
+      <TargetSummary distribution={distribution} invert={invert} invertTarget={activeConfig.invertTarget} />
 
       <p style={{ marginTop: 12, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
         Configuración guardada en IndexedDB de este navegador.
