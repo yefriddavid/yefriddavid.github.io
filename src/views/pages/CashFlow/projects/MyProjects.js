@@ -523,7 +523,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
 }
 
 // ── Project card ──────────────────────────────────────────────────────────────
-function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClone }) {
+function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSync, onSave, onClone, onMove }) {
   const total = totalOf(project.items)
   const goal = Number(project.goal) || 0
   const remaining = goal > 0 ? goal - total : null
@@ -595,6 +595,14 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
       it.id === item.id ? { ...it, value: num } : it,
     )
     onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const moveCardItem = (idx, dir) => {
+    const items = [...project.items]
+    const target = idx + dir
+    if (target < 0 || target >= items.length) return
+    ;[items[idx], items[target]] = [items[target], items[idx]]
+    onSave({ ...project, items, updatedAt: now(), syncedAt: null })
   }
 
   const cardNotes = project.projectNotes ?? []
@@ -750,7 +758,7 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
 
       {/* Items preview */}
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
-        {project.items?.length > 0 && project.items.map((item) => (
+        {project.items?.length > 0 && project.items.map((item, itemIdx) => (
             <div
               key={item.id}
               style={{
@@ -766,7 +774,28 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
                   fontSize: 13, color: '#6c757d', flex: 1,
                 })
               ) : (
-                <span style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: 4 }}>
+                <span style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: 2 }}>
+                  {/* reorder */}
+                  <span style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                    <button
+                      onClick={() => moveCardItem(itemIdx, -1)}
+                      disabled={itemIdx === 0}
+                      style={{
+                        background: 'none', border: 'none', padding: '0 1px', lineHeight: 1,
+                        cursor: itemIdx === 0 ? 'default' : 'pointer',
+                        color: itemIdx === 0 ? '#dee2e6' : '#adb5bd', fontSize: 8,
+                      }}
+                    >▲</button>
+                    <button
+                      onClick={() => moveCardItem(itemIdx, 1)}
+                      disabled={itemIdx === project.items.length - 1}
+                      style={{
+                        background: 'none', border: 'none', padding: '0 1px', lineHeight: 1,
+                        cursor: itemIdx === project.items.length - 1 ? 'default' : 'pointer',
+                        color: itemIdx === project.items.length - 1 ? '#dee2e6' : '#adb5bd', fontSize: 8,
+                      }}
+                    >▼</button>
+                  </span>
                   <button
                     onClick={() => {
                       const updatedItems = project.items.filter((it) => it.id !== item.id)
@@ -1098,6 +1127,31 @@ function ProjectCard({ project, syncing, onEdit, onDelete, onSync, onSave, onClo
         >
           ✏️ Editar
         </button>
+        {/* project reorder */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <button
+            onClick={() => onMove(project, -1)}
+            disabled={isFirst}
+            style={{
+              padding: '3px 10px', borderRadius: 6, border: '1px solid #dee2e6',
+              background: isFirst ? '#f8f9fa' : '#fff',
+              color: isFirst ? '#dee2e6' : '#6c757d',
+              fontSize: 11, cursor: isFirst ? 'default' : 'pointer', lineHeight: 1,
+            }}
+            title="Mover arriba"
+          >▲</button>
+          <button
+            onClick={() => onMove(project, 1)}
+            disabled={isLast}
+            style={{
+              padding: '3px 10px', borderRadius: 6, border: '1px solid #dee2e6',
+              background: isLast ? '#f8f9fa' : '#fff',
+              color: isLast ? '#dee2e6' : '#6c757d',
+              fontSize: 11, cursor: isLast ? 'default' : 'pointer', lineHeight: 1,
+            }}
+            title="Mover abajo"
+          >▼</button>
+        </div>
         <button
           onClick={() => onSync(project)}
           disabled={syncing}
@@ -1160,7 +1214,8 @@ export default function MyProjects() {
   }, [dispatch])
 
   const handleSave = (project) => {
-    dispatch(actions.saveRequest(project))
+    const withOrder = project.sortOrder != null ? project : { ...project, sortOrder: projects.length }
+    dispatch(actions.saveRequest(withOrder))
     setSheet(null)
   }
 
@@ -1186,9 +1241,27 @@ export default function MyProjects() {
       createdAt: now(),
       updatedAt: now(),
       syncedAt: null,
+      sortOrder: projects.length,
     }
     dispatch(actions.saveRequest(clone))
   }
+
+  const handleMove = (project, dir) => {
+    const sorted = projects
+      .slice()
+      .sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity))
+    const idx = sorted.findIndex((p) => p.id === project.id)
+    const targetIdx = idx + dir
+    if (targetIdx < 0 || targetIdx >= sorted.length) return
+    const aOrder = idx
+    const bOrder = targetIdx
+    dispatch(actions.saveRequest({ ...sorted[idx], sortOrder: bOrder, updatedAt: now(), syncedAt: null }))
+    dispatch(actions.saveRequest({ ...sorted[targetIdx], sortOrder: aOrder, updatedAt: now(), syncedAt: null }))
+  }
+
+  const sortedProjects = projects
+    .slice()
+    .sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity))
 
   const unsyncedCount = projects.filter((p) => !p.syncedAt).length
   const grandTotal = projects.reduce((s, p) => s + totalOf(p.items), 0)
@@ -1330,16 +1403,19 @@ export default function MyProjects() {
           <div>Presiona + para crear tu primer proyecto</div>
         </div>
       ) : (
-        projects.map((p) => (
+        sortedProjects.map((p, idx) => (
           <ProjectCard
             key={p.id}
             project={p}
+            isFirst={idx === 0}
+            isLast={idx === sortedProjects.length - 1}
             syncing={syncing}
             onEdit={setSheet}
             onDelete={handleDelete}
             onSync={handleSync}
             onSave={(updated) => dispatch(actions.saveRequest(updated))}
             onClone={handleClone}
+            onMove={handleMove}
           />
         ))
       )}

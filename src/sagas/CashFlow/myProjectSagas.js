@@ -1,4 +1,4 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/CashFlow/myProjectActions'
 import * as idb from '../../services/providers/indexeddb/CashFlow/myProjects'
 import * as fb from '../../services/providers/firebase/CashFlow/myProjects'
@@ -71,7 +71,7 @@ function* importFromFirebase() {
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.loadRequest, loadProjects),
-    takeLatest(actions.saveRequest, saveProject),
+    takeEvery(actions.saveRequest, saveProject),
     takeLatest(actions.deleteRequest, deleteProject),
     takeLatest(actions.syncRequest, syncProject),
     takeLatest(actions.syncAllRequest, syncAllProjects),
