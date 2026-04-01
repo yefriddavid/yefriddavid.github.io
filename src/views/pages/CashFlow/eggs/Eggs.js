@@ -9,6 +9,8 @@ import {
   CModalTitle,
   CSpinner,
 } from '@coreui/react'
+import { Column } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/App/StandardGrid'
 import * as eggActions from 'src/actions/CashFlow/eggActions'
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -132,6 +134,13 @@ export default function Eggs() {
   const [filterMonth, setFilterMonth] = useState('')
   const [currentPrice, setCurrentPrice] = useState(() => localStorage.getItem('eggs_currentPrice') ?? '')
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('eggs_viewMode') ?? 'cards')
+
+  const toggleViewMode = () => {
+    const next = viewMode === 'cards' ? 'grid' : 'cards'
+    setViewMode(next)
+    localStorage.setItem('eggs_viewMode', next)
+  }
 
   useEffect(() => {
     if (prevSaving.current && !saving) {
@@ -239,6 +248,20 @@ export default function Eggs() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={toggleViewMode}
+            style={{
+              width: 44, height: 44, borderRadius: '50%',
+              border: '2px solid #dee2e6',
+              background: '#fff',
+              color: '#6c757d',
+              fontSize: 16, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+            title={viewMode === 'cards' ? 'Ver como tabla' : 'Ver como tarjetas'}
+          >
+            {viewMode === 'cards' ? '⊞' : '▤'}
+          </button>
           <button
             onClick={() => setShowFilters((v) => !v)}
             style={{
@@ -377,6 +400,69 @@ export default function Eggs() {
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
           <CSpinner color="primary" />
         </div>
+      ) : viewMode === 'grid' ? (
+        <StandardGrid
+          dataSource={filtered.map((e) => {
+            const cp = parseFloat(currentPrice)
+            const hasPL = !isNaN(cp) && !!currentPrice && e.price != null && e.quantity != null
+            const pl = hasPL ? (cp - e.price) * e.quantity : null
+            const total = e.quantity != null && e.price != null ? e.quantity * e.price : null
+            return { ...e, pl, total }
+          })}
+          style={{ margin: 0 }}
+        >
+          <Column dataField="name" caption="Nombre" minWidth={120} />
+          <Column dataField="date" caption="Fecha" dataType="date" width={110} />
+          <Column dataField="quantity" caption="Cantidad" dataType="number" width={100} format={{ type: 'fixedPoint', precision: 6 }} />
+          <Column
+            dataField="price"
+            caption="Precio"
+            dataType="number"
+            width={120}
+            format={{ type: 'currency', currency: 'COP', precision: 0 }}
+          />
+          <Column
+            dataField="total"
+            caption="Total"
+            dataType="number"
+            width={130}
+            format={{ type: 'currency', currency: 'COP', precision: 0 }}
+          />
+          {!!currentPrice && (
+            <Column
+              dataField="pl"
+              caption="P/L"
+              dataType="number"
+              width={130}
+              format={{ type: 'currency', currency: 'COP', precision: 0 }}
+              cellRender={({ value }) =>
+                value === null ? null : (
+                  <span style={{ color: value >= 0 ? '#2f9e44' : '#e03131', fontWeight: 700 }}>
+                    {value >= 0 ? '▲' : '▼'} {fmt(Math.abs(value))}
+                  </span>
+                )
+              }
+            />
+          )}
+          <Column
+            caption=""
+            width={90}
+            cellRender={({ data }) => (
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => openEdit(data)}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, color: '#1e3a5f' }}
+                  title="Editar"
+                >✏️</button>
+                <button
+                  onClick={() => handleDelete(data.id)}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, color: '#e03131' }}
+                  title="Eliminar"
+                >🗑</button>
+              </div>
+            )}
+          />
+        </StandardGrid>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🥚</div>
