@@ -597,11 +597,16 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
     onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
   }
 
-  const moveCardItem = (idx, dir) => {
+  const [dragItemId, setDragItemId] = useState(null)
+  const [dragOverItemId, setDragOverItemId] = useState(null)
+
+  const reorderCardItems = (fromId, toId) => {
+    if (fromId === toId) return
     const items = [...project.items]
-    const target = idx + dir
-    if (target < 0 || target >= items.length) return
-    ;[items[idx], items[target]] = [items[target], items[idx]]
+    const fromIdx = items.findIndex((it) => it.id === fromId)
+    const toIdx = items.findIndex((it) => it.id === toId)
+    const [item] = items.splice(fromIdx, 1)
+    items.splice(toIdx, 0, item)
     onSave({ ...project, items, updatedAt: now(), syncedAt: null })
   }
 
@@ -761,12 +766,18 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
         {project.items?.length > 0 && project.items.map((item, itemIdx) => (
             <div
               key={item.id}
+              onDragOver={(e) => { e.preventDefault(); setDragOverItemId(item.id) }}
+              onDrop={(e) => { e.preventDefault(); reorderCardItems(dragItemId, item.id); setDragItemId(null); setDragOverItemId(null) }}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '4px 0',
                 borderBottom: '1px solid #f8f9fa',
+                background: dragOverItemId === item.id ? '#e8f4fd' : 'transparent',
+                opacity: dragItemId === item.id ? 0.4 : 1,
+                transition: 'background 0.1s',
+                borderRadius: 4,
               }}
             >
               {editingItemId === item.id ? (
@@ -775,27 +786,18 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
                 })
               ) : (
                 <span style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: 2 }}>
-                  {/* reorder */}
-                  <span style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-                    <button
-                      onClick={() => moveCardItem(itemIdx, -1)}
-                      disabled={itemIdx === 0}
-                      style={{
-                        background: 'none', border: 'none', padding: '0 1px', lineHeight: 1,
-                        cursor: itemIdx === 0 ? 'default' : 'pointer',
-                        color: itemIdx === 0 ? '#dee2e6' : '#adb5bd', fontSize: 8,
-                      }}
-                    >▲</button>
-                    <button
-                      onClick={() => moveCardItem(itemIdx, 1)}
-                      disabled={itemIdx === project.items.length - 1}
-                      style={{
-                        background: 'none', border: 'none', padding: '0 1px', lineHeight: 1,
-                        cursor: itemIdx === project.items.length - 1 ? 'default' : 'pointer',
-                        color: itemIdx === project.items.length - 1 ? '#dee2e6' : '#adb5bd', fontSize: 8,
-                      }}
-                    >▼</button>
-                  </span>
+                  {/* drag handle */}
+                  <span
+                    draggable
+                    onDragStart={() => setDragItemId(item.id)}
+                    onDragEnd={() => { setDragItemId(null); setDragOverItemId(null) }}
+                    style={{
+                      cursor: 'grab', color: '#adb5bd', fontSize: 13,
+                      flexShrink: 0, userSelect: 'none', lineHeight: 1,
+                      padding: '0 2px',
+                    }}
+                    title="Arrastrar para reordenar"
+                  >⠿</span>
                   <button
                     onClick={() => {
                       const updatedItems = project.items.filter((it) => it.id !== item.id)

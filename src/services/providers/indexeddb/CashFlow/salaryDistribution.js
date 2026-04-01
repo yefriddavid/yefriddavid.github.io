@@ -4,7 +4,7 @@
 // update the import in the saga.
 
 const DB_NAME = 'my-admin-local'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const STORE_NAME = 'salary-distribution'
 const RECORD_KEY = 'config'
 
@@ -18,6 +18,9 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains('my-projects')) {
         db.createObjectStore('my-projects', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('assets')) {
+        db.createObjectStore('assets', { keyPath: 'id' })
       }
     }
     req.onsuccess = (e) => resolve(e.target.result)

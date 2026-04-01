@@ -16,6 +16,7 @@ import {
   cilGroup,
   cilHome,
   cilLightbulb,
+  cilChart,
   cilList,
   cilPeople,
   cilSettings,
@@ -126,6 +127,12 @@ const getNav = (t, role) => {
           name: 'My Projects',
           to: '/cash_flow/projects',
           icon: <CIcon icon={cilLightbulb} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Assets',
+          to: '/cash_flow/assets',
+          icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
         },
       ],
     })

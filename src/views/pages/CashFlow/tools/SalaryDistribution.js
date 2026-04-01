@@ -37,6 +37,8 @@ export default function SalaryDistribution() {
   const [activeId, setActiveId] = useState(null)
   const [editingTabId, setEditingTabId] = useState(null)
   const [editingTabName, setEditingTabName] = useState('')
+  const [dragRowId, setDragRowId] = useState(null)
+  const [dragOverRowId, setDragOverRowId] = useState(null)
 
   // Load on mount
   useEffect(() => {
@@ -98,14 +100,14 @@ export default function SalaryDistribution() {
     [activeConfig, patchActive],
   )
 
-  const moveRow = useCallback(
-    (id, dir) => {
-      if (!activeConfig) return
+  const reorderRows = useCallback(
+    (fromId, toId) => {
+      if (!activeConfig || fromId === toId) return
       const rows = [...activeConfig.rows]
-      const idx = rows.findIndex((r) => r.id === id)
-      const newIdx = idx + dir
-      if (newIdx < 0 || newIdx >= rows.length) return
-      ;[rows[idx], rows[newIdx]] = [rows[newIdx], rows[idx]]
+      const fromIdx = rows.findIndex((r) => r.id === fromId)
+      const toIdx = rows.findIndex((r) => r.id === toId)
+      const [item] = rows.splice(fromIdx, 1)
+      rows.splice(toIdx, 0, item)
       patchActive({ rows })
     },
     [activeConfig, patchActive],
@@ -375,7 +377,7 @@ export default function SalaryDistribution() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 110px 90px 110px 60px',
+              gridTemplateColumns: '24px 1fr 110px 90px 110px 36px',
               gap: 8,
               padding: '8px 14px',
               background: '#f8f9fa',
@@ -388,6 +390,7 @@ export default function SalaryDistribution() {
               minWidth: 480,
             }}
           >
+            <span />
             <span>Nombre</span>
             <span>Tipo</span>
             <span>Valor</span>
@@ -398,17 +401,32 @@ export default function SalaryDistribution() {
           {rows.map((row, idx) => (
             <div
               key={row.id}
+              onDragOver={(e) => { e.preventDefault(); setDragOverRowId(row.id) }}
+              onDrop={(e) => { e.preventDefault(); reorderRows(dragRowId, row.id); setDragRowId(null); setDragOverRowId(null) }}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 110px 90px 110px 60px',
+                gridTemplateColumns: '24px 1fr 110px 90px 110px 36px',
                 gap: 8,
                 padding: '8px 14px',
                 alignItems: 'center',
                 borderBottom: idx < rows.length - 1 ? '1px solid #f8f9fa' : 'none',
-                background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+                background: dragOverRowId === row.id ? '#e8f4fd' : idx % 2 === 0 ? '#fff' : '#fafbfc',
                 minWidth: 480,
+                transition: 'background 0.1s',
+                opacity: dragRowId === row.id ? 0.4 : 1,
               }}
             >
+              <div
+                draggable
+                onDragStart={() => setDragRowId(row.id)}
+                onDragEnd={() => { setDragRowId(null); setDragOverRowId(null) }}
+                style={{
+                  cursor: 'grab', color: '#adb5bd', fontSize: 16,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  userSelect: 'none', lineHeight: 1,
+                }}
+                title="Arrastrar para reordenar"
+              >⠿</div>
               <input
                 style={{ ...inputStyle, padding: '4px 8px', fontSize: 13 }}
                 type="text"
@@ -457,32 +475,10 @@ export default function SalaryDistribution() {
                 <option value="bnc col">bnc col</option>
                 <option value="col-bnc">col-bnc</option>
                 <option value="bnc arg">bnc arg</option>
-              <option value="bnc loan">bnc loan</option>
-              <option value="ctb">ctb market</option>
+                <option value="bnc loan">bnc loan</option>
+                <option value="ctb">ctb market</option>
               </select>
-              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => moveRow(row.id, -1)}
-                  disabled={idx === 0}
-                  style={{
-                    border: 'none', background: 'none',
-                    cursor: idx === 0 ? 'default' : 'pointer',
-                    color: idx === 0 ? '#dee2e6' : '#6c757d',
-                    fontSize: 14, padding: '2px 4px',
-                  }}
-                  title="Subir"
-                >↑</button>
-                <button
-                  onClick={() => moveRow(row.id, 1)}
-                  disabled={idx === rows.length - 1}
-                  style={{
-                    border: 'none', background: 'none',
-                    cursor: idx === rows.length - 1 ? 'default' : 'pointer',
-                    color: idx === rows.length - 1 ? '#dee2e6' : '#6c757d',
-                    fontSize: 14, padding: '2px 4px',
-                  }}
-                  title="Bajar"
-                >↓</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => removeRow(row.id)}
                   style={{
