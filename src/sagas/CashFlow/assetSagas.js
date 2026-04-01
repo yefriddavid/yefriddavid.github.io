@@ -5,7 +5,8 @@ import * as fb from '../../services/providers/firebase/CashFlow/assets'
 
 function* loadAssets() {
   try {
-    const assets = yield call(idb.getAllAssets)
+    //const assets = yield call(idb.getAllAssets)
+    const assets = yield call(fb.fetchAll)
     yield put(actions.loadSuccess(assets))
   } catch (e) {
     yield put(actions.loadError(e.message))
@@ -14,10 +15,12 @@ function* loadAssets() {
 
 function* saveAsset({ payload }) {
   try {
-    yield call(idb.saveAsset, payload)
+    //console.log(payload)
+    //yield call(idb.saveAsset, payload)
+    yield call(fb.createAsset, payload)
     yield put(actions.saveSuccess(payload))
   } catch (e) {
-    yield put(actions.saveError(e.message))
+    yield put(actions.saveError(e.message + " payload:" + JSON.stringify(payload)))
   }
 }
 
@@ -36,7 +39,9 @@ function* syncAsset({ payload }) {
     yield call(fb.syncAssetToFirebase, payload)
     const syncedAt = new Date().toISOString()
     const updated = { ...payload, syncedAt }
-    yield call(idb.saveAsset, updated)
+    alert("aca es")
+    //yield call(idb.saveAsset, updated)
+    yield call(fb.saveAsset, updated)
     yield put(actions.syncSuccess(updated))
   } catch (e) {
     yield put(actions.syncError(e.message))
