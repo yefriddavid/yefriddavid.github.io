@@ -312,6 +312,8 @@ export default function SalaryDistribution() {
             <option value="bnc col">bnc col</option>
             <option value="col-bnc">col-bnc</option>
             <option value="bnc arg">bnc arg</option>
+            <option value="bnc loan">bnc loan</option>
+            <option value="ctb">ctb market</option>
           </select>
           <div style={{ marginTop: 6, fontSize: 20, fontWeight: 700, color: '#7c3aed', textAlign: 'right' }}>
             {fmt(invert)}
