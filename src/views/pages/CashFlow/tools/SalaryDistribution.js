@@ -33,7 +33,7 @@ let nextId = Date.now()
 
 export default function SalaryDistribution() {
   const dispatch = useDispatch()
-  const { data: distributions, fetching, saving } = useSelector((s) => s.salaryDistribution)
+  const { data: distributions, fetching, saving, syncing, importing } = useSelector((s) => s.salaryDistribution)
   const [activeId, setActiveId] = useState(null)
   const [editingTabId, setEditingTabId] = useState(null)
   const [editingTabName, setEditingTabName] = useState('')
@@ -182,7 +182,36 @@ export default function SalaryDistribution() {
     <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h5 style={{ fontWeight: 700, margin: 0, color: '#1a1a2e' }}>Salary Distribution</h5>
-        {saving && <span style={{ fontSize: 11, color: '#adb5bd' }}>Guardando…</span>}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {saving && <span style={{ fontSize: 11, color: '#adb5bd' }}>Guardando…</span>}
+          <button
+            onClick={() => dispatch(actions.importRequest())}
+            disabled={importing || syncing}
+            title="Importar desde Firebase"
+            style={{
+              padding: '6px 12px', borderRadius: 6, border: '1px solid #dee2e6',
+              background: '#fff', cursor: importing ? 'not-allowed' : 'pointer',
+              fontSize: 13, fontWeight: 600, color: importing ? '#adb5bd' : '#1e3a5f',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            {importing ? '…' : '☁️'} Importar
+          </button>
+          <button
+            onClick={() => distributions && dispatch(actions.syncRequest(distributions))}
+            disabled={syncing || saving || !distributions}
+            title="Sincronizar a Firebase"
+            style={{
+              padding: '6px 12px', borderRadius: 6, border: 'none',
+              background: syncing ? '#e9ecef' : '#1e3a5f',
+              cursor: syncing ? 'not-allowed' : 'pointer',
+              fontSize: 13, fontWeight: 600, color: syncing ? '#adb5bd' : '#fff',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            {syncing ? '…' : '☁️'} Sync
+          </button>
+        </div>
       </div>
 
       {/* Distribution tabs */}
@@ -192,6 +221,7 @@ export default function SalaryDistribution() {
           gap: 0,
           marginBottom: 20,
           overflowX: 'auto',
+          overflowY: 'hidden',
           borderBottom: '2px solid #e9ecef',
         }}
       >
@@ -427,6 +457,8 @@ export default function SalaryDistribution() {
                 <option value="bnc col">bnc col</option>
                 <option value="col-bnc">col-bnc</option>
                 <option value="bnc arg">bnc arg</option>
+              <option value="bnc loan">bnc loan</option>
+              <option value="ctb">ctb market</option>
               </select>
               <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                 <button

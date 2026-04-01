@@ -29,6 +29,8 @@ const salaryDistributionSlice = createSlice({
     data: null,
     fetching: false,
     saving: false,
+    syncing: false,
+    importing: false,
     error: {},
     isError: false,
   },
@@ -60,6 +62,28 @@ const salaryDistributionSlice = createSlice({
       .addCase(actions.errorRequestSave, (state, { payload }) => {
         state.error = payload
         state.saving = false
+        state.isError = true
+      })
+
+      .addCase(actions.syncRequest, (state) => { state.syncing = true })
+      .addCase(actions.syncSuccess, (state, { payload }) => {
+        state.data = payload
+        state.syncing = false
+      })
+      .addCase(actions.syncError, (state, { payload }) => {
+        state.error = payload
+        state.syncing = false
+        state.isError = true
+      })
+
+      .addCase(actions.importRequest, (state) => { state.importing = true })
+      .addCase(actions.importSuccess, (state, { payload }) => {
+        state.data = payload
+        state.importing = false
+      })
+      .addCase(actions.importError, (state, { payload }) => {
+        state.error = payload
+        state.importing = false
         state.isError = true
       })
   },
