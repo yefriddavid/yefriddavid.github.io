@@ -9,23 +9,114 @@ import {
   CModalTitle,
   CSpinner,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPlus, cilTrash, cilPencil } from '@coreui/icons'
-import { Column, Editing, Summary, TotalItem } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
 import * as eggActions from 'src/actions/CashFlow/eggActions'
 
 const today = () => new Date().toISOString().split('T')[0]
-
 const EMPTY = { name: '', date: today(), quantity: '', price: '', total: '' }
 
 const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
+const fmtDate = (d) =>
+  d ? new Date(d + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
+
+const fmtQty = (n) =>
+  n != null ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: 6 }).format(n) : ''
+
+// ── Egg card ──────────────────────────────────────────────────────────────────
+function EggCard({ egg, currentPrice, onEdit, onDelete }) {
+  const cp = parseFloat(currentPrice)
+  const hasPL = currentPrice && !isNaN(cp) && egg.price != null && egg.quantity != null
+  const pl = hasPL ? (cp - egg.price) * egg.quantity : null
+  const total = egg.quantity != null && egg.price != null ? egg.quantity * egg.price : null
+  const positive = pl >= 0
+
+  return (
+    <div
+      style={{
+        background: '#fff',
+        borderRadius: 14,
+        padding: '12px 14px',
+        marginBottom: 8,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+        borderLeft: `4px solid ${pl === null ? '#dee2e6' : positive ? '#86efac' : '#fca5a5'}`,
+      }}
+    >
+      {/* Row 1: name + P/L */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', flex: 1, marginRight: 8 }}>
+          {egg.name}
+        </div>
+        {pl !== null && (
+          <div
+            style={{
+              fontSize: 14, fontWeight: 800,
+              color: positive ? '#2f9e44' : '#e03131',
+              flexShrink: 0,
+            }}
+          >
+            {positive ? '▲' : '▼'} {fmt(Math.abs(pl))}
+          </div>
+        )}
+      </div>
+
+      {/* Row 2: date */}
+      <div style={{ fontSize: 12, color: '#adb5bd', marginBottom: 8 }}>{fmtDate(egg.date)}</div>
+
+      {/* Row 3: stats */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: 4,
+          background: '#f8f9fa',
+          borderRadius: 8,
+          padding: '8px 10px',
+          marginBottom: 10,
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 2 }}>CANTIDAD</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{fmtQty(egg.quantity)}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 2 }}>PRECIO</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1e3a5f' }}>{egg.price != null ? fmt(egg.price) : '—'}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 2 }}>TOTAL</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{total != null ? fmt(total) : '—'}</div>
+        </div>
+      </div>
+
+      {/* Row 4: actions */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          onClick={() => onEdit(egg)}
+          style={{
+            flex: 1, padding: '7px', borderRadius: 8,
+            border: '1px solid #dee2e6', background: '#fff',
+            fontSize: 13, fontWeight: 600, color: '#1e3a5f', cursor: 'pointer',
+          }}
+        >
+          ✏️ Editar
+        </button>
+        <button
+          onClick={() => onDelete(egg.id)}
+          style={{
+            padding: '7px 14px', borderRadius: 8,
+            border: 'none', background: '#fff5f5',
+            fontSize: 13, color: '#e03131', cursor: 'pointer',
+          }}
+        >
+          🗑
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function Eggs() {
   const dispatch = useDispatch()
   const { data: eggs, fetching, saving } = useSelector((s) => s.egg)
@@ -33,27 +124,28 @@ export default function Eggs() {
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [editingId, setEditingId] = useState(null)
-
-  const gridRef = useRef(null)
-  const [hasPendingChanges, setHasPendingChanges] = useState(false)
   const [toast, setToast] = useState(false)
   const toastTimer = useRef(null)
   const prevSaving = useRef(false)
+
+  const [filterYear, setFilterYear] = useState('')
+  const [filterMonth, setFilterMonth] = useState('')
+  const [currentPrice, setCurrentPrice] = useState(() => localStorage.getItem('eggs_currentPrice') ?? '')
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     if (prevSaving.current && !saving) {
       setToast(true)
       clearTimeout(toastTimer.current)
-      toastTimer.current = setTimeout(() => setToast(false), 3000)
+      toastTimer.current = setTimeout(() => setToast(false), 2500)
+      setModalOpen(false)
     }
     prevSaving.current = saving
   }, [saving])
 
-  const [filterYear, setFilterYear] = useState('')
-  const [filterMonth, setFilterMonth] = useState('')
-  const [filterDate, setFilterDate] = useState('')
-  const [filterOp, setFilterOp] = useState('=')
-  const [currentPrice, setCurrentPrice] = useState(() => localStorage.getItem('eggs_currentPrice') ?? '')
+  useEffect(() => {
+    dispatch(eggActions.fetchRequest())
+  }, [dispatch])
 
   const years = useMemo(() => {
     if (!eggs) return []
@@ -63,34 +155,43 @@ export default function Eggs() {
 
   const filtered = useMemo(() => {
     if (!eggs) return []
-    return eggs.filter((e) => {
-      const d = e.date ?? ''
-      if (filterYear && !d.startsWith(filterYear)) return false
-      if (filterMonth && d.slice(5, 7) !== filterMonth.padStart(2, '0')) return false
-      if (filterDate) {
-        if (filterOp === '=' && d !== filterDate) return false
-        if (filterOp === '>' && d <= filterDate) return false
-        if (filterOp === '<' && d >= filterDate) return false
-      }
-      return true
+    return [...eggs]
+      .filter((e) => {
+        const d = e.date ?? ''
+        if (filterYear && !d.startsWith(filterYear)) return false
+        if (filterMonth && d.slice(5, 7) !== filterMonth.padStart(2, '0')) return false
+        return true
+      })
+      .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+  }, [eggs, filterYear, filterMonth])
+
+  // Summary
+  const summary = useMemo(() => {
+    const cp = parseFloat(currentPrice)
+    let totalInvested = 0
+    let totalPL = 0
+    let totalQty = 0
+    filtered.forEach((e) => {
+      const qty = e.quantity ?? 0
+      const price = e.price ?? 0
+      totalInvested += qty * price
+      totalQty += qty
+      if (!isNaN(cp)) totalPL += (cp - price) * qty
     })
-  }, [eggs, filterYear, filterMonth, filterDate, filterOp])
+    return { totalInvested, totalPL, totalQty, hasPL: !isNaN(cp) && !!currentPrice }
+  }, [filtered, currentPrice])
 
-  useEffect(() => {
-    dispatch(eggActions.fetchRequest())
-  }, [dispatch])
+  const openCreate = () => { setForm(EMPTY); setEditingId(null); setModalOpen(true) }
 
-  const openCreate = () => {
-    setForm(EMPTY)
-    setEditingId(null)
+  const openEdit = (egg) => {
+    const total = egg.quantity != null && egg.price != null ? (egg.quantity * egg.price).toFixed(2) : ''
+    setForm({ name: egg.name, date: egg.date, quantity: egg.quantity, price: egg.price, total })
+    setEditingId(egg.id)
     setModalOpen(true)
   }
 
-  const openEdit = (row) => {
-    const total = row.quantity != null && row.price != null ? (row.quantity * row.price).toFixed(2) : ''
-    setForm({ name: row.name, date: row.date, quantity: row.quantity, price: row.price, total })
-    setEditingId(row.id)
-    setModalOpen(true)
+  const handleDelete = (id) => {
+    if (window.confirm('¿Eliminar este registro?')) dispatch(eggActions.deleteRequest({ id }))
   }
 
   const handleSubmit = () => {
@@ -99,13 +200,6 @@ export default function Eggs() {
       dispatch(eggActions.updateRequest({ id: editingId, ...form }))
     } else {
       dispatch(eggActions.createRequest(form))
-    }
-    setModalOpen(false)
-  }
-
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this record?')) {
-      dispatch(eggActions.deleteRequest({ id }))
     }
   }
 
@@ -126,339 +220,209 @@ export default function Eggs() {
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
+  const activeFilters = !!(filterYear || filterMonth)
+
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '8px 16px' }}>
-        <CButton color="primary" size="sm" onClick={openCreate}>
-          <CIcon icon={cilPlus} className="me-1" />
-          New Egg
-        </CButton>
+    <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 12px 40px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
-        <select
-          className="form-select form-select-sm"
-          style={{ width: 90 }}
-          value={filterYear}
-          onChange={(e) => setFilterYear(e.target.value)}
-        >
-          <option value="">All years</option>
-          {years.map((y) => <option key={y} value={y}>{y}</option>)}
-        </select>
-
-        <select
-          className="form-select form-select-sm"
-          style={{ width: 120 }}
-          value={filterMonth}
-          onChange={(e) => setFilterMonth(e.target.value)}
-        >
-          <option value="">All months</option>
-          {['January','February','March','April','May','June','July','August','September','October','November','December']
-            .map((m, i) => <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>)}
-        </select>
-
-        <select
-          className="form-select form-select-sm"
-          style={{ width: 60 }}
-          value={filterOp}
-          onChange={(e) => setFilterOp(e.target.value)}
-        >
-          <option value="=">=</option>
-          <option value=">">&gt;</option>
-          <option value="<">&lt;</option>
-        </select>
-
-        <input
-          className="form-control form-control-sm"
-          type="date"
-          style={{ width: 145 }}
-          value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-        />
-
-        {(filterYear || filterMonth || filterDate) && (
-          <CButton
-            color="secondary"
-            variant="outline"
-            size="sm"
-            onClick={() => { setFilterYear(''); setFilterMonth(''); setFilterDate(''); setFilterOp('=') }}
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0 12px' }}>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>Eggs 🥚</div>
+          <div style={{ fontSize: 13, color: '#6c757d', marginTop: 2 }}>
+            {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
+            {activeFilters && ' · filtrado'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            style={{
+              width: 44, height: 44, borderRadius: '50%',
+              border: `2px solid ${activeFilters ? '#1e3a5f' : '#dee2e6'}`,
+              background: activeFilters ? '#eef4ff' : '#fff',
+              color: activeFilters ? '#1e3a5f' : '#6c757d',
+              fontSize: 18, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+            title="Filtros"
           >
-            Clear
-          </CButton>
-        )}
-
-        {hasPendingChanges && !saving && (
-          <CButton
-            color="success"
-            size="sm"
-            onClick={() => gridRef.current?.instance?.saveEditData()}
+            ⚙
+          </button>
+          <button
+            onClick={openCreate}
+            style={{
+              width: 44, height: 44, borderRadius: '50%',
+              border: 'none', background: '#1e3a5f',
+              color: '#fff', fontSize: 22, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
           >
-            Save changes
-          </CButton>
-        )}
+            +
+          </button>
+        </div>
+      </div>
 
+      {/* Current price */}
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ fontSize: 11, fontWeight: 600, color: '#6c757d', display: 'block', marginBottom: 4, letterSpacing: '0.05em' }}>
+          PRECIO ACTUAL
+        </label>
         <input
-          className="form-control form-control-sm"
           type="number"
           min="0"
-          style={{ width: 130 }}
           value={currentPrice}
           onChange={(e) => { setCurrentPrice(e.target.value); localStorage.setItem('eggs_currentPrice', e.target.value) }}
-          placeholder="Current price"
+          placeholder="0"
+          style={{
+            width: '100%', border: 'none', borderBottom: '2px solid #1e3a5f',
+            outline: 'none', background: 'transparent', fontSize: 22,
+            fontWeight: 800, color: '#1e3a5f', padding: '4px 0 8px',
+          }}
         />
-        {(fetching || saving) && <CSpinner size="sm" />}
+      </div>
 
-        {toast && (
-          <span style={{
-            fontSize: 13,
-            color: '#2e7d32',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
+      {/* Filters panel */}
+      {showFilters && (
+        <div style={{ background: '#f8f9fa', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#6c757d', display: 'block', marginBottom: 4 }}>AÑO</label>
+              <select
+                className="form-select form-select-sm"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#6c757d', display: 'block', marginBottom: 4 }}>MES</label>
+              <select
+                className="form-select form-select-sm"
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+                  .map((m, i) => <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+          {activeFilters && (
+            <button
+              onClick={() => { setFilterYear(''); setFilterMonth('') }}
+              style={{ marginTop: 10, fontSize: 12, color: '#e03131', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 600 }}
+            >
+              × Limpiar filtros
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Summary strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: summary.hasPL ? '1fr 1fr 1fr' : '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', border: '1px solid #e9ecef' }}>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 3 }}>CANTIDAD</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#1a1a2e' }}>
+            {new Intl.NumberFormat('es-CO', { maximumFractionDigits: 4 }).format(summary.totalQty)}
+          </div>
+        </div>
+        <div style={{ background: '#eef4ff', borderRadius: 10, padding: '10px 12px', border: '1px solid #c5d8ff' }}>
+          <div style={{ fontSize: 10, color: '#6c757d', fontWeight: 600, marginBottom: 3 }}>INVERTIDO</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#1e3a5f' }}>{fmt(summary.totalInvested)}</div>
+        </div>
+        {summary.hasPL && (
+          <div style={{
+            background: summary.totalPL >= 0 ? '#f0fdf4' : '#fff5f5',
+            borderRadius: 10, padding: '10px 12px',
+            border: `1px solid ${summary.totalPL >= 0 ? '#86efac' : '#fca5a5'}`,
           }}>
-            ✓ Saved successfully
-          </span>
+            <div style={{ fontSize: 10, color: '#6c757d', fontWeight: 600, marginBottom: 3 }}>P/L TOTAL</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: summary.totalPL >= 0 ? '#2f9e44' : '#e03131' }}>
+              {summary.totalPL >= 0 ? '▲' : '▼'} {fmt(Math.abs(summary.totalPL))}
+            </div>
+          </div>
         )}
       </div>
 
-      <StandardGrid
-        ref={gridRef}
-        dataSource={filtered}
-        keyExpr="id"
-        noDataText={fetching ? 'Loading…' : 'No records.'}
-        onEditingStart={() => setHasPendingChanges(true)}
-        onSaving={(e) => {
-          setHasPendingChanges(false)
-          e.changes.forEach((change) => {
-            if (change.type === 'update') {
-              const original = (eggs ?? []).find((r) => r.id === change.key) ?? {}
-              const updated = { ...original, ...change.data }
-              dispatch(eggActions.updateRequest({ id: change.key, ...updated }))
-            }
-          })
-        }}
-      >
-        <Editing
-          mode="batch"
-          allowUpdating={true}
-          startEditAction="dblClick"
-          selectTextOnEditStart={true}
-        />
-        <Column
-          caption="#"
-          width={50}
-          allowSorting={false}
-          allowFiltering={false}
-          allowEditing={false}
-          cellRender={({ rowIndex }) => rowIndex + 1}
-        />
-        <Column dataField="name" caption="Name" minWidth={120} />
-        <Column
-          dataField="date"
-          caption="Date"
-          dataType="date"
-          width={150}
-          defaultSortOrder="desc"
-          customizeText={({ value }) =>
-            value
-              ? new Date(value).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
-              : ''
-          }
-        />
-        <Column dataField="quantity" caption="Quantity" dataType="number" width={100} />
-        <Column
-          dataField="price"
-          caption="Price"
-          dataType="number"
-          width={120}
-          customizeText={({ value }) => (value != null ? fmt(value) : '')}
-        />
-        <Column
-          name="totalCol"
-          caption="Total"
-          dataType="number"
-          width={130}
-          allowSorting={false}
-          allowFiltering={false}
-          calculateCellValue={(row) => (row.quantity != null && row.price != null ? row.quantity * row.price : null)}
-          customizeText={({ value }) => (value != null ? fmt(value) : '')}
-          setCellValue={(newData, value, currentRowData) => {
-            const p = currentRowData.price
-            const q = currentRowData.quantity
-            if (p && p !== 0) {
-              newData.quantity = value / p
-            } else if (q && q !== 0) {
-              newData.price = value / q
-            }
-          }}
-        />
-        <Column
-          caption="P/L"
-          width={120}
-          allowSorting={false}
-          allowFiltering={false}
-          allowEditing={false}
-          cellRender={({ data }) => {
-            const cp = parseFloat(currentPrice)
-            if (!currentPrice || isNaN(cp) || data.price == null || data.quantity == null) return null
-            const pl = (cp - data.price) * data.quantity
-            const positive = pl >= 0
-            return (
-              <span style={{ color: positive ? '#2e7d32' : '#c62828', fontWeight: 600 }}>
-                {positive ? '▲' : '▼'} {fmt(Math.abs(pl))}
-              </span>
-            )
-          }}
-        />
-        <Summary
-          calculateCustomSummary={(options) => {
-            if (options.name === 'grandTotal') {
-              if (options.summaryProcess === 'start') options.totalValue = 0
-              if (options.summaryProcess === 'calculate') {
-                options.totalValue += (options.value?.quantity ?? 0) * (options.value?.price ?? 0)
-              }
-            }
-            if (options.name === 'plTotal') {
-              const cp = parseFloat(currentPrice)
-              if (options.summaryProcess === 'start') options.totalValue = 0
-              if (options.summaryProcess === 'calculate' && !isNaN(cp)) {
-                options.totalValue += (cp - (options.value?.price ?? 0)) * (options.value?.quantity ?? 0)
-              }
-            }
-          }}
-        >
-          <TotalItem column="quantity" summaryType="sum" displayFormat="∑ {0}" />
-          <TotalItem
-            name="grandTotal"
-            summaryType="custom"
-            showInColumn="totalCol"
-            customizeText={({ value }) => fmt(value)}
+      {/* List */}
+      {fetching && !eggs ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+          <CSpinner color="primary" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🥚</div>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Sin registros</div>
+          <div>Presiona + para agregar</div>
+        </div>
+      ) : (
+        filtered.map((egg) => (
+          <EggCard
+            key={egg.id}
+            egg={egg}
+            currentPrice={currentPrice}
+            onEdit={openEdit}
+            onDelete={handleDelete}
           />
-          <TotalItem
-            name="plTotal"
-            summaryType="custom"
-            showInColumn="P/L"
-            customizeText={({ value }) => {
-              if (!currentPrice) return ''
-              const positive = value >= 0
-              return `${positive ? '▲' : '▼'} ${fmt(Math.abs(value))}`
-            }}
-          />
-        </Summary>
+        ))
+      )}
 
-        <Column
-          caption=""
-          width={80}
-          allowSorting={false}
-          allowFiltering={false}
-          allowEditing={false}
-          cellRender={({ data }) => (
-            <div style={{ display: 'flex', gap: 4 }}>
-              <CButton
-                size="sm"
-                color="secondary"
-                variant="ghost"
-                onClick={() => openEdit(data)}
-                title="Edit"
-              >
-                <CIcon icon={cilPencil} />
-              </CButton>
-              <CButton
-                size="sm"
-                color="danger"
-                variant="ghost"
-                onClick={() => handleDelete(data.id)}
-                title="Delete"
-              >
-                <CIcon icon={cilTrash} />
-              </CButton>
-            </div>
-          )}
-        />
-      </StandardGrid>
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: '#1e3a5f', color: '#fff', borderRadius: 20,
+          padding: '10px 20px', fontSize: 13, fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 2000,
+        }}>
+          ✓ Guardado correctamente
+        </div>
+      )}
 
+      {/* Modal */}
       <CModal visible={modalOpen} onClose={() => setModalOpen(false)}>
         <CModalHeader>
-          <CModalTitle>{editingId ? 'Edit Egg' : 'New Egg'}</CModalTitle>
+          <CModalTitle>{editingId ? 'Editar registro' : 'Nuevo registro'}</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[
+              { label: 'Nombre', field: 'name', type: 'text', placeholder: 'Ej: BTC compra', handler: set('name') },
+            ].map(({ label, field, type, placeholder, handler }) => (
+              <div key={field}>
+                <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>{label}</label>
+                <input className="form-control form-control-sm" type={type} value={form[field]} onChange={handler} placeholder={placeholder} autoFocus={field === 'name'} />
+              </div>
+            ))}
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                Name
-              </label>
-              <input
-                className="form-control form-control-sm"
-                type="text"
-                value={form.name}
-                onChange={set('name')}
-                placeholder="Egg name"
-                autoFocus
-              />
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Fecha</label>
+              <input className="form-control form-control-sm" type="date" value={form.date} onChange={set('date')} />
             </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                Date
-              </label>
-              <input
-                className="form-control form-control-sm"
-                type="date"
-                value={form.date}
-                onChange={set('date')}
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                Quantity
-              </label>
-              <input
-                className="form-control form-control-sm"
-                type="number"
-                min="0"
-                step="0.000001"
-                value={form.quantity}
-                onChange={handleNumeric('quantity')}
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                Price
-              </label>
-              <input
-                className="form-control form-control-sm"
-                type="number"
-                min="0"
-                value={form.price}
-                onChange={handleNumeric('price')}
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                Total
-              </label>
-              <input
-                className="form-control form-control-sm"
-                type="number"
-                min="0"
-                value={form.total}
-                onChange={handleNumeric('total')}
-                placeholder="0"
-              />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {[
+                { label: 'Cantidad', field: 'quantity', step: '0.000001' },
+                { label: 'Precio', field: 'price', step: 'any' },
+                { label: 'Total', field: 'total', step: 'any' },
+              ].map(({ label, field, step }) => (
+                <div key={field}>
+                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>{label}</label>
+                  <input className="form-control form-control-sm" type="number" min="0" step={step} value={form[field]} onChange={handleNumeric(field)} placeholder="0" />
+                </div>
+              ))}
             </div>
           </div>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" variant="outline" onClick={() => setModalOpen(false)}>
-            Cancel
-          </CButton>
+          <CButton color="secondary" variant="outline" onClick={() => setModalOpen(false)}>Cancelar</CButton>
           <CButton
             color="primary"
             disabled={saving || !form.name || !form.date || form.quantity === '' || form.price === ''}
             onClick={handleSubmit}
           >
             {saving ? <CSpinner size="sm" className="me-1" /> : null}
-            {editingId ? 'Save changes' : 'Create'}
+            {editingId ? 'Guardar' : 'Crear'}
           </CButton>
         </CModalFooter>
       </CModal>

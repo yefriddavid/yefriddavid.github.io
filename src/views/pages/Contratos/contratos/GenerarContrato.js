@@ -8,6 +8,7 @@ import * as contractActions from 'src/actions/Contratos/contractActions'
 import * as contractNoteActions from 'src/actions/Contratos/contractNoteActions'
 import * as contractAttachmentActions from 'src/actions/Contratos/contractAttachmentActions'
 import { generateContractPdf, buildContractHtml } from './contractPdf'
+import { CLink } from '@coreui/react'
 import './GenerarContrato.scss'
 
 // ── Attachment helpers ─────────────────────────────────────────────────────────
@@ -802,7 +803,9 @@ export default function GenerarContrato() {
       )}
       {/* Header */}
       <header className="contratos-header">
-        <h1>{titleText}</h1>
+        <CLink href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <h1>{titleText}</h1>
+        </CLink>
         <span className="subtitle">Colombia &mdash; Generador de documentos</span>
         <button className="c-btn-header" onClick={openNewModal}>
           <IcoPlus /> Nuevo
