@@ -7,8 +7,8 @@ import MultiSelectDropdown from 'src/components/App/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/CashFlow/taxiSettlementActions'
 import { fmt } from './utils'
 import AuditAddForm from './AuditAddForm'
+import { DAY_NAMES } from 'src/constants/cashFlow'
 
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 const AuditView = ({
   auditDays,

@@ -35,8 +35,9 @@ import PeriodSummary from './Components/PeriodSummary'
 import SettlementCreateForm from './Components/SettlementCreateForm'
 import AuditView from './Components/AuditView'
 import PeriodNotes from './Components/PeriodNotes'
+import { DAY_NAMES } from 'src/constants/cashFlow'
 
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+//const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 const Taxis = () => {
   const { t } = useTranslation()

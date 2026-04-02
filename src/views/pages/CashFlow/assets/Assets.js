@@ -453,6 +453,8 @@ export default function Assets() {
 
   const activeFilters = filterType !== 'all' || filterHorizon !== 'all' || filterLiquid !== 'all' || !!search
 
+  console.log(gridData);
+
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 12px 60px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
@@ -670,14 +672,14 @@ export default function Assets() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <StandardGrid dataSource={gridData} style={{ margin: 0 }}>
-          <Column dataField="name" caption="Nombre" minWidth={130} />
-          <Column dataField="type" caption="Tipo" width={90}
+        <StandardGrid dataSource={gridData} style={{ margin: 0, width: "100%" }}>
+          <Column dataField="name" caption="Nombre" width={80} />
+          <Column dataField="type" caption="Tipo" width={80}
             cellRender={({ value }) => (
               <span style={{ color: TYPE_COLOR[value], fontWeight: 700, fontSize: 12 }}>{value}</span>
             )}
           />
-          <Column dataField="quantity" caption="Cantidad" dataType="number" width={110} format={{ type: 'fixedPoint', precision: 6 }} />
+          <Column dataField="quantity" caption="Cantidad" dataType="number" width={110} format={{ type: 'fixedPoint', precision: 1 }} />
           <Column dataField="unitPrice" caption="Precio unit." dataType="number" width={130}
             format={{ type: 'currency', currency: 'COP', precision: 0 }} />
           <Column dataField="valueCOP" caption="Valor COP" dataType="number" width={140}
@@ -702,6 +704,7 @@ export default function Assets() {
           <Summary>
             <TotalItem column="valueCOP" summaryType="sum" displayFormat="Total: {0}"
               valueFormat={{ type: 'currency', currency: 'COP', precision: 0 }} />
+
             <TotalItem column="monthlyGain" summaryType="sum" displayFormat="{0}/mes"
               valueFormat={{ type: 'currency', currency: 'COP', precision: 0 }} />
           </Summary>
