@@ -29,12 +29,12 @@ import autoTable from 'jspdf-autotable'
 import '../../../../movements/payments/Payments.scss'
 import '../../../../movements/payments/ItemDetail.scss'
 import '../Taxis.scss'
-import { fmt, fmtDate, EMPTY } from './utils'
-import SettlementMasterDetail from './SettlementMasterDetail'
-import PeriodSummary from './PeriodSummary'
-import SettlementCreateForm from './SettlementCreateForm'
-import AuditView from './AuditView'
-import PeriodNotes from './PeriodNotes'
+import { fmt, fmtDate, EMPTY } from './Components/utils'
+import SettlementMasterDetail from './Components/SettlementMasterDetail'
+import PeriodSummary from './Components/PeriodSummary'
+import SettlementCreateForm from './Components/SettlementCreateForm'
+import AuditView from './Components/AuditView'
+import PeriodNotes from './Components/PeriodNotes'
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 

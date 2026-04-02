@@ -259,7 +259,7 @@ const AuditView = ({
               name="options"
               id="btn-edicion"
               value="edicion"
-              label="Edición 1"
+              label="Edición"
               autoComplete="off"
               checked={selected === 'edicion'}
               onChange={(e) => setSelected(e.target.value)}
