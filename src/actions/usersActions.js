@@ -19,3 +19,11 @@ export const deleteRequest = createAction('request delete user')
 export const beginRequestDelete = createAction('begin request delete user')
 export const successRequestDelete = createAction('request delete user success')
 export const errorRequestDelete = createAction('request delete user error')
+
+export const fetchSessionsRequest = createAction('fetch user sessions')
+export const fetchSessionsSuccess = createAction('fetch user sessions success')
+export const fetchSessionsError = createAction('fetch user sessions error')
+
+export const deleteSessionRequest = createAction('request delete user session')
+export const deleteSessionSuccess = createAction('request delete user session success')
+export const deleteSessionError = createAction('request delete user session error')

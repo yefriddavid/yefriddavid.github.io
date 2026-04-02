@@ -1,8 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/usersActions'
 import * as service from '../services/providers/firebase/users'
-
-
+import * as sessionService from '../services/providers/firebase/sessions'
 
 function* fetchUsers() {
   try {
@@ -44,11 +43,31 @@ function* deleteUser({ payload }) {
   }
 }
 
+function* fetchSessions({ payload: username }) {
+  try {
+    const sessions = yield call(sessionService.getSessionsByUser, username)
+    yield put(actions.fetchSessionsSuccess({ username, sessions }))
+  } catch (e) {
+    yield put(actions.fetchSessionsError({ username, error: e.message }))
+  }
+}
+
+function* deleteSessionSaga({ payload: { username, sessionId } }) {
+  try {
+    yield call(sessionService.deleteSession, sessionId)
+    yield put(actions.deleteSessionSuccess({ username, sessionId }))
+  } catch (e) {
+    yield put(actions.deleteSessionError({ username, error: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchUsers),
     takeLatest(actions.createRequest, createUser),
     takeLatest(actions.updateRequest, updateUser),
     takeLatest(actions.deleteRequest, deleteUser),
+    takeLatest(actions.fetchSessionsRequest, fetchSessions),
+    takeLatest(actions.deleteSessionRequest, deleteSessionSaga),
   ])
 }

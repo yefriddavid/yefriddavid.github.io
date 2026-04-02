@@ -12,9 +12,11 @@ import {
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
+import { deleteSession } from '../../services/providers/firebase/sessions'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 
-const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
+const DEFAULT_AVATAR =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
 
 const ROLE_LABELS = {
   superAdmin: 'Super Admin',
@@ -31,8 +33,11 @@ const AppHeaderDropdown = () => {
   const displayName = profile?.name || profile?.username || null
 
   const logout = () => {
+    const sessionId = localStorage.getItem('sessionId')
+    if (sessionId) deleteSession(sessionId).catch(() => {})
     localStorage.removeItem('token')
     localStorage.removeItem('username')
+    localStorage.removeItem('sessionId')
     dispatch(clearProfile())
     navigate('/login')
   }
@@ -40,11 +45,7 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar
-          src={avatarSrc}
-          size="md"
-          style={{ objectFit: 'cover' }}
-        />
+        <CAvatar src={avatarSrc} size="md" style={{ objectFit: 'cover' }} />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         {displayName && (
@@ -59,10 +60,7 @@ const AppHeaderDropdown = () => {
             </div>
           </>
         )}
-        <CDropdownItem
-          onClick={() => navigate('/cash_flow/profile')}
-          style={{ cursor: 'pointer' }}
-        >
+        <CDropdownItem onClick={() => navigate('/cash_flow/profile')} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilUser} className="me-2" />
           Mi perfil
         </CDropdownItem>

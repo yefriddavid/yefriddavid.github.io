@@ -672,7 +672,12 @@ export default function Assets() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <StandardGrid dataSource={gridData} style={{ margin: 0, width: "100%" }}>
+        <StandardGrid
+          dataSource={gridData}
+          style={{ margin: 0, width: "100%" }}
+          columnHidingEnabled={false}
+          scrolling={{ useNative: true, showScrollbar: 'always' }}
+        >
           <Column dataField="name" caption="Nombre" width={80} />
           <Column dataField="type" caption="Tipo" width={80}
             cellRender={({ value }) => (

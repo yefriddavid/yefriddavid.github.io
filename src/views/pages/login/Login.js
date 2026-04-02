@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import withRouter from '../../../context/searchParamsContext'
 import { fetchProfile } from '../../../actions/authActions'
 import { getUserForAuth, hashPassword } from '../../../services/providers/firebase/users'
+import { createSession } from '../../../services/providers/firebase/sessions'
 import './Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -152,9 +153,12 @@ const Login = () => {
 
       const token = btoa(`${user.username}:${Date.now()}`)
       const landing = user.landingPage || '/cash_flow/dashboard'
+      const sessionId = crypto.randomUUID()
       localStorage.setItem('token', token)
       localStorage.setItem('username', user.username)
       localStorage.setItem('landingPage', landing)
+      localStorage.setItem('sessionId', sessionId)
+      createSession(sessionId, user.username, token).catch(() => {})
 
       if (form.rememberMe) {
         setCookie('username', form.username)

@@ -510,6 +510,23 @@ function AnnualView({ masters, transactions, year }) {
     [activeMasters],
   )
 
+  // free expense transactions grouped by month (no accountMasterId, type=expense)
+  const freeExpensesByMonth = useMemo(() => {
+    const result = {}
+    if (!transactions) return result
+    transactions.forEach((t) => {
+      if (t.accountMasterId) return
+      if (t.type !== 'expense') return
+      const match = t.date?.match(/^(\d{4})-(\d{2})/)
+      if (!match) return
+      if (parseInt(match[1]) !== year) return
+      const m = parseInt(match[2])
+      if (!result[m]) result[m] = []
+      result[m].push(t)
+    })
+    return result
+  }, [transactions, year])
+
   // cumulative payments across ALL years (no year filter) for debt accounts
   const cumulativeDebtMap = useMemo(() => {
     const map = {}
@@ -674,9 +691,117 @@ function AnnualView({ masters, transactions, year }) {
           <tfoot>
             {outcomingMasters.length > 0 && renderTotalsRow(outcomingTotals, 'Total Egresos', '#c0392b')}
             {incomingMasters.length > 0 && renderTotalsRow(incomingTotals, 'Total Ingresos', '#2f9e44')}
+            {incomingMasters.length > 0 && outcomingMasters.length > 0 && (() => {
+              const netTotals = incomingTotals.map((inc, i) => inc - outcomingTotals[i])
+              const netTotal = netTotals.reduce((s, v) => s + v, 0)
+              return (
+                <tr style={{ background: '#1e3a5f', fontWeight: 700, borderTop: '2px solid #fff' }}>
+                  <td style={{ padding: '8px 12px', color: '#fff', fontSize: 12 }}>Balance neto</td>
+                  {netTotals.map((val, i) => (
+                    <td key={i} style={{ ...tdBase, fontWeight: 700, color: val > 0 ? '#69db7c' : val < 0 ? '#ff8787' : 'rgba(255,255,255,0.35)' }}>
+                      {val !== 0 ? fmt(Math.abs(val)) : '—'}
+                    </td>
+                  ))}
+                  <td style={{ ...tdBase, fontWeight: 800, fontSize: 13, color: netTotal > 0 ? '#69db7c' : netTotal < 0 ? '#ff8787' : '#fff' }}>
+                    {netTotal !== 0 ? fmt(Math.abs(netTotal)) : '—'}
+                  </td>
+                </tr>
+              )
+            })()}
           </tfoot>
         </table>
       </div>
+
+      {/* Free expense transactions by month */}
+      {Object.keys(freeExpensesByMonth).length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: '#e03131',
+              background: '#e0313118',
+              borderTop: '2px solid #e03131',
+              borderBottom: '1px solid #e0313140',
+              padding: '6px 12px',
+              borderRadius: '8px 8px 0 0',
+            }}
+          >
+            Otros egresos
+          </div>
+          <div
+            style={{
+              border: '1px solid #e9ecef',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              overflow: 'hidden',
+            }}
+          >
+            {Object.keys(freeExpensesByMonth)
+              .map(Number)
+              .sort((a, b) => a - b)
+              .map((m) => {
+                const rows = freeExpensesByMonth[m]
+                const monthTotal = rows.reduce((s, t) => s + (t.amount || 0), 0)
+                return (
+                  <div key={m}>
+                    <div
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: '#1e3a5f',
+                        background: '#eef4ff',
+                        borderBottom: '1px solid #e9ecef',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>{MONTHS_SHORT[m - 1]}</span>
+                      <span style={{ color: '#e03131' }}>{fmt(monthTotal)}</span>
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                      <tbody>
+                        {rows.map((t, idx) => (
+                          <tr
+                            key={t.id ?? idx}
+                            style={{
+                              borderBottom: '1px solid #f1f5f9',
+                              background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+                            }}
+                          >
+                            <td style={{ padding: '5px 12px', color: '#6c757d', width: 90 }}>
+                              {t.date?.slice(5)}
+                            </td>
+                            <td style={{ padding: '5px 12px', fontWeight: 600 }}>
+                              {t.description || '—'}
+                            </td>
+                            <td style={{ padding: '5px 12px', color: '#6c757d' }}>
+                              {t.category || '—'}
+                            </td>
+                            <td
+                              style={{
+                                padding: '5px 12px',
+                                textAlign: 'right',
+                                fontWeight: 700,
+                                color: '#e03131',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {fmt(t.amount)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              })}
+          </div>
+        </div>
+      )}
 
       {/* Debt accounts section */}
       {debtMasters.length > 0 && (
@@ -1042,6 +1167,22 @@ export default function Transactions() {
         .reduce((s, t) => s + (t.amount || 0), 0),
     [masterPaymentsMap],
   )
+  const totalMasterIncoming = useMemo(
+    () =>
+      applicableMasters
+        .filter((a) => a.type === 'Incoming')
+        .flatMap((a) => masterPaymentsMap[a.id] ?? [])
+        .reduce((s, t) => s + (t.amount || 0), 0),
+    [applicableMasters, masterPaymentsMap],
+  )
+  const totalMasterOutcoming = useMemo(
+    () =>
+      applicableMasters
+        .filter((a) => a.type === 'Outcoming')
+        .flatMap((a) => masterPaymentsMap[a.id] ?? [])
+        .reduce((s, t) => s + (t.amount || 0), 0),
+    [applicableMasters, masterPaymentsMap],
+  )
   const totalFreeExpense = useMemo(
     () =>
       freeTransactions.filter((r) => r.type === 'expense').reduce((s, r) => s + (r.amount || 0), 0),
@@ -1338,19 +1479,42 @@ export default function Transactions() {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr style={{ background: '#f8f9fa', fontWeight: 700 }}>
-                        <td colSpan={5} style={{ padding: '8px 12px', fontSize: 12 }}>
-                          Total pagado del maestro
+                      {totalMasterIncoming > 0 && (
+                        <tr style={{ background: '#ebfbee', fontWeight: 600 }}>
+                          <td colSpan={5} style={{ padding: '7px 12px', fontSize: 12, color: '#2f9e44' }}>
+                            + Total Ingresos
+                          </td>
+                          <td style={{ padding: '7px 12px', fontSize: 13, textAlign: 'right', color: '#2f9e44' }}>
+                            {fmt(totalMasterIncoming)}
+                          </td>
+                          <td colSpan={2} />
+                        </tr>
+                      )}
+                      {totalMasterOutcoming > 0 && (
+                        <tr style={{ background: '#fff5f5', fontWeight: 600 }}>
+                          <td colSpan={5} style={{ padding: '7px 12px', fontSize: 12, color: '#c0392b' }}>
+                            − Total Egresos
+                          </td>
+                          <td style={{ padding: '7px 12px', fontSize: 13, textAlign: 'right', color: '#c0392b' }}>
+                            {fmt(totalMasterOutcoming)}
+                          </td>
+                          <td colSpan={2} />
+                        </tr>
+                      )}
+                      <tr style={{ background: '#1e3a5f', fontWeight: 700, borderTop: '2px solid #fff' }}>
+                        <td colSpan={5} style={{ padding: '8px 12px', fontSize: 12, color: '#fff' }}>
+                          Balance
                         </td>
                         <td
                           style={{
                             padding: '8px 12px',
                             fontSize: 13,
                             textAlign: 'right',
-                            color: '#1e3a5f',
+                            fontWeight: 700,
+                            color: totalMasterIncoming - totalMasterOutcoming >= 0 ? '#69db7c' : '#ff8787',
                           }}
                         >
-                          {fmt(totalMasterPaid)}
+                          {fmt(totalMasterIncoming - totalMasterOutcoming)}
                         </td>
                         <td colSpan={2} />
                       </tr>

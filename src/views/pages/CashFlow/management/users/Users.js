@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Column } from 'devextreme-react/data-grid'
+import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/App/StandardGrid'
 import {
-  CCard, CCardHeader, CCardBody, CSpinner, CBadge, CAlert,
-  CButton, CCollapse,
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CSpinner,
+  CBadge,
+  CAlert,
+  CButton,
+  CCollapse,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
@@ -26,12 +32,18 @@ const ROLE_COLORS = {
   conductor: 'secondary',
 }
 
-const EMPTY = { username: '', name: '', role: 'manager', email: '', active: true, password: '', confirmPassword: '' }
+const EMPTY = {
+  username: '',
+  name: '',
+  role: 'manager',
+  email: '',
+  active: true,
+  password: '',
+  confirmPassword: '',
+}
 
 const RoleBadge = ({ role }) => (
-  <CBadge color={ROLE_COLORS[role] ?? 'secondary'}>
-    {ROLE_LABELS[role] ?? role}
-  </CBadge>
+  <CBadge color={ROLE_COLORS[role] ?? 'secondary'}>{ROLE_LABELS[role] ?? role}</CBadge>
 )
 
 const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
@@ -42,11 +54,26 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
 
   const handleSave = () => {
     setError(null)
-    if (!form.username.trim()) { setError('El username es obligatorio'); return }
-    if (!form.email.trim()) { setError('El email es obligatorio'); return }
-    if (isNew && !form.password) { setError('La contraseña es obligatoria'); return }
-    if (isNew && form.password !== form.confirmPassword) { setError('Las contraseñas no coinciden'); return }
-    if (isNew && form.password.length < 6) { setError('Mínimo 6 caracteres'); return }
+    if (!form.username.trim()) {
+      setError('El username es obligatorio')
+      return
+    }
+    if (!form.email.trim()) {
+      setError('El email es obligatorio')
+      return
+    }
+    if (isNew && !form.password) {
+      setError('La contraseña es obligatoria')
+      return
+    }
+    if (isNew && form.password !== form.confirmPassword) {
+      setError('Las contraseñas no coinciden')
+      return
+    }
+    if (isNew && form.password.length < 6) {
+      setError('Mínimo 6 caracteres')
+      return
+    }
     onSave(form)
   }
 
@@ -62,7 +89,12 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
         />
       </StandardField>
       <StandardField label="Nombre">
-        <input className={SF.input} placeholder="Nombre completo" value={form.name} onChange={set('name')} />
+        <input
+          className={SF.input}
+          placeholder="Nombre completo"
+          value={form.name}
+          onChange={set('name')}
+        />
       </StandardField>
       <StandardField label="Email *">
         <input
@@ -77,7 +109,9 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
       <StandardField label="Rol">
         <select className={SF.select} value={form.role} onChange={set('role')}>
           {ROLES.map((r) => (
-            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+            <option key={r} value={r}>
+              {ROLE_LABELS[r]}
+            </option>
           ))}
         </select>
       </StandardField>
@@ -105,7 +139,9 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
           </StandardField>
         </>
       )}
-      {error && <div style={{ color: '#e55353', fontSize: 12, padding: '4px 0 0 2px' }}>{error}</div>}
+      {error && (
+        <div style={{ color: '#e55353', fontSize: 12, padding: '4px 0 0 2px' }}>{error}</div>
+      )}
       <StandardField label="Activo">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={form.active} onChange={toggle('active')} />
@@ -113,6 +149,91 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
         </label>
       </StandardField>
     </StandardForm>
+  )
+}
+
+const formatUA = (ua) => {
+  if (!ua) return 'Desconocido'
+  if (/iPhone|iPad/.test(ua)) return 'iOS'
+  if (/Android/.test(ua)) return 'Android'
+  if (/Windows/.test(ua)) return 'Windows'
+  if (/Mac OS/.test(ua)) return 'Mac'
+  if (/Linux/.test(ua)) return 'Linux'
+  return ua.slice(0, 40)
+}
+
+const SessionsDetail = ({ data: user }) => {
+  const dispatch = useDispatch()
+  const currentSessionId = localStorage.getItem('sessionId')
+  const sessionsState = useSelector((s) => s.users.sessions[user.username])
+  const sessions = sessionsState?.data ?? []
+  const fetching = sessionsState?.fetching ?? false
+
+  useEffect(() => {
+    dispatch(usersActions.fetchSessionsRequest(user.username))
+  }, [user.username, dispatch])
+
+  const handleDelete = (sessionId) => {
+    if (!window.confirm('¿Cerrar esta sesión?')) return
+    dispatch(usersActions.deleteSessionRequest({ username: user.username, sessionId }))
+  }
+
+  if (fetching) {
+    return (
+      <div style={{ padding: 12 }}>
+        <CSpinner size="sm" /> Cargando sesiones...
+      </div>
+    )
+  }
+
+  if (!sessions.length) {
+    return <div style={{ padding: 12, color: '#888', fontSize: 13 }}>Sin sesiones activas.</div>
+  }
+
+  return (
+    <div style={{ padding: '12px 16px' }}>
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: '#1e3a5f' }}>
+        Sesiones activas ({sessions.length})
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <thead>
+          <tr style={{ background: '#f4f6f9' }}>
+            <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Dispositivo</th>
+            <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Creada</th>
+            <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Estado</th>
+            <th style={{ padding: '6px 10px' }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {sessions.map((s) => (
+            <tr key={s.sessionId} style={{ borderTop: '1px solid #e8ecf0' }}>
+              <td style={{ padding: '6px 10px' }}>{formatUA(s.userAgent)}</td>
+              <td style={{ padding: '6px 10px', color: '#666' }}>
+                {s.createdAt ? new Date(s.createdAt).toLocaleString('es-CO') : '—'}
+              </td>
+              <td style={{ padding: '6px 10px' }}>
+                {s.sessionId === currentSessionId ? (
+                  <CBadge color="success">Actual</CBadge>
+                ) : (
+                  <CBadge color="secondary">Activa</CBadge>
+                )}
+              </td>
+              <td style={{ padding: '6px 10px', textAlign: 'right' }}>
+                <CButton
+                  size="sm"
+                  color="danger"
+                  variant="ghost"
+                  title="Cerrar sesión"
+                  onClick={() => handleDelete(s.sessionId)}
+                >
+                  <CIcon icon={cilTrash} />
+                </CButton>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -147,7 +268,10 @@ const Users = () => {
   }
 
   const handlePasswordReset = async (row) => {
-    if (!row.email) { setResetMsg({ type: 'danger', text: 'El usuario no tiene email registrado' }); return }
+    if (!row.email) {
+      setResetMsg({ type: 'danger', text: 'El usuario no tiene email registrado' })
+      return
+    }
     try {
       await sendUserPasswordReset(row.email)
       setResetMsg({ type: 'success', text: `Email de recuperación enviado a ${row.email}` })
@@ -169,23 +293,42 @@ const Users = () => {
         <strong>Usuarios</strong>
         {fetching && <CSpinner size="sm" />}
         <div className="ms-auto d-flex gap-2">
-          {isSuperAdmin && (
-            showForm ? (
-              <CButton size="sm" color="secondary" variant="outline" onClick={() => setShowForm(false)}>
+          {isSuperAdmin &&
+            (showForm ? (
+              <CButton
+                size="sm"
+                color="secondary"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+              >
                 <CIcon icon={cilX} /> Cancelar
               </CButton>
             ) : (
-              <CButton size="sm" color="primary" onClick={() => { setEditTarget(null); setShowForm(true) }}>
+              <CButton
+                size="sm"
+                color="primary"
+                onClick={() => {
+                  setEditTarget(null)
+                  setShowForm(true)
+                }}
+              >
                 <CIcon icon={cilPlus} /> Nuevo usuario
               </CButton>
-            )
-          )}
+            ))}
         </div>
       </CCardHeader>
 
       <CCardBody className="p-0">
-        {isError && <CAlert color="danger" className="m-3">{String(error)}</CAlert>}
-        {resetMsg && <CAlert color={resetMsg.type} className="m-3">{resetMsg.text}</CAlert>}
+        {isError && (
+          <CAlert color="danger" className="m-3">
+            {String(error)}
+          </CAlert>
+        )}
+        {resetMsg && (
+          <CAlert color={resetMsg.type} className="m-3">
+            {resetMsg.text}
+          </CAlert>
+        )}
 
         <CCollapse visible={showForm}>
           <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
@@ -249,13 +392,29 @@ const Users = () => {
               <div className="d-flex gap-1">
                 {isSuperAdmin && (
                   <>
-                    <CButton size="sm" color="primary" variant="outline" onClick={() => openEdit(row)}>
+                    <CButton
+                      size="sm"
+                      color="primary"
+                      variant="outline"
+                      onClick={() => openEdit(row)}
+                    >
                       Editar
                     </CButton>
-                    <CButton size="sm" color="warning" variant="outline" title="Enviar email de recuperación" onClick={() => handlePasswordReset(row)}>
+                    <CButton
+                      size="sm"
+                      color="warning"
+                      variant="outline"
+                      title="Enviar email de recuperación"
+                      onClick={() => handlePasswordReset(row)}
+                    >
                       Reset pw
                     </CButton>
-                    <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(row)}>
+                    <CButton
+                      size="sm"
+                      color="danger"
+                      variant="ghost"
+                      onClick={() => handleDelete(row)}
+                    >
                       <CIcon icon={cilTrash} />
                     </CButton>
                   </>
@@ -263,6 +422,7 @@ const Users = () => {
               </div>
             )}
           />
+          <MasterDetail enabled render={({ data }) => <SessionsDetail data={data} />} />
         </StandardGrid>
       </CCardBody>
     </CCard>

@@ -97,11 +97,9 @@ const PeriodSummary = ({
                   style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}
                 >
                   {t('taxis.settlements.summary.monthProjection')}
-                  {isCurrentPeriod && daysElapsed && (
-                    <span style={{ marginLeft: 6, fontStyle: 'italic' }}>
-                      {t('taxis.settlements.summary.dayProgress', { daysElapsed, daysInMonth })}
-                    </span>
-                  )}
+                  <span style={{ marginLeft: 6, fontStyle: 'italic', fontSize: 11 }}>
+                    si todos pagaran
+                  </span>
                 </div>
                 <div
                   style={{
@@ -110,7 +108,7 @@ const PeriodSummary = ({
                     color: projection ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
                   }}
                 >
-                  {projection !== null ? fmt(projection) : '—'}
+                  {projection ? fmt(projection) : '—'}
                 </div>
               </CCardBody>
             </CCard>

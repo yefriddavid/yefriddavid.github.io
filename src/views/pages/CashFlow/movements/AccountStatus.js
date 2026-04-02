@@ -2080,23 +2080,93 @@ export default function AccountStatus() {
             : 'Sin cuentas en este filtro.'}
         </div>
       ) : (
-        filtered.map((account) => (
-          <AccountCard
-            key={account.id}
-            account={account}
-            payments={masterPaymentsMap[account.id] ?? []}
-            monthStr={monthStr}
-            cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
-            onPay={setPaying}
-            onDetail={setDetail}
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
-            onViewAttachment={(src, filename) => setViewer({ src, filename })}
-            onAttach={handleAttach}
-            attachingId={attachProcessing ? attachingTx?.id : null}
-            savingId={saving ? paying?.id : null}
-          />
-        ))
+        [...filtered.map((a) => ({ kind: 'account', day: a.maxDatePay || 31, data: a })),
+         ...adHocTransactions.map((t) => ({ kind: 'adhoc', day: parseInt(t.date?.split('-')[2]) || 31, data: t })),
+        ]
+          .sort((a, b) => a.day - b.day)
+          .map((item) => {
+            if (item.kind === 'account') {
+              const account = item.data
+              return (
+                <AccountCard
+                  key={account.id}
+                  account={account}
+                  payments={masterPaymentsMap[account.id] ?? []}
+                  monthStr={monthStr}
+                  cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
+                  onPay={setPaying}
+                  onDetail={setDetail}
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                  onViewAttachment={(src, filename) => setViewer({ src, filename })}
+                  onAttach={handleAttach}
+                  attachingId={attachProcessing ? attachingTx?.id : null}
+                  savingId={saving ? paying?.id : null}
+                />
+              )
+            }
+            const t = item.data
+            const isIncome = t.type === 'income'
+            const accentColor = isIncome ? '#2f9e44' : '#e03131'
+            const accentBg = isIncome ? '#ebfbee' : '#fff5f5'
+            const accentBorder = isIncome ? '#8ce99a' : '#ffc9c9'
+            return (
+              <div
+                key={t.id}
+                style={{
+                  background: '#f8f4ff',
+                  borderRadius: 14,
+                  padding: '14px 16px',
+                  marginBottom: 10,
+                  borderLeft: '4px solid #9775fa',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div
+                    style={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      background: accentBg, border: `2px solid ${accentBorder}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, fontSize: 18, fontWeight: 700, color: accentColor,
+                    }}
+                  >
+                    {isIncome ? '+' : '−'}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {t.description}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {t.note && (
+                        <span style={{ fontSize: 11, color: '#6c757d', background: '#f1f5f9', borderRadius: 4, padding: '1px 6px', fontStyle: 'italic' }}>
+                          {t.note}
+                        </span>
+                      )}
+                      {t.date && <span style={{ fontSize: 11, color: '#6c757d' }}>{t.date}</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, borderRadius: 20, padding: '3px 10px', background: accentBg, color: accentColor, border: `1px solid ${accentBorder}` }}>
+                      {isIncome ? '+' : '−'} {fmt(t.amount)}
+                    </span>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {t.attachment && (
+                        <button onClick={() => setViewer({ src: t.attachment, filename: t.attachmentName })} title="Ver adjunto"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: '2px 4px' }}>
+                          📎
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(t)} title="Eliminar"
+                        style={{ padding: '6px 14px', borderRadius: 20, border: 'none', background: '#e03131', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })
       )}
 
       {/* Ad-hoc period transactions */}
@@ -2154,74 +2224,6 @@ export default function AccountStatus() {
             + Agregar
           </button>
         </div>
-
-        {adHocTransactions.length > 0 && (
-          <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {adHocTransactions.map((t) => (
-              <div
-                key={t.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '8px 10px',
-                  borderRadius: 10,
-                  background: '#f8f9fa',
-                  border: '1px solid #e9ecef',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: t.type === 'income' ? '#2f9e44' : '#e03131',
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  {t.type === 'income' ? '+' : '−'} {fmt(t.amount)}
-                </span>
-                <div style={{ flex: 2, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: '#1a1a2e',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {t.description}
-                  </div>
-                  {t.note && (
-                    <div style={{ fontSize: 11, color: '#6c757d', fontStyle: 'italic' }}>{t.note}</div>
-                  )}
-                </div>
-                {t.date && (
-                  <span style={{ fontSize: 11, color: '#adb5bd', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    {t.date}
-                  </span>
-                )}
-                {t.attachment && (
-                  <button
-                    onClick={() => setViewer({ src: t.attachment, filename: t.attachmentName })}
-                    title="Ver adjunto"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: '2px 4px', flexShrink: 0 }}
-                  >
-                    📎
-                  </button>
-                )}
-                <button
-                  onClick={() => handleDelete(t)}
-                  title="Eliminar"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e03131', fontSize: 14, padding: '2px 4px', flexShrink: 0 }}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Hidden input for attaching to existing transactions */}

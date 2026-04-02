@@ -249,10 +249,35 @@ const Taxis = () => {
   const isCurrentPeriod = period.year === now.getFullYear() && period.month === now.getMonth() + 1
   const daysElapsed = isCurrentPeriod ? now.getDate() : null
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
-  const projection =
-    daysElapsed && daysElapsed > 0 ? Math.round((total / daysElapsed) * daysInMonth) : null
 
   const colombianHolidaysCalc = useMemo(() => getColombianHolidays(period.year), [period.year])
+
+  // Hypothetical full-month total: what all active drivers would pay if they paid every eligible day
+  const projection = useMemo(() => {
+    const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
+    let sum = 0
+    for (const driver of drivers.filter((d) => d.active !== false && d.defaultVehicle)) {
+      const plate = driver.defaultVehicle
+      const vehicle = vehiclesMap.get(plate)
+      const restr =
+        vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
+      const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+      const startDay = driver.startDate?.startsWith(periodPrefix)
+        ? parseInt(driver.startDate.slice(-2), 10)
+        : 1
+      const endDay = driver.endDate?.startsWith(periodPrefix)
+        ? parseInt(driver.endDate.slice(-2), 10)
+        : daysInMonth
+      for (let day = startDay; day <= endDay; day++) {
+        if (restrictedDays.has(day)) continue
+        const dayStr = `${periodPrefix}${String(day).padStart(2, '0')}`
+        const isSunday = new Date(period.year, period.month - 1, day).getDay() === 0
+        const isHoliday = colombianHolidaysCalc.has(dayStr)
+        sum += isSunday || isHoliday ? driver.defaultAmountSunday || 0 : driver.defaultAmount || 0
+      }
+    }
+    return sum
+  }, [drivers, vehiclesMap, period, daysInMonth, colombianHolidaysCalc])
 
   const calcRemaining = useCallback(
     (driverName, rows = []) => {
