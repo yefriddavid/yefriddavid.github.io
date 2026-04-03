@@ -9,12 +9,14 @@ const StandardGrid = React.forwardRef(({
   children,
   style,
   noDataText = 'Sin registros.',
+  scrolling,
   ...props
 }, ref) => (
   <DataGrid
     ref={ref}
     className="standard-grid"
     style={{ margin: 16, ...style }}
+    scrolling={{ useNative: true, showScrollbar: 'always', ...scrolling }}
     showBorders={true}
     columnAutoWidth={true}
     columnHidingEnabled={true}
