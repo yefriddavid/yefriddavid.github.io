@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import {
   CCard,
   CCardBody,

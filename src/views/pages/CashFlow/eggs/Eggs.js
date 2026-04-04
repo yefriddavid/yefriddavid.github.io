@@ -10,7 +10,7 @@ import {
   CSpinner,
 } from '@coreui/react'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import * as eggActions from 'src/actions/CashFlow/eggActions'
 
 const today = () => new Date().toISOString().split('T')[0]

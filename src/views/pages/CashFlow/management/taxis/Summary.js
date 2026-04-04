@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CFormSelect, CRow, CCol,

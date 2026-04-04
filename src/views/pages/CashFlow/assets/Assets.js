@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import * as actions from 'src/actions/CashFlow/assetActions'
 
 const uid = () => crypto.randomUUID()
@@ -674,9 +674,6 @@ export default function Assets() {
       ) : viewMode === 'grid' ? (
         <StandardGrid
           dataSource={gridData}
-          style={{ margin: 0, width: "100%" }}
-          columnHidingEnabled={false}
-          scrolling={{ useNative: true, showScrollbar: 'always' }}
         >
           <Column dataField="name" caption="Nombre" width={80} />
           <Column dataField="type" caption="Tipo" width={80}

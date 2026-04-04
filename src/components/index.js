@@ -1,7 +1,7 @@
 import AppBreadcrumb from './AppBreadcrumb'
 import StandardForm, { StandardField, SF } from './App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from './App/DetailPanel'
-import StandardGrid from './App/StandardGrid'
+import StandardGrid from './App/StandardGrid/StandardGrid'
 import AppContent from './AppContent'
 import AppFooter from './AppFooter'
 import AppHeader from './AppHeader'

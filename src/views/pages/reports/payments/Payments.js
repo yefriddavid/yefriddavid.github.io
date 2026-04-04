@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Component } from 'react'
 import { Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import { Button } from 'devextreme-react/button'
 import { SelectControl, NewPaymentComponent } from './Controls'
 import ItemDetail from './ItemDetail'

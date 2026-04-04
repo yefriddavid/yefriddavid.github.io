@@ -3,7 +3,7 @@ import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
 import {
   CButton,
   CCard,
