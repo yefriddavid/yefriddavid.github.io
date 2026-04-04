@@ -25,6 +25,11 @@ const fmtDate = (d) =>
 const fmtQty = (n) =>
   n != null ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: 6 }).format(n) : ''
 
+const lsGet = (key, fallback) => {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback }
+}
+const lsSet = (key, val) => localStorage.setItem(key, JSON.stringify(val))
+
 // ── Egg card ──────────────────────────────────────────────────────────────────
 function EggCard({ egg, currentPrice, onEdit, onDelete }) {
   const cp = parseFloat(currentPrice)
@@ -113,6 +118,91 @@ function EggCard({ egg, currentPrice, onEdit, onDelete }) {
         >
           🗑
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Global notes panel ────────────────────────────────────────────────────────
+function GlobalNotes() {
+  const [note, setNote] = useState(() => lsGet('eggs_note', ''))
+  const [checked, setChecked] = useState(() => lsGet('eggs_checked', false))
+  const [noteValue, setNoteValue] = useState(() => lsGet('eggs_noteValue', ''))
+  const [noteQty, setNoteQty] = useState(() => lsGet('eggs_noteQty', ''))
+
+  const handleNote = (e) => { setNote(e.target.value); lsSet('eggs_note', e.target.value) }
+  const handleChecked = (e) => { setChecked(e.target.checked); lsSet('eggs_checked', e.target.checked) }
+  const handleNoteValue = (e) => { setNoteValue(e.target.value); lsSet('eggs_noteValue', e.target.value) }
+  const handleNoteQty = (e) => { setNoteQty(e.target.value); lsSet('eggs_noteQty', e.target.value) }
+
+  return (
+    <div style={{ background: '#f8f9fa', borderRadius: 12, padding: '12px 14px', marginBottom: 14, border: '1px solid #e9ecef' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6c757d', letterSpacing: '0.05em', marginBottom: 10 }}>NOTAS</div>
+
+      {/* Note + check */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            type="text"
+            value={note}
+            onChange={handleNote}
+            placeholder="Observación..."
+            style={{
+              flex: 1, border: 'none', borderBottom: '1px solid #dee2e6',
+              outline: 'none', background: 'transparent',
+              fontSize: 14, color: '#1a1a2e', padding: '4px 0',
+            }}
+          />
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: 13, fontWeight: 600, color: checked ? '#2f9e44' : '#6c757d',
+            cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap',
+          }}>
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={handleChecked}
+              style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2f9e44' }}
+            />
+            {checked ? '✔ Check' : 'Check'}
+          </label>
+        </div>
+      </div>
+
+      {/* Value + quantity */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 4 }}>VALOR</div>
+          <input
+            type="number"
+            min="0"
+            step="any"
+            value={noteValue}
+            onChange={handleNoteValue}
+            placeholder="0"
+            style={{
+              width: '100%', border: 'none', borderBottom: '1px solid #dee2e6',
+              outline: 'none', background: 'transparent',
+              fontSize: 15, fontWeight: 700, color: '#1e3a5f', padding: '2px 0 4px',
+            }}
+          />
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: '#adb5bd', fontWeight: 600, marginBottom: 4 }}>CANTIDAD</div>
+          <input
+            type="number"
+            min="0"
+            step="0.000001"
+            value={noteQty}
+            onChange={handleNoteQty}
+            placeholder="0"
+            style={{
+              width: '100%', border: 'none', borderBottom: '1px solid #dee2e6',
+              outline: 'none', background: 'transparent',
+              fontSize: 15, fontWeight: 700, color: '#1a1a2e', padding: '2px 0 4px',
+            }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -308,6 +398,9 @@ export default function Eggs() {
           }}
         />
       </div>
+
+      {/* Global notes */}
+      <GlobalNotes />
 
       {/* Filters panel */}
       {showFilters && (
