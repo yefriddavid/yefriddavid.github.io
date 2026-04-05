@@ -24,3 +24,8 @@ export const seedRequest = createAction('request seed cashflow accounts master')
 export const seedProgressUpdate = createAction('seed progress cashflow accounts master')
 export const seedComplete = createAction('seed complete cashflow accounts master')
 export const seedError = createAction('seed error cashflow accounts master')
+
+export const patchManyRequest = createAction('request patch many cashflow accounts master')
+export const patchManyProgress = createAction('patch many progress cashflow accounts master')
+export const patchManyComplete = createAction('patch many complete cashflow accounts master')
+export const patchManyError = createAction('patch many error cashflow accounts master')

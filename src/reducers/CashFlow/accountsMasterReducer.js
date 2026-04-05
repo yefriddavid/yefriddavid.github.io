@@ -3,7 +3,17 @@ import * as actions from '../../actions/CashFlow/accountsMasterActions'
 
 const accountsMasterSlice = createSlice({
   name: 'accountsMaster',
-  initialState: { data: null, fetching: false, saving: false, error: {}, isError: false, seeding: false, seedProgress: 0 },
+  initialState: {
+    data: null,
+    fetching: false,
+    saving: false,
+    error: {},
+    isError: false,
+    seeding: false,
+    seedProgress: 0,
+    patching: false,
+    patchProgress: 0,
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -73,6 +83,23 @@ const accountsMasterSlice = createSlice({
       })
       .addCase(actions.seedError, (state, { payload }) => {
         state.seeding = false
+        state.error = payload
+        state.isError = true
+      })
+
+      .addCase(actions.patchManyRequest, (state) => {
+        state.patching = true
+        state.patchProgress = 0
+      })
+      .addCase(actions.patchManyProgress, (state, { payload }) => {
+        state.patchProgress = payload
+      })
+      .addCase(actions.patchManyComplete, (state) => {
+        state.patching = false
+        state.patchProgress = 100
+      })
+      .addCase(actions.patchManyError, (state, { payload }) => {
+        state.patching = false
         state.error = payload
         state.isError = true
       })

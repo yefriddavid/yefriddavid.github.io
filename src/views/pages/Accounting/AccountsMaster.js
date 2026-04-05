@@ -14,13 +14,22 @@ import {
   CSpinner,
 } from '@coreui/react'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import { CLASSIFICATION_OPTIONS, ACCOUNT_CATEGORIES, PERIOD_OPTIONS, TYPE_OPTIONS,
-  PAYMENT_METHODS, MONTH_NAMES, MONTH_LABELS } from 'src/constants/cashFlow'
-
-
-import { SEED_ACCOUNTS } from 'src/constants/accountsMasterSeed'
-import '../../../movements/payments/Payments.scss'
-import '../../../movements/payments/ItemDetail.scss'
+import {
+  CLASSIFICATION_OPTIONS,
+  ACCOUNT_CATEGORIES,
+  PERIOD_OPTIONS,
+  TYPE_OPTIONS,
+  PAYMENT_METHODS,
+  MONTH_NAMES,
+  MONTH_LABELS,
+  ACCOUNT_MASTER_TYPES,
+  ACCOUNT_MASTER_TYPE_LABELS,
+  ACCOUNT_MASTER_NATURE,
+  ACCOUNT_MASTER_CODE_PREFIX,
+} from 'src/constants/cashFlow'
+import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
+import '../movements/payments/Payments.scss'
+import '../movements/payments/ItemDetail.scss'
 
 const EMPTY_FORM = {
   type: 'Outcoming',
@@ -33,6 +42,7 @@ const EMPTY_FORM = {
   monthStartAt: 'January',
   paymentMethod: 'Cash',
   code: '',
+  accountingName: '',
   name: '',
   description: '',
   notes: '',
@@ -40,10 +50,6 @@ const EMPTY_FORM = {
   active: true,
   important: false,
 }
-
-//const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A']
-//const TYPE_OPTIONS = ['Outcoming', 'Incoming']
-//const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 
 // ── Form ──────────────────────────────────────────────────────────────────────
 function AccountMasterForm({ initial, saving, onSave, onCancel }) {
@@ -60,6 +66,7 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
   }
 
   const isEdit = !!initial?.id
+  const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'}195)`
 
   return (
     <div className="payment-form">
@@ -77,6 +84,22 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             value={form.name}
             onChange={set('name')}
             placeholder="Nombre de la cuenta"
+          />
+        </div>
+
+        <div className="payment-form__field">
+          <label className="payment-form__label">
+            Nombre Contable NIIF
+            <span style={{ fontSize: 11, color: '#6c757d', fontWeight: 400, marginLeft: 6 }}>
+              — nombre según plan de cuentas
+            </span>
+          </label>
+          <input
+            className="payment-form__input"
+            type="text"
+            value={form.accountingName}
+            onChange={set('accountingName')}
+            placeholder="Ej: Arrendamientos — inmueble"
           />
         </div>
 
@@ -111,12 +134,41 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
               value={form.type}
               onChange={set('type')}
             >
-              {TYPE_OPTIONS.map((o) => (
+              {ACCOUNT_MASTER_TYPES.map((o) => (
                 <option key={o} value={o}>
-                  {o}
+                  {ACCOUNT_MASTER_TYPE_LABELS[o]}
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="payment-form__field">
+            <label className="payment-form__label">
+              Código PUC *
+              <span style={{ fontSize: 10, color: '#6c757d', fontWeight: 400, marginLeft: 4 }}>
+                (clase {ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'})
+              </span>
+            </label>
+            <input
+              className="payment-form__input"
+              type="text"
+              value={form.code}
+              onChange={set('code')}
+              placeholder={codePlaceholder}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+          <div className="payment-form__field">
+            <label className="payment-form__label">Naturaleza</label>
+            <input
+              className="payment-form__input"
+              type="text"
+              value={ACCOUNT_MASTER_NATURE[form.type] ?? '—'}
+              readOnly
+              style={{ background: '#f8f9fa', color: '#6c757d', cursor: 'default' }}
+            />
           </div>
 
           <div className="payment-form__field">
@@ -247,28 +299,15 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <div className="payment-form__field">
-            <label className="payment-form__label">Definición</label>
-            <input
-              className="payment-form__input"
-              type="text"
-              value={form.definition}
-              onChange={set('definition')}
-              placeholder="Ej: Indefinidos"
-            />
-          </div>
-
-          <div className="payment-form__field">
-            <label className="payment-form__label">Código</label>
-            <input
-              className="payment-form__input"
-              type="text"
-              value={form.code}
-              onChange={set('code')}
-              placeholder="Código (opcional)"
-            />
-          </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Definición</label>
+          <input
+            className="payment-form__input"
+            type="text"
+            value={form.definition}
+            onChange={set('definition')}
+            placeholder="Ej: Indefinidos"
+          />
         </div>
 
         <div className="payment-form__field">
@@ -292,7 +331,13 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             type="checkbox"
             checked={!!form.important}
             onChange={(e) => setForm((prev) => ({ ...prev, important: e.target.checked }))}
-            style={{ width: 18, height: 18, accentColor: '#e03131', cursor: 'pointer', flexShrink: 0 }}
+            style={{
+              width: 18,
+              height: 18,
+              accentColor: '#e03131',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
             onClick={(e) => e.stopPropagation()}
           />
           <label className="payment-form__label" style={{ marginBottom: 0, cursor: 'pointer' }}>
@@ -321,11 +366,25 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
   )
 }
 
+const NATURE_COLOR = {
+  Débito: { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
+  Crédito: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+}
+
+const TYPE_COLOR = {
+  Activo: { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
+  Pasivo: { bg: '#fff7ed', color: '#9a3412', border: '#fed7aa' },
+  Incoming: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+  Outcoming: { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountsMaster() {
   const dispatch = useDispatch()
-  const { data, fetching, saving, seeding, seedProgress } = useSelector((s) => s.accountsMaster)
-  const [formModal, setFormModal] = useState(null) // null | { mode: 'create' | 'edit', initial?: {} }
+  const { data, fetching, saving, seeding, seedProgress, patching, patchProgress } = useSelector(
+    (s) => s.accountsMaster,
+  )
+  const [formModal, setFormModal] = useState(null)
   const [typeFilter, setTypeFilter] = useState('all')
   const [nameSearch, setNameSearch] = useState('')
 
@@ -365,6 +424,26 @@ export default function AccountsMaster() {
     dispatch(accountsMasterActions.seedRequest(SEED_ACCOUNTS))
   }
 
+  const handlePatchAccounting = () => {
+    const patches = PATCH_ACCOUNTING.flatMap((p) => {
+      const matches = (data ?? []).filter((r) => r.name === p.name)
+      return matches.map((r) => ({ id: r.id, code: p.code, accountingName: p.accountingName }))
+    })
+    if (patches.length === 0) {
+      alert('No se encontraron cuentas para actualizar.')
+      return
+    }
+    if (
+      !window.confirm(
+        `¿Actualizar ${patches.length} cuentas con código PUC y nombre contable NIIF?`,
+      )
+    )
+      return
+    dispatch(accountsMasterActions.patchManyRequest(patches))
+  }
+
+  const needsPatch = (data ?? []).some((r) => !r.accountingName)
+
   return (
     <>
       <CCard className="mb-3">
@@ -378,7 +457,7 @@ export default function AccountsMaster() {
           }}
         >
           <strong>Maestro de Cuentas</strong>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {data !== null && data.length === 0 && !seeding && (
               <CButton size="sm" color="warning" variant="outline" onClick={handleSeed}>
                 ↓ Cargar datos de ejemplo ({SEED_ACCOUNTS.length})
@@ -395,6 +474,24 @@ export default function AccountsMaster() {
                 }}
               >
                 <CSpinner size="sm" /> Cargando… {seedProgress}%
+              </span>
+            )}
+            {needsPatch && !patching && data !== null && data.length > 0 && (
+              <CButton size="sm" color="info" variant="outline" onClick={handlePatchAccounting}>
+                ✦ Actualizar nombres contables
+              </CButton>
+            )}
+            {patching && (
+              <span
+                style={{
+                  fontSize: 12,
+                  color: '#6c757d',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <CSpinner size="sm" /> Actualizando… {patchProgress}%
               </span>
             )}
             <input
@@ -424,8 +521,11 @@ export default function AccountsMaster() {
               }}
             >
               <option value="all">Todos</option>
-              <option value="Outcoming">Outcoming</option>
-              <option value="Incoming">Incoming</option>
+              {ACCOUNT_MASTER_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {ACCOUNT_MASTER_TYPE_LABELS[t]}
+                </option>
+              ))}
             </select>
             <CButton size="sm" color="primary" onClick={() => setFormModal({ mode: 'create' })}>
               + Nueva cuenta
@@ -446,11 +546,32 @@ export default function AccountsMaster() {
               pager={{ visible: false }}
               paging={{ enabled: false }}
             >
-              <Column dataField="code" caption="Código" width={90} />
+              <Column
+                dataField="code"
+                caption="Código"
+                width={80}
+                alignment="center"
+                cellRender={({ value }) =>
+                  value ? (
+                    <span
+                      style={{
+                        fontFamily: 'monospace',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        color: '#1e3a5f',
+                      }}
+                    >
+                      {value}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  )
+                }
+              />
               <Column
                 dataField="name"
                 caption="Nombre"
-                minWidth={200}
+                minWidth={160}
                 cellRender={({ value, data: row }) => (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     {row.important && (
@@ -460,11 +581,71 @@ export default function AccountsMaster() {
                   </span>
                 )}
               />
-              {/*}<Column dataField="description" caption="Descripción" minWidth={200} />*/}
+              <Column
+                dataField="accountingName"
+                caption="Nombre Contable"
+                minWidth={200}
+                cellRender={({ value }) =>
+                  value ? (
+                    <span style={{ fontSize: 12, color: '#374151' }}>{value}</span>
+                  ) : (
+                    <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  )
+                }
+              />
+              <Column
+                dataField="type"
+                caption="Tipo"
+                width={95}
+                alignment="center"
+                cellRender={({ value }) => {
+                  const c = TYPE_COLOR[value] ?? {}
+                  return (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 4,
+                        padding: '2px 8px',
+                        background: c.bg,
+                        color: c.color,
+                        border: `1px solid ${c.border}`,
+                      }}
+                    >
+                      {ACCOUNT_MASTER_TYPE_LABELS[value] ?? value}
+                    </span>
+                  )
+                }}
+              />
+              <Column
+                caption="Naturaleza"
+                width={95}
+                alignment="center"
+                allowSorting={false}
+                cellRender={({ data: row }) => {
+                  const nature = ACCOUNT_MASTER_NATURE[row.type] ?? '—'
+                  const c = NATURE_COLOR[nature] ?? {}
+                  return (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 4,
+                        padding: '2px 8px',
+                        background: c.bg,
+                        color: c.color,
+                        border: `1px solid ${c.border}`,
+                      }}
+                    >
+                      {nature}
+                    </span>
+                  )
+                }}
+              />
               <Column
                 dataField="defaultValue"
                 caption="Valor por defecto"
-                width={150}
+                width={145}
                 alignment="right"
                 hidingPriority={0}
                 cellRender={({ value }) =>
@@ -481,43 +662,18 @@ export default function AccountsMaster() {
                   )
                 }
               />
-              <Column dataField="type" caption="Tipo" width={110} />
-              <Column dataField="period" caption="Período" width={110} />
-              {/*<Column dataField="definition" caption="Definición" width={120} />*/}
-              {/*<Column
-                dataField="classification"
-                caption="Clasificación"
-                width={130}
-                cellRender={({ value }) => (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      borderRadius: 4,
-                      padding: '2px 8px',
-                      background: value === 'indispensable' ? '#fff3cd' : '#f8f9fa',
-                      color: value === 'indispensable' ? '#856404' : '#495057',
-                      border: `1px solid ${value === 'indispensable' ? '#ffc107' : '#dee2e6'}`,
-                    }}
-                  >
-                    {value}
-                  </span>
-                )}
-                />*/}
-              {/*<Column dataField="category" caption="Categoría" width={150} />*/}
+              <Column dataField="period" caption="Período" width={100} hidingPriority={1} />
               <Column
-                dataField="maxDatePay"
-                caption="Día máx. pago"
+                dataField="paymentMethod"
+                caption="Método pago"
                 width={120}
-                alignment="center"
+                hidingPriority={2}
               />
-              {/*}<Column dataField="monthStartAt" caption="Mes inicio" width={120} />*/}
-              <Column dataField="paymentMethod" caption="Método pago" width={130} />
               <Column
                 dataField="notes"
                 caption="Notas"
                 minWidth={120}
-                hidingPriority={1}
+                hidingPriority={3}
                 cellRender={({ value }) =>
                   value ? (
                     <span
@@ -543,7 +699,7 @@ export default function AccountsMaster() {
               <Column
                 dataField="active"
                 caption="Estado"
-                width={90}
+                width={85}
                 alignment="center"
                 cellRender={({ value, data: row }) => (
                   <span

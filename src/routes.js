@@ -5,9 +5,9 @@ const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
 // Managment
-const Accounts = React.lazy(() => import('./views/pages/CashFlow/management/accounts/Accounts'))
+const Accounts = React.lazy(() => import('./views/pages/Accounting/Accounts'))
 const AccountsMaster = React.lazy(
-  () => import('./views/pages/CashFlow/management/accounts/AccountsMaster'),
+  () => import('./views/pages/Accounting/AccountsMaster'),
 )
 const Settlements = React.lazy(() => import('./views/pages/taxis/Settlements/Index'))
 const Drivers = React.lazy(() => import('./views/pages/taxis/Drivers'))
@@ -21,9 +21,9 @@ const Distributions = React.lazy(
 )
 
 // Users & Profile
-const Users = React.lazy(() => import('./views/pages/CashFlow/management/users/Users'))
+const Users = React.lazy(() => import('./views/pages/users/Users'))
 const PushSubscribers = React.lazy(
-  () => import('./views/pages/CashFlow/management/users/PushSubscribers'),
+  () => import('./views/pages/users/PushSubscribers'),
 )
 const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 

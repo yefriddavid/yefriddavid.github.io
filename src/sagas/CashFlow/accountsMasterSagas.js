@@ -57,6 +57,23 @@ function* seedAccountsMaster({ payload }) {
   }
 }
 
+// payload: [{ id, code, accountingName }, ...]
+function* patchManyAccountsMaster({ payload }) {
+  try {
+    const items = payload
+    for (let i = 0; i < items.length; i++) {
+      const { id, ...fields } = items[i]
+      yield call(service.updateAccountMaster, id, fields)
+      yield put(actions.patchManyProgress(Math.round(((i + 1) / items.length) * 100)))
+    }
+    const data = yield call(service.getAccountsMaster)
+    yield put(actions.successRequestFetch(data))
+    yield put(actions.patchManyComplete())
+  } catch (e) {
+    yield put(actions.patchManyError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchAccountsMaster),
@@ -64,5 +81,6 @@ export default function* rootSagas() {
     takeLatest(actions.updateRequest, updateAccountMaster),
     takeLatest(actions.deleteRequest, deleteAccountMaster),
     takeLatest(actions.seedRequest, seedAccountsMaster),
+    takeLatest(actions.patchManyRequest, patchManyAccountsMaster),
   ])
 }

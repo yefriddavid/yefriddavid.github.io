@@ -10,7 +10,8 @@ import {
   CRow,
 } from '@coreui/react'
 import { Column, Paging, Pager } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid'
+//import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from '@appComponents/StandardGrid/StandardGrid'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
 
