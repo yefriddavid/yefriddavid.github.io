@@ -11,6 +11,8 @@ import {
   CAlert,
   CButton,
   CCollapse,
+  CRow,
+  CCol,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
@@ -162,7 +164,7 @@ const formatUA = (ua) => {
   return ua.slice(0, 40)
 }
 
-const SessionsDetail = ({ data: user }) => {
+const SessionsDetail = React.memo(({ data: user }) => {
   const dispatch = useDispatch()
   const currentSessionId = localStorage.getItem('sessionId')
   const sessionsState = useSelector((s) => s.users.sessions[user.username])
@@ -170,8 +172,11 @@ const SessionsDetail = ({ data: user }) => {
   const fetching = sessionsState?.fetching ?? false
 
   useEffect(() => {
-    dispatch(usersActions.fetchSessionsRequest(user.username))
-  }, [user.username, dispatch])
+    // Solo pedir si no hay datos y no se está cargando ya
+    if (!sessionsState && !fetching) {
+      dispatch(usersActions.fetchSessionsRequest(user.username))
+    }
+  }, [user.username, dispatch, sessionsState, fetching])
 
   const handleDelete = (sessionId) => {
     if (!window.confirm('¿Cerrar esta sesión?')) return
@@ -235,7 +240,31 @@ const SessionsDetail = ({ data: user }) => {
       </table>
     </div>
   )
-}
+})
+
+const UserDetail = React.memo(({ data: user, onSave, saving }) => {
+  return (
+    <div style={{ padding: '16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+      <CRow>
+        <CCol md={5} className="border-end">
+          <div style={{ paddingRight: 16 }}>
+            <UserForm
+              initial={{ ...user, email: user.email ?? '' }}
+              isNew={false}
+              title={`Editar Usuario: ${user.username}`}
+              onSave={onSave}
+              onCancel={null} // No necesitamos cancelar aquí, solo cerrar la fila
+              saving={saving}
+            />
+          </div>
+        </CCol>
+        <CCol md={7}>
+          <SessionsDetail data={user} />
+        </CCol>
+      </CRow>
+    </div>
+  )
+})
 
 const Users = () => {
   const dispatch = useDispatch()
@@ -245,7 +274,6 @@ const Users = () => {
   const gridRef = useRef(null)
 
   const [showForm, setShowForm] = useState(false)
-  const [editTarget, setEditTarget] = useState(null)
   const [resetMsg, setResetMsg] = useState(null)
 
   useEffect(() => {
@@ -259,7 +287,8 @@ const Users = () => {
 
   const handleUpdate = (form) => {
     dispatch(usersActions.updateRequest(form))
-    setEditTarget(null)
+    // Al ser en el MasterDetail, no cerramos nada manualmente, 
+    // el grid se actualizará cuando el saga termine.
   }
 
   const handleDelete = (row) => {
@@ -281,10 +310,21 @@ const Users = () => {
     setTimeout(() => setResetMsg(null), 4000)
   }
 
-  const openEdit = (row) => {
-    if (!isSuperAdmin) return
-    setShowForm(false)
-    setEditTarget({ ...row, email: row.email ?? '' })
+  const toggleRow = (row) => {
+    if (!gridRef.current) return
+    const instance = gridRef.current.instance
+    const key = row.username
+
+    if (instance.isRowExpanded(key)) {
+      instance.collapseRow(key)
+    } else {
+      instance.collapseAll(-1)
+      instance.expandRow(key)
+    }
+  }
+
+  const onRowDblClick = (e) => {
+    toggleRow(e.data)
   }
 
   return (
@@ -308,7 +348,6 @@ const Users = () => {
                 size="sm"
                 color="primary"
                 onClick={() => {
-                  setEditTarget(null)
                   setShowForm(true)
                 }}
               >
@@ -343,26 +382,11 @@ const Users = () => {
           </div>
         </CCollapse>
 
-        <CCollapse visible={!!editTarget}>
-          {editTarget && (
-            <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
-              <UserForm
-                initial={editTarget}
-                isNew={false}
-                title={`Editar: ${editTarget.username}`}
-                onSave={handleUpdate}
-                onCancel={() => setEditTarget(null)}
-                saving={fetching}
-              />
-            </div>
-          )}
-        </CCollapse>
-
         <StandardGrid
           ref={gridRef}
           dataSource={data ?? []}
           keyExpr="username"
-          onRowDblClick={({ data: row }) => openEdit(row)}
+          onRowDblClick={onRowDblClick}
           noDataText={fetching ? 'Cargando...' : 'Sin usuarios registrados.'}
         >
           <Column dataField="username" caption="Username" width={140} />
@@ -396,7 +420,7 @@ const Users = () => {
                       size="sm"
                       color="primary"
                       variant="outline"
-                      onClick={() => openEdit(row)}
+                      onClick={() => toggleRow(row)}
                     >
                       Editar
                     </CButton>
@@ -422,7 +446,12 @@ const Users = () => {
               </div>
             )}
           />
-          <MasterDetail enabled render={({ data }) => <SessionsDetail data={data} />} />
+          <MasterDetail
+            enabled
+            render={({ data: row }) => (
+              <UserDetail data={row} onSave={handleUpdate} saving={fetching} />
+            )}
+          />
         </StandardGrid>
       </CCardBody>
     </CCard>

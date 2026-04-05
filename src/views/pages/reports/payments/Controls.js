@@ -1,7 +1,5 @@
 import React, { useState, useEffect, Component } from 'react'
 // import { VaucherControlViewer } from './Database'
-import { DataGrid, Editing, Column, MasterDetail, Selection, LoadPanel, Button as GButton } from 'devextreme-react/data-grid'
-import { Button } from 'devextreme-react/button'
 import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'

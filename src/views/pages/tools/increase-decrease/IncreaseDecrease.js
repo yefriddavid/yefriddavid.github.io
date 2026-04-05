@@ -9,7 +9,8 @@ import {
   CFormLabel,
   CRow,
 } from '@coreui/react'
-import DataGrid, { Column, Paging, Pager } from 'devextreme-react/data-grid'
+import { Column, Paging, Pager } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/App/StandardGrid'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
 
@@ -168,13 +169,9 @@ const IncreaseDecrease = () => {
         <CCard className="shadow-sm">
           <CCardHeader className="fw-semibold">Comparison List</CCardHeader>
           <CCardBody>
-            <DataGrid
+            <StandardGrid
               dataSource={items}
               keyExpr="id"
-              showBorders
-              showRowLines
-              rowAlternationEnabled
-              columnAutoWidth
               noDataText="No entries yet — fill in the values above and click Add to List."
             >
               <Paging defaultPageSize={10} />
@@ -251,7 +248,7 @@ const IncreaseDecrease = () => {
                   </CButton>
                 )}
               />
-            </DataGrid>
+            </StandardGrid>
           </CCardBody>
         </CCard>
       </CCol>

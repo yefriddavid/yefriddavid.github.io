@@ -1,6 +1,7 @@
 import React from 'react'
 import { DataGrid } from 'devextreme-react/data-grid'
-import './StandardGrid.scss'
+//import './StandardGrid.scss'
+import './StandardGrid.pine.scss'
 
 // Standard DataGrid wrapper with shared styles and default props.
 // Use this for all data tables in the app.
