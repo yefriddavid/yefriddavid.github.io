@@ -14,7 +14,10 @@ import {
   CSpinner,
 } from '@coreui/react'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, MONTH_NAMES, MONTH_LABELS } from 'src/constants/cashFlow'
+import { CLASSIFICATION_OPTIONS, ACCOUNT_CATEGORIES, PERIOD_OPTIONS, TYPE_OPTIONS,
+  PAYMENT_METHODS, MONTH_NAMES, MONTH_LABELS } from 'src/constants/cashFlow'
+
+
 import { SEED_ACCOUNTS } from 'src/constants/accountsMasterSeed'
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
@@ -38,9 +41,9 @@ const EMPTY_FORM = {
   important: false,
 }
 
-const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A']
-const TYPE_OPTIONS = ['Outcoming', 'Incoming']
-const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
+//const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A']
+//const TYPE_OPTIONS = ['Outcoming', 'Incoming']
+//const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 
 // ── Form ──────────────────────────────────────────────────────────────────────
 function AccountMasterForm({ initial, saving, onSave, onCancel }) {

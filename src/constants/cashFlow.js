@@ -8,6 +8,10 @@ moment.locale('es', es)
 export const MONTH_NAMES = moment.localeData('en').months()
 export const MONTH_LABELS = moment.localeData('es').months()
 export const DAY_NAMES = moment.weekdaysShort(); // ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+export const PERIOD_OPTIONS = ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A']
+export const TYPE_OPTIONS = ['Outcoming', 'Incoming']
+export const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
+
 //console.log(DAY_NAMES);
 
 export const ACCOUNT_CATEGORIES = [
