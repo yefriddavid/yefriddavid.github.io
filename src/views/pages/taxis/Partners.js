@@ -8,7 +8,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import * as taxiPartnerActions from 'src/actions/CashFlow/taxiPartnerActions'
-import '../../../movements/payments/Payments.scss'
+import '../movements/payments/Payments.scss'
 
 const EMPTY = { name: '', percentage: '' }
 

@@ -9,15 +9,15 @@ const Accounts = React.lazy(() => import('./views/pages/CashFlow/management/acco
 const AccountsMaster = React.lazy(
   () => import('./views/pages/CashFlow/management/accounts/AccountsMaster'),
 )
-const Settlements = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Settlements/Index'))
-const Drivers = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Drivers'))
-const Vehicles = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Vehicles'))
-const Expenses = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Expenses'))
-const Summary = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Summary'))
-const TaxisHome = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Home'))
-const Partners = React.lazy(() => import('./views/pages/CashFlow/management/taxis/Partners'))
+const Settlements = React.lazy(() => import('./views/pages/taxis/Settlements/Index'))
+const Drivers = React.lazy(() => import('./views/pages/taxis/Drivers'))
+const Vehicles = React.lazy(() => import('./views/pages/taxis/Vehicles'))
+const Expenses = React.lazy(() => import('./views/pages/taxis/Expenses'))
+const Summary = React.lazy(() => import('./views/pages/taxis/Summary'))
+const TaxisHome = React.lazy(() => import('./views/pages/taxis/Home'))
+const Partners = React.lazy(() => import('./views/pages/taxis/Partners'))
 const Distributions = React.lazy(
-  () => import('./views/pages/CashFlow/management/taxis/Distributions'),
+  () => import('./views/pages/taxis/Distributions'),
 )
 
 // Users & Profile

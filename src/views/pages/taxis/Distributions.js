@@ -14,7 +14,7 @@ import * as taxiDistributionActions from 'src/actions/CashFlow/taxiDistributionA
 import * as taxiPartnerActions from 'src/actions/CashFlow/taxiPartnerActions'
 import * as taxiSettlementActions from 'src/actions/CashFlow/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/CashFlow/taxiExpenseActions'
-import '../../../movements/payments/Payments.scss'
+import '../movements/payments/Payments.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n ?? 0)
