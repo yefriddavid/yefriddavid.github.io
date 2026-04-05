@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/Index'
 import {
   CCard,
   CCardHeader,
@@ -287,7 +287,7 @@ const Users = () => {
 
   const handleUpdate = (form) => {
     dispatch(usersActions.updateRequest(form))
-    // Al ser en el MasterDetail, no cerramos nada manualmente, 
+    // Al ser en el MasterDetail, no cerramos nada manualmente,
     // el grid se actualizará cuando el saga termine.
   }
 

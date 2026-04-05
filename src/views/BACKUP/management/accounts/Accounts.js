@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Column } from 'devextreme-react/data-grid';
 import { Button } from 'devextreme-react/button';
-import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/Index'
 import axios from 'axios'
 
 const App = () => {

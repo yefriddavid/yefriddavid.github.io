@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/Index'
 import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton, CRow, CCol,
   CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,

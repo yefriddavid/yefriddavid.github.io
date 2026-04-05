@@ -11,7 +11,7 @@ import {
 } from '@coreui/react'
 import { Column, Paging, Pager } from 'devextreme-react/data-grid'
 //import StandardGrid from 'src/components/App/StandardGrid'
-import StandardGrid from '@appComponents/StandardGrid/StandardGrid'
+import StandardGrid from '@appComponents/StandardGrid/Index'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
 

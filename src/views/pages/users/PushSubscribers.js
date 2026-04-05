@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/Index'
 import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilReload, cilTrash } from '@coreui/icons'

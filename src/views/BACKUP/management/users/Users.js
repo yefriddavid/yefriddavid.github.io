@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/App/StandardGrid/StandardGrid'
+import StandardGrid from 'src/components/App/StandardGrid/Index'
 import {
   CCard, CCardHeader, CCardBody, CSpinner, CBadge, CAlert,
   CButton, CCollapse,

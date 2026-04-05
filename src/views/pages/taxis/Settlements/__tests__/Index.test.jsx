@@ -21,7 +21,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 // Mock StandardGrid to avoid DevExtreme rendering issues in JSDOM
-vi.mock('src/components/App/StandardGrid/StandardGrid', () => ({
+vi.mock('src/components/App/StandardGrid/Index', () => ({
   __esModule: true,
   default: React.forwardRef(({ dataSource, children, noDataText }, ref) => (
     <div data-testid="standard-grid">

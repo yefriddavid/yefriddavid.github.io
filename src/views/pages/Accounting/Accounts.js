@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
 import { CButton, CCard, CCardBody, CCardHeader, CSpinner } from '@coreui/react'
-import StandardGrid from 'src/components/App/StandardGrid'
+import StandardGrid from '@appComponents/StandardGrid/Index'
 import * as accountActions from 'src/actions/CashFlow/accountActions'
 
 const Accounts = () => {
