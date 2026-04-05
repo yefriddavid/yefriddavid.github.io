@@ -1362,7 +1362,6 @@ export default function MyProjects() {
             width: '100%',
             padding: '11px',
             borderRadius: 12,
-            border: 'none',
             background: syncingAll ? '#e9ecef' : '#f0fdf4',
             color: syncingAll ? '#adb5bd' : '#2f9e44',
             fontSize: 14,
