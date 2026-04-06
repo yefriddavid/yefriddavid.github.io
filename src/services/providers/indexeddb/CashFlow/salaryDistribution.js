@@ -1,32 +1,7 @@
-// IndexedDB service for salary distribution config.
-// To migrate to Firebase: implement the same getConfig / saveConfig interface
-// in src/services/providers/firebase/CashFlow/salaryDistribution.js and
-// update the import in the saga.
+import { openDB, DB_STORES } from '../db'
 
-const DB_NAME = 'my-admin-local'
-const DB_VERSION = 3
-const STORE_NAME = 'salary-distribution'
+const STORE_NAME = DB_STORES.SALARY_DISTRIBUTION
 const RECORD_KEY = 'config'
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME)
-      }
-      if (!db.objectStoreNames.contains('my-projects')) {
-        db.createObjectStore('my-projects', { keyPath: 'id' })
-      }
-      if (!db.objectStoreNames.contains('assets')) {
-        db.createObjectStore('assets', { keyPath: 'id' })
-      }
-    }
-    req.onsuccess = (e) => resolve(e.target.result)
-    req.onerror = (e) => reject(e.target.error)
-  })
-}
 
 export async function getConfig() {
   const db = await openDB()

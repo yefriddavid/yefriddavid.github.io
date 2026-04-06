@@ -39,11 +39,13 @@
 
     .nav-link.active {
       border-left: 3px solid $accent;
+      border-radius: 0 !important;
       padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
     }
 
     .nav-group-items .nav-link.active {
       padding-left: calc(3.5rem - 3px);
+      border-radius: 0 !important;
     }
 
     // Expanded group indicator
@@ -51,6 +53,7 @@
       color: $text-hi !important;
       background: rgba(255, 255, 255, 0.07) !important;
       border-left: 3px solid $accent !important;
+      border-radius: 0 !important;
       padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px) !important;
 
       .nav-icon {

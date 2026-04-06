@@ -1,12 +1,26 @@
-import { put, call, all, takeLatest, select } from 'redux-saga/effects'
+import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/CashFlow/accountsMasterActions'
 import * as service from '../../services/providers/firebase/CashFlow/accountsMaster'
+import * as idb from '../../services/providers/indexeddb/CashFlow/accountsMaster'
 
 function* fetchAccountsMaster() {
   try {
     yield put(actions.beginRequestFetch())
-    const data = yield call(service.getAccountsMaster)
-    yield put(actions.successRequestFetch(data))
+
+    // 1. Try to load from IndexedDB for immediate UI feedback
+    const cachedData = yield call(idb.getAllAccounts)
+    if (cachedData && cachedData.length > 0) {
+      yield put(actions.successRequestFetch(cachedData))
+    }
+
+    // 2. Fetch fresh data from server
+    const remoteData = yield call(service.getAccountsMaster)
+
+    // 3. Update IndexedDB cache
+    yield call(idb.saveAccounts, remoteData)
+
+    // 4. Update store with latest data
+    yield put(actions.successRequestFetch(remoteData))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
   }
@@ -16,7 +30,12 @@ function* createAccountMaster({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addAccountMaster, payload)
-    yield put(actions.successRequestCreate({ id, ...payload }))
+    const newAccount = { id, ...payload }
+
+    // Sync local cache
+    yield call(idb.saveAccount, newAccount)
+
+    yield put(actions.successRequestCreate(newAccount))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
   }
@@ -26,6 +45,10 @@ function* updateAccountMaster({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateAccountMaster, payload.id, payload)
+
+    // Sync local cache
+    yield call(idb.saveAccount, payload)
+
     yield put(actions.successRequestUpdate(payload))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
@@ -36,6 +59,10 @@ function* deleteAccountMaster({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteAccountMaster, payload.id)
+
+    // Sync local cache
+    yield call(idb.deleteAccount, payload.id)
+
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
@@ -50,6 +77,10 @@ function* seedAccountsMaster({ payload }) {
       yield put(actions.seedProgressUpdate(Math.round(((i + 1) / items.length) * 100)))
     }
     const data = yield call(service.getAccountsMaster)
+
+    // Update local cache
+    yield call(idb.saveAccounts, data)
+
     yield put(actions.successRequestFetch(data))
     yield put(actions.seedComplete())
   } catch (e) {
@@ -67,6 +98,10 @@ function* patchManyAccountsMaster({ payload }) {
       yield put(actions.patchManyProgress(Math.round(((i + 1) / items.length) * 100)))
     }
     const data = yield call(service.getAccountsMaster)
+
+    // Update local cache
+    yield call(idb.saveAccounts, data)
+
     yield put(actions.successRequestFetch(data))
     yield put(actions.patchManyComplete())
   } catch (e) {
