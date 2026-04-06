@@ -17,7 +17,8 @@ function* fetchAccountsMaster() {
     const remoteData = yield call(service.getAccountsMaster)
 
     // 3. Update IndexedDB cache
-    yield call(idb.saveAccounts, remoteData)
+    // yield call(idb.saveAccounts, remoteData)
+    yield call(idb.storeLocalActiveAccounts, remoteData)
 
     // 4. Update store with latest data
     yield put(actions.successRequestFetch(remoteData))

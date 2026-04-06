@@ -12,6 +12,29 @@ export async function getAllAccounts() {
   })
 }
 
+export async function storeLocalActiveAccounts(accounts) {
+  if (!Array.isArray(accounts)) return
+
+  //console.log(accounts)
+  accounts = accounts.filter( (e) => e.active == true )
+  //console.log(accounts)
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    const store = tx.objectStore(STORE)
+
+    // Clear existing data to ensure sync
+    store.clear()
+
+    accounts.forEach((account) => {
+      store.put(account)
+    })
+
+    tx.oncomplete = () => resolve()
+    tx.onerror = (e) => reject(e.target.error)
+  })
+}
+
 export async function saveAccounts(accounts) {
   if (!Array.isArray(accounts)) return
   const db = await openDB()
