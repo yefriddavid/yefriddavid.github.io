@@ -11,17 +11,19 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/CashFlow/taxiExpenseActions'
+import * as taxiDriverActions from 'src/actions/CashFlow/taxiDriverActions'
 import { updateExpense } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
 import { getVehicles } from 'src/services/providers/firebase/CashFlow/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
+import { CATEGORIES, MONTH_NAMES as MONTHS } from 'src/constants/commons'
 
-const CATEGORIES = ['Administración', 'Combustible', 'Mantenimiento', 'Préstamos', 'Repuestos', 'Lavado', 'Multa', 'Otro']
+//const CATEGORIES = ['Administración', 'Combustible', 'Mantenimiento', 'Préstamos', 'Repuestos', 'Lavado', 'Multa', 'Otro']
 
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
+//const MONTHS = [
+//  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+//  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+//]
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
@@ -145,6 +147,7 @@ const Gastos = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const { data: expenses, fetching } = useSelector((s) => s.taxiExpense)
+  const { data: drivers } = useSelector((s) => s.taxiDriver)
   const gridRef = useRef()
 
   const now = new Date()
@@ -160,6 +163,7 @@ const Gastos = () => {
 
   useEffect(() => {
     dispatch(taxiExpenseActions.fetchRequest())
+    dispatch(taxiDriverActions.fetchRequest())
     getVehicles().then(setVehicles)
   }, [dispatch])
 
@@ -231,6 +235,16 @@ const Gastos = () => {
 
   const total = filtered.reduce((acc, r) => acc + (r.amount || 0), 0)
   const totalPending = filtered.filter((r) => !r.paid).reduce((acc, r) => acc + (r.amount || 0), 0)
+
+  const plateToDriver = useMemo(() => {
+    if (!drivers) return {}
+    return drivers
+      .filter((d) => d.active && d.defaultVehicle)
+      .reduce((acc, d) => {
+        acc[d.defaultVehicle] = d.name
+        return acc
+      }, {})
+  }, [drivers])
 
   const byCategory = Object.values(
     filtered.reduce((acc, r) => {
@@ -360,6 +374,19 @@ const Gastos = () => {
                 cellRender={({ value }) =>
                   value ? <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span> : '—'
                 }
+              />
+              <Column
+                caption="Conductor"
+                width={140}
+                hidingPriority={9}
+                cellRender={({ data }) => {
+                  const driverName = plateToDriver[data.plate]
+                  return driverName ? (
+                    <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>{driverName}</span>
+                  ) : (
+                    '—'
+                  )
+                }}
               />
               <Column dataField="comment" caption={t('taxis.expenses.columns.comment')} minWidth={140} hidingPriority={6} />
               <Column

@@ -13,7 +13,9 @@ import {
 
 const COL = 'CashFlow_AccountsMaster'
 
-export { MONTH_NAMES, MONTH_LABELS, ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+export { MONTH_LABELS, ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+export { MONTH_NAMES } from 'src/constants/commons'
+
 
 export const getAccountsMaster = async () => {
   const q = query(collection(db, COL), orderBy('name'))

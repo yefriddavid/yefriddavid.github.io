@@ -21,13 +21,14 @@ import {
   PERIOD_OPTIONS,
   TYPE_OPTIONS,
   PAYMENT_METHODS,
-  MONTH_NAMES,
   MONTH_LABELS,
   ACCOUNT_MASTER_TYPES,
   ACCOUNT_MASTER_TYPE_LABELS,
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
 } from 'src/constants/cashFlow'
+import { MONTH_NAMES } from 'src/constants/common'
+
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import '../movements/payments/Payments.scss'
 import '../movements/payments/ItemDetail.scss'

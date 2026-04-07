@@ -5,7 +5,7 @@ import es from 'moment/locale/es'
 
 moment.locale('es', es)
 
-export const MONTH_NAMES = moment.localeData('en').months()
+//export const MONTH_NAMES = moment.localeData('en').months()
 export const MONTH_LABELS = moment.localeData('es').months()
 export const DAY_NAMES = moment.weekdaysShort() // ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 export const PERIOD_OPTIONS = [

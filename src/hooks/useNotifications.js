@@ -18,6 +18,23 @@ const useNotifications = () => {
         const sw = await navigator.serviceWorker.ready
         const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: sw })
         if (token) await saveFcmToken(token)
+
+        // Register Periodic Background Sync if available
+        if ('periodicSync' in sw) {
+          const status = await navigator.permissions.query({
+            name: 'periodic-background-sync',
+          })
+
+          if (status.state === 'granted') {
+            try {
+              await sw.periodicSync.register('check-active-accounts', {
+                minInterval: 1 * 60 * 60 * 1000, // Check every hour (approx)
+              })
+            } catch (err) {
+              console.error('Periodic Sync registration failed:', err)
+            }
+          }
+        }
       } catch (err) {
         console.error('FCM registration failed:', err)
       }
