@@ -14,6 +14,7 @@ module.exports = {
   },
   globals: {
     __COMMIT_HASH__: 'readonly',
+    __COMMIT_MESSAGE__: 'readonly',
     __BUILD_DATE__: 'readonly',
     __APP_VERSION__: 'readonly',
   },

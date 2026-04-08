@@ -13,6 +13,7 @@ import { cilCloudDownload, cilReload } from '@coreui/icons'
 
 /* eslint-disable no-undef */
 const LOCAL_HASH = __COMMIT_HASH__
+const LOCAL_MESSAGE = __COMMIT_MESSAGE__
 const LOCAL_DATE = __BUILD_DATE__
 const LOCAL_VERSION = __APP_VERSION__
 /* eslint-enable no-undef */
@@ -110,6 +111,7 @@ const VersionModal = ({ visible, onClose }) => {
         <Row label="Versión" value={LOCAL_VERSION} />
         <Row label="Commit" value={LOCAL_HASH} mono />
         <Row label="Compilado" value={fmtDate(LOCAL_DATE)} />
+        {LOCAL_MESSAGE && <Row label="Mensaje" value={LOCAL_MESSAGE} />}
 
         <hr style={{ margin: '12px 0' }} />
 
@@ -147,6 +149,7 @@ const VersionModal = ({ visible, onClose }) => {
             <Row label="Versión" value={server.appVersion} />
             <Row label="Commit" value={server.hash} mono />
             <Row label="Compilado" value={fmtDate(server.buildDate)} />
+            {server.commitMessage && <Row label="Mensaje" value={server.commitMessage} />}
             <div style={{ marginTop: 10 }}>
               {isOutdated ? (
                 <CBadge color="warning" style={{ fontSize: 12 }}>

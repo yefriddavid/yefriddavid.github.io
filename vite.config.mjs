@@ -7,13 +7,13 @@ import autoprefixer from 'autoprefixer'
 import { writeFileSync, readFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 
-function versionPlugin(gitHash, buildDate, appVersion) {
+function versionPlugin(gitHash, commitMessage, buildDate, appVersion) {
   return {
     name: 'version-plugin',
     writeBundle() {
       writeFileSync(
         './build/version.json',
-        JSON.stringify({ hash: gitHash, buildDate, appVersion }),
+        JSON.stringify({ hash: gitHash, commitMessage, buildDate, appVersion }),
       )
     },
   }
@@ -21,8 +21,10 @@ function versionPlugin(gitHash, buildDate, appVersion) {
 
 export default defineConfig(() => {
   let gitHash = 'dev'
+  let commitMessage = ''
   try {
     gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+    commitMessage = execSync('git log -1 --pretty=%s').toString().trim()
   } catch {}
   const buildDate = new Date().toISOString()
   const appVersion = JSON.parse(readFileSync('./package.json', 'utf8')).version
@@ -31,6 +33,7 @@ export default defineConfig(() => {
     base: '/',
     define: {
       __COMMIT_HASH__: JSON.stringify(gitHash),
+      __COMMIT_MESSAGE__: JSON.stringify(commitMessage),
       __BUILD_DATE__: JSON.stringify(buildDate),
       __APP_VERSION__: JSON.stringify(appVersion),
     },
@@ -115,7 +118,7 @@ export default defineConfig(() => {
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         },
       }),
-      versionPlugin(gitHash, buildDate, appVersion),
+      versionPlugin(gitHash, commitMessage, buildDate, appVersion),
     ],
     resolve: {
       alias: [
