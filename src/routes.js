@@ -19,6 +19,7 @@ const Partners = React.lazy(() => import('./views/pages/taxis/Partners'))
 const Distributions = React.lazy(
   () => import('./views/pages/taxis/Distributions'),
 )
+const Operations = React.lazy(() => import('./views/pages/taxis/Operations'))
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/pages/users/Users'))
@@ -147,6 +148,7 @@ const routes = [
     tKey: 'nav.taxiResumen',
     element: Summary,
   },
+  { path: '/cash_flow/management/taxis/operations', name: 'Operaciones', element: Operations },
   { path: '/cash_flow/management/taxis/partners', name: 'Partners', element: Partners },
   {
     path: '/cash_flow/management/taxis/profit-sharing',

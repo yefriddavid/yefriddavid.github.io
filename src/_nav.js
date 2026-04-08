@@ -24,6 +24,7 @@ import {
   cilSwapHorizontal,
   cilTransfer,
   cilUser,
+  cilWarning,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -176,6 +177,12 @@ const getNav = (t, role) => {
         name: t('nav.liquidaciones'),
         to: '/cash_flow/management/taxis/settlements',
         icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Operaciones',
+        to: '/cash_flow/management/taxis/operations',
+        icon: <CIcon icon={cilWarning} customClassName="nav-icon" />,
       },
       ...(isManager
         ? [
