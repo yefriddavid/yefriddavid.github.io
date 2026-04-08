@@ -30,7 +30,9 @@ const fmt = (n) =>
 
 const today = () => new Date().toISOString().split('T')[0]
 
-const EMPTY = { description: '', category: CATEGORIES[0], amount: '', date: today(), plate: '', comment: '' }
+const MAINTENANCE_CATS = ['Cambio Aceite', 'Cambio de Correa Dentada', 'Mantenimiento', 'Lavado', 'Repuestos']
+
+const EMPTY = { description: '', category: CATEGORIES[0], amount: '', date: today(), plate: '', comment: '', nextDate: '' }
 
 const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
   const [open, setOpen] = useState(false)
@@ -136,6 +138,11 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
       <StandardField label="Fecha">
         <input className={SF.input} type="date" value={form.date} onChange={set('date')} />
       </StandardField>
+      {MAINTENANCE_CATS.includes(form.category) && (
+        <StandardField label="Próximo servicio">
+          <input className={SF.input} type="date" value={form.nextDate || ''} onChange={set('nextDate')} />
+        </StandardField>
+      )}
       <StandardField label="Comentario">
         <textarea className={SF.textarea} placeholder="Observaciones..." value={form.comment} onChange={set('comment')} rows={2} />
       </StandardField>
@@ -479,6 +486,7 @@ const Gastos = () => {
                         </DetailSection>
                         <DetailSection title="Detalle">
                           <DetailRow label="Vehículo" value={data.plate} mono />
+                          {data.nextDate && <DetailRow label="Próximo servicio" value={data.nextDate} />}
                           <DetailRow label="Comentario" value={data.comment} />
                         </DetailSection>
                       </DetailPanel>

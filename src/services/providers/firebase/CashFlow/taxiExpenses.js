@@ -20,17 +20,19 @@ export const fetchExpenses = async () => {
       plate: data.plate ?? null,
       comment: data.comment ?? null,
       paid: data.paid === true,
+      nextDate: data.nextDate ?? null,
     }
   })
 }
 
-export const createExpense = async ({ description, category, amount, date, plate }) => {
+export const createExpense = async ({ description, category, amount, date, plate, nextDate }) => {
   const ref = await addDoc(collection(db, COL), {
     description,
     category,
     amount: Number(amount),
     date,
     plate: plate || null,
+    nextDate: nextDate || null,
     createdAt: serverTimestamp(),
   })
   return ref.id
@@ -45,6 +47,7 @@ export const updateExpense = async (id, data) => {
     plate: data.plate || null,
     comment: data.comment || null,
     paid: data.paid === true,
+    nextDate: data.nextDate || null,
   })
 }
 

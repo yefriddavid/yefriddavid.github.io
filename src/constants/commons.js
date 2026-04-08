@@ -10,6 +10,7 @@ export const CATEGORIES = [
 'Repuestos',
 'Lavado',
 'Cambio Aceite',
+'Cambio de Correa Dentada',
 'Multa',
 'Otro'
 ]
