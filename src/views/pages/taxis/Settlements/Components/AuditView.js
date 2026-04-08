@@ -9,7 +9,7 @@ import { fmt } from './utils'
 import AuditAddForm from './AuditAddForm'
 import AuditMissingCell from './AuditMissingCell'
 import AuditSettledCell from './AuditSettledCell'
-import { DAY_NAMES } from 'src/constants/cashFlow'
+import { DAY_NAMES } from 'src/constants/commons'
 
 
 const AuditView = ({

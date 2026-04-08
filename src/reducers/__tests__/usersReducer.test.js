@@ -3,7 +3,7 @@ import reducer from '../usersReducer'
 import * as actions from '../../actions/usersActions'
 import { makeUser } from '../../__tests__/factories'
 
-const initial = { data: null, error: {}, fetching: false, isError: false }
+const initial = { data: null, error: {}, fetching: false, isError: false, sessions: {} }
 
 describe('usersReducer', () => {
   it('returns initial state', () => {

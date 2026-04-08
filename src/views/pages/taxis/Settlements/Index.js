@@ -35,7 +35,7 @@ import PeriodSummary from './Components/PeriodSummary'
 import SettlementCreateForm from './Components/SettlementCreateForm'
 import AuditView from './Components/AuditView'
 import PeriodNotes from './Components/PeriodNotes'
-import { DAY_NAMES } from 'src/constants/cashFlow'
+import { DAY_NAMES } from 'src/constants/commons'
 
 //const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 

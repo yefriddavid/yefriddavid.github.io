@@ -17,16 +17,14 @@ import {
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
 import {
   CLASSIFICATION_OPTIONS,
-  ACCOUNT_CATEGORIES,
   PERIOD_OPTIONS,
   TYPE_OPTIONS,
-  PAYMENT_METHODS,
-  MONTH_LABELS,
   ACCOUNT_MASTER_TYPES,
   ACCOUNT_MASTER_TYPE_LABELS,
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
-} from 'src/constants/cashFlow'
+} from 'src/constants/accounting'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, MONTH_LABELS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
