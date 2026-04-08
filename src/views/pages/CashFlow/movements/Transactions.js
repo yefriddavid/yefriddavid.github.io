@@ -18,7 +18,7 @@ import {
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
-import { MONTH_NAMES } from 'src/constants/common'
+import { MONTH_NAMES } from 'src/constants/commons'
 import { fetchAccounts } from 'src/services/providers/api/accounts'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'

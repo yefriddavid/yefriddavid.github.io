@@ -27,7 +27,7 @@ import {
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
 } from 'src/constants/cashFlow'
-import { MONTH_NAMES } from 'src/constants/common'
+import { MONTH_NAMES } from 'src/constants/commons'
 
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import '../movements/payments/Payments.scss'
