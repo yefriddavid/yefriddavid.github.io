@@ -782,7 +782,7 @@ const Taxis = () => {
             <CBadge color="secondary">{filtered.length}</CBadge>
           </div>
 
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2 flex-wrap">
             <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>
               {t('taxis.settlements.period')}
             </span>
@@ -852,7 +852,7 @@ const Taxis = () => {
             )}
           </div>
 
-          <div className="d-flex align-items-center gap-1">
+          <div className="d-flex align-items-center gap-1 flex-wrap">
             Mode:
             {[
               { key: 'detail', label: t('taxis.settlements.viewDetail'), color: 'secondary' },
