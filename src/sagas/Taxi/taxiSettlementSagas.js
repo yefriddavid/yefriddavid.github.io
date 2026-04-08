@@ -1,5 +1,5 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
-import * as actions from '../../actions/CashFlow/taxiSettlementActions'
+import * as actions from '../../actions/Taxi/taxiSettlementActions'
 import * as service from '../../services/providers/firebase/CashFlow/taxiSettlements'
 
 function* fetchSettlements() {

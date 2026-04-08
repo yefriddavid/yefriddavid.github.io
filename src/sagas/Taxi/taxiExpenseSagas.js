@@ -1,5 +1,5 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
-import * as taxiExpenseActions from '../../actions/CashFlow/taxiExpenseActions'
+import * as taxiExpenseActions from '../../actions/Taxi/taxiExpenseActions'
 import * as expenseService from '../../services/providers/firebase/CashFlow/taxiExpenses'
 import { toggleExpensePaid } from '../../services/providers/firebase/CashFlow/taxiExpenses'
 

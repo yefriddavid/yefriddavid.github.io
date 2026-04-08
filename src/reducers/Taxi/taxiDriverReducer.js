@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../../actions/CashFlow/taxiSettlementActions'
+import * as actions from '../../actions/Taxi/taxiDriverActions'
 
-const taxiSettlementSlice = createSlice({
-  name: 'taxiSettlement',
+const taxiDriverSlice = createSlice({
+  name: 'taxiDriver',
   initialState: {
     data: null,
     error: {},
@@ -19,19 +19,21 @@ const taxiSettlementSlice = createSlice({
 
       .addCase(actions.beginRequestCreate, (state) => { state.fetching = true })
       .addCase(actions.successRequestCreate, (state, { payload }) => {
-        state.data = state.data ? [payload, ...state.data] : [payload]
+        state.data = state.data
+          ? [...state.data, payload].sort((a, b) => a.name.localeCompare(b.name))
+          : [payload]
         state.fetching = false
       })
       .addCase(actions.errorRequestCreate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
-      .addCase(actions.beginRequestUpdate, (state) => { state.fetching = true; state.isError = false })
       .addCase(actions.successRequestUpdate, (state, { payload }) => {
         if (state.data) {
-          state.data = state.data.map((r) => r.id === payload.id ? { ...r, ...payload } : r)
+          state.data = state.data
+            .map((r) => r.id === payload.id ? { ...r, ...payload } : r)
+            .sort((a, b) => a.name.localeCompare(b.name))
         }
-        state.fetching = false
       })
-      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
+      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.isError = true })
 
       .addCase(actions.successRequestDelete, (state, { payload }) => {
         if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
@@ -40,4 +42,4 @@ const taxiSettlementSlice = createSlice({
   },
 })
 
-export default taxiSettlementSlice.reducer
+export default taxiDriverSlice.reducer

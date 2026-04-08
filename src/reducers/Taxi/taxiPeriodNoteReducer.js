@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../../actions/CashFlow/taxiPeriodNoteActions'
+import * as actions from '../../actions/Taxi/taxiPeriodNoteActions'
 
 const taxiPeriodNoteSlice = createSlice({
   name: 'taxiPeriodNote',

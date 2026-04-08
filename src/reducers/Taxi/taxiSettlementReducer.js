@@ -1,9 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../../actions/CashFlow/taxiDistributionActions'
+import * as actions from '../../actions/Taxi/taxiSettlementActions'
 
-const taxiDistributionSlice = createSlice({
-  name: 'taxiDistribution',
-  initialState: { data: null, error: {}, fetching: false, isError: false },
+const taxiSettlementSlice = createSlice({
+  name: 'taxiSettlement',
+  initialState: {
+    data: null,
+    error: {},
+    fetching: false,
+    isError: false,
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -19,34 +24,20 @@ const taxiDistributionSlice = createSlice({
       })
       .addCase(actions.errorRequestCreate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
-      .addCase(actions.beginRequestUpdatePayment, (state) => { state.fetching = true; state.isError = false })
-      .addCase(actions.successRequestUpdatePayment, (state, { payload }) => {
+      .addCase(actions.beginRequestUpdate, (state) => { state.fetching = true; state.isError = false })
+      .addCase(actions.successRequestUpdate, (state, { payload }) => {
         if (state.data) {
-          state.data = state.data.map((d) => {
-            if (d.id !== payload.distributionId) return d
-            return {
-              ...d,
-              payments: {
-                ...d.payments,
-                [payload.partnerId]: {
-                  ...d.payments[payload.partnerId],
-                  paidAmount: payload.paidAmount,
-                  paidDate: payload.paidDate,
-                  paid: true,
-                },
-              },
-            }
-          })
+          state.data = state.data.map((r) => r.id === payload.id ? { ...r, ...payload } : r)
         }
         state.fetching = false
       })
-      .addCase(actions.errorRequestUpdatePayment, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
+      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
       .addCase(actions.successRequestDelete, (state, { payload }) => {
-        if (state.data) state.data = state.data.filter((d) => d.id !== payload.id)
+        if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
       })
       .addCase(actions.errorRequestDelete, (state, { payload }) => { state.error = payload; state.isError = true })
   },
 })
 
-export default taxiDistributionSlice.reducer
+export default taxiSettlementSlice.reducer

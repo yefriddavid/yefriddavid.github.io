@@ -10,10 +10,10 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilReload, cilCash, cilTrash } from '@coreui/icons'
-import * as taxiDistributionActions from 'src/actions/CashFlow/taxiDistributionActions'
-import * as taxiPartnerActions from 'src/actions/CashFlow/taxiPartnerActions'
-import * as taxiSettlementActions from 'src/actions/CashFlow/taxiSettlementActions'
-import * as taxiExpenseActions from 'src/actions/CashFlow/taxiExpenseActions'
+import * as taxiDistributionActions from 'src/actions/Taxi/taxiDistributionActions'
+import * as taxiPartnerActions from 'src/actions/Taxi/taxiPartnerActions'
+import * as taxiSettlementActions from 'src/actions/Taxi/taxiSettlementActions'
+import * as taxiExpenseActions from 'src/actions/Taxi/taxiExpenseActions'
 import '../../../views/movements/payments/Payments.scss'
 
 const fmt = (n) =>

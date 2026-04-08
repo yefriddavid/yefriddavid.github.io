@@ -7,7 +7,7 @@ import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton, CCollapse } f
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
-import * as taxiPartnerActions from 'src/actions/CashFlow/taxiPartnerActions'
+import * as taxiPartnerActions from 'src/actions/Taxi/taxiPartnerActions'
 import '../../../views/movements/payments/Payments.scss'
 
 const EMPTY = { name: '', percentage: '' }

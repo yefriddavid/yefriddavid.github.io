@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/CashFlow/taxiSettlementActions'
+import * as actions from '../../actions/Taxi/taxiSettlementActions'
 import * as service from '../../services/providers/firebase/CashFlow/taxiSettlements'
 import { makeSettlement } from '../../__tests__/factories'
 

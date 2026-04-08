@@ -1,14 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
-import * as actions from '../../actions/CashFlow/taxiVehicleActions'
+import * as actions from '../../actions/Taxi/taxiPartnerActions'
 
-const taxiVehicleSlice = createSlice({
-  name: 'taxiVehicle',
-  initialState: {
-    data: null,
-    error: {},
-    fetching: false,
-    isError: false,
-  },
+const taxiPartnerSlice = createSlice({
+  name: 'taxiPartner',
+  initialState: { data: null, error: {}, fetching: false, isError: false },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -19,36 +14,27 @@ const taxiVehicleSlice = createSlice({
 
       .addCase(actions.beginRequestCreate, (state) => { state.fetching = true })
       .addCase(actions.successRequestCreate, (state, { payload }) => {
-        state.data = state.data
-          ? [...state.data, payload].sort((a, b) => a.plate.localeCompare(b.plate))
-          : [payload]
+        state.data = state.data ? [...state.data, payload].sort((a, b) => a.name.localeCompare(b.name)) : [payload]
         state.fetching = false
       })
       .addCase(actions.errorRequestCreate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
+      .addCase(actions.beginRequestUpdate, (state) => { state.fetching = true; state.isError = false })
       .addCase(actions.successRequestUpdate, (state, { payload }) => {
         if (state.data) {
           state.data = state.data
-            .map((r) => r.id === payload.id ? { ...r, ...payload } : r)
-            .sort((a, b) => a.plate.localeCompare(b.plate))
+            .map((p) => p.id === payload.id ? { ...p, ...payload } : p)
+            .sort((a, b) => a.name.localeCompare(b.name))
         }
+        state.fetching = false
       })
-      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.isError = true })
+      .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
       .addCase(actions.successRequestDelete, (state, { payload }) => {
-        if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
+        if (state.data) state.data = state.data.filter((p) => p.id !== payload.id)
       })
       .addCase(actions.errorRequestDelete, (state, { payload }) => { state.error = payload; state.isError = true })
-
-      .addCase(actions.successRequestUpdateRestrictions, (state, { payload }) => {
-        if (state.data) {
-          state.data = state.data.map((r) =>
-            r.id === payload.id ? { ...r, restrictions: payload.restrictions } : r,
-          )
-        }
-      })
-      .addCase(actions.errorRequestUpdateRestrictions, (state, { payload }) => { state.error = payload; state.isError = true })
   },
 })
 
-export default taxiVehicleSlice.reducer
+export default taxiPartnerSlice.reducer

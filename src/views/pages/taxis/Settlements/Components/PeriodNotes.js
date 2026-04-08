@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CCardBody, CCardHeader, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
-import * as taxiPeriodNoteActions from 'src/actions/CashFlow/taxiPeriodNoteActions'
+import * as taxiPeriodNoteActions from 'src/actions/Taxi/taxiPeriodNoteActions'
 
 const PeriodNotes = ({ period }) => {
   const dispatch = useDispatch()
