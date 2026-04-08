@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import { CButtonGroup, CFormCheck, CSpinner } from '@coreui/react'
+import { CButtonGroup, CFormCheck } from '@coreui/react'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import MultiSelectDropdown from 'src/components/App/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/Taxi/taxiSettlementActions'
 import { fmt } from './utils'
 import AuditAddForm from './AuditAddForm'
+import AuditMissingCell from './AuditMissingCell'
+import AuditSettledCell from './AuditSettledCell'
 import { DAY_NAMES } from 'src/constants/cashFlow'
 
 
@@ -31,7 +33,8 @@ const AuditView = ({
   const dispatch = useDispatch()
   const { fetching: settlementFetching } = useSelector((s) => s.taxiSettlement)
 
-  const [creatingDays, setCreatingDays] = useState(new Set())
+  const [loadingDay, setLoadingDay] = useState(null)
+  const prevFetchingRef = useRef(false)
   const [auditPlateFilter, setAuditPlateFilter] = useState('')
   const [auditDriverFilter, setAuditDriverFilter] = useState(new Set())
   const [auditStatusFilter, setAuditStatusFilter] = useState(new Set())
@@ -42,12 +45,18 @@ const AuditView = ({
   const [selected, setSelected] = useState('edicion')
 
   useEffect(() => {
-    if (!settlementFetching) setCreatingDays(new Set())
+    if (prevFetchingRef.current && !settlementFetching) setLoadingDay(null)
+    prevFetchingRef.current = settlementFetching
   }, [settlementFetching])
 
   const dispatchCreate = (payload) => {
-    setCreatingDays((prev) => new Set(prev).add(payload.date))
+    setLoadingDay(payload.date)
     dispatch(taxiSettlementActions.createRequest(payload))
+  }
+
+  const dispatchDelete = (dateStr, id) => {
+    setLoadingDay(dateStr)
+    dispatch(taxiSettlementActions.deleteRequest({ id }))
   }
 
   const simulateDay = (day) => {
@@ -556,250 +565,34 @@ const AuditView = ({
                     </td>
 
                     {/* Settled drivers cell */}
-                    <td style={{ padding: '8px 6px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: 4,
-                          alignItems: 'center',
-                        }}
-                      >
-                        {(auditDriverFilter.size > 0
-                          ? day.settled.filter((dr) => auditDriverFilter.has(dr))
-                          : day.settled
-                        ).map((dr) => {
-                          const plate = drivers.find((d) => d.name === dr)?.defaultVehicle
-                          const underpaid = plate ? day.underpaidVehicles.includes(plate) : false
-                          const driverRecords = day.dayRecords.filter((r) => r.driver === dr)
-                          return driverRecords.map((rec) => (
-                            <span
-                              key={rec.id}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 3,
-                                fontSize: 11,
-                                background: underpaid ? '#fff3cd' : '#dbeafe',
-                                color: underpaid ? '#7c5e00' : '#1e40af',
-                                borderRadius: 4,
-                                padding: '2px 7px',
-                                fontWeight: 500,
-                              }}
-                            >
-                              {underpaid ? '◐ ' : ''}
-                              {dr.split(' ')[0]}
-                              {driverRecords.length > 1 ? ` · ${fmt(rec.amount)}` : ''}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (
-                                    window.confirm(
-                                      `¿Eliminar liquidación de ${dr} (${fmt(rec.amount)}) del ${day.dateStr}?`,
-                                    )
-                                  ) {
-                                    setCreatingDays((prev) => new Set(prev).add(day.dateStr))
-                                    dispatch(taxiSettlementActions.deleteRequest({ id: rec.id }))
-                                  }
-                                }}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: '#e03131',
-                                  fontSize: 12,
-                                  lineHeight: 1,
-                                  padding: 0,
-                                  marginLeft: 1,
-                                }}
-                                title="Eliminar liquidación"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))
-                        })}
-                        {!day.isFuture && addingSettlementDay !== day.dateStr && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setAddingSettlementDay(day.dateStr)
-                            }}
-                            style={{
-                              background: 'none',
-                              border: '1px dashed #93c5fd',
-                              color: '#3b82f6',
-                              borderRadius: 4,
-                              cursor: 'pointer',
-                              fontSize: 14,
-                              lineHeight: 1,
-                              padding: '1px 7px',
-                            }}
-                            title="Agregar liquidación"
-                          >
-                            +
-                          </button>
-                        )}
-                      </div>
-                      {!day.isFuture && addingSettlementDay === day.dateStr && (
-                        <AuditAddForm
-                          day={day}
-                          activeDrivers={drivers.filter((d) => d.active !== false)}
-                          periodDrivers={periodDrivers}
-                          onSave={(payload) => {
-                            dispatchCreate(payload)
-                            setAddingSettlementDay(null)
-                          }}
-                          onCancel={() => setAddingSettlementDay(null)}
-                        />
-                      )}
-                    </td>
+                    <AuditSettledCell
+                      day={day}
+                      auditDriverFilter={auditDriverFilter}
+                      drivers={drivers}
+                      periodDrivers={periodDrivers}
+                      addingSettlementDay={addingSettlementDay}
+                      setAddingSettlementDay={setAddingSettlementDay}
+                      setLoadingDay={setLoadingDay}
+                      dispatch={dispatch}
+                      taxiSettlementActions={taxiSettlementActions}
+                      dispatchCreate={dispatchCreate}
+                    />
 
                     {/* Issues cell */}
-                    <td style={{ padding: '8px 6px' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {/* Underpaid vehicles */}
-                        {!day.isFuture &&
-                          day.underpaidVehicles.map((pl) => {
-                            const driver = periodDrivers.find((d) => {
-                              if (d.defaultVehicle !== pl) return false
-                              if (d.startDate && d.startDate > day.dateStr) return false
-                              if (d.endDate && d.endDate < day.dateStr) return false
-                              return true
-                            })
-                            if (!driver) return null
-                            if (auditDriverFilter.size > 0 && !auditDriverFilter.has(driver.name))
-                              return null
-                            const expected = day.isSunday
-                              ? driver.defaultAmountSunday || driver.defaultAmount || 0
-                              : driver.defaultAmount || 0
-                            const paid = day.dayRecords
-                              .filter((r) => r.plate === pl)
-                              .reduce((s, r) => s + (r.amount || 0), 0)
-                            const note = getNote(day.dateStr, driver.name)
-                            const resolved = getResolved(day.dateStr, driver.name)
-                            const isEditing =
-                              editingNote?.date === day.dateStr &&
-                              editingNote?.driver === driver.name
-                            return (
-                              <IssueEntry
-                                key={pl}
-                                label={`◐ ${driver.name.split(' ')[0]} · ${fmt(paid)}/${fmt(expected)}`}
-                                note={note}
-                                resolved={resolved}
-                                isEditing={isEditing}
-                                onResolveToggle={(e) => {
-                                  e.stopPropagation()
-                                  handleResolvedToggle(day.dateStr, driver.name)
-                                }}
-                                onEditToggle={(e) => {
-                                  e.stopPropagation()
-                                  setEditingNote(
-                                    isEditing
-                                      ? null
-                                      : { date: day.dateStr, driver: driver.name },
-                                  )
-                                }}
-                                onNoteSave={(val) =>
-                                  handleNoteSave(day.dateStr, driver.name, val)
-                                }
-                                onNoteDelete={(e) => {
-                                  e.stopPropagation()
-                                  handleNoteSave(day.dateStr, driver.name, '')
-                                }}
-                                t={t}
-                              />
-                            )
-                          })}
-
-                        {/* Missing drivers */}
-                        {!day.isFuture &&
-                          (auditDriverFilter.size > 0
-                            ? day.missing.filter((dr) => auditDriverFilter.has(dr))
-                            : day.missing
-                          ).map((dr) => {
-                            const note = getNote(day.dateStr, dr)
-                            const resolved = getResolved(day.dateStr, dr)
-                            const isEditing =
-                              editingNote?.date === day.dateStr && editingNote?.driver === dr
-                            const driverObj = periodDrivers.find((d) => d.name === dr)
-                            return (
-                              <>
-                                {creatingDays.has(day.dateStr) && (
-                                  <CSpinner
-                                    size="sm"
-                                    color="primary"
-                                    style={{ width: 11, height: 11, marginLeft: 6, verticalAlign: 'middle' }}
-                                  />
-                                )}
-                              <IssueEntry
-                                key={dr}
-                                label={dr.split(' ')[0]}
-                                note={note}
-                                resolved={resolved}
-                                isEditing={isEditing}
-                                onQuickSettle={(e) => {
-                                  e.stopPropagation()
-                                  if (!driverObj) return
-                                  const amount =
-                                    day.isSunday || day.isHoliday
-                                      ? driverObj.defaultAmountSunday || driverObj.defaultAmount || 0
-                                      : driverObj.defaultAmount || 0
-                                  dispatchCreate({
-                                    driver: dr,
-                                    plate: driverObj.defaultVehicle || '',
-                                    amount,
-                                    date: day.dateStr,
-                                  })
-                                }}
-                                onResolveToggle={(e) => {
-                                  e.stopPropagation()
-                                  handleResolvedToggle(day.dateStr, dr)
-                                }}
-                                onEditToggle={(e) => {
-                                  e.stopPropagation()
-                                  setEditingNote(
-                                    isEditing ? null : { date: day.dateStr, driver: dr },
-                                  )
-                                }}
-                                onNoteSave={(val) => handleNoteSave(day.dateStr, dr, val)}
-                                onNoteDelete={(e) => {
-                                  e.stopPropagation()
-                                  handleNoteSave(day.dateStr, dr, '')
-                                }}
-                                t={t}
-                              />
-                              </>
-                            )
-                          })}
-
-                        {/* Pico y placa drivers */}
-                        {!day.isFuture &&
-                          (auditDriverFilter.size > 0
-                            ? day.picoPlacaDrivers.filter((dr) => auditDriverFilter.has(dr))
-                            : day.picoPlacaDrivers
-                          ).map((dr) => (
-                            <div
-                              key={dr}
-                              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                            >
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  background: '#f3e8ff',
-                                  color: '#6b21a8',
-                                  border: '1px solid #d8b4fe',
-                                  borderRadius: 4,
-                                  padding: '2px 7px',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                🚫 {dr.split(' ')[0]}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    </td>
+                    <AuditMissingCell
+                      day={day}
+                      auditDriverFilter={auditDriverFilter}
+                      periodDrivers={periodDrivers}
+                      getNote={getNote}
+                      getResolved={getResolved}
+                      editingNote={editingNote}
+                      setEditingNote={setEditingNote}
+                      handleResolvedToggle={handleResolvedToggle}
+                      handleNoteSave={handleNoteSave}
+                      loadingDay={loadingDay}
+                      dispatchCreate={dispatchCreate}
+                      t={t}
+                    />
                   </tr>
 
                   {/* Expanded detail row */}
@@ -964,141 +757,5 @@ const AuditView = ({
     </div>
   )
 }
-
-// Internal sub-component for missing/underpaid driver entries with note editing
-const IssueEntry = ({
-  label,
-  note,
-  resolved,
-  isEditing,
-  onResolveToggle,
-  onEditToggle,
-  onNoteSave,
-  onNoteDelete,
-  onQuickSettle,
-  t,
-}) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <span
-        style={{
-          fontSize: 11,
-          background: resolved ? '#dcfce7' : '#fee2e2',
-          color: resolved ? '#166534' : '#b91c1c',
-          borderRadius: 4,
-          padding: '2px 7px',
-          fontWeight: 600,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-        }}
-      >
-        {onQuickSettle && (
-          <button
-            onClick={onQuickSettle}
-            title="Crear liquidación"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              color: '#2f9e44',
-              fontSize: 13,
-              lineHeight: 1,
-              fontWeight: 700,
-            }}
-          >
-            ✓
-          </button>
-        )}
-        {label}
-      </span>
-      <button
-        onClick={onResolveToggle}
-        title={resolved ? 'Desmarcar resuelto' : 'Marcar como resuelto'}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '1px 3px',
-          color: resolved ? '#2f9e44' : '#adb5bd',
-          fontSize: 14,
-          lineHeight: 1,
-          fontWeight: 700,
-        }}
-      >
-        ✓
-      </button>
-      <button
-        onClick={onEditToggle}
-        title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '1px 3px',
-          color: note ? '#e67700' : '#adb5bd',
-          fontSize: 12,
-          lineHeight: 1,
-        }}
-      >
-        ✎
-      </button>
-      {note && (
-        <button
-          onClick={onNoteDelete}
-          title={t('common.remove')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '1px 3px',
-            color: '#e03131',
-            fontSize: 11,
-            lineHeight: 1,
-          }}
-        >
-          ×
-        </button>
-      )}
-    </div>
-    {isEditing && (
-      <input
-        autoFocus
-        defaultValue={note}
-        placeholder={t('taxis.settlements.audit.notePlaceholder')}
-        onBlur={(e) => onNoteSave(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') onNoteSave(e.target.value)
-          if (e.key === 'Escape') onNoteSave(note)
-        }}
-        style={{
-          fontSize: 11,
-          padding: '2px 6px',
-          borderRadius: 4,
-          border: '1px solid #fed7aa',
-          outline: 'none',
-          width: 140,
-        }}
-      />
-    )}
-    {!isEditing && note && (
-      <span
-        style={{
-          fontSize: 10,
-          color: '#92400e',
-          background: '#fffbeb',
-          border: '1px solid #fcd34d',
-          borderRadius: 3,
-          padding: '1px 5px',
-          maxWidth: 160,
-          wordBreak: 'break-word',
-        }}
-      >
-        {note}
-      </span>
-    )}
-  </div>
-)
 
 export default AuditView
