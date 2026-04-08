@@ -33,10 +33,12 @@ const taxiSettlementSlice = createSlice({
       })
       .addCase(actions.errorRequestUpdate, (state, { payload }) => { state.error = payload; state.fetching = false; state.isError = true })
 
+      .addCase(actions.beginRequestDelete, (state) => { state.fetching = true })
       .addCase(actions.successRequestDelete, (state, { payload }) => {
         if (state.data) state.data = state.data.filter((r) => r.id !== payload.id)
+        state.fetching = false
       })
-      .addCase(actions.errorRequestDelete, (state, { payload }) => { state.error = payload; state.isError = true })
+      .addCase(actions.errorRequestDelete, (state, { payload }) => { state.error = payload; state.isError = true; state.fetching = false })
   },
 })
 

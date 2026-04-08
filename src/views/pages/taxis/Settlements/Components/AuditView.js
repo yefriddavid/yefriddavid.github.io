@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
-import { CButtonGroup, CFormCheck } from '@coreui/react'
+import { useDispatch, useSelector } from 'react-redux'
+import { CButtonGroup, CFormCheck, CSpinner } from '@coreui/react'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import MultiSelectDropdown from 'src/components/App/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/Taxi/taxiSettlementActions'
@@ -29,7 +29,9 @@ const AuditView = ({
 }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  const { fetching: settlementFetching } = useSelector((s) => s.taxiSettlement)
 
+  const [creatingDays, setCreatingDays] = useState(new Set())
   const [auditPlateFilter, setAuditPlateFilter] = useState('')
   const [auditDriverFilter, setAuditDriverFilter] = useState(new Set())
   const [auditStatusFilter, setAuditStatusFilter] = useState(new Set())
@@ -38,6 +40,15 @@ const AuditView = ({
   const [addingSettlementDay, setAddingSettlementDay] = useState(null)
   const [editingNote, setEditingNote] = useState(null)
   const [selected, setSelected] = useState('edicion')
+
+  useEffect(() => {
+    if (!settlementFetching) setCreatingDays(new Set())
+  }, [settlementFetching])
+
+  const dispatchCreate = (payload) => {
+    setCreatingDays((prev) => new Set(prev).add(payload.date))
+    dispatch(taxiSettlementActions.createRequest(payload))
+  }
 
   const simulateDay = (day) => {
     const eligible = periodDrivers.filter((d) => {
@@ -386,6 +397,13 @@ const AuditView = ({
                       }}
                     >
                       {String(day.d).padStart(2, '0')}
+                      {creatingDays.has(day.dateStr) && (
+                        <CSpinner
+                          size="sm"
+                          color="primary"
+                          style={{ width: 11, height: 11, marginLeft: 6, verticalAlign: 'middle' }}
+                        />
+                      )}
                       {day.isToday && (
                         <span
                           style={{
@@ -586,10 +604,10 @@ const AuditView = ({
                                     window.confirm(
                                       `¿Eliminar liquidación de ${dr} (${fmt(rec.amount)}) del ${day.dateStr}?`,
                                     )
-                                  )
-                                    dispatch(
-                                      taxiSettlementActions.deleteRequest({ id: rec.id }),
-                                    )
+                                  ) {
+                                    setCreatingDays((prev) => new Set(prev).add(day.dateStr))
+                                    dispatch(taxiSettlementActions.deleteRequest({ id: rec.id }))
+                                  }
                                 }}
                                 style={{
                                   background: 'none',
@@ -636,7 +654,7 @@ const AuditView = ({
                           activeDrivers={drivers.filter((d) => d.active !== false)}
                           periodDrivers={periodDrivers}
                           onSave={(payload) => {
-                            dispatch(taxiSettlementActions.createRequest(payload))
+                            dispatchCreate(payload)
                             setAddingSettlementDay(null)
                           }}
                           onCancel={() => setAddingSettlementDay(null)}
@@ -711,6 +729,7 @@ const AuditView = ({
                             const resolved = getResolved(day.dateStr, dr)
                             const isEditing =
                               editingNote?.date === day.dateStr && editingNote?.driver === dr
+                            const driverObj = periodDrivers.find((d) => d.name === dr)
                             return (
                               <IssueEntry
                                 key={dr}
@@ -718,6 +737,20 @@ const AuditView = ({
                                 note={note}
                                 resolved={resolved}
                                 isEditing={isEditing}
+                                onQuickSettle={(e) => {
+                                  e.stopPropagation()
+                                  if (!driverObj) return
+                                  const amount =
+                                    day.isSunday || day.isHoliday
+                                      ? driverObj.defaultAmountSunday || driverObj.defaultAmount || 0
+                                      : driverObj.defaultAmount || 0
+                                  dispatchCreate({
+                                    driver: dr,
+                                    plate: driverObj.defaultVehicle || '',
+                                    amount,
+                                    date: day.dateStr,
+                                  })
+                                }}
                                 onResolveToggle={(e) => {
                                   e.stopPropagation()
                                   handleResolvedToggle(day.dateStr, dr)
@@ -940,6 +973,7 @@ const IssueEntry = ({
   onEditToggle,
   onNoteSave,
   onNoteDelete,
+  onQuickSettle,
   t,
 }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -952,8 +986,29 @@ const IssueEntry = ({
           borderRadius: 4,
           padding: '2px 7px',
           fontWeight: 600,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
         }}
       >
+        {onQuickSettle && (
+          <button
+            onClick={onQuickSettle}
+            title="Crear liquidación"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              color: '#2f9e44',
+              fontSize: 13,
+              lineHeight: 1,
+              fontWeight: 700,
+            }}
+          >
+            ✓
+          </button>
+        )}
         {label}
       </span>
       <button
