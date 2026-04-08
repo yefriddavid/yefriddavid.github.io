@@ -259,9 +259,9 @@ const Gastos = () => {
   return (
     <>
       {/* Summary */}
-      <CRow className="mb-3">
-        <CCol sm={4}>
-          <CCard className="text-center">
+      <CRow className="mb-3 g-2">
+        <CCol xs={12} sm={4}>
+          <CCard className="text-center h-100">
             <CCardBody>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>Total gastos</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{fmt(total)}</div>
@@ -273,8 +273,8 @@ const Gastos = () => {
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol sm={8}>
-          <CCard>
+        <CCol xs={12} sm={8}>
+          <CCard className="h-100">
             <CCardBody style={{ padding: '12px 16px' }}>
               <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 6 }}>Por categoría</div>
               {fetching && !expenses ? (
@@ -300,47 +300,57 @@ const Gastos = () => {
 
       {/* Grid */}
       <CCard>
-        <CCardHeader className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-          <div className="d-flex align-items-center gap-2">
-            <strong>Gastos de taxis</strong>
-            <CBadge color="secondary">{filtered.length}</CBadge>
+        <CCardHeader style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Title row */}
+          <div className="d-flex align-items-center justify-content-between gap-2">
+            <div className="d-flex align-items-center gap-2">
+              <strong>Gastos de taxis</strong>
+              <CBadge color="secondary">{filtered.length}</CBadge>
+            </div>
+            <CButton size="sm" color={showCreate ? 'danger' : 'primary'} variant="outline"
+              onClick={() => setShowCreate((p) => !p)}>
+              <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
+              {' '}{showCreate ? 'Cancelar' : 'Nuevo gasto'}
+            </CButton>
           </div>
-          <div className="d-flex align-items-center gap-2">
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Periodo</span>
-            <CFormSelect size="sm" style={{ width: 120 }} value={period.month}
-              onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}>
-              <option value={0}>Todos</option>
-              {MONTHS.map((name, i) => <option key={i + 1} value={i + 1}>{name}</option>)}
-            </CFormSelect>
-            <CFormSelect size="sm" style={{ width: 90 }} value={period.year}
-              onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}>
-              {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
-            </CFormSelect>
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Categoría</span>
-            <MultiCheckDropdown
-              options={CATEGORIES}
-              selected={categoryFilter}
-              onChange={setCategoryFilter}
-              placeholder="Todas"
-            />
-            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
-            <CFormSelect size="sm" style={{ width: 110 }} value={plateFilter}
-              onChange={(e) => setPlateFilter(e.target.value)}>
-              <option value="">Todos</option>
-              {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}</option>)}
-            </CFormSelect>
-            <CFormSelect size="sm" style={{ width: 120 }} value={paidFilter}
+          {/* Filters row */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Periodo</span>
+              <CFormSelect size="sm" style={{ width: 110 }} value={period.month}
+                onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}>
+                <option value={0}>Todos</option>
+                {MONTHS.map((name, i) => <option key={i + 1} value={i + 1}>{name}</option>)}
+              </CFormSelect>
+              <CFormSelect size="sm" style={{ width: 80 }} value={period.year}
+                onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}>
+                {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
+              </CFormSelect>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Categoría</span>
+              <MultiCheckDropdown
+                options={CATEGORIES}
+                selected={categoryFilter}
+                onChange={setCategoryFilter}
+                placeholder="Todas"
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}>Vehículo</span>
+              <CFormSelect size="sm" style={{ width: 100 }} value={plateFilter}
+                onChange={(e) => setPlateFilter(e.target.value)}>
+                <option value="">Todos</option>
+                {vehicles.map((v) => <option key={v.id} value={v.plate}>{v.plate}</option>)}
+              </CFormSelect>
+            </div>
+            <CFormSelect size="sm" style={{ width: 130 }} value={paidFilter}
               onChange={(e) => setPaidFilter(e.target.value)}>
               <option value="">Estado: Todos</option>
               <option value="paid">Pagados</option>
               <option value="unpaid">Pendientes</option>
             </CFormSelect>
           </div>
-          <CButton size="sm" color={showCreate ? 'danger' : 'primary'} variant="outline"
-            onClick={() => setShowCreate((p) => !p)}>
-            <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
-            {' '}{showCreate ? 'Cancelar' : 'Nuevo gasto'}
-          </CButton>
         </CCardHeader>
 
         <CCollapse visible={showCreate}>
@@ -361,14 +371,15 @@ const Gastos = () => {
             <div className="d-flex justify-content-center py-5"><CSpinner color="primary" /></div>
           ) : (
             <StandardGrid
+              style={{ margin: 0 }}
               ref={gridRef}
               keyExpr="id"
               dataSource={filtered}
               noDataText="Sin gastos para este periodo."
             >
-              <Column dataField="date" caption={t('taxis.expenses.columns.date')} width={110} hidingPriority={1} />
-              <Column dataField="category" caption={t('taxis.expenses.columns.category')} width={130} hidingPriority={3} />
-              <Column dataField="description" caption={t('taxis.expenses.columns.description')} minWidth={160} hidingPriority={5} />
+              <Column dataField="date" caption={t('taxis.expenses.columns.date')} width={110} />
+              <Column dataField="category" caption={t('taxis.expenses.columns.category')} width={130} />
+              <Column dataField="description" caption={t('taxis.expenses.columns.description')} minWidth={160} />
               <Column
                 dataField="plate" caption={t('taxis.expenses.columns.vehicle')} width={110} hidingPriority={2}
                 cellRender={({ value }) =>
