@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import MultiSelectDropdown from 'src/components/App/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/Taxi/taxiSettlementActions'
 import { fmt } from './utils'
 import AuditAddForm from './AuditAddForm'
 import AuditMissingCell from './AuditMissingCell'
 import AuditSettledCell from './AuditSettledCell'
+import AuditDayDetail from './AuditDayDetail'
 import { DAY_NAMES } from 'src/constants/commons'
 
 
@@ -593,99 +593,12 @@ const AuditView = ({
 
                   {/* Expanded detail row */}
                   {selectedAuditDay === day.d && (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        style={{ padding: 0, background: 'var(--cui-card-bg, #fff)' }}
-                      >
-                        <DetailPanel columns={2}>
-                          <DetailSection title={t('taxis.settlements.audit.colDay')}>
-                            <DetailRow
-                              label={t('taxis.settlements.fields.date')}
-                              value={day.dateStr}
-                            />
-                            <DetailRow
-                              label={t('taxis.settlements.audit.colStatus')}
-                              value={
-                                day.status === 'none'
-                                  ? t('taxis.settlements.audit.statusNone')
-                                  : day.status === 'partial'
-                                    ? t('taxis.settlements.audit.statusPartial')
-                                    : day.status === 'full'
-                                      ? t('taxis.settlements.audit.statusFull')
-                                      : t('taxis.settlements.audit.statusFuture')
-                              }
-                            />
-                            <DetailRow
-                              label={t('taxis.settlements.audit.colCount')}
-                              value={day.dayRecords.length}
-                            />
-                            <DetailRow
-                              label={t('taxis.settlements.audit.colTotal')}
-                              value={day.total > 0 ? fmt(day.total) : null}
-                            />
-                          </DetailSection>
-                          <DetailSection
-                            title={
-                              day.dayRecords.length > 0
-                                ? t('taxis.settlements.audit.colSettled')
-                                : t('taxis.settlements.audit.colMissing')
-                            }
-                          >
-                            {day.dayRecords.length > 0
-                              ? day.dayRecords.map((r) => (
-                                  <DetailRow
-                                    key={r.id}
-                                    label={[r.driver, r.plate].filter(Boolean).join(' · ')}
-                                    value={`${fmt(r.amount)}${r.comment ? ` — ${r.comment}` : ''}`}
-                                  />
-                                ))
-                              : day.missing.map((dr) => (
-                                  <DetailRow
-                                    key={dr}
-                                    label={dr}
-                                    value={getNote(day.dateStr, dr) || '—'}
-                                  />
-                                ))}
-                            {day.hasPicoPlaca &&
-                              day.picoPlacaDrivers.map((dr) => {
-                                const driverObj = periodDrivers.find((pd) => pd.name === dr)
-                                return (
-                                  <div
-                                    key={dr}
-                                    style={{
-                                      display: 'flex',
-                                      gap: 8,
-                                      padding: '5px 0',
-                                      borderBottom: '1px solid #e8e8e8',
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        minWidth: 150,
-                                        fontSize: 12,
-                                        color: '#6b21a8',
-                                        fontWeight: 500,
-                                      }}
-                                    >
-                                      🚫 {dr}
-                                    </span>
-                                    <span
-                                      style={{
-                                        fontSize: 12,
-                                        fontFamily: 'monospace',
-                                        color: '#6b21a8',
-                                      }}
-                                    >
-                                      {driverObj?.defaultVehicle || ''} · Pico y placa
-                                    </span>
-                                  </div>
-                                )
-                              })}
-                          </DetailSection>
-                        </DetailPanel>
-                      </td>
-                    </tr>
+                    <AuditDayDetail
+                      day={day}
+                      periodDrivers={periodDrivers}
+                      getNote={getNote}
+                      t={t}
+                    />
                   )}
                 </React.Fragment>
               )
