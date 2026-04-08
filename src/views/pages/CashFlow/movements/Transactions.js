@@ -17,9 +17,10 @@ import {
 } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import { fetchAccounts } from 'src/services/providers/api/accounts'
+import InlinePaymentMethod from './InlinePaymentMethod'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 
@@ -57,6 +58,7 @@ const EMPTY_FORM = {
   amount: '',
   date: now.toISOString().slice(0, 10),
   accountMasterId: null,
+  paymentMethod: '',
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -443,6 +445,19 @@ function TransactionForm({ initial, saving, onSave, onCancel }) {
             value={form.date}
             onChange={set('date')}
           />
+        </div>
+        <div className="payment-form__field">
+          <label className="payment-form__label">Método de pago</label>
+          <select
+            className="payment-form__input payment-form__input--select"
+            value={form.paymentMethod ?? ''}
+            onChange={set('paymentMethod')}
+          >
+            <option value="">Sin método</option>
+            {PAYMENT_METHODS.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div className="payment-form__actions">
@@ -970,7 +985,7 @@ function MaestroRow({
         {account.maxDatePay || '—'}
       </td>
       <td style={{ padding: '8px 12px', fontSize: 12, color: '#6c757d' }}>
-        {account.paymentMethod}
+        <InlinePaymentMethod account={account} />
       </td>
       <td
         style={{

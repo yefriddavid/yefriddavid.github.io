@@ -11,6 +11,7 @@ import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { cilCalendar } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
+import InlinePaymentMethod from './InlinePaymentMethod'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
@@ -1024,19 +1025,7 @@ function AccountCard({
             {account.maxDatePay && (
               <span style={{ fontSize: 11, color: '#6c757d' }}>día {account.maxDatePay}</span>
             )}
-            {account.paymentMethod && account.paymentMethod !== 'Cash' && (
-              <span
-                style={{
-                  fontSize: 11,
-                  color: '#6c757d',
-                  background: '#e9ecef',
-                  borderRadius: 4,
-                  padding: '1px 6px',
-                }}
-              >
-                {account.paymentMethod}
-              </span>
-            )}
+            <InlinePaymentMethod account={account} />
           </div>
         </div>
 
