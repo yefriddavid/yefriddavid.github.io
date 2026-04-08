@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import { CButtonGroup, CFormCheck } from '@coreui/react'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 import MultiSelectDropdown from 'src/components/App/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/Taxi/taxiSettlementActions'
@@ -270,33 +269,30 @@ const AuditView = ({
           </button>
         )}
 
-        <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
-          Mode:
-          <CButtonGroup role="group" aria-label="Basic checkbox toggle button group">
-            <CFormCheck
-              type="radio"
-              button={{ color: 'success', variant: 'outline' }}
-              name="options"
-              id="btn-edicion"
-              value="edicion"
-              label="Edición"
-              autoComplete="off"
-              checked={selected === 'edicion'}
-              onChange={(e) => setSelected(e.target.value)}
-            />
-            <CFormCheck
-              type="radio"
-              button={{ color: 'danger', variant: 'outline' }}
-              name="options"
-              id="btn-simulacro"
-              value="simulacro"
-              label="Simulacro"
-              autoComplete="off"
-              checked={selected === 'simulacro'}
-              onChange={(e) => setSelected(e.target.value)}
-              style={{ borderRadius: '10px' }}
-            />
-          </CButtonGroup>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+          <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Mode:</span>
+          {[
+            { value: 'edicion', label: 'Edición', active: '#2f9e44', activeBg: '#f0fdf4' },
+            { value: 'simulacro', label: 'Simulacro', active: '#e03131', activeBg: '#fff5f5' },
+          ].map(({ value, label, active, activeBg }) => (
+            <button
+              key={value}
+              onClick={() => setSelected(value)}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                padding: '3px 12px',
+                borderRadius: 5,
+                border: `1.5px solid ${selected === value ? active : '#cbd5e1'}`,
+                background: selected === value ? activeBg : 'transparent',
+                color: selected === value ? active : 'var(--cui-secondary-color)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>

@@ -20,7 +20,22 @@ export { MONTH_NAMES } from 'src/constants/commons'
 export const getAccountsMaster = async () => {
   const q = query(collection(db, COL), orderBy('name'))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      name: data.name ?? null,
+      type: data.type ?? null,
+      code: data.code ?? null,
+      period: data.period ?? null,
+      classification: data.classification ?? null,
+      category: data.category ?? null,
+      paymentMethod: data.paymentMethod ?? null,
+      active: data.active !== false,
+      accountingName: data.accountingName ?? null,
+      created_at: data.created_at?.toDate?.()?.toISOString() ?? null,
+    }
+  })
 }
 
 export const addAccountMaster = async (payload) => {

@@ -7,7 +7,16 @@ const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
 
 export const getNotes = async () => {
   const snap = await getDocs(collection(db, COL))
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      date: data.date ?? null,
+      driver: data.driver ?? null,
+      note: data.note ?? null,
+      resolved: data.resolved === true,
+    }
+  })
 }
 
 export const upsertNote = async ({ date, driver, note, resolved = false }) => {
