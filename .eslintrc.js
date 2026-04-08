@@ -12,6 +12,11 @@ module.exports = {
       version: 'detect', // Tells eslint-plugin-react to automatically detect the version of React to use
     },
   },
+  globals: {
+    __COMMIT_HASH__: 'readonly',
+    __BUILD_DATE__: 'readonly',
+    __APP_VERSION__: 'readonly',
+  },
   extends: [
     'plugin:react/recommended', // Uses the recommended rules from @eslint-plugin-react
     'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.

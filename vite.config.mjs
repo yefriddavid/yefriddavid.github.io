@@ -4,18 +4,17 @@ import legacy from '@vitejs/plugin-legacy'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 import autoprefixer from 'autoprefixer'
-import { writeFileSync } from 'node:fs'
+import { writeFileSync, readFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 
-function versionPlugin() {
+function versionPlugin(gitHash, buildDate, appVersion) {
   return {
     name: 'version-plugin',
     writeBundle() {
-      let gitHash = 'dev'
-      try {
-        gitHash = execSync('git rev-parse --short HEAD').toString().trim()
-      } catch {}
-      writeFileSync('./build/version.json', JSON.stringify({ version: gitHash }))
+      writeFileSync(
+        './build/version.json',
+        JSON.stringify({ hash: gitHash, buildDate, appVersion }),
+      )
     },
   }
 }
@@ -25,11 +24,15 @@ export default defineConfig(() => {
   try {
     gitHash = execSync('git rev-parse --short HEAD').toString().trim()
   } catch {}
+  const buildDate = new Date().toISOString()
+  const appVersion = JSON.parse(readFileSync('./package.json', 'utf8')).version
 
   return {
     base: '/',
     define: {
       __COMMIT_HASH__: JSON.stringify(gitHash),
+      __BUILD_DATE__: JSON.stringify(buildDate),
+      __APP_VERSION__: JSON.stringify(appVersion),
     },
     build: {
       outDir: 'build',
@@ -112,7 +115,7 @@ export default defineConfig(() => {
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         },
       }),
-      versionPlugin(),
+      versionPlugin(gitHash, buildDate, appVersion),
     ],
     resolve: {
       alias: [

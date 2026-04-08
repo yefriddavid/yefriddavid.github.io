@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -9,11 +9,12 @@ import {
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+import { cilLockLocked, cilUser, cilCode } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
 import { deleteSession } from '../../services/providers/firebase/sessions'
 import avatar8 from './../../assets/images/avatars/8.jpg'
+import VersionModal from './VersionModal'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
@@ -28,6 +29,7 @@ const AppHeaderDropdown = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const profile = useSelector((s) => s.profile.data)
+  const [versionOpen, setVersionOpen] = useState(false)
 
   const avatarSrc = profile?.avatar || (profile ? DEFAULT_AVATAR : avatar8)
   const displayName = profile?.name || profile?.username || null
@@ -43,6 +45,8 @@ const AppHeaderDropdown = () => {
   }
 
   return (
+    <>
+    <VersionModal visible={versionOpen} onClose={() => setVersionOpen(false)} />
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
         <CAvatar src={avatarSrc} size="md" style={{ objectFit: 'cover' }} />
@@ -64,6 +68,10 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilUser} className="me-2" />
           Mi perfil
         </CDropdownItem>
+        <CDropdownItem onClick={() => setVersionOpen(true)} style={{ cursor: 'pointer' }}>
+          <CIcon icon={cilCode} className="me-2" />
+          Versión
+        </CDropdownItem>
         <CDropdownDivider />
         <CDropdownItem onClick={logout} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilLockLocked} className="me-2" />
@@ -71,6 +79,7 @@ const AppHeaderDropdown = () => {
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
+    </>
   )
 }
 
