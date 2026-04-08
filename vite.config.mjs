@@ -67,7 +67,7 @@ export default defineConfig(() => {
     esbuild: {
       loader: 'jsx',
       include: /src\/.*\.jsx?$/,
-      exclude: [],
+      exclude: /src\/views\/BACKUP\//,
     },
     optimizeDeps: {
       force: true,

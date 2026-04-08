@@ -397,13 +397,6 @@ const AuditView = ({
                       }}
                     >
                       {String(day.d).padStart(2, '0')}
-                      {creatingDays.has(day.dateStr) && (
-                        <CSpinner
-                          size="sm"
-                          color="primary"
-                          style={{ width: 11, height: 11, marginLeft: 6, verticalAlign: 'middle' }}
-                        />
-                      )}
                       {day.isToday && (
                         <span
                           style={{
@@ -731,6 +724,14 @@ const AuditView = ({
                               editingNote?.date === day.dateStr && editingNote?.driver === dr
                             const driverObj = periodDrivers.find((d) => d.name === dr)
                             return (
+                              <>
+                                {creatingDays.has(day.dateStr) && (
+                                  <CSpinner
+                                    size="sm"
+                                    color="primary"
+                                    style={{ width: 11, height: 11, marginLeft: 6, verticalAlign: 'middle' }}
+                                  />
+                                )}
                               <IssueEntry
                                 key={dr}
                                 label={dr.split(' ')[0]}
@@ -768,6 +769,7 @@ const AuditView = ({
                                 }}
                                 t={t}
                               />
+                              </>
                             )
                           })}
 
