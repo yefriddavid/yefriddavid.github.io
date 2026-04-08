@@ -377,11 +377,10 @@ const Gastos = () => {
               dataSource={filtered}
               noDataText="Sin gastos para este periodo."
             >
-              <Column dataField="date" caption={t('taxis.expenses.columns.date')} width={110} />
               <Column dataField="category" caption={t('taxis.expenses.columns.category')} width={130} />
               <Column dataField="description" caption={t('taxis.expenses.columns.description')} minWidth={160} />
               <Column
-                dataField="plate" caption={t('taxis.expenses.columns.vehicle')} width={110} hidingPriority={2}
+                dataField="plate" caption={t('taxis.expenses.columns.vehicle')} width={110}
                 cellRender={({ value }) =>
                   value ? <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value}</span> : '—'
                 }
@@ -389,7 +388,6 @@ const Gastos = () => {
               <Column
                 caption="Conductor"
                 width={140}
-                hidingPriority={9}
                 cellRender={({ data }) => {
                   const driverName = plateToDriver[data.plate]
                   return driverName ? (
@@ -399,13 +397,14 @@ const Gastos = () => {
                   )
                 }}
               />
+              <Column dataField="date" caption={t('taxis.expenses.columns.date')} width={110} hidingPriority={6} />
               <Column dataField="comment" caption={t('taxis.expenses.columns.comment')} minWidth={140} hidingPriority={6} />
               <Column
-                dataField="amount" caption={t('taxis.expenses.columns.amount')} width={130} hidingPriority={4}
+                dataField="amount" caption={t('taxis.expenses.columns.amount')} width={130}
                 cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{fmt(value)}</span>}
               />
               <Column
-                dataField="paid" caption="Estado" width={110} allowSorting={true} hidingPriority={8}
+                dataField="paid" caption="Estado" width={110} allowSorting={true}
                 cellRender={({ data }) => (
                   <button
                     onClick={() => dispatch(taxiExpenseActions.togglePaidRequest({ id: data.id, paid: !data.paid }))}
@@ -420,7 +419,7 @@ const Gastos = () => {
                   </button>
                 )}
               />
-              <Column caption="" width={90} allowSorting={false} allowResizing={false} hidingPriority={7}
+              <Column caption="" width={90} allowSorting={false} allowResizing={false}
                 cellRender={({ data }) => (
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button
