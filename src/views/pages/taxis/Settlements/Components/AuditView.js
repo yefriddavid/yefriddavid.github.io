@@ -797,6 +797,7 @@ const AuditView = ({
                 t('taxis.settlements.audit.colStatus'),
                 t('taxis.settlements.audit.colCount'),
                 t('taxis.settlements.audit.colTotal'),
+                'Acum.',
                 t('taxis.settlements.audit.colSettled'),
                 t('taxis.settlements.audit.colMissing'),
               ].map((h) => (
@@ -820,7 +821,23 @@ const AuditView = ({
             </tr>
           </thead>
           <tbody>
-            {auditFilteredDays.map((day) => {
+            {(() => {
+              let _running = 0
+              const cumulativeTotals = auditFilteredDays.map((day) => {
+                const recs =
+                  auditDriverFilter.size > 0
+                    ? day.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
+                    : day.dayRecords
+                const amt =
+                  selected === 'simulacro'
+                    ? simulateDay(day).total
+                    : day.isFuture
+                      ? 0
+                      : recs.reduce((s, r) => s + (r.amount || 0), 0)
+                _running += amt
+                return _running
+              })
+              return auditFilteredDays.map((day, dayIdx) => {
               const filteredRecords =
                 auditDriverFilter.size > 0
                   ? day.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
@@ -1017,6 +1034,24 @@ const AuditView = ({
                       )}
                     </td>
 
+                    {/* Cumulative total cell */}
+                    <td
+                      style={{
+                        padding: '8px 12px',
+                        fontWeight: 500,
+                        color: day.isFuture ? '#cbd5e1' : '#64748b',
+                        whiteSpace: 'nowrap',
+                        fontVariantNumeric: 'tabular-nums',
+                        borderLeft: '1px dashed #e2e8f0',
+                      }}
+                    >
+                      {day.isFuture && cumulativeTotals[dayIdx] === 0 ? (
+                        <span style={{ color: '#cbd5e1' }}>—</span>
+                      ) : (
+                        fmt(cumulativeTotals[dayIdx])
+                      )}
+                    </td>
+
                     {/* Settled drivers cell */}
                     <AuditSettledCell
                       day={day}
@@ -1059,7 +1094,8 @@ const AuditView = ({
                   )}
                 </React.Fragment>
               )
-            })}
+            })
+            })()}
           </tbody>
           <tfoot>
             <tr
@@ -1127,6 +1163,20 @@ const AuditView = ({
                           return s + recs.reduce((a, r) => a + (r.amount || 0), 0)
                         }, 0),
                     )}
+              </td>
+              <td
+                style={{
+                  padding: '9px 12px',
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.5)',
+                  fontSize: 11,
+                  whiteSpace: 'nowrap',
+                  fontVariantNumeric: 'tabular-nums',
+                  borderLeft: '1px dashed rgba(255,255,255,0.2)',
+                  fontStyle: 'italic',
+                }}
+              >
+                = total
               </td>
               <td colSpan={2} />
             </tr>
