@@ -641,7 +641,11 @@ const AuditView = ({
   return (
     <div
       ref={containerRef}
-      style={{ padding: 16, background: isFullscreen ? '#fff' : undefined }}
+      style={{
+        padding: 16,
+        background: isFullscreen ? '#fff' : undefined,
+        ...(isFullscreen && { overflowY: 'auto', height: '100vh' }),
+      }}
     >
       <AnalysisModal
         visible={showAnalysis}
