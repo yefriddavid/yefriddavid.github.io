@@ -21,8 +21,8 @@ import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from 'src/cons
 import { MONTH_NAMES } from 'src/constants/commons'
 import { fetchAccounts } from 'src/services/providers/api/accounts'
 import InlinePaymentMethod from './InlinePaymentMethod'
-import '../../movements/payments/Payments.scss'
-import '../../movements/payments/ItemDetail.scss'
+import '../movements/payments/Payments.scss'
+import '../movements/payments/ItemDetail.scss'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()

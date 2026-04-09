@@ -24,8 +24,8 @@ const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
-const Transactions = React.lazy(() => import('./views/pages/CashFlow/movements/Transactions'))
-const AccountStatus = React.lazy(() => import('./views/pages/CashFlow/movements/AccountStatus'))
+const Transactions = React.lazy(() => import('./views/pages/Accounting/Transactions'))
+const AccountStatus = React.lazy(() => import('./views/pages/Accounting/AccountStatus'))
 const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
 
 const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
