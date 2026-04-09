@@ -15,6 +15,7 @@
 - [Descripción](#descripción)
 - [Características](#características)
 - [Arquitectura](#arquitectura)
+- [Autenticación](#autenticación)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Instalación y comandos](#instalación-y-comandos)
 - [Backend y fuentes de datos](#backend-y-fuentes-de-datos)
@@ -75,6 +76,26 @@ Component
               └─► Firebase Firestore SDK
                     └─► reducer update ─► component re-render
 ```
+
+---
+
+## Autenticación
+
+![Flujo de autenticación CashFlow](docs/Gemini_Generated_Image_86mr6n86mr6n86mr.png)
+
+El sistema usa **Firebase Auth (email/password)** con una estrategia híbrida de migración lazy: intenta autenticar con Firebase Auth primero; si el usuario aún no existe allí, verifica contra el hash legacy en Firestore y crea la cuenta en Firebase Auth automáticamente, sin intervención del admin.
+
+| Etapa | Descripción |
+|---|---|
+| **Arranque** | `onAuthStateChanged` resuelve la sesión desde IndexedDB antes de renderizar rutas |
+| **Login normal** | `signInWithEmailAndPassword` → perfil Firestore → session record |
+| **Login legacy** | Hash Firestore → migración automática a Firebase Auth |
+| **Session validation** | Verifica el `sessionId` en Firestore al arrancar (previene sesiones robadas) |
+| **Refresh token** | Firebase SDK lo maneja automáticamente en IndexedDB — sin código manual |
+| **Middleware** | Cada llamada a Firestore/API inyecta un token fresco; en 401 fuerza refresh y reintenta |
+| **Logout** | Elimina sesión en Firestore + `Firebase signOut` (invalida IndexedDB) + limpia localStorage |
+
+> Ver diagrama interactivo completo en [`docs/login-flow.md`](docs/login-flow.md).
 
 ---
 
@@ -318,3 +339,4 @@ La app queda publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
 ---
 
 *Desarrollado por [David Rios](https://www.linkedin.com/in/yefriddavid) · [@yefriddavid](https://github.com/yefriddavid)*
+
