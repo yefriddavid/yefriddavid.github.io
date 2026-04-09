@@ -522,6 +522,7 @@ const AuditView = ({
   }
 
   const [showColMgr, setShowColMgr] = useState(false)
+  const [colMgrPos, setColMgrPos] = useState({ top: 0, left: 0 })
   const colMgrRef = useRef(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const containerRef = useRef(null)
@@ -839,7 +840,20 @@ const AuditView = ({
         <div style={{ display: 'flex', gap: 6, marginLeft: 'auto', alignItems: 'center' }}>
           <div ref={colMgrRef} style={{ position: 'relative' }}>
             <button
-              onClick={() => setShowColMgr((v) => !v)}
+              onClick={() => {
+                setShowColMgr((v) => {
+                  if (!v && colMgrRef.current) {
+                    const rect = colMgrRef.current.getBoundingClientRect()
+                    const dropdownWidth = 180
+                    const left =
+                      rect.right - dropdownWidth < 8
+                        ? Math.max(8, rect.left)
+                        : rect.right - dropdownWidth
+                    setColMgrPos({ top: rect.bottom + 4, left })
+                  }
+                  return !v
+                })
+              }}
               style={{
                 fontSize: 11,
                 padding: '4px 10px',
@@ -856,16 +870,18 @@ const AuditView = ({
             {showColMgr && (
               <div
                 style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 'calc(100% + 4px)',
+                  position: 'fixed',
+                  top: colMgrPos.top,
+                  left: colMgrPos.left,
                   background: '#fff',
                   border: '1px solid #e2e8f0',
                   borderRadius: 8,
                   boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                   padding: '8px 4px',
-                  zIndex: 200,
+                  zIndex: 1050,
                   minWidth: 160,
+                  maxHeight: '70vh',
+                  overflowY: 'auto',
                 }}
               >
                 {colOrder.map((key) => {
