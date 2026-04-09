@@ -4,8 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import withRouter from '../../../context/searchParamsContext'
 import { fetchProfile } from '../../../actions/authActions'
-import { getUserForAuth, hashPassword } from '../../../services/providers/firebase/Security/users'
-import { createSession } from '../../../services/providers/firebase/Security/sessions'
+import { signIn } from '../../../services/auth/firebaseAuth'
 import './Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -114,11 +113,7 @@ const Login = () => {
 
   document.title = 'yefriddavid'
 
-  useEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate(localStorage.getItem('landingPage') || '/cash_flow/dashboard')
-    }
-  }, [])
+  // AppContent handles redirect when Firebase Auth resolves — no manual check needed
 
   const set = (name) => (e) => setForm((prev) => ({ ...prev, [name]: e.target.value, error: null }))
 
@@ -144,29 +139,23 @@ const Login = () => {
     setForm((prev) => ({ ...prev, loading: true, error: null }))
 
     try {
-      const user = await getUserForAuth(form.username.trim())
-      if (!user) throw new Error('Credenciales incorrectas')
-      if (user.active === false) throw new Error('Usuario inactivo')
+      const { username, landingPage, sessionId, token } = await signIn(
+        form.username.trim(),
+        form.password,
+      )
 
-      const inputHash = await hashPassword(form.password)
-      if (inputHash !== user.passwordHash) throw new Error('Credenciales incorrectas')
-
-      const token = btoa(`${user.username}:${Date.now()}`)
-      const landing = user.landingPage || '/cash_flow/dashboard'
-      const sessionId = crypto.randomUUID()
       localStorage.setItem('token', token)
-      localStorage.setItem('username', user.username)
-      localStorage.setItem('landingPage', landing)
+      localStorage.setItem('username', username)
+      localStorage.setItem('landingPage', landingPage)
       localStorage.setItem('sessionId', sessionId)
-      createSession(sessionId, user.username, token).catch(() => {})
 
       if (form.rememberMe) {
         setCookie('username', form.username)
         setCookie('password', form.password)
       }
 
-      dispatch(fetchProfile(user.username))
-      navigate(landing)
+      dispatch(fetchProfile(username))
+      navigate(landingPage)
     } catch (e) {
       setForm((prev) => ({
         ...prev,
