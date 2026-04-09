@@ -12,6 +12,7 @@ import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { cilCalendar } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import InlinePaymentMethod from './InlinePaymentMethod'
+import OcrReceiptImporter from './OcrReceiptImporter'
 
 const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
@@ -1869,6 +1870,15 @@ export default function AccountStatus() {
             {t.label}
           </button>
         ))}
+      </div>
+
+      {/* OCR importer */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <OcrReceiptImporter
+          masters={masters}
+          monthStr={monthStr}
+          onConfirm={handleSavePayment}
+        />
       </div>
 
       {/* Month navigator */}
