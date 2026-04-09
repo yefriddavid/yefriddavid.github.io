@@ -448,6 +448,7 @@ const AUDIT_COL_DEFS = [
   { key: 'missing', label: 'Pendientes' },
 ]
 const AUDIT_COLS_LS_KEY = 'auditColVisibility'
+const AUDIT_COLS_ORDER_LS_KEY = 'auditColOrder'
 const AUDIT_COLS_DEFAULT = Object.fromEntries(AUDIT_COL_DEFS.map((c) => [c.key, true]))
 
 const AuditView = ({
@@ -493,8 +494,51 @@ const AuditView = ({
       return AUDIT_COLS_DEFAULT
     }
   })
+  const [colOrder, setColOrder] = useState(() => {
+    try {
+      const saved = localStorage.getItem(AUDIT_COLS_ORDER_LS_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const valid = parsed.filter((k) => AUDIT_COL_DEFS.some((c) => c.key === k))
+        const missing = AUDIT_COL_DEFS.filter((c) => !valid.includes(c.key)).map((c) => c.key)
+        return [...valid, ...missing]
+      }
+    } catch {}
+    return AUDIT_COL_DEFS.map((c) => c.key)
+  })
+  const draggedColRef = useRef(null)
+
+  const reorderCol = (fromKey, toKey) => {
+    if (fromKey === toKey) return
+    setColOrder((prev) => {
+      const next = [...prev]
+      const fromIdx = next.indexOf(fromKey)
+      const toIdx = next.indexOf(toKey)
+      next.splice(fromIdx, 1)
+      next.splice(toIdx, 0, fromKey)
+      localStorage.setItem(AUDIT_COLS_ORDER_LS_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
   const [showColMgr, setShowColMgr] = useState(false)
   const colMgrRef = useRef(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      containerRef.current?.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   useEffect(() => {
     if (!showColMgr) return
@@ -514,6 +558,17 @@ const AuditView = ({
   }
 
   const col = (key) => (visibleCols[key] ? {} : { display: 'none' })
+
+  const colLabels = {
+    weekday: t('taxis.settlements.audit.colWeekday'),
+    status: t('taxis.settlements.audit.colStatus'),
+    count: t('taxis.settlements.audit.colCount'),
+    total: t('taxis.settlements.audit.colTotal'),
+    cumul: 'Acum.',
+    cumul_ideal: 'Acum. ideal',
+    settled: t('taxis.settlements.audit.colSettled'),
+    missing: t('taxis.settlements.audit.colMissing'),
+  }
 
   useEffect(() => {
     if (prevFetchingRef.current && !settlementFetching) setLoadingDay(null)
@@ -583,7 +638,10 @@ const AuditView = ({
   const hasFilters = auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter.size > 0
 
   return (
-    <div style={{ padding: 16 }}>
+    <div
+      ref={containerRef}
+      style={{ padding: 16, background: isFullscreen ? '#fff' : undefined }}
+    >
       <AnalysisModal
         visible={showAnalysis}
         onClose={() => setShowAnalysis(false)}
@@ -810,37 +868,60 @@ const AuditView = ({
                   minWidth: 160,
                 }}
               >
-                {AUDIT_COL_DEFS.map(({ key, label }) => (
-                  <label
-                    key={key}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '5px 12px',
-                      cursor: 'pointer',
-                      borderRadius: 5,
-                      background: visibleCols[key] ? 'transparent' : '#f8fafc',
-                      color: visibleCols[key] ? '#1e3a5f' : '#94a3b8',
-                      fontSize: 12,
-                      fontWeight: visibleCols[key] ? 500 : 400,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={!!visibleCols[key]}
-                      onChange={() => toggleCol(key)}
-                      style={{ accentColor: '#1e3a5f', cursor: 'pointer' }}
-                    />
-                    {label}
-                  </label>
-                ))}
+                {colOrder.map((key) => {
+                  const def = AUDIT_COL_DEFS.find((c) => c.key === key)
+                  return (
+                    <div
+                      key={key}
+                      draggable
+                      onDragStart={() => {
+                        draggedColRef.current = key
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => reorderCol(draggedColRef.current, key)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '4px 10px 4px 6px',
+                        borderRadius: 5,
+                        background: visibleCols[key] ? 'transparent' : '#f8fafc',
+                        cursor: 'grab',
+                      }}
+                    >
+                      <span style={{ color: '#cbd5e1', fontSize: 14, flexShrink: 0 }}>⠿</span>
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 7,
+                          cursor: 'pointer',
+                          flex: 1,
+                          color: visibleCols[key] ? '#1e3a5f' : '#94a3b8',
+                          fontSize: 12,
+                          fontWeight: visibleCols[key] ? 500 : 400,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!visibleCols[key]}
+                          onChange={() => toggleCol(key)}
+                          style={{ accentColor: '#1e3a5f', cursor: 'pointer' }}
+                        />
+                        {def.label}
+                      </label>
+                    </div>
+                  )
+                })}
                 <div style={{ borderTop: '1px solid #f1f5f9', margin: '6px 12px 2px' }} />
                 <button
                   onClick={() => {
                     const all = Object.fromEntries(AUDIT_COL_DEFS.map((c) => [c.key, true]))
                     setVisibleCols(all)
                     localStorage.setItem(AUDIT_COLS_LS_KEY, JSON.stringify(all))
+                    const order = AUDIT_COL_DEFS.map((c) => c.key)
+                    setColOrder(order)
+                    localStorage.setItem(AUDIT_COLS_ORDER_LS_KEY, JSON.stringify(order))
                   }}
                   style={{
                     fontSize: 11,
@@ -853,7 +934,7 @@ const AuditView = ({
                     textAlign: 'left',
                   }}
                 >
-                  Mostrar todas
+                  Restablecer todo
                 </button>
               </div>
             )}
@@ -904,6 +985,21 @@ const AuditView = ({
           >
             ↓ PDF
           </button>
+          <button
+            onClick={toggleFullscreen}
+            style={{
+              fontSize: 11,
+              padding: '4px 10px',
+              borderRadius: 6,
+              border: `1px solid ${isFullscreen ? '#1e3a5f' : '#94a3b8'}`,
+              background: isFullscreen ? '#eef4ff' : 'none',
+              color: isFullscreen ? '#1e3a5f' : '#64748b',
+              cursor: 'pointer',
+            }}
+            title={isFullscreen ? 'Salir de pantalla completa' : 'Vista pantalla completa'}
+          >
+            {isFullscreen ? '⊡ Salir' : '⛶ Pantalla completa'}
+          </button>
         </div>
       </div>
 
@@ -912,19 +1008,24 @@ const AuditView = ({
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#1e3a5f' }}>
-              {[
-                { key: null, label: t('taxis.settlements.audit.colDay') },
-                { key: 'weekday', label: t('taxis.settlements.audit.colWeekday') },
-                { key: 'status', label: t('taxis.settlements.audit.colStatus') },
-                { key: 'count', label: t('taxis.settlements.audit.colCount') },
-                { key: 'total', label: t('taxis.settlements.audit.colTotal') },
-                { key: 'cumul', label: 'Acum.' },
-                { key: 'cumul_ideal', label: 'Acum. ideal' },
-                { key: 'settled', label: t('taxis.settlements.audit.colSettled') },
-                { key: 'missing', label: t('taxis.settlements.audit.colMissing') },
-              ].map(({ key, label }) => (
+              <th
+                style={{
+                  padding: '9px 12px',
+                  textAlign: 'left',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  color: 'rgba(255,255,255,0.9)',
+                  whiteSpace: 'nowrap',
+                  borderRight: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                {t('taxis.settlements.audit.colDay')}
+              </th>
+              {colOrder.map((key) => (
                 <th
-                  key={label}
+                  key={key}
                   style={{
                     padding: '9px 12px',
                     textAlign: 'left',
@@ -935,10 +1036,10 @@ const AuditView = ({
                     color: 'rgba(255,255,255,0.9)',
                     whiteSpace: 'nowrap',
                     borderRight: '1px solid rgba(255,255,255,0.1)',
-                    ...(key ? col(key) : {}),
+                    ...col(key),
                   }}
                 >
-                  {label}
+                  {colLabels[key]}
                 </th>
               ))}
             </tr>
@@ -1030,208 +1131,233 @@ const AuditView = ({
                         )}
                       </td>
 
-                      {/* Weekday cell */}
-                      <td
-                        style={{
-                          padding: '8px 12px',
-                          color:
-                            day.isSunday || day.isHoliday
-                              ? '#7c5e00'
-                              : day.isFuture
-                                ? '#adb5bd'
-                                : '#64748b',
-                          fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
-                          ...col('weekday'),
-                        }}
-                      >
-                        {dayNames[day.dow]}
-                        {day.isHoliday && (
-                          <span
-                            style={{
-                              fontSize: 10,
-                              background: '#fff3cd',
-                              color: '#7c5e00',
-                              border: '1px solid #fcd34d',
-                              borderRadius: 4,
-                              padding: '1px 5px',
-                              marginLeft: 5,
-                            }}
-                          >
-                            Festivo
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Status cell */}
-                      <td style={{ padding: '8px 12px', whiteSpace: 'nowrap', ...col('status') }}>
-                        {day.status === 'none' && !isAllResolved(day) && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              color: '#e03131',
-                              background: '#fff5f5',
-                              border: '1px solid #fca5a5',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                            }}
-                          >
-                            ✗ {t('taxis.settlements.audit.statusNone')}
-                          </span>
-                        )}
-                        {day.status === 'partial' && !isAllResolved(day) && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              color: '#e67700',
-                              background: '#fffbeb',
-                              border: '1px solid #fed7aa',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                            }}
-                          >
-                            ◐ {t('taxis.settlements.audit.statusPartial')}
-                          </span>
-                        )}
-                        {(day.status === 'full' || isAllResolved(day)) && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              color: '#2f9e44',
-                              background: '#f0fdf4',
-                              border: '1px solid #86efac',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                            }}
-                          >
-                            ✓ {t('taxis.settlements.audit.statusFull')}
-                          </span>
-                        )}
-                        {day.status === 'future' && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              color: '#adb5bd',
-                              background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                            }}
-                          >
-                            — {t('taxis.settlements.audit.statusFuture')}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Count cell */}
-                      <td
-                        style={{
-                          padding: '8px 12px',
-                          fontWeight: 600,
-                          color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#334155',
-                          fontStyle: sim ? 'italic' : 'normal',
-                          ...col('count'),
-                        }}
-                      >
-                        {sim ? sim.count : day.isFuture ? '—' : filteredRecords.length}
-                      </td>
-
-                      {/* Total cell */}
-                      <td
-                        style={{
-                          padding: '8px 12px',
-                          fontWeight: 700,
-                          color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#1e3a5f',
-                          whiteSpace: 'nowrap',
-                          fontStyle: sim ? 'italic' : 'normal',
-                          ...col('total'),
-                        }}
-                      >
-                        {sim ? (
-                          sim.total > 0 ? (
-                            fmt(sim.total)
-                          ) : (
-                            <span style={{ color: '#adb5bd' }}>—</span>
-                          )
-                        ) : day.isFuture ? (
-                          '—'
-                        ) : filteredTotal > 0 ? (
-                          fmt(filteredTotal)
-                        ) : (
-                          <span style={{ color: '#adb5bd' }}>—</span>
-                        )}
-                      </td>
-
-                      {/* Cumulative actual total cell */}
-                      <td
-                        style={{
-                          padding: '8px 12px',
-                          fontWeight: 500,
-                          color: day.isFuture ? '#cbd5e1' : '#64748b',
-                          whiteSpace: 'nowrap',
-                          fontVariantNumeric: 'tabular-nums',
-                          borderLeft: '1px dashed #e2e8f0',
-                          ...col('cumul'),
-                        }}
-                      >
-                        {day.isFuture && cumulativeTotals[dayIdx].actual === 0 ? (
-                          <span style={{ color: '#cbd5e1' }}>—</span>
-                        ) : (
-                          fmt(cumulativeTotals[dayIdx].actual)
-                        )}
-                      </td>
-
-                      {/* Cumulative ideal total cell */}
-                      <td
-                        style={{
-                          padding: '8px 12px',
-                          fontWeight: 500,
-                          color: '#7c3aed',
-                          whiteSpace: 'nowrap',
-                          fontVariantNumeric: 'tabular-nums',
-                          fontStyle: 'italic',
-                          opacity: day.isFuture ? 0.4 : 1,
-                          ...col('cumul_ideal'),
-                        }}
-                      >
-                        {fmt(cumulativeTotals[dayIdx].ideal)}
-                      </td>
-
-                      {/* Settled drivers cell */}
-                      {visibleCols.settled ? (
-                        <AuditSettledCell
-                          day={day}
-                          auditDriverFilter={auditDriverFilter}
-                          drivers={drivers}
-                          periodDrivers={periodDrivers}
-                          addingSettlementDay={addingSettlementDay}
-                          setAddingSettlementDay={setAddingSettlementDay}
-                          setLoadingDay={setLoadingDay}
-                          dispatch={dispatch}
-                          taxiSettlementActions={taxiSettlementActions}
-                          dispatchCreate={dispatchCreate}
-                        />
-                      ) : null}
-
-                      {/* Issues cell */}
-                      {visibleCols.missing ? (
-                        <AuditMissingCell
-                          day={day}
-                          auditDriverFilter={auditDriverFilter}
-                          periodDrivers={periodDrivers}
-                          getNote={getNote}
-                          getResolved={getResolved}
-                          editingNote={editingNote}
-                          setEditingNote={setEditingNote}
-                          handleResolvedToggle={handleResolvedToggle}
-                          handleNoteSave={handleNoteSave}
-                          loadingDay={loadingDay}
-                          dispatchCreate={dispatchCreate}
-                          t={t}
-                        />
-                      ) : null}
+                      {colOrder.map((key) => {
+                        switch (key) {
+                          case 'weekday':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  color:
+                                    day.isSunday || day.isHoliday
+                                      ? '#7c5e00'
+                                      : day.isFuture
+                                        ? '#adb5bd'
+                                        : '#64748b',
+                                  fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
+                                  ...col('weekday'),
+                                }}
+                              >
+                                {dayNames[day.dow]}
+                                {day.isHoliday && (
+                                  <span
+                                    style={{
+                                      fontSize: 10,
+                                      background: '#fff3cd',
+                                      color: '#7c5e00',
+                                      border: '1px solid #fcd34d',
+                                      borderRadius: 4,
+                                      padding: '1px 5px',
+                                      marginLeft: 5,
+                                    }}
+                                  >
+                                    Festivo
+                                  </span>
+                                )}
+                              </td>
+                            )
+                          case 'status':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  whiteSpace: 'nowrap',
+                                  ...col('status'),
+                                }}
+                              >
+                                {day.status === 'none' && !isAllResolved(day) && (
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: '#e03131',
+                                      background: '#fff5f5',
+                                      border: '1px solid #fca5a5',
+                                      borderRadius: 4,
+                                      padding: '2px 8px',
+                                    }}
+                                  >
+                                    ✗ {t('taxis.settlements.audit.statusNone')}
+                                  </span>
+                                )}
+                                {day.status === 'partial' && !isAllResolved(day) && (
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: '#e67700',
+                                      background: '#fffbeb',
+                                      border: '1px solid #fed7aa',
+                                      borderRadius: 4,
+                                      padding: '2px 8px',
+                                    }}
+                                  >
+                                    ◐ {t('taxis.settlements.audit.statusPartial')}
+                                  </span>
+                                )}
+                                {(day.status === 'full' || isAllResolved(day)) && (
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: '#2f9e44',
+                                      background: '#f0fdf4',
+                                      border: '1px solid #86efac',
+                                      borderRadius: 4,
+                                      padding: '2px 8px',
+                                    }}
+                                  >
+                                    ✓ {t('taxis.settlements.audit.statusFull')}
+                                  </span>
+                                )}
+                                {day.status === 'future' && (
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      color: '#adb5bd',
+                                      background: '#f8fafc',
+                                      border: '1px solid #e2e8f0',
+                                      borderRadius: 4,
+                                      padding: '2px 8px',
+                                    }}
+                                  >
+                                    — {t('taxis.settlements.audit.statusFuture')}
+                                  </span>
+                                )}
+                              </td>
+                            )
+                          case 'count':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontWeight: 600,
+                                  color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#334155',
+                                  fontStyle: sim ? 'italic' : 'normal',
+                                  ...col('count'),
+                                }}
+                              >
+                                {sim ? sim.count : day.isFuture ? '—' : filteredRecords.length}
+                              </td>
+                            )
+                          case 'total':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontWeight: 700,
+                                  color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#1e3a5f',
+                                  whiteSpace: 'nowrap',
+                                  fontStyle: sim ? 'italic' : 'normal',
+                                  ...col('total'),
+                                }}
+                              >
+                                {sim ? (
+                                  sim.total > 0 ? (
+                                    fmt(sim.total)
+                                  ) : (
+                                    <span style={{ color: '#adb5bd' }}>—</span>
+                                  )
+                                ) : day.isFuture ? (
+                                  '—'
+                                ) : filteredTotal > 0 ? (
+                                  fmt(filteredTotal)
+                                ) : (
+                                  <span style={{ color: '#adb5bd' }}>—</span>
+                                )}
+                              </td>
+                            )
+                          case 'cumul':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontWeight: 500,
+                                  color: day.isFuture ? '#cbd5e1' : '#64748b',
+                                  whiteSpace: 'nowrap',
+                                  fontVariantNumeric: 'tabular-nums',
+                                  borderLeft: '1px dashed #e2e8f0',
+                                  ...col('cumul'),
+                                }}
+                              >
+                                {day.isFuture && cumulativeTotals[dayIdx].actual === 0 ? (
+                                  <span style={{ color: '#cbd5e1' }}>—</span>
+                                ) : (
+                                  fmt(cumulativeTotals[dayIdx].actual)
+                                )}
+                              </td>
+                            )
+                          case 'cumul_ideal':
+                            return (
+                              <td
+                                key={key}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontWeight: 500,
+                                  color: '#7c3aed',
+                                  whiteSpace: 'nowrap',
+                                  fontVariantNumeric: 'tabular-nums',
+                                  fontStyle: 'italic',
+                                  opacity: day.isFuture ? 0.4 : 1,
+                                  ...col('cumul_ideal'),
+                                }}
+                              >
+                                {fmt(cumulativeTotals[dayIdx].ideal)}
+                              </td>
+                            )
+                          case 'settled':
+                            return visibleCols.settled ? (
+                              <AuditSettledCell
+                                key={key}
+                                day={day}
+                                auditDriverFilter={auditDriverFilter}
+                                drivers={drivers}
+                                periodDrivers={periodDrivers}
+                                addingSettlementDay={addingSettlementDay}
+                                setAddingSettlementDay={setAddingSettlementDay}
+                                setLoadingDay={setLoadingDay}
+                                dispatch={dispatch}
+                                taxiSettlementActions={taxiSettlementActions}
+                                dispatchCreate={dispatchCreate}
+                              />
+                            ) : null
+                          case 'missing':
+                            return visibleCols.missing ? (
+                              <AuditMissingCell
+                                key={key}
+                                day={day}
+                                auditDriverFilter={auditDriverFilter}
+                                periodDrivers={periodDrivers}
+                                getNote={getNote}
+                                getResolved={getResolved}
+                                editingNote={editingNote}
+                                setEditingNote={setEditingNote}
+                                handleResolvedToggle={handleResolvedToggle}
+                                handleNoteSave={handleNoteSave}
+                                loadingDay={loadingDay}
+                                dispatchCreate={dispatchCreate}
+                                t={t}
+                              />
+                            ) : null
+                          default:
+                            return null
+                        }
+                      })}
                     </tr>
 
                     {/* Expanded detail row */}
@@ -1256,7 +1382,6 @@ const AuditView = ({
               }}
             >
               <td
-                colSpan={1 + (visibleCols.weekday ? 1 : 0) + (visibleCols.status ? 1 : 0)}
                 style={{
                   padding: '9px 12px',
                   fontSize: 12,
@@ -1270,85 +1395,111 @@ const AuditView = ({
                   ? '~ Simulacro total'
                   : t('taxis.settlements.audit.total')}
               </td>
-              <td
-                style={{
-                  padding: '9px 12px',
-                  fontWeight: 700,
-                  color: '#fff',
-                  fontSize: 13,
-                  fontStyle: selected === 'simulacro' ? 'italic' : 'normal',
-                  ...col('count'),
-                }}
-              >
-                {selected === 'simulacro'
-                  ? auditFilteredDays.reduce((s, d) => s + simulateDay(d).count, 0)
-                  : auditFilteredDays
-                      .filter((d) => !d.isFuture)
-                      .reduce((s, d) => {
-                        const recs =
-                          auditDriverFilter.size > 0
-                            ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
-                            : d.dayRecords
-                        return s + recs.length
-                      }, 0)}
-              </td>
-              <td
-                style={{
-                  padding: '9px 12px',
-                  fontWeight: 700,
-                  color: '#fff',
-                  fontSize: 13,
-                  whiteSpace: 'nowrap',
-                  fontStyle: selected === 'simulacro' ? 'italic' : 'normal',
-                  ...col('total'),
-                }}
-              >
-                {selected === 'simulacro'
-                  ? fmt(auditFilteredDays.reduce((s, d) => s + simulateDay(d).total, 0))
-                  : fmt(
-                      auditFilteredDays
-                        .filter((d) => !d.isFuture)
-                        .reduce((s, d) => {
-                          const recs =
-                            auditDriverFilter.size > 0
-                              ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
-                              : d.dayRecords
-                          return s + recs.reduce((a, r) => a + (r.amount || 0), 0)
-                        }, 0),
-                    )}
-              </td>
-              <td
-                style={{
-                  padding: '9px 12px',
-                  fontWeight: 700,
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: 11,
-                  whiteSpace: 'nowrap',
-                  fontVariantNumeric: 'tabular-nums',
-                  borderLeft: '1px dashed rgba(255,255,255,0.2)',
-                  fontStyle: 'italic',
-                  ...col('cumul'),
-                }}
-              >
-                = total
-              </td>
-              <td
-                style={{
-                  padding: '9px 12px',
-                  fontWeight: 700,
-                  color: '#d8b4fe',
-                  fontSize: 13,
-                  whiteSpace: 'nowrap',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontStyle: 'italic',
-                  ...col('cumul_ideal'),
-                }}
-              >
-                {fmt(auditFilteredDays.reduce((s, d) => s + simulateDay(d).total, 0))}
-              </td>
-              {(visibleCols.settled || visibleCols.missing) && (
-                <td colSpan={(visibleCols.settled ? 1 : 0) + (visibleCols.missing ? 1 : 0)} />
-              )}
+              {colOrder.map((key) => {
+                switch (key) {
+                  case 'weekday':
+                  case 'status':
+                    return <td key={key} style={col(key)} />
+                  case 'count':
+                    return (
+                      <td
+                        key={key}
+                        style={{
+                          padding: '9px 12px',
+                          fontWeight: 700,
+                          color: '#fff',
+                          fontSize: 13,
+                          fontStyle: selected === 'simulacro' ? 'italic' : 'normal',
+                          ...col('count'),
+                        }}
+                      >
+                        {selected === 'simulacro'
+                          ? auditFilteredDays.reduce((s, d) => s + simulateDay(d).count, 0)
+                          : auditFilteredDays
+                              .filter((d) => !d.isFuture)
+                              .reduce((s, d) => {
+                                const recs =
+                                  auditDriverFilter.size > 0
+                                    ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
+                                    : d.dayRecords
+                                return s + recs.length
+                              }, 0)}
+                      </td>
+                    )
+                  case 'total':
+                    return (
+                      <td
+                        key={key}
+                        style={{
+                          padding: '9px 12px',
+                          fontWeight: 700,
+                          color: '#fff',
+                          fontSize: 13,
+                          whiteSpace: 'nowrap',
+                          fontStyle: selected === 'simulacro' ? 'italic' : 'normal',
+                          ...col('total'),
+                        }}
+                      >
+                        {selected === 'simulacro'
+                          ? fmt(auditFilteredDays.reduce((s, d) => s + simulateDay(d).total, 0))
+                          : fmt(
+                              auditFilteredDays
+                                .filter((d) => !d.isFuture)
+                                .reduce((s, d) => {
+                                  const recs =
+                                    auditDriverFilter.size > 0
+                                      ? d.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
+                                      : d.dayRecords
+                                  return s + recs.reduce((a, r) => a + (r.amount || 0), 0)
+                                }, 0),
+                            )}
+                      </td>
+                    )
+                  case 'cumul':
+                    return (
+                      <td
+                        key={key}
+                        style={{
+                          padding: '9px 12px',
+                          fontWeight: 700,
+                          color: 'rgba(255,255,255,0.5)',
+                          fontSize: 11,
+                          whiteSpace: 'nowrap',
+                          fontVariantNumeric: 'tabular-nums',
+                          borderLeft: '1px dashed rgba(255,255,255,0.2)',
+                          fontStyle: 'italic',
+                          ...col('cumul'),
+                        }}
+                      >
+                        = total
+                      </td>
+                    )
+                  case 'cumul_ideal':
+                    return (
+                      <td
+                        key={key}
+                        style={{
+                          padding: '9px 12px',
+                          fontWeight: 700,
+                          color: '#d8b4fe',
+                          fontSize: 13,
+                          whiteSpace: 'nowrap',
+                          fontVariantNumeric: 'tabular-nums',
+                          fontStyle: 'italic',
+                          ...col('cumul_ideal'),
+                        }}
+                      >
+                        {fmt(auditFilteredDays.reduce((s, d) => s + simulateDay(d).total, 0))}
+                      </td>
+                    )
+                  case 'settled':
+                    return visibleCols.settled ? <td key={key} /> : null
+                  case 'missing':
+                    return visibleCols.missing ? <td key={key} /> : null
+                  default:
+                    return null
+                }
+              })}
             </tr>
           </tfoot>
         </table>

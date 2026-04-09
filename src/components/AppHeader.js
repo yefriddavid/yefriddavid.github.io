@@ -58,8 +58,19 @@ const AppHeader = () => {
     return () => document.removeEventListener('scroll', onScroll)
   }, [])
 
+  const isTest = import.meta.env.MODE === 'development'
+
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
+      {isTest && (
+        <div style={{
+          background: '#7c3aed', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          padding: '4px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.05em',
+        }}>
+          ⚠ ENTORNO DE PRUEBAS — los datos no son reales
+        </div>
+      )}
       {hasUpdate && (
         <div style={{
           background: '#ffc107', color: '#000',

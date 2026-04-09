@@ -15,12 +15,12 @@ self.addEventListener('message', (event) => {
 
 // Firebase Messaging background handler
 const app = initializeApp({
-  apiKey: 'AIzaSyBCul4mFCoDYWWKwBjNUrkPQSbmq6vXi4g',
-  authDomain: 'cashflow-9cbbc.firebaseapp.com',
-  projectId: 'cashflow-9cbbc',
-  storageBucket: 'cashflow-9cbbc.appspot.com',
-  messagingSenderId: '221005846539',
-  appId: '1:221005846539:web:b51908636c88cb25998f0e',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 })
 
 const messaging = getMessaging(app)

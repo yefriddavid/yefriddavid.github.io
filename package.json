@@ -19,6 +19,8 @@
     "lint": "eslint \"src/**/*.js\"",
     "serve": "vite preview",
     "start": "vite",
+    "start:prod": "vite --mode production",
+    "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -82,6 +84,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "firebase-admin": "^13.7.0",
     "jsdom": "^29.0.1",
     "postcss": "^8.4.49",
     "prettier": "3.3.3",

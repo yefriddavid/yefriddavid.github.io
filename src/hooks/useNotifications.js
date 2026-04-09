@@ -4,7 +4,7 @@ import { messaging } from '../services/providers/firebase/settings'
 import { saveFcmToken } from '../services/providers/firebase/Security/fcmTokens'
 
 // Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair
-const VAPID_KEY = 'BDZNMaCGqYirTYSacbGifRVQwa3oCvi8NUFXJt4ocWa8lmTe9upPzKQEJoIIQlw9zb_sopOFIkqy-pHvgg2LehA'
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
 
 const useNotifications = () => {
   useEffect(() => {
