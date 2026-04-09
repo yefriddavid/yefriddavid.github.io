@@ -28,7 +28,7 @@ import { updateExpense } from 'src/services/providers/firebase/Taxi/taxiExpenses
 import { getVehicles } from 'src/services/providers/firebase/Taxi/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
-import { MONTH_NAMES as MONTHS } from 'src/constants/commons'
+import useLocaleData from 'src/hooks/useLocaleData'
 import {
   TAXI_EXPENSE_CATEGORIES as CATEGORIES,
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATS,
@@ -253,6 +253,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
 
 const Gastos = () => {
   const { t } = useTranslation()
+  const { monthLabels: MONTHS } = useLocaleData()
   const dispatch = useDispatch()
   const { data: expenses, fetching } = useSelector((s) => s.taxiExpense)
   const { data: drivers } = useSelector((s) => s.taxiDriver)

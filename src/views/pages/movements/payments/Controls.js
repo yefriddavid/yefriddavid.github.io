@@ -6,7 +6,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import { CFormInput, CFormSelect } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
-import moment from 'moment'
+import moment from 'src/utils/moment'
 import { useTranslation } from "react-i18next";
 
 

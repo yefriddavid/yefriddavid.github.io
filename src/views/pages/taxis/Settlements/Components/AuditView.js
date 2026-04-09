@@ -9,7 +9,7 @@ import AuditAddForm from './AuditAddForm'
 import AuditMissingCell from './AuditMissingCell'
 import AuditSettledCell from './AuditSettledCell'
 import AuditDayDetail from './AuditDayDetail'
-import { DAY_NAMES } from 'src/constants/commons'
+import useLocaleData from 'src/hooks/useLocaleData'
 import { runAuditAnalysis } from './auditAnalysisRules'
 
 const LEVEL_STYLE = {
@@ -455,6 +455,7 @@ const AuditView = ({
   exportAuditToPdf,
 }) => {
   const { t } = useTranslation()
+  const { dayNames } = useLocaleData()
   const dispatch = useDispatch()
   const { fetching: settlementFetching } = useSelector((s) => s.taxiSettlement)
 
@@ -898,7 +899,7 @@ const AuditView = ({
                         fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
                       }}
                     >
-                      {DAY_NAMES[day.dow]}
+                      {dayNames[day.dow]}
                       {day.isHoliday && (
                         <span
                           style={{

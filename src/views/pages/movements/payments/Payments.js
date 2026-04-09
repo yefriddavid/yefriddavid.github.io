@@ -20,7 +20,7 @@ import { Notification } from './Alert';
 import './Payments.scss'
 
 //import { Controller, useFormContext } from "react-hook-form"
-import moment from 'moment'
+import moment from 'src/utils/moment'
 import {
   CButton,
   CCard,

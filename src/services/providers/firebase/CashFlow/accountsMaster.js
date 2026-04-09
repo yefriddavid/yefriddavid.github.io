@@ -13,7 +13,7 @@ import {
 
 const COL = 'CashFlow_AccountsMaster'
 
-export { MONTH_LABELS, ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+export { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 export { MONTH_NAMES } from 'src/constants/commons'
 
 

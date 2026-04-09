@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import DatePicker from "react-datepicker";
-import moment from "moment";
+import moment, { formatDate } from 'src/utils/moment'
 import { CSpinner } from '@coreui/react'
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -142,7 +142,7 @@ class ModalPaymentComponent extends PureComponent {
       month: account.month,
       year: account.year,
       ...state
-      ,date: moment(state.date).format("yyyy/MMM/DD")
+      ,date: formatDate(state.date)
       //paymentMethod: state.paymentMethod,
       //vaucher: state.vaucher,
     }

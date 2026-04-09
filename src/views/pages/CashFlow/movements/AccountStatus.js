@@ -5,8 +5,9 @@ import { CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/CashFlow/transactionActions'
 import * as accountsMasterActions from 'src/actions/CashFlow/accountsMasterActions'
 import * as accountStatusNoteActions from 'src/actions/CashFlow/accountStatusNoteActions'
-import { MONTH_LABELS, ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
+import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/App/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { cilCalendar } from '@coreui/icons'
@@ -18,7 +19,7 @@ const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
 const CURRENT_MONTH = now.getMonth() + 1
 
-  /*const MONTH_LABELS = [
+  /*const monthLabels = [
   'Enero',
   'Febrero',
   'Marzo',
@@ -311,7 +312,7 @@ function DetailModal({ account, saving, onUpdate, onClose }) {
 
   const periodLabel = account.period || '—'
   const startMonthLabel = account.monthStartAt
-    ? MONTH_LABELS[MONTH_NAMES.indexOf(account.monthStartAt)] ?? account.monthStartAt
+    ? monthLabels[MONTH_NAMES.indexOf(account.monthStartAt)] ?? account.monthStartAt
     : null
 
   const rows = [
@@ -468,7 +469,7 @@ function DetailModal({ account, saving, onUpdate, onClose }) {
               <div style={{ marginBottom: 16 }}>
                 <label style={fieldLabel}>MES DE INICIO / APLICA</label>
                 <select style={{ ...fieldInput, fontSize: 14 }} value={form.monthStartAt ?? 'January'} onChange={set('monthStartAt')}>
-                  {MONTH_NAMES.map((m, i) => <option key={m} value={m}>{MONTH_LABELS[i]}</option>)}
+                  {MONTH_NAMES.map((m, i) => <option key={m} value={m}>{monthLabels[i]}</option>)}
                 </select>
               </div>
             )}
@@ -1574,6 +1575,7 @@ function AdHocExpenseModal({ year, month, defaultType, saving, onSave, onClose }
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountStatus() {
+  const { monthLabels } = useLocaleData()
   const dispatch = useDispatch()
   const { data: transactions, fetching, saving } = useSelector((s) => s.transaction)
   const { data: masters, fetching: fetchingMasters, saving: savingMasters } = useSelector((s) => s.accountsMaster)
@@ -1916,7 +1918,7 @@ export default function AccountStatus() {
         <div style={{ textAlign: 'center' }}>
 
           <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>
-            {MONTH_LABELS[month - 1]}
+            {monthLabels[month - 1]}
           </div>
           <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
           <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>

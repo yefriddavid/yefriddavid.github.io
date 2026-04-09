@@ -13,6 +13,7 @@ import { cilLockLocked, cilUser, cilCode } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
 import { deleteSession } from '../../services/providers/firebase/Security/sessions'
+import { signOut } from '../../services/auth/firebaseAuth'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import VersionModal from './VersionModal'
 
@@ -34,12 +35,10 @@ const AppHeaderDropdown = () => {
   const avatarSrc = profile?.avatar || (profile ? DEFAULT_AVATAR : avatar8)
   const displayName = profile?.name || profile?.username || null
 
-  const logout = () => {
+  const logout = async () => {
     const sessionId = localStorage.getItem('sessionId')
     if (sessionId) deleteSession(sessionId).catch(() => {})
-    localStorage.removeItem('token')
-    localStorage.removeItem('username')
-    localStorage.removeItem('sessionId')
+    await signOut() // clears Firebase Auth session + localStorage
     dispatch(clearProfile())
     navigate('/login')
   }

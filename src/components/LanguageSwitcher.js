@@ -2,12 +2,14 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react'
 import { LANGUAGES } from '../i18n'
+import moment from 'src/utils/moment'
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation()
   const current = LANGUAGES.find((l) => l.code === i18n.language) || LANGUAGES[0]
 
   const changeLanguage = (code) => {
+    moment.locale(code)
     i18n.changeLanguage(code)
     localStorage.setItem('lang', code)
   }

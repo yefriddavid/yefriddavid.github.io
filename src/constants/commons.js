@@ -1,7 +1,4 @@
-import moment from 'moment'
+import moment from 'src/utils/moment'
 
-/** Full list of month names in English (used with moment locale). */
+/** Full month names in English — used as Firestore data keys, never for display. */
 export const MONTH_NAMES = moment.localeData('en').months()
-
-/** Short weekday names: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] */
-export const DAY_NAMES = moment.weekdaysShort()

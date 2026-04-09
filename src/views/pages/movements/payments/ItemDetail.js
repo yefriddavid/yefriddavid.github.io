@@ -6,7 +6,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import { CFormInput, CFormSelect, CSpinner } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
-import moment from 'moment'
+import moment, { formatDate, formatDisplayDate, formatInputDate } from 'src/utils/moment'
 import { useTranslation, withTranslation } from 'react-i18next'
 import { VaucherModalViewer } from './Controls'
 
@@ -210,7 +210,7 @@ const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
   const { t } = useTranslation()
   const [form, setForm] = React.useState({
     value: account.value || '',
-    date: moment().format('YYYY-MM-DD'),
+    date: formatInputDate(moment()),
     payment_method: account.paymentMethod || '',
     comment: '',
   })
@@ -247,7 +247,7 @@ const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
       month: account.monthId,
       year: account.year,
       value: Number(form.value),
-      date: moment(form.date).format('YYYY/MMM/DD'),
+      date: formatDate(form.date),
       payment_method: form.payment_method,
       comment: form.comment,
       vaucher,
@@ -339,7 +339,7 @@ export const PaymentEditForm = ({ payment, status, onCancel, onSave }) => {
   const { t } = useTranslation()
   const [form, setForm] = React.useState({
     value: payment.value || '',
-    date: payment.date ? moment(payment.date).format('YYYY-MM-DD') : '',
+    date: payment.date ? formatInputDate(payment.date) : '',
     payment_method: payment.payment_method || '',
     comment: payment.comment || '',
   })
@@ -630,7 +630,7 @@ class ItemDetail1 extends Component {
                   <div className="payment-card__details">
                     <div className="payment-card__row">
                       <span className="payment-card__label">{t('payments.card.date')}</span>
-                      <span className="payment-card__value">{moment(i.date).format("MMM DD, YYYY")}</span>
+                      <span className="payment-card__value">{formatDisplayDate(i.date)}</span>
                     </div>
                     <div className="payment-card__row">
                       <span className="payment-card__label">{t('payments.card.method')}</span>

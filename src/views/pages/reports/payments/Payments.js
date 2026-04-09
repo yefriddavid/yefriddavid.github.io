@@ -16,12 +16,13 @@ import * as paymentActions from '../../../../actions/CashFlow/paymentActions'
 import * as accountActions from '../../../../actions/CashFlow/accountActions'
 import { bindActionCreators } from 'redux';
 import { Notification } from './Alert';
+import { withTranslation } from 'react-i18next'
 
 
 
 
 //import { Controller, useFormContext } from "react-hook-form"
-import moment from 'moment'
+import moment from 'src/utils/moment'
 import {
   CButton,
   CCard,
@@ -258,6 +259,6 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(App))
 
 

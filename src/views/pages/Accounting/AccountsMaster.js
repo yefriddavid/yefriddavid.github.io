@@ -24,8 +24,9 @@ import {
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
 } from 'src/constants/accounting'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, MONTH_LABELS } from 'src/constants/cashFlow'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
+import useLocaleData from 'src/hooks/useLocaleData'
 
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import '../movements/payments/Payments.scss'
@@ -263,7 +264,7 @@ function AccountMasterForm({ initial, saving, onSave, onCancel }) {
             >
               {MONTH_NAMES.map((m, i) => (
                 <option key={m} value={m}>
-                  {MONTH_LABELS[i]}
+                  {monthLabels[i]}
                 </option>
               ))}
             </select>
@@ -380,6 +381,7 @@ const TYPE_COLOR = {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountsMaster() {
+  const { monthLabels } = useLocaleData()
   const dispatch = useDispatch()
   const { data, fetching, saving, seeding, seedProgress, patching, patchProgress } = useSelector(
     (s) => s.accountsMaster,

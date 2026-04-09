@@ -6,7 +6,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import { CFormInput, CFormSelect } from '@coreui/react'
 import { CCol, CRow, CCardImage, CCardText, CCardTitle } from '@coreui/react'
-import moment from 'moment'
+import moment, { formatDate } from 'src/utils/moment'
 import { useTranslation } from "react-i18next";
 import { VaucherModalViewer } from './Controls'
 
@@ -156,7 +156,7 @@ class ItemDetail1 extends Component {
                 <ul style={{paddingLeft: "10px"}}>
                   <li style={{textWrap: 'wrap'}}><b>{t("comment")}</b>: {i.comment} </li>
                   <li><b>{t("paymentMethod")}</b>: {i.payment_method} </li>
-                  <li><b>{t("date")}</b>: {moment(i.date).format("yyyy/MMM/DD")} </li>
+                  <li><b>{t("date")}</b>: {formatDate(i.date)} </li>
                 </ul>
               </CCardText>
               <div className="d-grid gap-2 d-md-flex justify-content-md-end">

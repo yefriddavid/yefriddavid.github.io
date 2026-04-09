@@ -35,12 +35,13 @@ import PeriodSummary from './Components/PeriodSummary'
 import SettlementCreateForm from './Components/SettlementCreateForm'
 import AuditView from './Components/AuditView'
 import PeriodNotes from './Components/PeriodNotes'
-import { DAY_NAMES } from 'src/constants/commons'
+import useLocaleData from 'src/hooks/useLocaleData'
 
 //const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 const Taxis = () => {
   const { t } = useTranslation()
+  const { dayNames } = useLocaleData()
   const dispatch = useDispatch()
   const {
     data: settlementsData,
@@ -563,7 +564,7 @@ const Taxis = () => {
     const rows = auditDays.map((day) => [
       String(day.d).padStart(2, '0'),
       day.dateStr,
-      DAY_NAMES[day.dow],
+      dayNames[day.dow],
       statusLabel[day.status] ?? day.status,
       day.isFuture ? '' : day.dayRecords.length,
       day.isFuture ? '' : day.total,
@@ -669,7 +670,7 @@ const Taxis = () => {
       const dayLabel = [String(day.d).padStart(2, '0'), day.isHoliday ? '(F)' : '', day.hasPicoPlaca && day.status !== 'none' ? '(P&P)' : ''].filter(Boolean).join(' ')
       return [
         { content: dayLabel, styles: { fontStyle: day.isToday ? 'bold' : 'normal', textColor: day.isFuture ? [173, 181, 189] : [30, 58, 95] } },
-        { content: DAY_NAMES[day.dow], styles: { textColor: day.isSunday || day.isHoliday ? [124, 94, 0] : day.isFuture ? [173, 181, 189] : [100, 116, 139], fontStyle: day.isSunday || day.isHoliday ? 'bold' : 'normal' } },
+        { content: dayNames[day.dow], styles: { textColor: day.isSunday || day.isHoliday ? [124, 94, 0] : day.isFuture ? [173, 181, 189] : [100, 116, 139], fontStyle: day.isSunday || day.isHoliday ? 'bold' : 'normal' } },
         { content: resolvedLabel },
         { content: day.isFuture ? '' : String(day.dayRecords.length), styles: { halign: 'center' } },
         { content: day.isFuture ? '' : day.total > 0 ? fmt(day.total) : '—', styles: { halign: 'right', fontStyle: 'bold' } },
