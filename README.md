@@ -1,6 +1,6 @@
 # My Admin — Cash Flow Dashboard
 
-> Panel de administración de flujo de caja personal, construido sobre React 18 + Vite con integración a Google Apps Script y Firebase Firestore.
+> Panel de administración financiera y de taxis, construido sobre React 18 + Vite con Firebase Auth, Firestore y Google Apps Script.
 
 [![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)](https://vitejs.dev)
@@ -13,16 +13,16 @@
 ## Tabla de contenidos
 
 - [Descripción](#descripción)
-- [Características](#características)
+- [Módulos](#módulos)
 - [Arquitectura](#arquitectura)
 - [Autenticación](#autenticación)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Instalación y comandos](#instalación-y-comandos)
 - [Backend y fuentes de datos](#backend-y-fuentes-de-datos)
-- [Sistema de temas](#sistema-de-temas)
 - [Estado global (Redux)](#estado-global-redux)
+- [Constantes por dominio](#constantes-por-dominio)
+- [Sistema de temas](#sistema-de-temas)
 - [Internacionalización](#internacionalización)
-- [Caché de vouchers](#caché-de-vouchers)
 - [Rutas y archivos](#rutas-y-archivos)
 - [Despliegue](#despliegue)
 
@@ -30,21 +30,20 @@
 
 ## Descripción
 
-**My Admin** es un dashboard SPA para la gestión de cuentas, pagos y comprobantes (vouchers) de flujo de caja. Permite visualizar el estado de pago de cuentas por mes/año, adjuntar vouchers en imagen o PDF, y consultar reportes históricos. Está desplegado en GitHub Pages y consume dos backends: Google Apps Script (datos de pagos) y Firebase Firestore (vouchers).
+**My Admin** es una SPA multi-módulo para gestión financiera y operacional. Incluye control de flujo de caja, liquidaciones de taxis, contratos de arrendamiento, herramientas de análisis y un portfolio público. Desplegado en GitHub Pages, consume Firebase Firestore como base de datos principal y Google Apps Script como API secundaria.
 
 ---
 
-## Características
+## Módulos
 
-| Módulo | Descripción |
-|---|---|
-| **Pagos** | Grid de cuentas con detalle de pagos por mes/año, estado pagado/pendiente |
-| **Vouchers** | Subida de imagen o PDF (convertido a imagen), almacenado en Firestore |
-| **Reportes** | Visualización histórica de comprobantes de pago |
-| **Cuentas** | CRUD de cuentas con DataGrid DevExtreme |
-| **Visitas** | Registro de visitas a la página pública About Me (Firebase) |
-| **Temas** | Selector de tema en el header: Cash (negro/ámbar) y Ocean (azul/esmeralda) |
-| **i18n** | Soporte multilenguaje (Español por defecto) con i18next |
+| Módulo | Ruta base | Descripción |
+|---|---|---|
+| **Contabilidad** | `/cash_flow/management/` | Transacciones, maestro de cuentas, estado de cuentas con OCR |
+| **Taxis** | `/taxis/` | Liquidaciones diarias, conductores, vehículos, gastos, socios, distribuciones, análisis IA |
+| **Trade** | `/cash_flow/tools/` | Ajustes, distribución de salarios, activos, proyectos |
+| **Sistema** | `/cash_flow/management/` | Usuarios, sesiones activas, suscriptores FCM |
+| **Contratos** | `/contratos/` | Generación de contratos de arrendamiento en PDF |
+| **About Me** | `/about-me` | Portfolio público (Matrix rain, cursor glow) |
 
 ---
 
@@ -53,17 +52,36 @@
 ```
 Browser (HashRouter)
 │
-├── DefaultLayout                  ← AppSidebar + AppHeader + AppContent + AppFooter
-│   ├── Payments (movements)       ← Google Apps Script + Firebase Firestore
-│   ├── Reports                    ← Firebase Firestore
-│   ├── Accounts                   ← Google Apps Script / DevExtreme DataGrid
-│   └── Tools / Visits             ← Firebase Firestore
+├── DefaultLayout                        ← AppSidebar + AppHeader + AppContent + AppFooter
+│   │
+│   ├── Contabilidad
+│   │   ├── Transactions.js              ← CRUD de transacciones
+│   │   ├── AccountStatus.js             ← Estado de cuentas + OCR importer
+│   │   └── AccountsMaster.js            ← Maestro de cuentas
+│   │
+│   ├── Taxis
+│   │   ├── Settlements/Index.js         ← Liquidaciones + Análisis IA (json-rules-engine)
+│   │   ├── Drivers.js                   ← Conductores
+│   │   ├── Vehicles.js                  ← Vehículos + pico y placa
+│   │   ├── Expenses.js                  ← Gastos operativos
+│   │   ├── Operations.js                ← Mantenimientos programados
+│   │   ├── Summary.js                   ← Resumen financiero
+│   │   ├── Partners.js                  ← Socios
+│   │   └── Distributions.js             ← Distribución de utilidades
+│   │
+│   ├── Trade
+│   │   ├── SalaryDistribution.js
+│   │   ├── Assets.js
+│   │   └── MyProjects.js
+│   │
+│   └── Sistema
+│       ├── Users.js                     ← Usuarios + sesiones activas
+│       └── PushSubscribers.js           ← Suscriptores FCM
 │
 └── Public pages (sin layout)
-    ├── /login
-    ├── /register
-    ├── /404
-    └── /about-me                  ← Portfolio público con Matrix rain + cursor glow
+    ├── /login                           ← Firebase Auth
+    ├── /about-me                        ← Portfolio público
+    └── /404
 ```
 
 **Flujo de datos:**
@@ -72,9 +90,10 @@ Browser (HashRouter)
 Component
   └─► dispatch(action)
         └─► Redux Saga (side effect)
-              ├─► Google Apps Script API  (FormData POST)
-              └─► Firebase Firestore SDK
-                    └─► reducer update ─► component re-render
+              ├─► Firestore via firestoreCall()   ← middleware token + retry
+              ├─► Google Apps Script API           ← axios con token interceptor
+              └─► IndexedDB (caché local)
+                    └─► reducer update ─► re-render
 ```
 
 ---
@@ -83,19 +102,30 @@ Component
 
 ![Flujo de autenticación CashFlow](docs/Gemini_Generated_Image_86mr6n86mr6n86mr.png)
 
-El sistema usa **Firebase Auth (email/password)** con una estrategia híbrida de migración lazy: intenta autenticar con Firebase Auth primero; si el usuario aún no existe allí, verifica contra el hash legacy en Firestore y crea la cuenta en Firebase Auth automáticamente, sin intervención del admin.
+El sistema usa **Firebase Auth (email/password)** con una estrategia de migración lazy: intenta autenticar con Firebase Auth primero; si el usuario aún no existe allí, verifica contra el hash legacy en Firestore y crea la cuenta en Firebase Auth automáticamente.
 
 | Etapa | Descripción |
 |---|---|
 | **Arranque** | `onAuthStateChanged` resuelve la sesión desde IndexedDB antes de renderizar rutas |
 | **Login normal** | `signInWithEmailAndPassword` → perfil Firestore → session record |
 | **Login legacy** | Hash Firestore → migración automática a Firebase Auth |
-| **Session validation** | Verifica el `sessionId` en Firestore al arrancar (previene sesiones robadas) |
+| **Session validation** | Verifica `sessionId` en Firestore al arrancar (previene sesiones robadas) |
 | **Refresh token** | Firebase SDK lo maneja automáticamente en IndexedDB — sin código manual |
-| **Middleware** | Cada llamada a Firestore/API inyecta un token fresco; en 401 fuerza refresh y reintenta |
+| **Middleware Firestore** | `firestoreCall()` inyecta token fresco antes de cada operación; en error de permisos hace signOut |
+| **Middleware Axios** | Interceptor inyecta token en cada POST; en 401 fuerza refresh y reintenta una vez |
 | **Logout** | Elimina sesión en Firestore + `Firebase signOut` (invalida IndexedDB) + limpia localStorage |
 
 > Ver diagrama interactivo completo en [`docs/login-flow.md`](docs/login-flow.md).
+
+**Archivos clave de auth:**
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/services/auth/firebaseAuth.js` | `signIn`, `signOut`, `getToken`, `onAuthChange`, `changePassword` |
+| `src/services/providers/firebase/firebaseClient.js` | Middleware Firestore: token + retry + normalización de errores |
+| `src/services/providers/api/utilApi.js` | Axios con interceptor de token + retry en 401 |
+| `src/components/AppContent.js` | Guard de rutas vía `onAuthStateChanged` |
+| `src/services/providers/firebase/Security/sessions.js` | CRUD de sesiones en Firestore |
 
 ---
 
@@ -103,52 +133,125 @@ El sistema usa **Firebase Auth (email/password)** con una estrategia híbrida de
 
 ```
 src/
-├── actions/              # Creadores de acciones (redux-act)
+├── actions/                          # Creadores de acciones (redux-act)
 │   ├── authActions.js
-│   ├── accountActions.js
-│   ├── paymentActions.js
-│   └── paymentVaucherActions.js
+│   ├── usersActions.js
+│   ├── CashFlow/                     ← accountActions, paymentActions, transactionActions…
+│   ├── Contratos/                    ← contractActions, ownerActions, propertyActions…
+│   └── Taxi/                         ← taxiDriverActions, taxiSettlementActions…
 │
-├── reducers/             # Slices de estado (RTK createSlice)
+├── reducers/                         # Slices de estado (RTK createSlice)
+│   ├── CashFlow/
+│   ├── Contratos/
+│   ├── Taxi/
 │   ├── loginReducer.js
-│   ├── accountReducer.js
-│   ├── paymentReducer.js
-│   ├── paymentVaucherReducer.js
-│   └── uiReducer.js      ← sidebarShow, appTheme
+│   ├── profileReducer.js
+│   ├── uiReducer.js                  ← sidebarShow, appTheme
+│   └── usersReducer.js
 │
-├── sagas/                # Efectos asíncronos (redux-saga)
-│   ├── accountSagas.js
-│   ├── paymentSagas.js
-│   └── paymentVaucherSagas.js   ← lógica de caché de vouchers
+├── sagas/                            # Efectos asíncronos (redux-saga)
+│   ├── CashFlow/
+│   ├── Contratos/
+│   ├── Taxi/
+│   └── profileSagas.js
 │
 ├── services/
+│   ├── auth/
+│   │   └── firebaseAuth.js           ← signIn (híbrido), signOut, getToken, onAuthChange
 │   ├── providers/
-│   │   ├── api/          ← Google Apps Script (utilApi.js, payments.js, accounts.js)
-│   │   └── firebase/     ← Firestore (paymentVaucher.js, settings.js, pageVisits.js)
-│   └── voucherCache.js   ← Caché en localStorage con prefijo vchr_
+│   │   ├── api/
+│   │   │   └── utilApi.js            ← axios instance + interceptor de token Firebase
+│   │   ├── firebase/
+│   │   │   ├── firebaseClient.js     ← middleware Firestore (token + retry + errores)
+│   │   │   ├── settings.js           ← db, auth, messaging
+│   │   │   ├── CashFlow/             ← accountsMaster, transactions, paymentVaucher…
+│   │   │   ├── Contratos/            ← contracts, owners, properties…
+│   │   │   ├── Taxi/                 ← taxiDrivers, taxiSettlements, taxiExpenses…
+│   │   │   └── Security/             ← users, sessions, fcmTokens
+│   │   └── indexeddb/                ← caché local (accountsMaster, assets…)
+│   └── voucherCache.js               ← caché localStorage con prefijo vchr_
 │
-├── components/           # Componentes de layout compartidos
-│   ├── AppHeader.js      ← Selector de tema, language switcher, banner de versión
-│   ├── AppSidebarNav.js
-│   ├── AppBreadcrumb.js
-│   └── LanguageSwitcher.js
+├── constants/
+│   ├── commons.js                    ← MONTH_NAMES (genérico, agnóstico de dominio)
+│   ├── cashFlow.js                   ← ACCOUNT_CATEGORIES, PAYMENT_METHODS, EXPENSE_CATEGORIES
+│   ├── taxi.js                       ← TAXI_EXPENSE_CATEGORIES, TAXI_MAINTENANCE_CATEGORIES
+│   └── accounting.js
 │
-├── views/
-│   ├── movements/payments/   ← Gestión de pagos + subida de vouchers
-│   ├── reports/payments/     ← Visor de comprobantes
-│   ├── managment/accounts/   ← CRUD de cuentas
-│   ├── tools/visits/         ← Registro de visitas
-│   └── pages/
-│       ├── login/
-│       └── aboutMe/          ← Portfolio público (Matrix rain, cursor glow)
+├── components/
+│   ├── AppContent.js                 ← Guard de rutas (Firebase Auth)
+│   ├── AppHeader.js
+│   ├── AppSidebar.js
+│   ├── header/
+│   │   ├── AppHeaderDropdown.js      ← Logout con Firebase signOut
+│   │   └── VersionModal.js
+│   └── App/
+│       ├── StandardForm.js
+│       ├── StandardGrid/Index.js
+│       ├── DetailPanel.js
+│       └── MultiSelectDropdown.js
 │
-├── scss/
-│   ├── _custom.scss      ← Mixin app-theme + temas Cash y Ocean
-│   └── _variables.scss
+├── views/pages/
+│   ├── login/Login.js                ← Firebase Auth (híbrido + lazy migration)
+│   ├── dashboard/Dashboard.js
+│   ├── aboutMe/Index.js              ← Portfolio público
+│   ├── profile/Profile.js
+│   │
+│   ├── CashFlow/
+│   │   ├── movements/
+│   │   │   ├── Transactions.js       ← CRUD transacciones con método de pago
+│   │   │   ├── AccountStatus.js      ← Estado de cuentas + botón OCR
+│   │   │   ├── OcrReceiptImporter.js ← OCR con Tesseract.js (browser, sin backend)
+│   │   │   └── ocrAccountRules.js    ← Diccionario OCR por tipo de recibo (EPM, Claro…)
+│   │   ├── assets/Assets.js
+│   │   ├── eggs/Eggs.js
+│   │   ├── projects/MyProjects.js
+│   │   └── tools/SalaryDistribution.js
+│   │
+│   ├── Accounting/
+│   │   ├── Accounts.js               ← DevExtreme DataGrid
+│   │   └── AccountsMaster.js
+│   │
+│   ├── taxis/
+│   │   ├── Settlements/
+│   │   │   ├── Index.js
+│   │   │   └── Components/
+│   │   │       ├── AuditView.js      ← Vista de auditoría + modal Análisis IA
+│   │   │       ├── auditAnalysisRules.js ← Reglas json-rules-engine (10 reglas)
+│   │   │       ├── AuditDayDetail.js
+│   │   │       ├── PeriodSummary.js
+│   │   │       └── SettlementMasterDetail.js
+│   │   ├── Drivers.js
+│   │   ├── Vehicles.js
+│   │   ├── Expenses.js
+│   │   ├── Operations.js             ← Mantenimientos programados
+│   │   ├── Summary.js
+│   │   ├── Partners.js
+│   │   └── Distributions.js
+│   │
+│   ├── Contratos/
+│   │   └── contratos/GenerarContrato.js
+│   │
+│   ├── users/
+│   │   ├── Users.js                  ← Lista usuarios + sesiones activas
+│   │   └── PushSubscribers.js        ← Suscriptores FCM (superAdmin)
+│   │
+│   ├── movements/payments/           ← Módulo legacy de pagos + vouchers
+│   ├── reports/payments/             ← Visor de comprobantes
+│   └── tools/
+│       ├── increase-decrease/
+│       └── visits/
 │
-├── _nav.js               # Configuración del menú lateral
-├── routes.js             # Definición de rutas
-└── store/store.js        # Configuración del store Redux
+├── hooks/
+│   ├── useNotifications.js           ← FCM push notifications
+│   ├── useVersionCheck.js
+│   └── useInstallPrompt.js
+│
+├── utils/
+│   └── moment.js                     ← Instancia configurada de moment.js
+│
+├── _nav.js                           # Menú lateral dinámico por rol
+├── routes.js                         # Definición de rutas
+└── store/store.js                    # Store Redux
 ```
 
 ---
@@ -156,60 +259,103 @@ src/
 ## Instalación y comandos
 
 ```bash
-# Instalar dependencias
-npm install
-
-# Servidor de desarrollo (http://localhost:3000)
-npm start
-
-# Build de producción → /build
-npm run build
-
-# Preview del build
-npm run serve
-
-# Lint
-npm run lint
-
-# Deploy a GitHub Pages (build + gh-pages)
-npm run deploy
+npm install            # Instalar dependencias
+npm start              # Dev server (http://localhost:3000)
+npm run build          # Build de producción → /build
+npm run serve          # Preview del build
+npm run lint           # ESLint en src/**/*.js
+npm run deploy         # Build + deploy a GitHub Pages
 ```
-
-> **Nota:** Al iniciar la app se imprime en consola el hash del commit actual (`[app] commit: xxxxxxx`), útil para verificar la versión desplegada.
 
 ---
 
 ## Backend y fuentes de datos
 
-### Google Apps Script
+### Firebase Firestore (principal)
 
-Todas las operaciones de cuentas y pagos van a un endpoint de Google Apps Script mediante `POST` con `FormData`:
+Todas las operaciones pasan por `firestoreCall()` en `src/services/providers/firebase/firebaseClient.js`:
+- Refresca el token antes de cada operación
+- En `permission-denied` / `unauthenticated` → signOut + redirect a `/login`
+- Reintenta errores transitorios (`unavailable`, `deadline-exceeded`) con backoff exponencial
+- Normaliza todos los errores a mensajes en español
 
-```js
-// src/services/providers/api/utilApi.js
-FormData {
-  action: 'getAccounts' | 'getPayments' | 'createPayment' | ...,
-  token:  localStorage.getItem('token'),
-  ...params
-}
+| Colección Firestore | Módulo | Uso |
+|---|---|---|
+| `users` | Sistema | Perfiles, roles, hash legacy |
+| `sessions` | Sistema | Sesiones activas por usuario |
+| `fcmTokens` | Sistema | Tokens FCM para push notifications |
+| `accountsMaster` | Contabilidad | Maestro de cuentas |
+| `transactions` | Contabilidad | Registro de transacciones |
+| `paymentVauchers` | Contabilidad | Comprobantes de pago (imágenes) |
+| `taxiDrivers` | Taxis | Conductores |
+| `taxiVehicles` | Taxis | Vehículos |
+| `taxiSettlements` | Taxis | Liquidaciones diarias |
+| `taxiExpenses` | Taxis | Gastos operativos |
+| `taxiPartners` | Taxis | Socios |
+| `taxiDistributions` | Taxis | Distribuciones de utilidades |
+| `contracts` | Contratos | Contratos de arrendamiento |
+| `owners` / `properties` | Contratos | Propietarios y propiedades |
+| `page_visits` | About Me | Registro de visitas |
+
+### Google Apps Script (secundario)
+
+POST con `FormData` a endpoint configurado en `utilApi.js`. Un token Firebase fresco se inyecta automáticamente vía interceptor de Axios en cada request. En 401, fuerza refresh del token y reintenta una vez.
+
+### IndexedDB (caché local)
+
+Usado para `accountsMaster`, `assets`, `myProjects` y `salaryDistribution`. Reduce lecturas repetidas a Firestore en datos que cambian poco.
+
+---
+
+## Estado global (Redux)
+
+```
+store
+├── profile           → { data: { username, name, role, landingPage, avatar } }
+├── ui                → { sidebarShow, appTheme }
+├── users             → { list, sessions }
+│
+├── CashFlow/
+│   ├── account       → { data, selectedAccount }
+│   ├── accountsMaster
+│   ├── transaction
+│   ├── paymentVaucher
+│   └── salaryDistribution
+│
+├── Taxi/
+│   ├── taxiDriver
+│   ├── taxiVehicle
+│   ├── taxiSettlement
+│   ├── taxiExpense
+│   ├── taxiPartner
+│   ├── taxiDistribution
+│   └── taxiAuditNote
+│
+└── Contratos/
+    ├── contract
+    ├── owner
+    ├── property
+    └── bankAccount
 ```
 
-La autenticación se basa en un token guardado en `localStorage`. Si no existe, el guard de `AppContent.js` redirige a `/login`.
+---
 
-### Firebase Firestore
+## Constantes por dominio
 
-Usado exclusivamente para vouchers de pago y registro de visitas:
+Los valores de dominio están separados por módulo — nunca hardcodear en componentes:
 
-| Colección | Uso |
-|---|---|
-| `paymentVauchers` | Imágenes/PDF de comprobantes de pago (base64) |
-| `page_visits` | Registro de visitas a la página About Me |
+| Archivo | Exporta | Usado en |
+|---|---|---|
+| `src/constants/commons.js` | `MONTH_NAMES` | Genérico (nombres de meses en inglés para claves Firestore) |
+| `src/constants/cashFlow.js` | `ACCOUNT_CATEGORIES`, `PAYMENT_METHODS`, `EXPENSE_CATEGORIES`, `INCOME_CATEGORIES` | Módulo Contabilidad |
+| `src/constants/taxi.js` | `TAXI_EXPENSE_CATEGORIES`, `TAXI_MAINTENANCE_CATEGORIES` | Módulo Taxis |
+| `src/constants/accounting.js` | Categorías contables | Módulo Accounting |
 
 ---
 
 ## Sistema de temas
 
-El tema se aplica mediante el atributo `data-app-theme` en el `<body>` y se persiste en Redux (`uiReducer`). Los estilos están definidos en `src/scss/_custom.scss` con un mixin reutilizable:
+El tema se aplica mediante `data-app-theme` en `<body>` y se persiste en Redux (`uiReducer`). Estilos en `src/scss/_custom.scss`:
 
 ```scss
 @mixin app-theme($bg, $accent) { ... }
@@ -218,125 +364,63 @@ body[data-app-theme="yellow"] { @include app-theme(#000000, #ffc107); } // Cash
 body[data-app-theme="blue"]   { @include app-theme(#1e3a5f, #10b981); } // Ocean
 ```
 
-El mixin aplica el acento (`$accent`) a:
-- Sidebar: links activos, hover, ítem activo con borde izquierdo
-- Botones primarios de CoreUI
-- Botones default de DevExtreme (toolbar y standalone)
-
-El selector de tema está en el header (ícono de paleta).
-
----
-
-## Estado global (Redux)
-
-```
-store
-├── login          → { fetching, token, isError, error }
-├── account        → { data, selectedAccount, fetching, isError, error }
-├── payment        → { fetching, isError, error }
-├── paymentVaucher → { data, fetching, isError, error }
-└── ui             → { sidebarShow, appTheme }
-```
-
-**Sagas registradas:**
-
-| Saga | Trigger | Acción |
-|---|---|---|
-| `fetchAccountsSaga` | `accountActions.fetchData` | GET cuentas desde Apps Script |
-| `addVauchersToAccountPayments` | `accountActions.loadVauchersToAccountPayment` | Carga vouchers con caché |
-| `createPaymentSaga` | `paymentActions.createRequest` | POST nuevo pago |
-| `createPaymentVaucher` | `paymentActions.successRequestCreate` | Guarda voucher en Firestore |
-
 ---
 
 ## Internacionalización
 
-Configurado con `i18next` + `i18next-http-backend`. Idioma por defecto: **español (`es`)**.
-
-Los archivos de traducción se cargan vía HTTP desde `public/locales/`. Para agregar un idioma nuevo, crea `public/locales/<lang>/translation.json` y agrégalo en `src/i18n.js`.
-
----
-
-## Caché de vouchers
-
-Los vouchers se cachean en `localStorage` con el prefijo `vchr_<paymentId>` para evitar lecturas repetidas a Firestore.
-
-```
-Primera carga
-  └─► getCache(paymentId) → null
-        └─► fetchVaucherPaymentMultiple() → Firestore
-              └─► setCache(paymentId, base64)  ← guardado
-
-Cargas siguientes
-  └─► getCache(paymentId) → base64  ← sirve inmediatamente, sin Firestore
-```
-
-Para forzar recarga de un voucher individual existe el botón de refresh (⟳) en cada card de pago, que llama a `clearCache(paymentId)` antes de ir a Firestore.
+`i18next` + `i18next-http-backend`. Idioma por defecto: **español (`es`)**. Archivos en `public/locales/`. Usar siempre `useTranslation()` + `t('key')` en componentes.
 
 ---
 
 ## Rutas y archivos
 
-Mapa de cada ruta de la aplicación al archivo fuente que la renderiza.
-
-| Ruta (`#/...`) | Archivo fuente | Notas |
+| Ruta (`#/...`) | Archivo fuente | Rol mínimo |
 |---|---|---|
-| `/cash_flow/dashboard` | `src/views/pages/dashboard/Dashboard.js` | Dashboard principal |
-| `/cash_flow/management/accounts` | `src/views/pages/CashFlow/management/accounts/Accounts.js` | CRUD cuentas (DevExtreme DataGrid) |
-| `/cash_flow/management/accounts-master` | `src/views/pages/CashFlow/management/accounts/AccountsMaster.js` | Cuentas maestra |
-| `/cash_flow/management/taxis` | `src/views/pages/CashFlow/management/taxis/Home.js` | Inicio módulo taxis |
-| `/cash_flow/management/taxis/home` | `src/views/pages/CashFlow/management/taxis/Home.js` | Inicio módulo taxis |
-| `/cash_flow/management/taxis/settlements` | `src/views/pages/CashFlow/management/taxis/Settlements.js` | Liquidaciones diarias |
-| `/cash_flow/management/taxis/drivers` | `src/views/pages/CashFlow/management/taxis/Drivers.js` | Conductores |
-| `/cash_flow/management/taxis/vehicles` | `src/views/pages/CashFlow/management/taxis/Vehicles.js` | Vehículos |
-| `/cash_flow/management/taxis/expenses` | `src/views/pages/CashFlow/management/taxis/Expenses.js` | Gastos de taxis |
-| `/cash_flow/management/taxis/summary` | `src/views/pages/CashFlow/management/taxis/Summary.js` | Resumen financiero taxis |
-| `/cash_flow/management/taxis/partners` | `src/views/pages/CashFlow/management/taxis/Partners.js` | Socios |
-| `/cash_flow/management/taxis/profit-sharing` | `src/views/pages/CashFlow/management/taxis/Distributions.js` | Distribución de utilidades |
-| `/cash_flow/management/payments` | `src/views/pages/movements/payments/Payments.js` | Pagos + vouchers (Apps Script + Firestore) |
-| `/cash_flow/management/transactions` | `src/views/pages/CashFlow/movements/Transactions.js` | Transacciones |
-| `/cash_flow/management/account-status` | `src/views/pages/CashFlow/movements/AccountStatus.js` | Estado de cuenta |
-| `/cash_flow/management/reports` | `src/views/pages/reports/Reports.js` | Visor de comprobantes (Firestore) |
-| `/cash_flow/management/users` | `src/views/pages/CashFlow/management/users/Users.js` | Usuarios (solo `superAdmin`) |
-| `/cash_flow/management/push-subscribers` | `src/views/pages/CashFlow/management/users/PushSubscribers.js` | Suscriptores FCM (solo `superAdmin`) |
-| `/cash_flow/profile` | `src/views/pages/profile/Profile.js` | Perfil del usuario |
-| `/cash_flow/eggs` | `src/views/pages/CashFlow/eggs/Eggs.js` | Easter egg |
-| `/cash_flow/tools/adjustments` | `src/views/pages/tools/increase-decrease/IncreaseDecrease.js` | Herramienta aumento/disminución |
-| `/cash_flow/tools/visits` | `src/views/pages/tools/visits/Visits.js` | Registro de visitas (Firestore) |
-| `/cash_flow/tools/salary-distribution` | `src/views/pages/CashFlow/tools/SalaryDistribution.js` | Distribución de salarios |
-| `/about-me` | `src/views/pages/aboutMe/Index.js` | Portfolio público (Matrix rain, cursor glow) — fuera del layout |
-| `/login` | `src/views/pages/login/` | Login — fuera del layout |
-
-> Las rutas bajo `/cash_flow/management/users` y `/cash_flow/management/push-subscribers` requieren rol `superAdmin`. Todas las demás rutas autenticadas están envueltas en `DefaultLayout` (`src/layout/DefaultLayout.js`).
+| `/cash_flow/dashboard` | `views/pages/dashboard/Dashboard.js` | todos |
+| `/cash_flow/management/accounts` | `views/pages/Accounting/Accounts.js` | manager |
+| `/cash_flow/management/accounts-master` | `views/pages/Accounting/AccountsMaster.js` | manager |
+| `/cash_flow/management/transactions` | `views/pages/CashFlow/movements/Transactions.js` | manager |
+| `/cash_flow/management/account-status` | `views/pages/CashFlow/movements/AccountStatus.js` | manager |
+| `/cash_flow/management/payments` | `views/pages/movements/payments/Payments.js` | manager |
+| `/cash_flow/management/reports` | `views/pages/reports/Reports.js` | manager |
+| `/cash_flow/management/users` | `views/pages/users/Users.js` | superAdmin |
+| `/cash_flow/management/push-subscribers` | `views/pages/users/PushSubscribers.js` | superAdmin |
+| `/cash_flow/tools/adjustments` | `views/pages/tools/increase-decrease/IncreaseDecrease.js` | manager |
+| `/cash_flow/tools/visits` | `views/pages/tools/visits/Visits.js` | manager |
+| `/cash_flow/tools/salary-distribution` | `views/pages/CashFlow/tools/SalaryDistribution.js` | manager |
+| `/cash_flow/projects` | `views/pages/CashFlow/projects/MyProjects.js` | manager |
+| `/cash_flow/assets` | `views/pages/CashFlow/assets/Assets.js` | manager |
+| `/cash_flow/eggs` | `views/pages/CashFlow/eggs/Eggs.js` | manager |
+| `/cash_flow/profile` | `views/pages/profile/Profile.js` | todos |
+| `/taxis` | `views/pages/taxis/Home.js` | todos |
+| `/taxis/home` | `views/pages/taxis/Home.js` | todos |
+| `/taxis/settlements` | `views/pages/taxis/Settlements/Index.js` | todos |
+| `/taxis/operations` | `views/pages/taxis/Operations.js` | todos |
+| `/taxis/drivers` | `views/pages/taxis/Drivers.js` | manager |
+| `/taxis/vehicles` | `views/pages/taxis/Vehicles.js` | manager |
+| `/taxis/expenses` | `views/pages/taxis/Expenses.js` | manager |
+| `/taxis/summary` | `views/pages/taxis/Summary.js` | manager |
+| `/taxis/partners` | `views/pages/taxis/Partners.js` | manager |
+| `/taxis/profit-sharing` | `views/pages/taxis/Distributions.js` | manager |
+| `/contratos/contratos/generar` | `views/pages/Contratos/contratos/GenerarContrato.js` | manager |
+| `/about-me` | `views/pages/aboutMe/Index.js` | público |
+| `/login` | `views/pages/login/Login.js` | público |
 
 ---
 
 ## Despliegue
 
-El deploy es automático a **GitHub Pages** vía `npm run deploy` (usa `gh-pages`). El build genera un `build/version.json` con el hash del commit actual para trazabilidad de versiones.
+```bash
+git checkout main && git pull origin main
+npm run deploy
+# → vite build → /build
+# → gh-pages -d build → rama gh-pages
+```
 
-### Proceso paso a paso
+App publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
 
-1. **Hacer PR de la rama de trabajo a `main`** y mergear.
-
-2. **Cambiar a `main` y actualizar:**
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
-
-3. **Publicar:**
-   ```bash
-   npm run deploy
-   # → npm run build  (vite build → /build)
-   # → gh-pages -d build  (publica en la rama gh-pages)
-   ```
-
-La app queda publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
-
-> **Nota:** GitHub Pages puede tardar 1–2 minutos en reflejar los cambios. Verifica la versión desplegada revisando el hash en la consola del navegador (`[app] commit: xxxxxxx`).
+> Verifica la versión desplegada revisando el hash del commit en la consola del navegador: `[app] commit: xxxxxxx`
 
 ---
 
 *Desarrollado por [David Rios](https://www.linkedin.com/in/yefriddavid) · [@yefriddavid](https://github.com/yefriddavid)*
-
