@@ -27,13 +27,42 @@ Data flows: Component → dispatch action → saga intercepts → API call → r
 
 ### Routing & Auth
 - **HashRouter** — all URLs are hash-based (`#/path`)
-- **Auth guard** in `src/components/AppContent.js` — checks `localStorage.getItem('token')`, redirects to `/login` if absent
+- **Auth guard** in `src/components/AppContent.js` — uses Firebase Auth `onAuthStateChanged`; shows spinner while resolving, redirects to `/login` when signed out
 - Route definitions in `src/routes.js`; sidebar nav config in `src/_nav.js`
+
+#### Firebase Authentication (refresh token)
+Auth is handled by **Firebase Auth (email/password provider)** — no separate backend needed.
+
+- **Service**: `src/services/auth/firebaseAuth.js`
+- **Email convention**: users sign in with username; Firebase Auth account uses `${username}@cashflow.app` as synthetic email
+- **Refresh token**: Firebase SDK stores it in IndexedDB automatically — session survives page reloads with no manual handling
+- **Hybrid / lazy migration**: on first login, if the user has no Firebase Auth account yet, the system verifies via the legacy Firestore `passwordHash`, then auto-creates the Firebase Auth account transparently
+- **Key functions**:
+  - `signIn(username, password)` — hybrid login (Firebase Auth → legacy fallback → auto-migrate)
+  - `signOut()` — Firebase signOut + clears localStorage
+  - `getToken()` — returns a fresh ID token (auto-refreshes if expired)
+  - `forceTokenRefresh()` — forces network refresh; call after a 401 response
+  - `onAuthChange(cb)` — subscribes to auth state changes (used in AppContent)
+  - `changePassword(username, currentPw, newPw)` — re-authenticates then updates password
+- **Required Firebase console step**: enable **Email/Password** under Authentication → Sign-in method
+
+#### Firestore Middleware
+All Firestore operations should go through `src/services/providers/firebase/firebaseClient.js`:
+
+```js
+import { firestoreCall } from 'src/services/providers/firebase/firebaseClient'
+const snap = await firestoreCall(() => getDocs(q))
+```
+
+- Refreshes the Firebase ID token before each call
+- On `permission-denied` / `unauthenticated` → signs out and redirects to `/login`
+- Retries transient errors (`unavailable`, `deadline-exceeded`) with exponential backoff
+- Normalizes all Firebase error codes to Spanish user messages
 
 ### Backend / API
 Dual backend:
-1. **Google Apps Script** (primary) — POST requests with FormData (`action`, `token`, params). Base URL configured in `src/services/providers/api/utilApi.js`. Auth token stored in `localStorage`.
-2. **Firebase Firestore** — Used for payment vouchers. Config in `src/services/providers/firebase/settings.js`.
+1. **Google Apps Script** (primary) — POST requests with FormData (`action`, `token`, params). Base URL configured in `src/services/providers/api/utilApi.js`. A fresh Firebase ID token is injected automatically into every request via an axios request interceptor. On 401, the interceptor forces a token refresh and retries once.
+2. **Firebase Firestore** — Primary data store for all modules. Config in `src/services/providers/firebase/settings.js`. Exports: `db` (Firestore), `auth` (Firebase Auth), `messaging` (FCM).
 
 ### Layout
 `DefaultLayout` (`src/layout/DefaultLayout.js`) wraps all authenticated pages with `AppSidebar + AppHeader + AppContent + AppFooter`. Public pages (login, register, 404) render outside this layout.

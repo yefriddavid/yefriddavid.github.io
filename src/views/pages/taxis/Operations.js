@@ -1,11 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { CCard, CCardBody, CCardHeader, CSpinner, CFormSelect, CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
+import {
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CSpinner,
+  CFormSelect,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+} from '@coreui/react'
 import * as taxiVehicleActions from 'src/actions/Taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/Taxi/taxiDriverActions'
 import * as taxiExpenseActions from 'src/actions/Taxi/taxiExpenseActions'
 import { getColombianHolidays } from './auditHelpers'
+import { TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES } from 'src/constants/taxi'
 
 // Derive day/month names from a locale string using Intl
 const getDayNames = (locale) =>
@@ -31,21 +42,28 @@ const restrictedDaysForMonth = (vehicle, month) => {
 
 // ── colors & types ────────────────────────────────────────────────────────────
 
-const MAINTENANCE_CATEGORIES = ['Cambio Aceite', 'Cambio de Correa Dentada', 'Mantenimiento', 'Lavado', 'Repuestos']
-
 const TYPE_COLORS = {
-  'pico-placa':              { bg: '#fff1f2', border: '#f43f5e', text: '#9f1239', label: 'P&P' },
-  'Cambio Aceite':           { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', label: 'Aceite' },
-  'Cambio de Correa Dentada':{ bg: '#fff7ed', border: '#ea580c', text: '#7c2d12', label: 'Correa' },
-  Mantenimiento:             { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af', label: 'Mantto.' },
-  Lavado:                    { bg: '#f0fdf4', border: '#22c55e', text: '#166534', label: 'Lavado' },
-  Repuestos:                 { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', label: 'Repuesto' },
+  'pico-placa': { bg: '#fff1f2', border: '#f43f5e', text: '#9f1239', label: 'P&P' },
+  'Cambio Aceite': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', label: 'Aceite' },
+  'Cambio de Correa Dentada': {
+    bg: '#fff7ed',
+    border: '#ea580c',
+    text: '#7c2d12',
+    label: 'Correa',
+  },
+  Mantenimiento: { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af', label: 'Mantto.' },
+  Lavado: { bg: '#f0fdf4', border: '#22c55e', text: '#166534', label: 'Lavado' },
+  Repuestos: { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', label: 'Repuesto' },
 }
 
 // ── badge ─────────────────────────────────────────────────────────────────────
 
 const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
+  new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(n)
 
 const ItemBadge = ({ plate, driver, type, lastExpense, onClick }) => {
   const c = TYPE_COLORS[type] || { bg: '#f8fafc', border: '#94a3b8', text: '#475569', label: type }
@@ -69,9 +87,7 @@ const ItemBadge = ({ plate, driver, type, lastExpense, onClick }) => {
       <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: c.text }}>
         {plate}
       </span>
-      {driver && (
-        <span style={{ fontSize: 10, color: c.text }}>{driver.split(' ')[0]}</span>
-      )}
+      {driver && <span style={{ fontSize: 10, color: c.text }}>{driver.split(' ')[0]}</span>}
       <span style={{ fontSize: 9, color: c.text, opacity: 0.75 }}>{c.label}</span>
     </span>
   )
@@ -79,14 +95,22 @@ const ItemBadge = ({ plate, driver, type, lastExpense, onClick }) => {
 
 const ExpenseModal = ({ item, onClose }) => {
   if (!item) return null
-  const c = TYPE_COLORS[item.type] || { bg: '#f8fafc', border: '#94a3b8', text: '#475569', label: item.type }
+  const c = TYPE_COLORS[item.type] || {
+    bg: '#f8fafc',
+    border: '#94a3b8',
+    text: '#475569',
+    label: item.type,
+  }
   const e = item.lastExpense
   return (
     <CModal visible={!!item} onClose={onClose} alignment="center" size="sm">
       <CModalHeader>
         <CModalTitle style={{ fontSize: 14 }}>
-          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: c.text }}>{item.vehicle.plate}</span>
-          {' — '}{item.type}
+          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: c.text }}>
+            {item.vehicle.plate}
+          </span>
+          {' — '}
+          {item.type}
         </CModalTitle>
       </CModalHeader>
       <CModalBody>
@@ -100,7 +124,11 @@ const ExpenseModal = ({ item, onClose }) => {
               ['Comentario', e.comment || '—'],
             ].map(([label, value]) => (
               <tr key={label} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ padding: '6px 8px', color: '#6b7280', whiteSpace: 'nowrap', width: 130 }}>{label}</td>
+                <td
+                  style={{ padding: '6px 8px', color: '#6b7280', whiteSpace: 'nowrap', width: 130 }}
+                >
+                  {label}
+                </td>
                 <td style={{ padding: '6px 8px', fontWeight: 500 }}>{value}</td>
               </tr>
             ))}
@@ -125,7 +153,8 @@ const Operations = () => {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [selected, setSelected] = useState(
-    () => new Set(JSON.parse(localStorage.getItem('ops_selected') || '["pico-placa","Cambio Aceite"]')),
+    () =>
+      new Set(JSON.parse(localStorage.getItem('ops_selected') || '["pico-placa","Cambio Aceite"]')),
   )
   const [activeItem, setActiveItem] = useState(null)
 
@@ -189,7 +218,9 @@ const Operations = () => {
       for (const v of vehicles) {
         for (const day of restrictedDaysForMonth(v, month)) {
           if (!map.has(day)) map.set(day, [])
-          map.get(day).push({ type: 'pico-placa', vehicle: v, driver: driversByVehicle.get(v.plate) })
+          map
+            .get(day)
+            .push({ type: 'pico-placa', vehicle: v, driver: driversByVehicle.get(v.plate) })
         }
       }
     }
@@ -207,7 +238,9 @@ const Operations = () => {
         if (!isOverdue && !isThisMonth) continue
         const day = isOverdue ? 1 : parseInt(last.nextDate.split('-')[2], 10)
         if (!map.has(day)) map.set(day, [])
-        map.get(day).push({ type: cat, vehicle: v, driver: driversByVehicle.get(v.plate), lastExpense: last })
+        map
+          .get(day)
+          .push({ type: cat, vehicle: v, driver: driversByVehicle.get(v.plate), lastExpense: last })
       }
     }
 
@@ -278,7 +311,9 @@ const Operations = () => {
             onChange={(e) => setYear(Number(e.target.value))}
           >
             {availableYears.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </CFormSelect>
         </div>
@@ -318,13 +353,17 @@ const Operations = () => {
                     <tr
                       key={day}
                       style={{
-                        background: isToday ? '#e8f0fb' : isSunday || isHoliday ? '#fafafa' : '#fff',
+                        background: isToday
+                          ? '#e8f0fb'
+                          : isSunday || isHoliday
+                            ? '#fafafa'
+                            : '#fff',
                         borderBottom: '1px solid #f0f0f0',
                         borderLeft: isToday
                           ? '3px solid #1e3a5f'
                           : hasItems
-                          ? '3px solid #f59e0b'
-                          : '3px solid transparent',
+                            ? '3px solid #f59e0b'
+                            : '3px solid transparent',
                       }}
                     >
                       <td
@@ -333,12 +372,18 @@ const Operations = () => {
                           textAlign: 'center',
                           fontWeight: isToday ? 700 : 500,
                           fontVariantNumeric: 'tabular-nums',
-                          color: isToday ? '#1e3a5f' : isSunday || isHoliday ? '#92400e' : '#374151',
+                          color: isToday
+                            ? '#1e3a5f'
+                            : isSunday || isHoliday
+                              ? '#92400e'
+                              : '#374151',
                         }}
                       >
                         {pad2(day)}
                         {isHoliday && (
-                          <span style={{ fontSize: 9, display: 'block', color: '#b45309' }}>Fest.</span>
+                          <span style={{ fontSize: 9, display: 'block', color: '#b45309' }}>
+                            Fest.
+                          </span>
                         )}
                       </td>
                       <td

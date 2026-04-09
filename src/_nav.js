@@ -85,7 +85,6 @@ const getNav = (t, role) => {
   }
 
   if (isManager) {
-
     items.push({
       component: CNavGroup,
       name: 'Trade',
@@ -121,45 +120,44 @@ const getNav = (t, role) => {
           to: '/cash_flow/assets',
           icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
         },
-  {
-    component: CNavItem,
-    name: 'Eggs',
-    to: '/cash_flow/eggs',
-    icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
-  },
-      ],
-    })
-
-  }
-    items.push({
-      component: CNavGroup,
-      name: 'Sistema',
-      icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-      items: [
         {
           component: CNavItem,
-          name: t('nav.visits'),
-          to: '/cash_flow/tools/visits',
-          icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+          name: 'Eggs',
+          to: '/cash_flow/eggs',
+          icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
         },
-        ...(isSuperAdmin
-          ? [
-              {
-                component: CNavItem,
-                name: t('nav.users'),
-                to: '/cash_flow/management/users',
-                icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-              },
-              {
-                component: CNavItem,
-                name: t('nav.pushSubscribers'),
-                to: '/cash_flow/management/push-subscribers',
-                icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
-              },
-            ]
-          : []),
       ],
     })
+  }
+  items.push({
+    component: CNavGroup,
+    name: 'Sistema',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: t('nav.visits'),
+        to: '/cash_flow/tools/visits',
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+      },
+      ...(isSuperAdmin
+        ? [
+            {
+              component: CNavItem,
+              name: t('nav.users'),
+              to: '/cash_flow/management/users',
+              icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: t('nav.pushSubscribers'),
+              to: '/cash_flow/management/push-subscribers',
+              icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
+            },
+          ]
+        : []),
+    ],
+  })
 
   items.push({
     component: CNavGroup,
@@ -169,19 +167,19 @@ const getNav = (t, role) => {
       {
         component: CNavItem,
         name: t('nav.taxiHome'),
-        to: '/cash_flow/management/taxis/home',
+        to: '/taxis/home',
         icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: t('nav.liquidaciones'),
-        to: '/cash_flow/management/taxis/settlements',
+        to: '/taxis/settlements',
         icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Operaciones',
-        to: '/cash_flow/management/taxis/operations',
+        to: '/taxis/operations',
         icon: <CIcon icon={cilWarning} customClassName="nav-icon" />,
       },
       ...(isManager
@@ -189,37 +187,37 @@ const getNav = (t, role) => {
             {
               component: CNavItem,
               name: t('nav.conductores'),
-              to: '/cash_flow/management/taxis/drivers',
+              to: '/taxis/drivers',
               icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.vehiculos'),
-              to: '/cash_flow/management/taxis/vehicles',
+              to: '/taxis/vehicles',
               icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.taxiExpenses'),
-              to: '/cash_flow/management/taxis/expenses',
+              to: '/taxis/expenses',
               icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.taxiResumen'),
-              to: '/cash_flow/management/taxis/summary',
+              to: '/taxis/summary',
               icon: <CIcon icon={cilBarChart} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.partners'),
-              to: '/cash_flow/management/taxis/partners',
+              to: '/taxis/partners',
               icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.distributions'),
-              to: '/cash_flow/management/taxis/profit-sharing',
+              to: '/taxis/profit-sharing',
               icon: <CIcon icon={cilTransfer} customClassName="nav-icon" />,
             },
           ]
