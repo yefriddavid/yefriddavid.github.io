@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
-import { changeOwnPassword } from 'src/services/providers/firebase/users'
+import { changeOwnPassword } from 'src/services/providers/firebase/Security/users'
 
 const LANDING_PAGES = [
   { value: '/cash_flow/dashboard', label: 'Dashboard' },

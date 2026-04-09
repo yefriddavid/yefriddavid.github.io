@@ -10,7 +10,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
-import { sendUserPasswordReset } from 'src/services/providers/firebase/users'
+import { sendUserPasswordReset } from 'src/services/providers/firebase/Security/users'
 
 const ROLES = ['superAdmin', 'manager', 'conductor']
 

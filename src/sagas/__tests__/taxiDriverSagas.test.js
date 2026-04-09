@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiDriverActions'
-import * as service from '../../services/providers/firebase/CashFlow/taxiDrivers'
+import * as service from '../../services/providers/firebase/Taxi/taxiDrivers'
 import { makeDriver } from '../../__tests__/factories'
 
 // Step-through generator copies (standard redux-saga testing pattern)

@@ -1,4 +1,4 @@
-import { db, FIREBASE_API_KEY } from './settings'
+import { db, FIREBASE_API_KEY } from '../settings'
 import {
   collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc,
   orderBy, query, serverTimestamp,

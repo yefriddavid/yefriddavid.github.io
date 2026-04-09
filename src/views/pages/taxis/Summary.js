@@ -6,8 +6,8 @@ import {
   CCard, CCardBody, CCardHeader, CSpinner, CBadge,
   CFormSelect, CRow, CCol,
 } from '@coreui/react'
-import { getSettlements } from 'src/services/providers/firebase/CashFlow/taxiSettlements'
-import { fetchExpenses } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
+import { getSettlements } from 'src/services/providers/firebase/Taxi/taxiSettlements'
+import { fetchExpenses } from 'src/services/providers/firebase/Taxi/taxiExpenses'
 import './masters.scss'
 
 const MONTHS = [

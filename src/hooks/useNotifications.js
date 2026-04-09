@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { getToken, onMessage } from 'firebase/messaging'
 import { messaging } from '../services/providers/firebase/settings'
-import { saveFcmToken } from '../services/providers/firebase/fcmTokens'
+import { saveFcmToken } from '../services/providers/firebase/Security/fcmTokens'
 
 // Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair
 const VAPID_KEY = 'BDZNMaCGqYirTYSacbGifRVQwa3oCvi8NUFXJt4ocWa8lmTe9upPzKQEJoIIQlw9zb_sopOFIkqy-pHvgg2LehA'

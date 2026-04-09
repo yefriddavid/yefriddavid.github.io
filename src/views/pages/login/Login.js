@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import withRouter from '../../../context/searchParamsContext'
 import { fetchProfile } from '../../../actions/authActions'
-import { getUserForAuth, hashPassword } from '../../../services/providers/firebase/users'
-import { createSession } from '../../../services/providers/firebase/sessions'
+import { getUserForAuth, hashPassword } from '../../../services/providers/firebase/Security/users'
+import { createSession } from '../../../services/providers/firebase/Security/sessions'
 import './Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../actions/authActions'
-import { validateSession } from '../services/providers/firebase/sessions'
+import { validateSession } from '../services/providers/firebase/Security/sessions'
 
 // routes config
 import routes from '../routes'

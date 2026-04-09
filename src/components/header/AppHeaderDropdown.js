@@ -12,7 +12,7 @@ import {
 import { cilLockLocked, cilUser, cilCode } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
-import { deleteSession } from '../../services/providers/firebase/sessions'
+import { deleteSession } from '../../services/providers/firebase/Security/sessions'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import VersionModal from './VersionModal'
 

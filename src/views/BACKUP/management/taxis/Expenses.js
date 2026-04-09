@@ -11,8 +11,8 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/Taxi/taxiExpenseActions'
-import { updateExpense } from 'src/services/providers/firebase/CashFlow/taxiExpenses'
-import { getVehicles } from 'src/services/providers/firebase/CashFlow/taxiVehicles'
+import { updateExpense } from 'src/services/providers/firebase/Taxi/taxiExpenses'
+import { getVehicles } from 'src/services/providers/firebase/Taxi/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/App/DetailPanel'
 

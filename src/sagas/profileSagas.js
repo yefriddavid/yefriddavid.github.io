@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/authActions'
-import { getUser, updateOwnProfile, updateUserAvatar } from '../services/providers/firebase/users'
+import { getUser, updateOwnProfile, updateUserAvatar } from '../services/providers/firebase/Security/users'
 
 function* fetchProfile({ payload: username }) {
   try {

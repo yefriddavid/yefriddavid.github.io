@@ -1,4 +1,4 @@
-import { db } from './settings'
+import { db } from '../settings'
 import { collection, doc, setDoc, deleteDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore'
 
 const COL = 'fcm_tokens'

@@ -4,7 +4,7 @@ import StandardGrid from 'src/components/App/StandardGrid/Index'
 import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilReload, cilTrash } from '@coreui/icons'
-import { getTokens, deleteFcmToken } from 'src/services/providers/firebase/fcmTokens'
+import { getTokens, deleteFcmToken } from 'src/services/providers/firebase/Security/fcmTokens'
 
 const parseDevice = (userAgent) => {
   if (!userAgent) return '—'
