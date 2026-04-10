@@ -18,6 +18,10 @@ function totalOf(items) {
   return (items ?? []).reduce((s, i) => s + (Number(i.value) || 0), 0)
 }
 
+function paidOf(items) {
+  return (items ?? []).filter((i) => i.paid).reduce((s, i) => s + (Number(i.value) || 0), 0)
+}
+
 // ── Styles shared ─────────────────────────────────────────────────────────────
 const sheetOverlay = {
   position: 'fixed',
@@ -116,7 +120,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
   const [goal, setGoal] = useState(initial?.goal ?? '')
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [items, setItems] = useState(
-    initial?.items?.length ? initial.items : [{ id: uid(), origen: '', value: '' }],
+    initial?.items?.length ? initial.items : [{ id: uid(), origen: '', value: '', paid: false }],
   )
   const [focusedValueId, setFocusedValueId] = useState(null)
   const [projectNotes, setProjectNotes] = useState(initial?.projectNotes ?? [])
@@ -136,7 +140,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
   const removeNote = (id) => setProjectNotes((prev) => prev.filter((n) => n.id !== id))
 
   const addItem = () =>
-    setItems((prev) => [...prev, { id: uid(), origen: '', value: '' }])
+    setItems((prev) => [...prev, { id: uid(), origen: '', value: '', paid: false }])
 
   const updateItem = (id, field, val) =>
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [field]: val } : it)))
@@ -266,13 +270,14 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '24px 1fr 110px 32px',
+                gridTemplateColumns: '24px 28px 1fr 110px 32px',
                 gap: 8,
                 marginBottom: 8,
                 padding: '0 2px',
               }}
             >
               <span />
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#adb5bd', letterSpacing: '0.05em', textAlign: 'center' }}>✓</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#adb5bd', letterSpacing: '0.05em' }}>ORIGEN</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#adb5bd', letterSpacing: '0.05em', textAlign: 'right' }}>VALOR (COP)</span>
               <span />
@@ -283,14 +288,14 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                 key={item.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '24px 1fr 110px 32px',
+                  gridTemplateColumns: '24px 28px 1fr 110px 32px',
                   gap: 8,
                   alignItems: 'center',
                   marginBottom: 10,
                   padding: '6px 8px',
                   borderRadius: 10,
-                  background: '#f8f9fa',
-                  border: '1px solid #e9ecef',
+                  background: item.paid ? '#f0fdf4' : '#f8f9fa',
+                  border: `1px solid ${item.paid ? '#86efac' : '#e9ecef'}`,
                 }}
               >
                 {/* Order controls */}
@@ -327,6 +332,15 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                   </button>
                 </div>
 
+                {/* Paid checkbox */}
+                <input
+                  type="checkbox"
+                  checked={!!item.paid}
+                  onChange={(e) => updateItem(item.id, 'paid', e.target.checked)}
+                  title="Marcar como efectuado"
+                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2f9e44', justifySelf: 'center' }}
+                />
+
                 <input
                   type="text"
                   value={item.origen}
@@ -339,6 +353,8 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                     fontSize: 14,
                     color: '#1a1a2e',
                     width: '100%',
+                    textDecoration: item.paid ? 'line-through' : 'none',
+                    opacity: item.paid ? 0.6 : 1,
                   }}
                 />
                 <input
@@ -361,7 +377,7 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
                     outline: 'none',
                     fontSize: 14,
                     fontWeight: 700,
-                    color: '#1e3a5f',
+                    color: item.paid ? '#2f9e44' : '#1e3a5f',
                     textAlign: 'right',
                     width: '100%',
                   }}
@@ -400,23 +416,49 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
               + Agregar origen
             </button>
 
-            {total > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                  background: '#f0fdf4',
-                  border: '1px solid #86efac',
-                  marginBottom: 12,
-                }}
-              >
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#2f9e44' }}>Total</span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#2f9e44' }}>{fmt(total)}</span>
-              </div>
-            )}
+            {total > 0 && (() => {
+              const paidTotal = items.filter((i) => i.paid).reduce((s, i) => s + (Number(i.value) || 0), 0)
+              const goalNum = Number(goal) || 0
+              const overrun = goalNum > 0 && paidTotal > goalNum ? paidTotal - goalNum : 0
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  <div
+                    style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px', borderRadius: 10,
+                      background: '#f0fdf4', border: '1px solid #86efac',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#2f9e44' }}>Total proyectado</span>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#2f9e44' }}>{fmt(total)}</span>
+                  </div>
+                  {paidTotal > 0 && (
+                    <div
+                      style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '8px 12px', borderRadius: 10,
+                        background: overrun > 0 ? '#fff5f5' : '#eef4ff',
+                        border: `1px solid ${overrun > 0 ? '#ffa8a8' : '#c5d8ff'}`,
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600, color: overrun > 0 ? '#e03131' : '#1e3a5f' }}>
+                        ✅ Efectuado
+                      </span>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: overrun > 0 ? '#e03131' : '#1e3a5f', display: 'block' }}>
+                          {fmt(paidTotal)}
+                        </span>
+                        {overrun > 0 && (
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131' }}>
+                            +{fmt(overrun)} sobre presupuesto
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         )}
 
@@ -525,8 +567,10 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
 // ── Project card ──────────────────────────────────────────────────────────────
 function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSync, onSave, onClone, onMove }) {
   const total = totalOf(project.items)
+  const paid = paidOf(project.items)
   const goal = Number(project.goal) || 0
   const remaining = goal > 0 ? goal - total : null
+  const paidOverrun = goal > 0 && paid > goal ? paid - goal : 0
   const isSynced = !!project.syncedAt
 
   const [editingName, setEditingName] = useState(false)
@@ -593,6 +637,13 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
     if (num === Number(item.value)) return
     const updatedItems = project.items.map((it) =>
       it.id === item.id ? { ...it, value: num } : it,
+    )
+    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+  }
+
+  const toggleItemPaid = (item) => {
+    const updatedItems = project.items.map((it) =>
+      it.id === item.id ? { ...it, paid: !it.paid } : it,
     )
     onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
   }
@@ -772,14 +823,22 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '4px 0',
+                padding: '4px 2px',
                 borderBottom: '1px solid #f8f9fa',
-                background: dragOverItemId === item.id ? '#e8f4fd' : 'transparent',
+                background: dragOverItemId === item.id ? '#e8f4fd' : item.paid ? '#f0fdf4' : 'transparent',
                 opacity: dragItemId === item.id ? 0.4 : 1,
                 transition: 'background 0.1s',
                 borderRadius: 4,
               }}
             >
+              {/* Paid checkbox */}
+              <input
+                type="checkbox"
+                checked={!!item.paid}
+                onChange={() => toggleItemPaid(item)}
+                title="Marcar como efectuado"
+                style={{ width: 14, height: 14, cursor: 'pointer', accentColor: '#2f9e44', flexShrink: 0, marginRight: 4 }}
+              />
               {editingItemId === item.id ? (
                 inlineInput(localOrigen, setLocalOrigen, () => commitItem(item), {
                   fontSize: 13, color: '#6c757d', flex: 1,
@@ -816,8 +875,10 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
                     onClick={() => startItemEdit(item)}
                     title="Toca para editar"
                     style={{
-                      fontSize: 13, color: '#6c757d', cursor: 'text',
+                      fontSize: 13, color: item.paid ? '#2f9e44' : '#6c757d', cursor: 'text',
                       borderBottom: '1px dashed transparent',
+                      textDecoration: item.paid ? 'line-through' : 'none',
+                      opacity: item.paid ? 0.7 : 1,
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
                     onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
@@ -871,7 +932,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
         {/* Add item inline */}
         <button
           onClick={() => {
-            const newItem = { id: uid(), origen: '', value: 0 }
+            const newItem = { id: uid(), origen: '', value: 0, paid: false }
             const updatedItems = [...(project.items ?? []), newItem]
             onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
             setTimeout(() => startItemEdit(newItem), 50)
@@ -908,14 +969,39 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
               gap: 6,
               padding: '8px 10px',
               borderRadius: 10,
-              background: remaining <= 0 ? '#f0fdf4' : '#fff8e1',
-              border: `1px solid ${remaining <= 0 ? '#86efac' : '#ffe066'}`,
+              background: paidOverrun > 0 ? '#fff5f5' : remaining <= 0 ? '#f0fdf4' : '#fff8e1',
+              border: `1px solid ${paidOverrun > 0 ? '#ffa8a8' : remaining <= 0 ? '#86efac' : '#ffe066'}`,
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 600 }}>Tengo</span>
+              <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 600 }}>Proyectado</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{fmt(total)}</span>
             </div>
+            {paid > 0 && (
+              <div
+                style={{
+                  borderTop: '1px solid rgba(0,0,0,0.07)',
+                  paddingTop: 6,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600, color: paidOverrun > 0 ? '#e03131' : '#2f9e44' }}>
+                  ✅ Efectuado
+                </span>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: paidOverrun > 0 ? '#e03131' : '#2f9e44', display: 'block' }}>
+                    {fmt(paid)}
+                  </span>
+                  {paidOverrun > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#e03131' }}>
+                      +{fmt(paidOverrun)} sobre presupuesto
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <div
               style={{
                 borderTop: '1px solid rgba(0,0,0,0.07)',
