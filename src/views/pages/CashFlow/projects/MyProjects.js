@@ -566,35 +566,57 @@ function ProjectSheet({ initial, saving, onSave, onClose }) {
 
 // ── Project card ──────────────────────────────────────────────────────────────
 function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSync, onSave, onClone, onMove }) {
-  const total = totalOf(project.items)
-  const paid = paidOf(project.items)
-  const goal = Number(project.goal) || 0
-  const remaining = goal > 0 ? goal - total : null
-  const paidOverrun = goal > 0 && paid > goal ? paid - goal : 0
   const isSynced = !!project.syncedAt
 
+  // ── Local editable state ────────────────────────────────────────────────────
+  const [localDescription, setLocalDescription] = useState(project.description)
+  const [localGoal, setLocalGoal] = useState(String(project.goal ?? ''))
+  const [localNotes, setLocalNotes] = useState(project.notes ?? '')
+  const [localDate, setLocalDate] = useState(project.date ?? '')
+  const [localItems, setLocalItems] = useState(project.items ?? [])
+  const [localProjectNotes, setLocalProjectNotes] = useState(project.projectNotes ?? [])
+  const [isDirty, setIsDirty] = useState(false)
+
+  // Sync from prop after external update (after save or sync)
+  useEffect(() => {
+    setLocalDescription(project.description)
+    setLocalGoal(String(project.goal ?? ''))
+    setLocalNotes(project.notes ?? '')
+    setLocalDate(project.date ?? '')
+    setLocalItems(project.items ?? [])
+    setLocalProjectNotes(project.projectNotes ?? [])
+    setIsDirty(false)
+  }, [project.updatedAt])
+
+  const total = totalOf(localItems)
+  const paid = paidOf(localItems)
+  const goal = Number(localGoal) || 0
+  const remaining = goal > 0 ? goal - total : null
+  const paidOverrun = goal > 0 && paid > goal ? paid - goal : 0
+
+  // ── Editing UI state ────────────────────────────────────────────────────────
   const [editingName, setEditingName] = useState(false)
-  const [localName, setLocalName] = useState(project.description)
-  const [cloning, setCloning] = useState(false)
-  const [cloneName, setCloneName] = useState('')
+  const [editingGoal, setEditingGoal] = useState(false)
+  const [editingNotes, setEditingNotes] = useState(false)
   const [editingItemId, setEditingItemId] = useState(null)
   const [localOrigen, setLocalOrigen] = useState('')
   const [editingValueId, setEditingValueId] = useState(null)
   const [localValue, setLocalValue] = useState('')
-  const [editingGoal, setEditingGoal] = useState(false)
-  const [localGoal, setLocalGoal] = useState('')
-  const [editingNotes, setEditingNotes] = useState(false)
-  const [localNotes, setLocalNotes] = useState('')
+  const [cloning, setCloning] = useState(false)
+  const [cloneName, setCloneName] = useState('')
   const [showProjectNotes, setShowProjectNotes] = useState(false)
   const [addingNote, setAddingNote] = useState(false)
   const [newNoteText, setNewNoteText] = useState('')
   const [newNoteRef, setNewNoteRef] = useState('')
 
+  // ── Local mutators (no auto-save) ───────────────────────────────────────────
+  const mark = () => setIsDirty(true)
+
   const commitName = () => {
     setEditingName(false)
-    const trimmed = localName.trim()
-    if (!trimmed || trimmed === project.description) return
-    onSave({ ...project, description: trimmed, updatedAt: now(), syncedAt: null })
+    const trimmed = localDescription.trim()
+    if (!trimmed) setLocalDescription(project.description)
+    else mark()
   }
 
   const startItemEdit = (item) => {
@@ -606,24 +628,18 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
     setEditingItemId(null)
     const trimmed = localOrigen.trim()
     if (trimmed === item.origen) return
-    const updatedItems = project.items.map((it) =>
-      it.id === item.id ? { ...it, origen: trimmed } : it,
-    )
-    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+    setLocalItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, origen: trimmed } : it)))
+    mark()
   }
 
   const commitGoal = () => {
     setEditingGoal(false)
-    const num = Number(String(localGoal).replace(/\D/g, ''))
-    if (num === Number(project.goal)) return
-    onSave({ ...project, goal: num, updatedAt: now(), syncedAt: null })
+    mark()
   }
 
   const commitNotes = () => {
     setEditingNotes(false)
-    const trimmed = localNotes.trim()
-    if (trimmed === (project.notes ?? '')) return
-    onSave({ ...project, notes: trimmed, updatedAt: now(), syncedAt: null })
+    mark()
   }
 
   const startValueEdit = (item) => {
@@ -635,17 +651,13 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
     setEditingValueId(null)
     const num = Number(String(localValue).replace(/\D/g, ''))
     if (num === Number(item.value)) return
-    const updatedItems = project.items.map((it) =>
-      it.id === item.id ? { ...it, value: num } : it,
-    )
-    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+    setLocalItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, value: num } : it)))
+    mark()
   }
 
   const toggleItemPaid = (item) => {
-    const updatedItems = project.items.map((it) =>
-      it.id === item.id ? { ...it, paid: !it.paid } : it,
-    )
-    onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+    setLocalItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, paid: !it.paid } : it)))
+    mark()
   }
 
   const [dragItemId, setDragItemId] = useState(null)
@@ -653,27 +665,45 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
 
   const reorderCardItems = (fromId, toId) => {
     if (fromId === toId) return
-    const items = [...project.items]
-    const fromIdx = items.findIndex((it) => it.id === fromId)
-    const toIdx = items.findIndex((it) => it.id === toId)
-    const [item] = items.splice(fromIdx, 1)
-    items.splice(toIdx, 0, item)
-    onSave({ ...project, items, updatedAt: now(), syncedAt: null })
+    setLocalItems((prev) => {
+      const next = [...prev]
+      const fromIdx = next.findIndex((it) => it.id === fromId)
+      const toIdx = next.findIndex((it) => it.id === toId)
+      const [moved] = next.splice(fromIdx, 1)
+      next.splice(toIdx, 0, moved)
+      return next
+    })
+    mark()
   }
-
-  const cardNotes = project.projectNotes ?? []
 
   const saveCardNote = () => {
     if (!newNoteText.trim()) return
     const note = { id: uid(), text: newNoteText.trim(), reference: newNoteRef.trim(), createdAt: now() }
-    onSave({ ...project, projectNotes: [...cardNotes, note], updatedAt: now(), syncedAt: null })
+    setLocalProjectNotes((prev) => [...prev, note])
     setNewNoteText('')
     setNewNoteRef('')
     setAddingNote(false)
+    mark()
   }
 
   const deleteCardNote = (noteId) => {
-    onSave({ ...project, projectNotes: cardNotes.filter((n) => n.id !== noteId), updatedAt: now(), syncedAt: null })
+    setLocalProjectNotes((prev) => prev.filter((n) => n.id !== noteId))
+    mark()
+  }
+
+  const handleSaveCard = () => {
+    onSave({
+      ...project,
+      description: localDescription.trim() || project.description,
+      goal: Number(localGoal) || 0,
+      notes: localNotes.trim(),
+      date: localDate.trim(),
+      items: localItems,
+      projectNotes: localProjectNotes,
+      updatedAt: now(),
+      syncedAt: null,
+    })
+    setIsDirty(false)
   }
 
   const inlineInput = (value, onChange, onBlur, styles = {}) => (
@@ -710,7 +740,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {editingName ? (
-            inlineInput(localName, setLocalName, commitName, {
+            inlineInput(localDescription, (v) => { setLocalDescription(v); mark() }, commitName, {
               fontSize: 15, fontWeight: 700, color: '#1a1a2e',
             })
           ) : (
@@ -725,7 +755,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
               onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
               onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
             >
-              {project.description}
+              {localDescription}
             </div>
           )}
           {/* 2 — cuánto falta */}
@@ -745,7 +775,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
               autoFocus
               value={localNotes}
               rows={2}
-              onChange={(e) => setLocalNotes(e.target.value)}
+              onChange={(e) => { setLocalNotes(e.target.value); mark() }}
               onBlur={commitNotes}
               onKeyDown={(e) => e.key === 'Escape' && commitNotes()}
               style={{
@@ -758,21 +788,21 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
             />
           ) : (
             <div
-              onClick={() => { setLocalNotes(project.notes ?? ''); setEditingNotes(true) }}
+              onClick={() => setEditingNotes(true)}
               title="Toca para editar"
               style={{
-                fontSize: 11, color: project.notes ? '#adb5bd' : '#dee2e6',
+                fontSize: 11, color: localNotes ? '#adb5bd' : '#dee2e6',
                 marginTop: 2, fontStyle: 'italic', cursor: 'text',
                 borderBottom: '1px dashed transparent', minHeight: 14,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = '#dee2e6')}
               onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
             >
-              {project.notes || 'Agregar descripción…'}
+              {localNotes || 'Agregar descripción…'}
             </div>
           )}
-          {project.date && (
-            <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>📅 {project.date}</div>
+          {localDate && (
+            <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>📅 {localDate}</div>
           )}
         </div>
         {/* 1 — valor total del proyecto (goal) */}
@@ -783,7 +813,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
               type="number"
               min="0"
               value={localGoal}
-              onChange={(e) => setLocalGoal(e.target.value)}
+              onChange={(e) => { setLocalGoal(e.target.value); mark() }}
               onBlur={commitGoal}
               onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
               style={{
@@ -794,7 +824,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
             />
           ) : (
             <div
-              onClick={() => { setLocalGoal(String(project.goal ?? '')); setEditingGoal(true) }}
+              onClick={() => setEditingGoal(true)}
               title="Toca para editar"
               style={{
                 fontSize: 17, fontWeight: 800, color: '#1e3a5f', cursor: 'text',
@@ -814,7 +844,7 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
 
       {/* Items preview */}
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
-        {project.items?.length > 0 && project.items.map((item, itemIdx) => (
+        {localItems.length > 0 && localItems.map((item, itemIdx) => (
             <div
               key={item.id}
               onDragOver={(e) => { e.preventDefault(); setDragOverItemId(item.id) }}
@@ -859,8 +889,8 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
                   >⠿</span>
                   <button
                     onClick={() => {
-                      const updatedItems = project.items.filter((it) => it.id !== item.id)
-                      onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+                      setLocalItems((prev) => prev.filter((it) => it.id !== item.id))
+                      mark()
                     }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
@@ -933,8 +963,8 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
         <button
           onClick={() => {
             const newItem = { id: uid(), origen: '', value: 0, paid: false }
-            const updatedItems = [...(project.items ?? []), newItem]
-            onSave({ ...project, items: updatedItems, updatedAt: now(), syncedAt: null })
+            setLocalItems((prev) => [...prev, newItem])
+            mark()
             setTimeout(() => startItemEdit(newItem), 50)
           }}
           style={{
@@ -1041,13 +1071,13 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
             alignItems: 'center',
           }}
         >
-          <span>📝 Notas{cardNotes.length > 0 ? ` (${cardNotes.length})` : ''}</span>
+          <span>📝 Notas{localProjectNotes.length > 0 ? ` (${localProjectNotes.length})` : ''}</span>
           <span style={{ fontSize: 10 }}>{showProjectNotes ? '▲' : '▼'}</span>
         </button>
 
         {showProjectNotes && (
           <div style={{ padding: '10px 4px 4px' }}>
-            {cardNotes.map((note) => (
+            {localProjectNotes.map((note) => (
               <div
                 key={note.id}
                 style={{
@@ -1197,6 +1227,27 @@ function ProjectCard({ project, isFirst, isLast, syncing, onEdit, onDelete, onSy
         </div>
       )}
 
+      {/* Save changes button */}
+      {isDirty && (
+        <button
+          onClick={handleSaveCard}
+          style={{
+            width: '100%',
+            marginBottom: 8,
+            padding: '10px',
+            borderRadius: 10,
+            border: 'none',
+            background: '#1e3a5f',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          💾 Guardar cambios
+        </button>
+      )}
+
       {/* Actions */}
       <div style={{ display: 'flex', gap: 8 }}>
         <button
@@ -1305,6 +1356,11 @@ export default function MyProjects() {
     const withOrder = project.sortOrder != null ? project : { ...project, sortOrder: projects.length }
     dispatch(actions.saveRequest(withOrder))
     setSheet(null)
+  }
+
+  const handleCardSave = (project) => {
+    const withOrder = project.sortOrder != null ? project : { ...project, sortOrder: projects.length }
+    dispatch(actions.saveRequest(withOrder))
   }
 
   const handleDelete = (project) => {
@@ -1500,7 +1556,7 @@ export default function MyProjects() {
             onEdit={setSheet}
             onDelete={handleDelete}
             onSync={handleSync}
-            onSave={(updated) => dispatch(actions.saveRequest(updated))}
+            onSave={handleCardSave}
             onClone={handleClone}
             onMove={handleMove}
           />
