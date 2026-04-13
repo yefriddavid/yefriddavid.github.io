@@ -1,5 +1,5 @@
 const DB_NAME = 'my-admin-local'
-const DB_VERSION = 5
+const DB_VERSION = 6
 
 const STORES = {
   SALARY_DISTRIBUTION: 'salary-distribution',
@@ -7,6 +7,7 @@ const STORES = {
   ASSETS: 'assets',
   ACCOUNTS_MASTER: 'accounts-master',
   METADATA: 'metadata',
+  TAXI_VEHICLES: 'taxi-vehicles',
 }
 
 export function openDB() {
@@ -34,6 +35,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(STORES.METADATA)) {
         db.createObjectStore(STORES.METADATA)
+      }
+
+      if (!db.objectStoreNames.contains(STORES.TAXI_VEHICLES)) {
+        db.createObjectStore(STORES.TAXI_VEHICLES, { keyPath: 'id' })
       }
     }
 
