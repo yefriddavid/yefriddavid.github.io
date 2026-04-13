@@ -15,7 +15,7 @@ const useNotifications = () => {
       if (status.state !== 'granted') return
 
       try {
-        await sw.periodicSync.register('check-active-accounts', { minInterval: 60 * 60 * 1000 })
+        // await sw.periodicSync.register('check-active-accounts', { minInterval: 60 * 60 * 1000 })
         await sw.periodicSync.register('pico-y-placa', { minInterval: 60 * 60 * 1000 })
       } catch (err) {
         console.error('Periodic Sync registration failed:', err)
