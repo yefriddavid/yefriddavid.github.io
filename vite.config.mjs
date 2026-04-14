@@ -82,8 +82,8 @@ export default defineConfig(() => {
       legacy({ targets: ['defaults', 'not IE 11'] }),
       VitePWA({
         strategies: 'injectManifest',
-        srcDir: 'src',
-        filename: 'sw/sw.js',
+        srcDir: 'src/sw',
+        filename: 'sw.js',
         registerType: 'autoUpdate',
         injectRegister: 'auto',
         includeAssets: ['favicon.ico', 'icons/icon.svg'],
