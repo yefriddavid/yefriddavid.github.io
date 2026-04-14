@@ -13,6 +13,11 @@ import {
   CModalBody,
   CRow,
   CCol,
+  CNav,
+  CNavItem,
+  CNavLink,
+  CTabContent,
+  CTabPane,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
@@ -29,6 +34,7 @@ const PeriodSummary = ({
   totalExpenses,
   periodExpenses,
   byDriver,
+  byVehicle,
   settlementAbbr,
   pendingRows,
   now,
@@ -39,6 +45,8 @@ const PeriodSummary = ({
   const [expensesModalOpen, setExpensesModalOpen] = useState(false)
   const [byDriverModalOpen, setByDriverModalOpen] = useState(false)
   const [pendingModalOpen, setPendingModalOpen] = useState(false)
+  const [totalSettledModalOpen, setTotalSettledModalOpen] = useState(false)
+  const [totalSettledTab, setTotalSettledTab] = useState('byVehicle')
   const [checkedExpenses, setCheckedExpenses] = useState(new Set())
 
   return (
@@ -77,7 +85,11 @@ const PeriodSummary = ({
         <CRow className="mb-3">
           {/* Total settled */}
           <CCol xs={6} sm={2}>
-            <CCard className="text-center">
+            <CCard
+              className="text-center"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setTotalSettledModalOpen(true)}
+            >
               <CCardBody>
                 <div
                   style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}
@@ -87,6 +99,81 @@ const PeriodSummary = ({
                 <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
               </CCardBody>
             </CCard>
+
+            <CModal
+              visible={totalSettledModalOpen}
+              onClose={() => setTotalSettledModalOpen(false)}
+              size="lg"
+              alignment="center"
+            >
+              <CModalHeader>
+                <CModalTitle>
+                  {t('taxis.settlements.summary.totalSettled')} — {period.month}/{period.year}
+                </CModalTitle>
+              </CModalHeader>
+              <CModalBody>
+                <CNav variant="tabs" className="mb-3">
+                  <CNavItem>
+                    <CNavLink
+                      active={totalSettledTab === 'byVehicle'}
+                      onClick={() => setTotalSettledTab('byVehicle')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Por taxi
+                    </CNavLink>
+                  </CNavItem>
+                </CNav>
+                <CTabContent>
+                  <CTabPane visible={totalSettledTab === 'byVehicle'}>
+                    {!byVehicle?.length ? (
+                      <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
+                        {t('taxis.settlements.summary.noRecords')}
+                      </span>
+                    ) : (
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid var(--cui-border-color)' }}>
+                            <th style={{ padding: '8px 12px', textAlign: 'left' }}>Placa</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'right' }}>Liquidaciones</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'right' }}>Total pagado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {byVehicle.map((v, i) => (
+                            <tr
+                              key={v.plate}
+                              style={{
+                                borderBottom: '1px solid var(--cui-border-color)',
+                                background: i % 2 === 0 ? 'transparent' : 'var(--cui-tertiary-bg, #f8f9fa)',
+                              }}
+                            >
+                              <td style={{ padding: '8px 12px', fontWeight: 600 }}>{v.plate}</td>
+                              <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--cui-secondary-color)' }}>
+                                {v.count} {settlementAbbr}
+                              </td>
+                              <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#2f9e44' }}>
+                                {fmt(v.total)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr style={{ borderTop: '2px solid var(--cui-border-color)', background: 'var(--cui-tertiary-bg, #f8f9fa)' }}>
+                            <td style={{ padding: '8px 12px', fontWeight: 700 }}>Total</td>
+                            <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>
+                              {byVehicle.reduce((s, v) => s + v.count, 0)} {settlementAbbr}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#2f9e44' }}>
+                              {fmt(byVehicle.reduce((s, v) => s + v.total, 0))}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </CTabPane>
+                </CTabContent>
+              </CModalBody>
+            </CModal>
           </CCol>
 
           {/* Projection */}

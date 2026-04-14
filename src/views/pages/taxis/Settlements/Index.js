@@ -769,6 +769,7 @@ const Taxis = () => {
         totalExpenses={totalExpenses}
         periodExpenses={periodExpenses}
         byDriver={byDriver}
+        byVehicle={byVehicle}
         settlementAbbr={settlementAbbr}
         pendingRows={pendingRows}
         now={now}
