@@ -1,8 +1,8 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { initializeApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
-import { openDB, DB_STORES } from './services/providers/indexeddb/db'
-import { getAllAccounts } from './services/providers/indexeddb/CashFlow/accountsMaster'
+import { openDB, DB_STORES } from '../services/providers/indexeddb/db'
+import { getAllAccounts } from '../services/providers/indexeddb/CashFlow/accountsMaster'
 import { checkPicoYPlaca } from './sw-pico-y-placa'
 
 // Workbox precaching (injected by VitePWA)

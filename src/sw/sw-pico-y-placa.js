@@ -1,5 +1,5 @@
-import { openDB, DB_STORES } from './services/providers/indexeddb/db'
-import { getVehicles, saveVehicles } from './services/providers/indexeddb/CashFlow/taxiVehicles'
+import { openDB, DB_STORES } from '../services/providers/indexeddb/db'
+import { getVehicles, saveVehicles } from '../services/providers/indexeddb/CashFlow/taxiVehicles'
 
 const DAY_LABELS = ['Hoy', 'Mañana', 'En 2 días', 'En 3 días', 'En 4 días']
 
