@@ -21,6 +21,7 @@ const Operations = React.lazy(() => import('./views/pages/taxis/Operations'))
 const Users = React.lazy(() => import('./views/pages/users/Users'))
 const PushSubscribers = React.lazy(() => import('./views/pages/users/PushSubscribers'))
 const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
+const AppSettings = React.lazy(() => import('./views/pages/settings/AppSettings'))
 
 // Movements
 const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
@@ -191,6 +192,7 @@ const routes = [
     roles: ['superAdmin'],
   },
   { path: '/cash_flow/profile', name: 'Profile', element: Profile },
+  { path: '/cash_flow/settings', name: 'Settings', element: AppSettings, roles: ['superAdmin'] },
 
   { path: '/cash_flow/eggs', name: 'Eggs', longName: 'Eggs', element: Eggs, landingPage: true },
   { path: '/cash_flow/projects', name: 'My Projects', longName: 'Mis Proyectos', element: MyProjects, landingPage: true },

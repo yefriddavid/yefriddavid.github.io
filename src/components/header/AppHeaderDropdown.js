@@ -9,7 +9,7 @@ import {
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
-import { cilLockLocked, cilUser, cilCode } from '@coreui/icons'
+import { cilLockLocked, cilUser, cilCode, cilSettings } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
 import { deleteSession } from '../../services/providers/firebase/Security/sessions'
@@ -71,6 +71,12 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilCode} className="me-2" />
           Versión
         </CDropdownItem>
+        {profile?.role === 'superAdmin' && (
+          <CDropdownItem onClick={() => navigate('/cash_flow/settings')} style={{ cursor: 'pointer' }}>
+            <CIcon icon={cilSettings} className="me-2" />
+            Configuración
+          </CDropdownItem>
+        )}
         <CDropdownDivider />
         <CDropdownItem onClick={logout} style={{ cursor: 'pointer' }}>
           <CIcon icon={cilLockLocked} className="me-2" />

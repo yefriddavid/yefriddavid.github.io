@@ -1,5 +1,6 @@
 import { openDB, DB_STORES } from '../services/providers/indexeddb/db'
 import { getVehicles, saveVehicles } from '../services/providers/indexeddb/CashFlow/taxiVehicles'
+import { getNotifyHours } from '../services/providers/indexeddb/picoPlacaConfig'
 
 const DAY_LABELS = ['Hoy', 'Mañana', 'En 2 días', 'En 3 días', 'En 4 días']
 
@@ -8,7 +9,7 @@ export async function checkPicoYPlaca() {
     const now = new Date()
     const hour = now.getHours()
 
-    const windows = [8, 12, 17]
+    const windows = await getNotifyHours()
     if (!windows.includes(hour)) return
 
     const dateKey = now.toISOString().split('T')[0]
