@@ -246,6 +246,9 @@ const Taxis = () => {
     return y === period.year && m === period.month
   })
   const totalExpenses = periodExpenses.reduce((acc, r) => acc + (r.amount || 0), 0)
+  const totalExpensesPaid = periodExpenses
+    .filter((r) => r.paid === true)
+    .reduce((acc, r) => acc + (r.amount || 0), 0)
 
   const isCurrentPeriod = period.year === now.getFullYear() && period.month === now.getMonth() + 1
   const daysElapsed = isCurrentPeriod ? now.getDate() : null
@@ -770,6 +773,7 @@ const Taxis = () => {
         periodExpenses={periodExpenses}
         byDriver={byDriver}
         byVehicle={byVehicle}
+        totalExpensesPaid={totalExpensesPaid}
         settlementAbbr={settlementAbbr}
         pendingRows={pendingRows}
         now={now}

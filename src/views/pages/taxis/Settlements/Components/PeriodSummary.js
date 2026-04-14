@@ -35,6 +35,7 @@ const PeriodSummary = ({
   periodExpenses,
   byDriver,
   byVehicle,
+  totalExpensesPaid,
   settlementAbbr,
   pendingRows,
   now,
@@ -48,6 +49,7 @@ const PeriodSummary = ({
   const [totalSettledModalOpen, setTotalSettledModalOpen] = useState(false)
   const [totalSettledTab, setTotalSettledTab] = useState('byVehicle')
   const [checkedExpenses, setCheckedExpenses] = useState(new Set())
+  const [includePending, setIncludePending] = useState(false)
 
   return (
     <>
@@ -391,11 +393,22 @@ const PeriodSummary = ({
                   style={{
                     fontSize: 22,
                     fontWeight: 700,
-                    color: total - totalExpenses >= 0 ? '#1e40af' : '#e03131',
+                    color: total - (includePending ? totalExpenses : totalExpensesPaid) >= 0 ? '#1e40af' : '#e03131',
                   }}
                 >
-                  {fmt(total - totalExpenses)}
+                  {fmt(total - (includePending ? totalExpenses : totalExpensesPaid))}
                 </div>
+                <label
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 8, cursor: 'pointer', fontSize: 11, color: 'var(--cui-secondary-color)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="checkbox"
+                    checked={includePending}
+                    onChange={(e) => setIncludePending(e.target.checked)}
+                  />
+                  Incluir pendientes
+                </label>
               </CCardBody>
             </CCard>
           </CCol>
