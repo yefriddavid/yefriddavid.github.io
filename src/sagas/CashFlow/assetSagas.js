@@ -39,9 +39,6 @@ function* syncAsset({ payload }) {
     yield call(fb.syncAssetToFirebase, payload)
     const syncedAt = new Date().toISOString()
     const updated = { ...payload, syncedAt }
-    alert("aca es")
-    //yield call(idb.saveAsset, updated)
-    yield call(fb.saveAsset, updated)
     yield put(actions.syncSuccess(updated))
   } catch (e) {
     yield put(actions.syncError(e.message))
@@ -64,7 +61,7 @@ function* syncAllAssets({ payload }) {
 
 function* importFromFirebase() {
   try {
-    const assets = yield call(fb.fetchAllFromFirebase)
+    const assets = yield call(fb.fetchAll)
     for (const asset of assets) {
       yield call(idb.saveAsset, asset)
     }
