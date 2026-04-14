@@ -94,19 +94,15 @@ async function checkActiveAccountsAndNotify() {
 }
 
 // ─── Pico y placa local notifications ────────────────────────────────────────
-// Windows: 8am, 12pm, 5pm → notify today's restrictions
-//          8pm → notify tomorrow's restrictions (day-before reminder)
+// Windows: 8am, 12pm, 5pm → notify today's and tomorrow's restrictions
 
 async function checkPicoYPlaca() {
   try {
     const now = new Date()
     const hour = now.getHours()
 
-    const todayWindows = [8, 12, 17]
-    const isTodayWindow = todayWindows.includes(hour)
-    const isTomorrowWindow = hour === 20
-
-    if (!isTodayWindow && !isTomorrowWindow) return
+    const windows = [8, 12, 17]
+    if (!windows.includes(hour)) return
 
     const dateKey = now.toISOString().split('T')[0]
     const notifyKey = `pico-placa-${dateKey}-${hour}`
@@ -128,18 +124,25 @@ async function checkPicoYPlaca() {
     }
     if (!vehicles.length) return
 
-    let checkDate = new Date(now)
-    if (isTomorrowWindow) checkDate.setDate(checkDate.getDate() + 1)
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
-    const month = checkDate.getMonth() + 1
-    const day = checkDate.getDate()
+    const todayRestricted = vehicles
+      .filter((v) => isRestricted(v.restrictions, now.getMonth() + 1, now.getDate()))
+      .map((v) => v.plate)
 
-    const restricted = vehicles.filter((v) => isRestricted(v.restrictions, month, day))
-    if (!restricted.length) return
+    const tomorrowRestricted = vehicles
+      .filter((v) => isRestricted(v.restrictions, tomorrow.getMonth() + 1, tomorrow.getDate()))
+      .map((v) => v.plate)
 
-    const plates = restricted.map((v) => v.plate).join(', ')
-    const title = isTomorrowWindow ? 'Pico y Placa mañana' : 'Pico y Placa hoy'
-    const body = `Placas restringidas: ${plates}`
+    if (!todayRestricted.length && !tomorrowRestricted.length) return
+
+    const lines = []
+    if (todayRestricted.length) lines.push(`Hoy: ${todayRestricted.join(', ')}`)
+    if (tomorrowRestricted.length) lines.push(`Mañana: ${tomorrowRestricted.join(', ')}`)
+
+    const title = 'Pico y Placa'
+    const body = lines.join(' | ')
 
     await self.registration.showNotification(title, {
       body,
