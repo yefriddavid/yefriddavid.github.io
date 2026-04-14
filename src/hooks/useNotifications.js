@@ -17,6 +17,7 @@ const useNotifications = () => {
       try {
         // await sw.periodicSync.register('check-active-accounts', { minInterval: 60 * 60 * 1000 })
         await sw.periodicSync.register('pico-y-placa', { minInterval: 60 * 60 * 1000 })
+        // agregar notificaciones de cambio de aceite, mantenimiento en genrala
       } catch (err) {
         console.error('Periodic Sync registration failed:', err)
       }

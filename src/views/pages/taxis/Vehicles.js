@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
@@ -10,7 +10,7 @@ import {
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX, cilTrash } from '@coreui/icons'
+import { cilPlus, cilX, cilTrash, cilBell } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/Taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/Taxi/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
@@ -73,6 +73,7 @@ const Vehiculos = () => {
   const [showCreate, setShowCreate] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [restrictModal, setRestrictModal] = useState(null)
+  const [testingNotif, setTestingNotif] = useState(false)
   const [restrictForm, setRestrictForm] = useState(emptyRestrictions())
   const [restrictSaving, setRestrictSaving] = useState(false)
 
@@ -140,6 +141,30 @@ const Vehiculos = () => {
     setRestrictModal(null)
   }
 
+  const testPicoYPlacaNotification = useCallback(async () => {
+    setTestingNotif(true)
+    try {
+      const now = new Date()
+      const month = now.getMonth() + 1
+      const day = now.getDate()
+      const vehicles = records ?? []
+      const restricted = vehicles.filter((v) => {
+        const monthData = v.restrictions?.[String(month)]
+        if (!monthData) return false
+        const d1 = Number(monthData.d1) || 0
+        const d2 = Number(monthData.d2) || 0
+        return (d1 !== 0 && d1 === day) || (d2 !== 0 && d2 === day)
+      })
+      const title = restricted.length ? 'Pico y Placa hoy' : 'Sin pico y placa hoy'
+      const body = restricted.length
+        ? `Placas restringidas: ${restricted.map((v) => v.plate).join(', ')}`
+        : 'Ningún vehículo tiene restricción hoy.'
+      new Notification(title, { body, icon: '/icons/icon.svg' })
+    } finally {
+      setTestingNotif(false)
+    }
+  }, [records])
+
   const rows = records ?? []
   const driversByPlateMap = useMemo(() => {
     const map = {}
@@ -160,15 +185,28 @@ const Vehiculos = () => {
             <strong>Vehículos</strong>
             <CBadge color="secondary">{rows.length}</CBadge>
           </div>
-          <CButton
-            size="sm"
-            color={showCreate ? 'danger' : 'primary'}
-            variant="outline"
-            onClick={() => setShowCreate((p) => !p)}
-          >
-            <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
-            {' '}{showCreate ? 'Cancelar' : 'Nuevo vehículo'}
-          </CButton>
+          <div className="d-flex gap-2">
+            <CButton
+              size="sm"
+              color="warning"
+              variant="outline"
+              onClick={testPicoYPlacaNotification}
+              disabled={testingNotif}
+              title="Simular notificación de pico y placa"
+            >
+              <CIcon icon={cilBell} size="sm" />
+              {' '}{testingNotif ? 'Enviando...' : 'Probar pico y placa'}
+            </CButton>
+            <CButton
+              size="sm"
+              color={showCreate ? 'danger' : 'primary'}
+              variant="outline"
+              onClick={() => setShowCreate((p) => !p)}
+            >
+              <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />
+              {' '}{showCreate ? 'Cancelar' : 'Nuevo vehículo'}
+            </CButton>
+          </div>
         </CCardHeader>
 
         <CCollapse visible={showCreate}>
