@@ -3,20 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
 import { changeOwnPassword } from 'src/services/providers/firebase/Security/users'
-
-const LANDING_PAGES = [
-  { value: '/cash_flow/dashboard', label: 'Dashboard' },
-  { value: '/cash_flow/management/transactions', label: 'Transacciones' },
-  { value: '/cash_flow/management/account-status', label: 'Estado de Cuentas' },
-  { value: '/cash_flow/management/accounts-master', label: 'Maestro de Cuentas' },
-  { value: '/cash_flow/management/accounts', label: 'Cuentas' },
-  { value: '/cash_flow/management/payments', label: 'Pagos' },
-  { value: '/taxis/home', label: 'Taxi — Inicio' },
-  { value: '/taxis/settlements', label: 'Taxi — Liquidaciones' },
-  { value: '/cash_flow/tools/adjustments', label: 'Herramientas — Ajustes' },
-  { value: '/cash_flow/tools/visits', label: 'Herramientas — Visitas' },
-  { value: '/cash_flow/eggs', label: 'Eggs' },
-]
+import { LANDING_PAGES } from 'src/constants/commons'
 
 const ROLE_LABELS = {
   superAdmin: 'Super Admin',

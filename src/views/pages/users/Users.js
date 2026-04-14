@@ -19,6 +19,7 @@ import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/App/StandardForm'
 import { sendUserPasswordReset } from 'src/services/providers/firebase/Security/users'
+import { LANDING_PAGES } from 'src/constants/commons'
 
 const ROLES = ['superAdmin', 'manager', 'conductor']
 
@@ -42,6 +43,7 @@ const EMPTY = {
   active: true,
   password: '',
   confirmPassword: '',
+  landingPage: '/cash_flow/dashboard',
 }
 
 const RoleBadge = ({ role }) => (
@@ -113,6 +115,19 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {ROLE_LABELS[r]}
+            </option>
+          ))}
+        </select>
+      </StandardField>
+      <StandardField label="Página de inicio">
+        <select
+          className={SF.select}
+          value={form.landingPage ?? '/cash_flow/dashboard'}
+          onChange={set('landingPage')}
+        >
+          {LANDING_PAGES.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
             </option>
           ))}
         </select>

@@ -57,12 +57,13 @@ export const createUser = async ({ username, name, role, email, active, password
 }
 
 // Full update — used by admin Users module (has role + active)
-export const updateUser = async (username, { name, role, email, active }) => {
+export const updateUser = async (username, { name, role, email, active, landingPage }) => {
   await updateDoc(doc(db, COL, username), {
     name,
     role,
     email: email || null,
     active: active !== false,
+    landingPage: landingPage || null,
   })
 }
 
