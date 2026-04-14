@@ -212,10 +212,14 @@ const NotificationSettings = () => {
       )}
 
       <h6 className="text-secondary mb-2">Horarios — Pico y Placa</h6>
-      <p className="text-secondary small mb-3">
+      <p className="text-secondary small mb-1">
         Selecciona las horas a las que quieres recibir la notificación. Se almacena localmente en
         este dispositivo.
       </p>
+      <div className="d-flex gap-3 mb-3" style={{ fontSize: 12 }}>
+        <span><CBadge color="primary">&nbsp;</CBadge> Predeterminada</span>
+        <span><CBadge color="success">&nbsp;</CBadge> Personalizada</span>
+      </div>
       {notifyHours === null ? (
         <CSpinner size="sm" />
       ) : (
@@ -223,11 +227,13 @@ const NotificationSettings = () => {
           <div className="d-flex flex-wrap gap-2 mb-3">
             {ALL_HOURS.map((h) => {
               const selected = notifyHours.includes(h)
+              const isDefault = DEFAULT_HOURS.includes(h)
+              const color = isDefault ? 'primary' : (selected ? 'success' : 'secondary')
               return (
                 <CButton
                   key={h}
                   size="sm"
-                  color={selected ? 'primary' : 'secondary'}
+                  color={color}
                   variant={selected ? undefined : 'outline'}
                   onClick={() => toggleHour(h)}
                   style={{ minWidth: 56, fontVariantNumeric: 'tabular-nums' }}

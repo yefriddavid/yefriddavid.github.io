@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -32,12 +32,26 @@ const AppHeaderDropdown = () => {
   const profile = useSelector((s) => s.profile.data)
   const [versionOpen, setVersionOpen] = useState(false)
 
-  const avatarSrc = profile?.avatar || (profile ? DEFAULT_AVATAR : avatar8)
+  const AVATAR_KEY = 'cached-avatar'
+
+  // Seed from cache so the avatar renders immediately on mount
+  const [cachedAvatar, setCachedAvatar] = useState(() => localStorage.getItem(AVATAR_KEY))
+
+  // Keep cache in sync whenever the profile avatar changes
+  useEffect(() => {
+    if (profile?.avatar) {
+      localStorage.setItem(AVATAR_KEY, profile.avatar)
+      setCachedAvatar(profile.avatar)
+    }
+  }, [profile?.avatar])
+
+  const avatarSrc = profile?.avatar || cachedAvatar || (profile ? DEFAULT_AVATAR : avatar8)
   const displayName = profile?.name || profile?.username || null
 
   const logout = async () => {
     const sessionId = localStorage.getItem('sessionId')
     if (sessionId) deleteSession(sessionId).catch(() => {})
+    localStorage.removeItem(AVATAR_KEY)
     await signOut() // clears Firebase Auth session + localStorage
     dispatch(clearProfile())
     navigate('/login')
