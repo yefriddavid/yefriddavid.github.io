@@ -568,38 +568,26 @@ function SummaryTable({ distributions }) {
     distribution: computeDistribution(d.salary, d.invert, d.rows),
   }))
 
-  const allRows = []
-  const seen = new Set()
+  // Collect unique targets preserving first-seen order
+  const allTargetKeys = []
+  const seenTargets = new Set()
   for (const d of computed) {
     for (const r of d.distribution) {
-      const key = `${r.name || '(sin nombre)'}||${r.target || ''}`
-      if (!seen.has(key)) { seen.add(key); allRows.push({ name: r.name || '(sin nombre)', target: r.target || '' }) }
+      const key = r.target || ''
+      if (!seenTargets.has(key)) { seenTargets.add(key); allTargetKeys.push(key) }
     }
   }
 
-  const allTargets = new Set()
-  for (const d of computed) {
-    if (d.invert > 0) allTargets.add(d.invertTarget || '__none__')
-    for (const r of d.distribution) allTargets.add(r.target || '__none__')
-  }
-  const targetList = [...allTargets].sort((a, b) => {
-    if (a === '__none__') return 1
-    if (b === '__none__') return -1
-    return a.localeCompare(b)
-  })
-
-  const targetTotals = (d) => {
+  // For each distribution, sum amounts grouped by target
+  const amountByTarget = (d) => {
     const totals = {}
-    if (d.invert > 0) {
-      const k = d.invertTarget || '__none__'
-      totals[k] = (totals[k] ?? 0) + d.invert
-    }
     for (const r of d.distribution) {
-      const k = r.target || '__none__'
-      totals[k] = (totals[k] ?? 0) + (r.amount || 0)
+      const key = r.target || ''
+      totals[key] = (totals[key] ?? 0) + (r.amount || 0)
     }
     return totals
   }
+
 
   const cell = { padding: '8px 12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap', fontSize: 13 }
   const colW = 150
@@ -641,47 +629,25 @@ function SummaryTable({ distributions }) {
               ))}
             </tr>
 
-            {allRows.map(({ name, target }, i) => (
-              <tr key={`${name}||${target}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
-                <td style={{ ...cell, position: 'sticky', left: 0, background: i % 2 === 0 ? '#fff' : '#fafbfc', zIndex: 1 }}>
-                  {target
-                    ? <span style={{ fontWeight: 500, color: '#1a1a2e' }}>{target}</span>
-                    : <span style={{ color: '#adb5bd', fontStyle: 'italic' }}>Sin target</span>
-                  }
-                </td>
-                {computed.map((d) => {
-                  const row = d.distribution.find((r) => (r.name || '(sin nombre)') === name && (r.target || '') === target)
-                  if (!row) return <td key={d.id} style={{ ...cell, textAlign: 'right', color: '#adb5bd' }}>—</td>
-                  const badge = row.type === 'percent' ? `${row.value}%` : row.type === 'value' ? fmt(row.value) : 'restante'
-                  return (
-                    <td key={d.id} style={{ ...cell, textAlign: 'right' }}>
-                      <span style={{ fontWeight: 700, color: row.amount < 0 ? '#e03131' : '#1a1a2e' }}>{fmt(row.amount)}</span>
-                      <span style={{ fontSize: 10, color: '#adb5bd', marginLeft: 5 }}>{badge}</span>
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-
-            {targetList.length > 0 && (
-              <tr>
-                <td colSpan={computed.length + 1} style={{ padding: '6px 12px', background: '#1a1a2e', color: '#adb5bd', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Total por target
-                </td>
-              </tr>
-            )}
-            {targetList.map((target, i) => {
-              const totals = computed.map((d) => targetTotals(d)[target] ?? null)
+            {allTargetKeys.map((target, i) => {
+              const bg = i % 2 === 0 ? '#fff' : '#fafbfc'
               return (
-                <tr key={target} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
-                  <td style={{ ...cell, color: target === '__none__' ? '#adb5bd' : '#1a1a2e', fontStyle: target === '__none__' ? 'italic' : 'normal', paddingLeft: 20, position: 'sticky', left: 0, background: i % 2 === 0 ? '#fff' : '#fafbfc', zIndex: 1 }}>
-                    {target === '__none__' ? 'Sin target' : target}
+                <tr key={target || '__none__'} style={{ background: bg }}>
+                  <td style={{ ...cell, position: 'sticky', left: 0, background: bg, zIndex: 1 }}>
+                    {target
+                      ? <span style={{ fontWeight: 500, color: '#1a1a2e' }}>{target}</span>
+                      : <span style={{ color: '#adb5bd', fontStyle: 'italic' }}>Sin target</span>
+                    }
                   </td>
-                  {totals.map((amount, idx) => (
-                    <td key={idx} style={{ ...cell, textAlign: 'right', fontWeight: 700, color: amount === null ? '#adb5bd' : '#1a1a2e' }}>
-                      {amount === null ? '—' : fmt(amount)}
-                    </td>
-                  ))}
+                  {computed.map((d) => {
+                    const totals = amountByTarget(d)
+                    const amount = totals[target] ?? null
+                    return (
+                      <td key={d.id} style={{ ...cell, textAlign: 'right', fontWeight: 700, color: amount === null ? '#adb5bd' : amount < 0 ? '#e03131' : '#1a1a2e' }}>
+                        {amount === null ? '—' : fmt(amount)}
+                      </td>
+                    )
+                  })}
                 </tr>
               )
             })}
