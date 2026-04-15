@@ -264,8 +264,22 @@ npm start              # Dev server (http://localhost:3000)
 npm run build          # Build de producción → /build
 npm run serve          # Preview del build
 npm run lint           # ESLint en src/**/*.js
+npm test               # Ejecutar pruebas unitarias (Vitest)
+npm run cy:run         # Ejecutar pruebas E2E en modo headless (Cypress)
 npm run deploy         # Build + deploy a GitHub Pages
 ```
+
+---
+
+## Pruebas
+
+El proyecto cuenta con pruebas unitarias y de extremo a extremo (E2E):
+
+| Comando | Herramienta | Descripción |
+|---|---|---|
+| `npm test` | **Vitest** | Ejecuta todas las pruebas unitarias y de integración de la carpeta `src/`. |
+| `npm run cy:run` | **Cypress** | Levanta automáticamente un servidor en el puerto 3001 y ejecuta las pruebas E2E en modo headless. (Requiere `npm run build` previo). |
+| `npm run cy:open` | **Cypress** | Abre el panel interactivo de Cypress para depurar pruebas E2E. |
 
 ---
 
