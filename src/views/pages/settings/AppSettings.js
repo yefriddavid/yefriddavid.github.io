@@ -9,14 +9,16 @@ import {
   CTabContent,
   CTabPane,
 } from '@coreui/react'
-import { cilSettings, cilBell, cilStorage } from '@coreui/icons'
+import { cilSettings, cilBell, cilStorage, cilCode } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import NotificationSettings from './tabs/NotificationSettings'
 import StorageSettings from './tabs/StorageSettings'
+import AppVariablesSettings from './tabs/AppVariablesSettings'
 
 const TABS = [
   { key: 'notifications', label: 'Notifications', icon: cilBell },
   { key: 'storage', label: 'Storage', icon: cilStorage },
+  { key: 'variables', label: 'App Variables', icon: cilCode },
 ]
 
 const AppSettings = () => {
@@ -49,6 +51,9 @@ const AppSettings = () => {
           </CTabPane>
           <CTabPane visible={activeTab === 'storage'}>
             <StorageSettings />
+          </CTabPane>
+          <CTabPane visible={activeTab === 'variables'}>
+            <AppVariablesSettings />
           </CTabPane>
         </CTabContent>
       </CCardBody>

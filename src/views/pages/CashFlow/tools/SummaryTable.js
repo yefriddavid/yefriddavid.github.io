@@ -1,15 +1,26 @@
 import React from 'react'
-import { fmt, computeDistribution } from './salaryUtils'
+import { fmt, computeDistribution, parseRangeFromName, matchesRange } from './salaryUtils'
+import { useAppSetting } from 'src/hooks/useAppSetting'
 
 const cell = { padding: '8px 12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap', fontSize: 13 }
 const colW = 150
 const sticky = { position: 'sticky', left: 0, zIndex: 1, borderRight: '2px solid #dee2e6' }
 
-function PivotedTable({ computed, allTargetKeys, amountByTarget }) {
+function PivotedTable({ computed, allTargetKeys, amountByTarget, eggPrice }) {
   const allKeys = allTargetKeys.length ? allTargetKeys : ['']
+  const fmtPrice = (v) => Number(v).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 
   return (
     <div style={{ overflowX: 'auto' }}>
+      {eggPrice !== null && (
+        <div style={{ padding: '8px 14px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, color: '#6c757d' }}>Precio huevo:</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#e67700' }}>
+            🥚 {fmtPrice(Number(eggPrice))}
+            {/*fmtPrice(Number(eggPrice) * 1000)*/}
+          </span>
+        </div>
+      )}
       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: allKeys.length * colW + 180 }}>
         <thead>
           <tr style={{ background: '#f8f9fa' }}>
@@ -41,12 +52,59 @@ function PivotedTable({ computed, allTargetKeys, amountByTarget }) {
         </thead>
         <tbody>
           {computed.map((d, i) => {
+            const range = parseRangeFromName(d.name)
+            const isMatch = matchesRange(range, eggPrice / 1000)
             const totals = amountByTarget(d)
-            const bg = i % 2 === 0 ? '#fff' : '#fafbfc'
+            const baseBg = i % 2 === 0 ? '#fff' : '#fafbfc'
+
+            const rowStyle = isMatch
+              ? {
+                  background: 'linear-gradient(90deg, #fff3cd 0%, #fffce8 50%, #fff 100%)',
+                  borderLeft: '4px solid #f59f00',
+                  position: 'relative',
+                }
+              : { background: baseBg }
+
+            const stickyBg = isMatch
+              ? 'linear-gradient(90deg, #fff3cd 0%, #fffce8 100%)'
+              : baseBg
+
             return (
-              <tr key={d.id} style={{ background: bg }}>
-                <td style={{ ...cell, ...sticky, fontWeight: 600, color: '#1a1a2e', background: bg }}>
-                  {d.name}
+              <tr key={d.id} style={rowStyle}>
+                <td
+                  style={{
+                    ...cell,
+                    ...sticky,
+                    fontWeight: 600,
+                    color: '#1a1a2e',
+                    background: stickyBg,
+                    paddingLeft: isMatch ? 10 : cell.padding.split(' ')[1],
+                  }}
+                >
+                  {isMatch ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <span>{d.name}</span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          background: 'linear-gradient(90deg, #f59f00, #e67700)',
+                          color: '#fff',
+                          borderRadius: 8,
+                          padding: '1px 7px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3,
+                          alignSelf: 'flex-start',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        🥚 precio actual
+                      </span>
+                    </div>
+                  ) : (
+                    d.name
+                  )}
                 </td>
                 {allKeys.map((target) => {
                   const amount = totals[target] ?? null
@@ -56,8 +114,8 @@ function PivotedTable({ computed, allTargetKeys, amountByTarget }) {
                       style={{
                         ...cell,
                         textAlign: 'right',
-                        fontWeight: 700,
-                        color: amount === null ? '#adb5bd' : amount < 0 ? '#e03131' : '#1a1a2e',
+                        fontWeight: isMatch ? 800 : 700,
+                        color: amount === null ? '#adb5bd' : amount < 0 ? '#e03131' : isMatch ? '#e67700' : '#1a1a2e',
                       }}
                     >
                       {amount === null ? '—' : fmt(amount)}
@@ -75,6 +133,7 @@ function PivotedTable({ computed, allTargetKeys, amountByTarget }) {
 
 export default function SummaryTable({ distributions }) {
   const [pivoted, setPivoted] = React.useState(false)
+  const { value: eggPrice } = useAppSetting('egg_current_price')
 
   const computed = distributions.map((d) => ({
     ...d,
@@ -133,7 +192,7 @@ export default function SummaryTable({ distributions }) {
       </div>
 
       {pivoted ? (
-        <PivotedTable computed={computed} allTargetKeys={allTargetKeys} amountByTarget={amountByTarget} />
+        <PivotedTable computed={computed} allTargetKeys={allTargetKeys} amountByTarget={amountByTarget} eggPrice={eggPrice} />
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table
