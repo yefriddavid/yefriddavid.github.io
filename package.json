@@ -25,7 +25,10 @@
     "test:watch": "vitest",
     "serve:test": "vite preview --port 3005",
     "cy:open": "cypress open",
-    "cy:run": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\""
+    "cy:run": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\"",
+    "cy:run:raw": "cypress run --config baseUrl=http://localhost:3005",
+    "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
+    "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\""
   },
   "dependencies": {
     "@coreui/chartjs": "^4.0.0",
@@ -84,6 +87,8 @@
     "autoprefixer": "^10.4.20",
     "cross-env": "^10.1.0",
     "cypress": "^15.13.1",
+    "cypress-multi-reporters": "^2.0.5",
+    "cypress-parallel": "^0.15.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -91,6 +96,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "firebase-admin": "^13.7.0",
     "jsdom": "^29.0.1",
+    "mocha-junit-reporter": "^2.2.1",
     "postcss": "^8.4.49",
     "prettier": "3.3.3",
     "sass": "^1.81.0",

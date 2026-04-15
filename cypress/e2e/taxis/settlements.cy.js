@@ -3,6 +3,7 @@ const PASSWORD = Cypress.env('PASSWORD')
 
 describe('Settlements Page', () => {
   beforeEach(() => {
+    cy.viewport('macbook-15')
     // Login before each test
     cy.visit('/login')
     cy.get('input[autocomplete="username"]').type(USERNAME)
