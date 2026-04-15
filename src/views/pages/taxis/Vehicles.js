@@ -160,8 +160,7 @@ const Vehiculos = () => {
         ? `Placas restringidas: ${restricted.map((v) => v.plate).join(', ')}`
         : 'Ningún vehículo tiene restricción hoy.'
 
-      // Android requires showNotification() via SW — new Notification() is not supported on mobile
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      if ('serviceWorker' in navigator) {
         const swReg = await navigator.serviceWorker.ready
         await swReg.showNotification(title, { body, icon: '/icons/icon.svg' })
       } else {

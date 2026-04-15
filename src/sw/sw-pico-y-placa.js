@@ -50,7 +50,12 @@ export async function checkPicoYPlaca() {
     const title = 'Pico y Placa'
     const body = lines.join(' | ')
 
-    await self.registration.showNotification(title, {
+    // Works in both SW context (self.registration) and main thread (navigator.serviceWorker.ready)
+    const reg =
+      typeof self.registration !== 'undefined'
+        ? self.registration
+        : await navigator.serviceWorker.ready
+    await reg.showNotification(title, {
       body,
       icon: '/icons/icon.svg',
       tag: 'pico-y-placa',
