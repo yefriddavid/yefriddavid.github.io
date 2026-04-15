@@ -22,7 +22,42 @@ export const FIREBASE_API_KEY = firebaseConfig.apiKey
 
 
 
-//export const COL =
+// ── Collection names ──────────────────────────────────────────────────────────
 export const COL_APP_SETTINGS = 'App_Settings'
-export const COl_CASHFLOW_ACCOUNTSMASTER = 'CashFlow_AccountsMaster'
+
+// CashFlow
+export const COL_CASHFLOW_ACCOUNTS_MASTER = 'CashFlow_AccountsMaster'
+export const COL_CASHFLOW_TRANSACTIONS = 'CashFlow_Transactions'
+export const COL_CASHFLOW_ASSETS = 'CashFlow_assets'
+export const COL_CASHFLOW_EGGS = 'CashFlow_eggs'
+export const COL_CASHFLOW_MY_PROJECTS = 'CashFlow_my_projects'
+export const COL_CASHFLOW_SALARY_DISTRIBUTION = 'CashFlow_salary_distribution'
+export const COL_CASHFLOW_ACCOUNT_STATUS_NOTES = 'CashFlow_account_status_period_notes'
+
+// Taxi
+export const COL_TAXI_SETTLEMENTS = 'CashFlow_taxi_liquidaciones'
+export const COL_TAXI_DRIVERS = 'CashFlow_taxi_conductores'
+export const COL_TAXI_VEHICLES = 'CashFlow_taxi_vehiculos'
+export const COL_TAXI_EXPENSES = 'CashFlow_taxi_gastos'
+export const COL_TAXI_PARTNERS = 'CashFlow_taxi_partners'
+export const COL_TAXI_DISTRIBUTIONS = 'CashFlow_taxi_distributions'
+export const COL_TAXI_PERIOD_NOTES = 'CashFlow_taxi_period_notes'
+export const COL_TAXI_AUDIT_NOTES = 'CashFlow_taxi_audit_notas'
+
+// Contratos
+export const COL_CONTRATOS = 'Contratos_Contratos'
+export const COL_CONTRATOS_PROPERTIES = 'Contratos_Inmuebles'
+export const COL_CONTRATOS_OWNERS = 'Contratos_Propietarios'
+export const COL_CONTRATOS_BANK_ACCOUNTS = 'Contratos_CuentasBancarias'
+export const COL_CONTRATOS_NOTES = 'Contratos_contract_notes'
+export const COL_CONTRATOS_ATTACHMENTS = 'Contratos_contract_attachments'
+
+// Security
+export const COL_USERS = 'users'
+export const COL_SESSIONS = 'sessions'
+export const COL_FCM_TOKENS = 'fcm_tokens'
+
+// Others
+export const COL_PAGE_VISITS = 'page_visits'
+export const COL_PAYMENT_VAUCHERS = (year) => `paymentVauchers-${year}`
 

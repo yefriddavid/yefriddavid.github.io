@@ -388,6 +388,7 @@ export default function AccountsMaster() {
   )
   const [formModal, setFormModal] = useState(null)
   const [typeFilter, setTypeFilter] = useState('all')
+  const [activeFilter, setActiveFilter] = useState('active')
   const [nameSearch, setNameSearch] = useState('')
 
   useEffect(() => {
@@ -396,6 +397,8 @@ export default function AccountsMaster() {
 
   const filtered = (data ?? []).filter((r) => {
     if (typeFilter !== 'all' && r.type !== typeFilter) return false
+    if (activeFilter === 'active' && !r.active) return false
+    if (activeFilter === 'inactive' && r.active !== false) return false
     if (nameSearch && !r.name?.toLowerCase().includes(nameSearch.toLowerCase())) return false
     return true
   })
@@ -510,6 +513,22 @@ export default function AccountsMaster() {
                 width: 200,
               }}
             />
+            <select
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value)}
+              style={{
+                fontSize: 13,
+                padding: '4px 10px',
+                borderRadius: 6,
+                border: '1px solid var(--cui-secondary)',
+                background: '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="all">Todas</option>
+              <option value="active">Activas</option>
+              <option value="inactive">Inactivas</option>
+            </select>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}

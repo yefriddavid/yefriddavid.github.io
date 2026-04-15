@@ -149,6 +149,9 @@ export default defineConfig(() => {
       setupFiles: ['src/__tests__/setup.js'],
       exclude: ["node_modules", "/mnt/Zeus/Workspace/me/sources/My-Admin/src/views/BACKUP/management/taxis/__tests__/*"],
       alias: {
+        'firebase/app': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-app.js'),
+        'firebase/auth': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-auth.js'),
+        'firebase/firestore': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-firestore.js'),
         'firebase/messaging': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-messaging.js'),
       },
     },

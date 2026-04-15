@@ -1,4 +1,4 @@
-import { db, COl_CASHFLOW_ACCOUNTSMASTER } from '../settings'
+import { db, COL_CASHFLOW_ACCOUNTS_MASTER } from '../settings'
 
 import {
   collection,
@@ -19,7 +19,7 @@ export { MONTH_NAMES } from 'src/constants/commons'
 
 
 export const getAccountsMaster = async () => {
-  const q = query(collection(db, COl_CASHFLOW_ACCOUNTSMASTER), orderBy('name'))
+  const q = query(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), orderBy('name'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
@@ -48,7 +48,7 @@ export const getAccountsMaster = async () => {
 }
 
 export const addAccountMaster = async (payload) => {
-  const ref = await addDoc(collection(db, COl_CASHFLOW_ACCOUNTSMASTER), {
+  const ref = await addDoc(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), {
     ...payload,
     active: true,
     created_at: serverTimestamp(),
@@ -58,9 +58,9 @@ export const addAccountMaster = async (payload) => {
 
 export const updateAccountMaster = async (id, payload) => {
   const { id: _id, created_at: _ca, ...rest } = payload
-  await updateDoc(doc(db, COl_CASHFLOW_ACCOUNTSMASTER, id), rest)
+  await updateDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id), rest)
 }
 
 export const deleteAccountMaster = async (id) => {
-  await deleteDoc(doc(db, COl_CASHFLOW_ACCOUNTSMASTER, id))
+  await deleteDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id))
 }
