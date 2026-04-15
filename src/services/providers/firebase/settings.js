@@ -19,3 +19,10 @@ export const messaging = getMessaging(app)
 
 // Exported for REST API calls
 export const FIREBASE_API_KEY = firebaseConfig.apiKey
+
+
+
+//export const COL =
+export const COL_APP_SETTINGS = 'App_settings'
+export const COl_CASHFLOW_ACCOUNTSMASTER = 'CashFlow_AccountsMaster'
+

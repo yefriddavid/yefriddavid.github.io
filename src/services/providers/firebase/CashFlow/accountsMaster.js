@@ -1,4 +1,5 @@
-import { db } from '../settings'
+import { db, COl_CASHFLOW_ACCOUNTSMASTER } from '../settings'
+
 import {
   collection,
   addDoc,
@@ -11,14 +12,14 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 
-const COL = 'CashFlow_AccountsMaster'
+//const COL = 'CashFlow_AccountsMaster'
 
 export { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 export { MONTH_NAMES } from 'src/constants/commons'
 
 
 export const getAccountsMaster = async () => {
-  const q = query(collection(db, COL), orderBy('name'))
+  const q = query(collection(db, COl_CASHFLOW_ACCOUNTSMASTER), orderBy('name'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
@@ -47,7 +48,7 @@ export const getAccountsMaster = async () => {
 }
 
 export const addAccountMaster = async (payload) => {
-  const ref = await addDoc(collection(db, COL), {
+  const ref = await addDoc(collection(db, COl_CASHFLOW_ACCOUNTSMASTER), {
     ...payload,
     active: true,
     created_at: serverTimestamp(),
@@ -57,9 +58,9 @@ export const addAccountMaster = async (payload) => {
 
 export const updateAccountMaster = async (id, payload) => {
   const { id: _id, created_at: _ca, ...rest } = payload
-  await updateDoc(doc(db, COL, id), rest)
+  await updateDoc(doc(db, COl_CASHFLOW_ACCOUNTSMASTER, id), rest)
 }
 
 export const deleteAccountMaster = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await deleteDoc(doc(db, COl_CASHFLOW_ACCOUNTSMASTER, id))
 }
