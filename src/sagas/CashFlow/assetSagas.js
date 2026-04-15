@@ -5,7 +5,6 @@ import * as fb from '../../services/providers/firebase/CashFlow/assets'
 
 function* loadAssets() {
   try {
-    //const assets = yield call(idb.getAllAssets)
     const assets = yield call(fb.fetchAll)
     yield put(actions.loadSuccess(assets))
   } catch (e) {
@@ -15,12 +14,10 @@ function* loadAssets() {
 
 function* saveAsset({ payload }) {
   try {
-    //console.log(payload)
-    //yield call(idb.saveAsset, payload)
     yield call(fb.createAsset, payload)
     yield put(actions.saveSuccess(payload))
   } catch (e) {
-    yield put(actions.saveError(e.message + " payload:" + JSON.stringify(payload)))
+    yield put(actions.saveError(e.message))
   }
 }
 

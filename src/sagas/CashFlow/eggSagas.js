@@ -31,6 +31,7 @@ function* createEgg({ payload }) {
 
 function* updateEgg({ payload }) {
   try {
+    yield put(eggActions.beginRequestUpdate())
     yield call(eggService.updateEgg, payload.id, payload)
     yield put(eggActions.successRequestUpdate(payload))
   } catch (e) {

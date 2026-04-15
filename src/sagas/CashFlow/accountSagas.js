@@ -13,7 +13,7 @@ function* fetchAccounts({ payload: filters }) {
       yield put(accountActions.successRequest(response))
     }
   } catch (e) {
-    yield put(accountActions.errorRequest(e.toString()))
+    yield put(accountActions.errorRequest(e.message))
   }
 }
 

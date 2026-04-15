@@ -43,15 +43,7 @@ function* addVauchersToAccountPayments({ payload }) {
       yield put(accountActions.appendVauchersToAccount(account))
     }
   } catch (e) {
-    console.log(e)
-  }
-}
-
-function* fetchPaymentVaucher() {
-  try {
-    // placeholder
-  } catch (e) {
-    console.log(e)
+    // silent — UI shows cached/partial data
   }
 }
 
@@ -61,7 +53,6 @@ function* createPaymentVaucher({ payload }) {
     const response = yield call(apiPaymentVaucherServices.CreatePaymentVaucher, payload)
     yield put(paymentVaucherActions.successRequestCreate(response.data))
   } catch (e) {
-    console.log(e)
     yield put(paymentVaucherActions.errorRequestCreate(e.message))
   }
 }
@@ -69,7 +60,6 @@ function* createPaymentVaucher({ payload }) {
 export default function* rootSagas() {
   yield all([
     takeLatest([accountActions.loadVauchersToAccountPayment], addVauchersToAccountPayments),
-    takeLatest([paymentVaucherActions.fetchRequest], fetchPaymentVaucher),
     takeLatest([paymentActions.successRequestCreate], createPaymentVaucher),
   ])
 }

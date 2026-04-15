@@ -44,10 +44,9 @@ function* deleteTransaction({ payload }) {
 
 function* importTransactions({ payload }) {
   try {
-    const items = payload
-    for (let i = 0; i < items.length; i++) {
-      yield call(service.addTransaction, items[i])
-      yield put(actions.importProgressUpdate(Math.round(((i + 1) / items.length) * 100)))
+    for (let i = 0; i < payload.length; i++) {
+      yield call(service.addTransaction, payload[i])
+      yield put(actions.importProgressUpdate(Math.round(((i + 1) / payload.length) * 100)))
     }
     const currentYear = new Date().getFullYear()
     const data = yield call(service.getTransactions, currentYear)

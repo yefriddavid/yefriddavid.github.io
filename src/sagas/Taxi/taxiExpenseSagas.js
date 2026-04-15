@@ -1,7 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as taxiExpenseActions from '../../actions/Taxi/taxiExpenseActions'
 import * as expenseService from '../../services/providers/firebase/Taxi/taxiExpenses'
-import { toggleExpensePaid } from '../../services/providers/firebase/Taxi/taxiExpenses'
 
 function* fetchExpenses() {
   try {
@@ -35,7 +34,7 @@ function* deleteExpense({ payload }) {
 
 function* togglePaid({ payload }) {
   try {
-    yield call(toggleExpensePaid, payload.id, payload.paid)
+    yield call(expenseService.toggleExpensePaid, payload.id, payload.paid)
     yield put(taxiExpenseActions.successRequestTogglePaid(payload))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestTogglePaid(e.message))
