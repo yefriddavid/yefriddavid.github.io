@@ -23,6 +23,6 @@ export const FIREBASE_API_KEY = firebaseConfig.apiKey
 
 
 //export const COL =
-export const COL_APP_SETTINGS = 'App_settings'
+export const COL_APP_SETTINGS = 'App_Settings'
 export const COl_CASHFLOW_ACCOUNTSMASTER = 'CashFlow_AccountsMaster'
 
