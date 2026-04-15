@@ -9,7 +9,7 @@ import * as paymentVaucherActions from '../../actions/CashFlow/paymentVaucherAct
 import * as apiPaymentVaucherServices from '../../services/providers/firebase/CashFlow/paymentVaucher'
 import { getCache, setCache } from '../../services/voucherCache'
 
-function* addVauchersToAccountPayments({ payload }) {
+export function* addVauchersToAccountPayments({ payload }) {
   try {
     const account = cloneDeep(payload)
     const { payments } = account
@@ -47,7 +47,7 @@ function* addVauchersToAccountPayments({ payload }) {
   }
 }
 
-function* createPaymentVaucher({ payload }) {
+export function* createPaymentVaucher({ payload }) {
   try {
     yield put(paymentVaucherActions.beginRequestCreate())
     const response = yield call(apiPaymentVaucherServices.CreatePaymentVaucher, payload)

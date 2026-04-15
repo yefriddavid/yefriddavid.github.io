@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiDriverActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiDrivers'
 
-function* fetchDrivers() {
+export function* fetchDrivers() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getDrivers)
@@ -12,7 +12,7 @@ function* fetchDrivers() {
   }
 }
 
-function* createDriver({ payload }) {
+export function* createDriver({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addDriver, payload)
@@ -28,7 +28,7 @@ function* createDriver({ payload }) {
   }
 }
 
-function* updateDriver({ payload }) {
+export function* updateDriver({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateDriver, payload.id, payload)
@@ -38,7 +38,7 @@ function* updateDriver({ payload }) {
   }
 }
 
-function* deleteDriver({ payload }) {
+export function* deleteDriver({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteDriver, payload.id)

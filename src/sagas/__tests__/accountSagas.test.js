@@ -2,21 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as accountActions from '../../actions/CashFlow/accountActions'
 import * as apiService from '../../services/providers/api/accounts'
-
-// Step-through generator copy (standard redux-saga testing pattern)
-function* fetchAccounts({ payload: filters }) {
-  try {
-    yield put(accountActions.beginRequest())
-    const response = yield call(apiService.fetchAccounts, filters)
-    if (response.status === 'error') {
-      yield put(accountActions.errorRequest(response.message))
-    } else {
-      yield put(accountActions.successRequest(response))
-    }
-  } catch (e) {
-    yield put(accountActions.errorRequest(e.toString()))
-  }
-}
+import { fetchAccounts } from '../CashFlow/accountSagas'
 
 describe('accountSagas', () => {
   describe('fetchAccounts', () => {
@@ -47,7 +33,7 @@ describe('accountSagas', () => {
       gen.next()  // beginRequest
       gen.next()  // call fetchAccounts
       const error = new Error('Network error')
-      expect(gen.throw(error).value).toEqual(put(accountActions.errorRequest(error.toString())))
+      expect(gen.throw(error).value).toEqual(put(accountActions.errorRequest(error.message)))
     })
   })
 })

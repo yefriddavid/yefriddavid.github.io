@@ -3,7 +3,7 @@ import * as actions from '../../actions/Taxi/taxiVehicleActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiVehicles'
 import { saveVehicles } from '../../services/providers/indexeddb/CashFlow/taxiVehicles'
 
-function* fetchVehicles() {
+export function* fetchVehicles() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getVehicles)
@@ -18,7 +18,7 @@ function* fetchVehicles() {
   }
 }
 
-function* createVehicle({ payload }) {
+export function* createVehicle({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addVehicle, payload)
@@ -33,7 +33,7 @@ function* createVehicle({ payload }) {
   }
 }
 
-function* updateVehicle({ payload }) {
+export function* updateVehicle({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateVehicle, payload.id, payload)
@@ -43,7 +43,7 @@ function* updateVehicle({ payload }) {
   }
 }
 
-function* deleteVehicle({ payload }) {
+export function* deleteVehicle({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteVehicle, payload.id)
@@ -53,7 +53,7 @@ function* deleteVehicle({ payload }) {
   }
 }
 
-function* updateRestrictions({ payload }) {
+export function* updateRestrictions({ payload }) {
   try {
     yield call(service.updateRestrictions, payload.id, payload.restrictions)
     yield put(actions.successRequestUpdateRestrictions(payload))

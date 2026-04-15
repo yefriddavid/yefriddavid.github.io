@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/CashFlow/transactionActions'
 import * as service from '../../services/providers/firebase/CashFlow/transactions'
 
-function* fetchTransactions({ payload }) {
+export function* fetchTransactions({ payload }) {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getTransactions, payload?.year ?? new Date().getFullYear())
@@ -12,7 +12,7 @@ function* fetchTransactions({ payload }) {
   }
 }
 
-function* createTransaction({ payload }) {
+export function* createTransaction({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addTransaction, payload)
@@ -22,7 +22,7 @@ function* createTransaction({ payload }) {
   }
 }
 
-function* updateTransaction({ payload }) {
+export function* updateTransaction({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateTransaction, payload.id, payload)
@@ -32,7 +32,7 @@ function* updateTransaction({ payload }) {
   }
 }
 
-function* deleteTransaction({ payload }) {
+export function* deleteTransaction({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteTransaction, payload.id)
@@ -42,7 +42,7 @@ function* deleteTransaction({ payload }) {
   }
 }
 
-function* importTransactions({ payload }) {
+export function* importTransactions({ payload }) {
   try {
     for (let i = 0; i < payload.length; i++) {
       yield call(service.addTransaction, payload[i])

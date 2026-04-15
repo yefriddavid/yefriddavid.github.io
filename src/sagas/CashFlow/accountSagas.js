@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as accountActions from '../../actions/CashFlow/accountActions'
 import * as apiService from '../../services/providers/api/accounts'
 
-function* fetchAccounts({ payload: filters }) {
+export function* fetchAccounts({ payload: filters }) {
   try {
     yield put(accountActions.beginRequest())
     const response = yield call(apiService.fetchAccounts, filters)

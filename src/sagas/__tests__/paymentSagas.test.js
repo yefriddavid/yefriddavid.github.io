@@ -2,38 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as paymentActions from '../../actions/CashFlow/paymentActions'
 import * as apiServices from '../../services/providers/api/payments'
+import { fetchPayments, createPayment, deletePayment } from '../CashFlow/paymentSagas'
 import { makePayment } from '../../__tests__/factories'
-
-// Step-through generator copies (standard redux-saga testing pattern)
-function* fetchPayments({ payload }) {
-  try {
-    yield put(paymentActions.beginRequestFetch())
-    const response = yield call(apiServices.fetchPayments, payload)
-    yield put(paymentActions.successRequestFetch(response.data))
-  } catch (e) {
-    yield put(paymentActions.errorRequestFetch(e.message))
-  }
-}
-
-function* createPayment({ payload }) {
-  try {
-    yield put(paymentActions.beginRequestCreate())
-    const response = yield call(apiServices.createPayment, payload)
-    yield put(paymentActions.successRequestCreate({ ...response.data, vaucher: payload.vaucher }))
-  } catch (e) {
-    yield put(paymentActions.errorRequestCreate(e.message))
-  }
-}
-
-function* deletePayment({ payload }) {
-  try {
-    yield put(paymentActions.beginRequestDelete())
-    yield call(apiServices.deletePayment, payload)
-    yield put(paymentActions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(paymentActions.errorRequestDelete(e.message))
-  }
-}
 
 describe('paymentSagas', () => {
   describe('fetchPayments', () => {

@@ -2,49 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/CashFlow/transactionActions'
 import * as service from '../../services/providers/firebase/CashFlow/transactions'
+import { fetchTransactions, createTransaction, updateTransaction, deleteTransaction } from '../CashFlow/transactionSagas'
 
-// Step-through generator copies (standard redux-saga testing pattern)
-function* fetchTransactions({ payload }) {
-  try {
-    yield put(actions.beginRequestFetch())
-    const data = yield call(service.getTransactions, payload?.year ?? new Date().getFullYear())
-    yield put(actions.successRequestFetch(data))
-  } catch (e) {
-    yield put(actions.errorRequestFetch(e.message))
-  }
-}
-
-function* createTransaction({ payload }) {
-  try {
-    yield put(actions.beginRequestCreate())
-    const id = yield call(service.addTransaction, payload)
-    yield put(actions.successRequestCreate({ id, ...payload }))
-  } catch (e) {
-    yield put(actions.errorRequestCreate(e.message))
-  }
-}
-
-function* updateTransaction({ payload }) {
-  try {
-    yield put(actions.beginRequestUpdate())
-    yield call(service.updateTransaction, payload.id, payload)
-    yield put(actions.successRequestUpdate(payload))
-  } catch (e) {
-    yield put(actions.errorRequestUpdate(e.message))
-  }
-}
-
-function* deleteTransaction({ payload }) {
-  try {
-    yield put(actions.beginRequestDelete())
-    yield call(service.deleteTransaction, payload.id)
-    yield put(actions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(actions.errorRequestDelete(e.message))
-  }
-}
-
-// ── Factories ─────────────────────────────────────────────────────────────────
 const makeTxPayload = (overrides = {}) => ({
   type: 'income',
   category: 'Salario',
@@ -55,7 +14,6 @@ const makeTxPayload = (overrides = {}) => ({
   ...overrides,
 })
 
-// ── fetchTransactions ─────────────────────────────────────────────────────────
 describe('fetchTransactions', () => {
   it('beginRequestFetch → getTransactions(year) → successRequestFetch on success', () => {
     const year = 2026
@@ -80,7 +38,6 @@ describe('fetchTransactions', () => {
   })
 })
 
-// ── createTransaction ─────────────────────────────────────────────────────────
 describe('createTransaction', () => {
   it('beginRequestCreate → addTransaction(payload) → successRequestCreate with new id', () => {
     const payload = makeTxPayload()
@@ -107,7 +64,6 @@ describe('createTransaction', () => {
   })
 })
 
-// ── updateTransaction ─────────────────────────────────────────────────────────
 describe('updateTransaction', () => {
   it('beginRequestUpdate → updateTransaction(id, payload) → successRequestUpdate', () => {
     const payload = { id: 'tx-1', ...makeTxPayload(), note: 'updated note' }
@@ -132,7 +88,6 @@ describe('updateTransaction', () => {
   })
 })
 
-// ── deleteTransaction ─────────────────────────────────────────────────────────
 describe('deleteTransaction', () => {
   it('beginRequestDelete → deleteTransaction(id) → successRequestDelete', () => {
     const payload = { id: 'tx-1' }

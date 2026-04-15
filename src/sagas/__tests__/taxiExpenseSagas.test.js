@@ -2,46 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiExpenseActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiExpenses'
+import { fetchExpenses, createExpense, deleteExpense, togglePaid } from '../Taxi/taxiExpenseSagas'
 import { makeExpense } from '../../__tests__/factories'
-
-function* fetchExpenses() {
-  try {
-    yield put(actions.beginRequestFetch())
-    const data = yield call(service.fetchExpenses)
-    yield put(actions.successRequestFetch(data))
-  } catch (e) {
-    yield put(actions.errorRequestFetch(e.message))
-  }
-}
-
-function* createExpense({ payload }) {
-  try {
-    yield put(actions.beginRequestCreate())
-    const id = yield call(service.createExpense, payload)
-    yield put(actions.successRequestCreate({ id, ...payload, amount: Number(payload.amount) }))
-  } catch (e) {
-    yield put(actions.errorRequestCreate(e.message))
-  }
-}
-
-function* deleteExpense({ payload }) {
-  try {
-    yield put(actions.beginRequestDelete())
-    yield call(service.deleteExpense, payload.id)
-    yield put(actions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(actions.errorRequestDelete(e.message))
-  }
-}
-
-function* togglePaid({ payload }) {
-  try {
-    yield call(service.toggleExpensePaid, payload.id, payload.paid)
-    yield put(actions.successRequestTogglePaid(payload))
-  } catch (e) {
-    yield put(actions.errorRequestTogglePaid(e.message))
-  }
-}
 
 describe('taxiExpenseSagas', () => {
   describe('fetchExpenses', () => {

@@ -2,34 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiAuditNoteActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiAuditNotes'
+import { fetchNotes, upsertNote, deleteNote } from '../Taxi/taxiAuditNoteSagas'
 import { makeAuditNote } from '../../__tests__/factories'
-
-function* fetchNotes() {
-  try {
-    const data = yield call(service.getNotes)
-    yield put(actions.successRequestFetch(data))
-  } catch (e) {
-    yield put(actions.errorRequestFetch(e.message))
-  }
-}
-
-function* upsertNote({ payload }) {
-  try {
-    const id = yield call(service.upsertNote, payload)
-    yield put(actions.successRequestUpsert({ id, ...payload }))
-  } catch (e) {
-    yield put(actions.errorRequestUpsert(e.message))
-  }
-}
-
-function* deleteNote({ payload }) {
-  try {
-    yield call(service.deleteNote, payload)
-    yield put(actions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(actions.errorRequestDelete(e.message))
-  }
-}
 
 describe('taxiAuditNoteSagas', () => {
   describe('fetchNotes', () => {

@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiDistributionActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiDistributions'
 
-function* fetchDistributions() {
+export function* fetchDistributions() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getDistributions)
@@ -12,7 +12,7 @@ function* fetchDistributions() {
   }
 }
 
-function* createDistribution({ payload }) {
+export function* createDistribution({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.createDistribution, payload)
@@ -22,7 +22,7 @@ function* createDistribution({ payload }) {
   }
 }
 
-function* updatePartnerPayment({ payload }) {
+export function* updatePartnerPayment({ payload }) {
   try {
     yield put(actions.beginRequestUpdatePayment())
     const paymentData = {
@@ -40,7 +40,7 @@ function* updatePartnerPayment({ payload }) {
   }
 }
 
-function* deleteDistribution({ payload }) {
+export function* deleteDistribution({ payload }) {
   try {
     yield call(service.deleteDistribution, payload.id)
     yield put(actions.successRequestDelete(payload))

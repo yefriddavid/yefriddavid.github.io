@@ -2,66 +2,20 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiVehicleActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiVehicles'
+import { saveVehicles } from '../../services/providers/indexeddb/CashFlow/taxiVehicles'
+import { fetchVehicles, createVehicle, updateVehicle, deleteVehicle, updateRestrictions } from '../Taxi/taxiVehicleSagas'
 import { makeVehicle } from '../../__tests__/factories'
-
-function* fetchVehicles() {
-  try {
-    yield put(actions.beginRequestFetch())
-    const data = yield call(service.getVehicles)
-    yield put(actions.successRequestFetch(data))
-  } catch (e) {
-    yield put(actions.errorRequestFetch(e.message))
-  }
-}
-
-function* createVehicle({ payload }) {
-  try {
-    yield put(actions.beginRequestCreate())
-    const id = yield call(service.addVehicle, payload)
-    yield put(actions.successRequestCreate({ id, ...payload, plate: payload.plate?.toUpperCase(), restrictions: {} }))
-  } catch (e) {
-    yield put(actions.errorRequestCreate(e.message))
-  }
-}
-
-function* updateVehicle({ payload }) {
-  try {
-    yield put(actions.beginRequestUpdate())
-    yield call(service.updateVehicle, payload.id, payload)
-    yield put(actions.successRequestUpdate({ ...payload, plate: payload.plate?.toUpperCase() }))
-  } catch (e) {
-    yield put(actions.errorRequestUpdate(e.message))
-  }
-}
-
-function* deleteVehicle({ payload }) {
-  try {
-    yield put(actions.beginRequestDelete())
-    yield call(service.deleteVehicle, payload.id)
-    yield put(actions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(actions.errorRequestDelete(e.message))
-  }
-}
-
-function* updateRestrictions({ payload }) {
-  try {
-    yield call(service.updateRestrictions, payload.id, payload.restrictions)
-    yield put(actions.successRequestUpdateRestrictions(payload))
-  } catch (e) {
-    yield put(actions.errorRequestUpdateRestrictions(e.message))
-  }
-}
 
 describe('taxiVehicleSagas', () => {
   describe('fetchVehicles', () => {
-    it('begin → getVehicles → success', () => {
+    it('begin → getVehicles → success → IDB sync', () => {
       const gen = fetchVehicles()
       const vehicles = [makeVehicle()]
 
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
       expect(gen.next().value).toEqual(call(service.getVehicles))
       expect(gen.next(vehicles).value).toEqual(put(actions.successRequestFetch(vehicles)))
+      expect(gen.next().value).toEqual(call(saveVehicles, vehicles))  // IDB sync (non-critical)
       expect(gen.next().done).toBe(true)
     })
 

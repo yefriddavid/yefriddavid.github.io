@@ -3,7 +3,7 @@ import * as actions from '../actions/usersActions'
 import * as service from '../services/providers/firebase/Security/users'
 import * as sessionService from '../services/providers/firebase/Security/sessions'
 
-function* fetchUsers() {
+export function* fetchUsers() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getAllUsers)
@@ -13,7 +13,7 @@ function* fetchUsers() {
   }
 }
 
-function* createUser({ payload }) {
+export function* createUser({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     yield call(service.createUser, payload)
@@ -23,7 +23,7 @@ function* createUser({ payload }) {
   }
 }
 
-function* updateUser({ payload }) {
+export function* updateUser({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateUser, payload.username, payload)
@@ -33,7 +33,7 @@ function* updateUser({ payload }) {
   }
 }
 
-function* deleteUser({ payload }) {
+export function* deleteUser({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteUser, payload.username)

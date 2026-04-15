@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as paymentActions from '../../actions/CashFlow/paymentActions'
 import * as apiServices from '../../services/providers/api/payments'
 
-function* fetchPayments({ payload }) {
+export function* fetchPayments({ payload }) {
   try {
     yield put(paymentActions.beginRequestFetch())
     const response = yield call(apiServices.fetchPayments, payload)
@@ -12,7 +12,7 @@ function* fetchPayments({ payload }) {
   }
 }
 
-function* createPayment({ payload }) {
+export function* createPayment({ payload }) {
   try {
     yield put(paymentActions.beginRequestCreate())
     const response = yield call(apiServices.createPayment, payload)
@@ -22,7 +22,7 @@ function* createPayment({ payload }) {
   }
 }
 
-function* deletePayment({ payload }) {
+export function* deletePayment({ payload }) {
   try {
     yield put(paymentActions.beginRequestDelete())
     yield call(apiServices.deletePayment, payload)

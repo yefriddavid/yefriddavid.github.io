@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiAuditNoteActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiAuditNotes'
 
-function* fetchNotes() {
+export function* fetchNotes() {
   try {
     const data = yield call(service.getNotes)
     yield put(actions.successRequestFetch(data))
@@ -11,7 +11,7 @@ function* fetchNotes() {
   }
 }
 
-function* upsertNote({ payload }) {
+export function* upsertNote({ payload }) {
   try {
     const id = yield call(service.upsertNote, payload)
     yield put(actions.successRequestUpsert({ id, ...payload }))
@@ -20,7 +20,7 @@ function* upsertNote({ payload }) {
   }
 }
 
-function* deleteNote({ payload }) {
+export function* deleteNote({ payload }) {
   try {
     yield call(service.deleteNote, payload)
     yield put(actions.successRequestDelete(payload))

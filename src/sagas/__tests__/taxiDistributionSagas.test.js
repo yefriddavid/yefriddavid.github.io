@@ -2,54 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/Taxi/taxiDistributionActions'
 import * as service from '../../services/providers/firebase/Taxi/taxiDistributions'
+import { fetchDistributions, createDistribution, updatePartnerPayment, deleteDistribution } from '../Taxi/taxiDistributionSagas'
 import { makeDistribution } from '../../__tests__/factories'
-
-function* fetchDistributions() {
-  try {
-    yield put(actions.beginRequestFetch())
-    const data = yield call(service.getDistributions)
-    yield put(actions.successRequestFetch(data))
-  } catch (e) {
-    yield put(actions.errorRequestFetch(e.message))
-  }
-}
-
-function* createDistribution({ payload }) {
-  try {
-    yield put(actions.beginRequestCreate())
-    const id = yield call(service.createDistribution, payload)
-    yield put(actions.successRequestCreate({ id, ...payload }))
-  } catch (e) {
-    yield put(actions.errorRequestCreate(e.message))
-  }
-}
-
-function* updatePartnerPayment({ payload }) {
-  try {
-    yield put(actions.beginRequestUpdatePayment())
-    const paymentData = {
-      partnerName: payload.partnerName,
-      percentage: payload.percentage,
-      calculatedAmount: payload.calculatedAmount,
-      paidAmount: Number(payload.paidAmount),
-      paidDate: payload.paidDate,
-      paid: true,
-    }
-    yield call(service.updatePartnerPayment, payload.distributionId, payload.partnerId, paymentData)
-    yield put(actions.successRequestUpdatePayment(payload))
-  } catch (e) {
-    yield put(actions.errorRequestUpdatePayment(e.message))
-  }
-}
-
-function* deleteDistribution({ payload }) {
-  try {
-    yield call(service.deleteDistribution, payload.id)
-    yield put(actions.successRequestDelete(payload))
-  } catch (e) {
-    yield put(actions.errorRequestDelete(e.message))
-  }
-}
 
 describe('taxiDistributionSagas', () => {
   describe('fetchDistributions', () => {
@@ -104,7 +58,6 @@ describe('taxiDistributionSagas', () => {
       gen.next()           // beginRequestUpdatePayment
 
       const callEffect = gen.next().value
-      // Extract the paymentData argument from the call effect
       const paymentDataArg = callEffect.payload.args[2]
       expect(paymentDataArg.paidAmount).toBe(500000)
       expect(typeof paymentDataArg.paidAmount).toBe('number')

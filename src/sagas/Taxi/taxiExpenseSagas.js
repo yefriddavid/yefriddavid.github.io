@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as taxiExpenseActions from '../../actions/Taxi/taxiExpenseActions'
 import * as expenseService from '../../services/providers/firebase/Taxi/taxiExpenses'
 
-function* fetchExpenses() {
+export function* fetchExpenses() {
   try {
     yield put(taxiExpenseActions.beginRequestFetch())
     const data = yield call(expenseService.fetchExpenses)
@@ -12,7 +12,7 @@ function* fetchExpenses() {
   }
 }
 
-function* createExpense({ payload }) {
+export function* createExpense({ payload }) {
   try {
     yield put(taxiExpenseActions.beginRequestCreate())
     const id = yield call(expenseService.createExpense, payload)
@@ -22,7 +22,7 @@ function* createExpense({ payload }) {
   }
 }
 
-function* deleteExpense({ payload }) {
+export function* deleteExpense({ payload }) {
   try {
     yield put(taxiExpenseActions.beginRequestDelete())
     yield call(expenseService.deleteExpense, payload.id)
@@ -32,7 +32,7 @@ function* deleteExpense({ payload }) {
   }
 }
 
-function* togglePaid({ payload }) {
+export function* togglePaid({ payload }) {
   try {
     yield call(expenseService.toggleExpensePaid, payload.id, payload.paid)
     yield put(taxiExpenseActions.successRequestTogglePaid(payload))

@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/authActions'
 import { getUser, updateOwnProfile, updateUserAvatar } from '../services/providers/firebase/Security/users'
 
-function* fetchProfile({ payload: username }) {
+export function* fetchProfile({ payload: username }) {
   try {
     const data = yield call(getUser, username)
     yield put(actions.fetchProfileSuccess(data))
@@ -11,7 +11,7 @@ function* fetchProfile({ payload: username }) {
   }
 }
 
-function* updateProfile({ payload }) {
+export function* updateProfile({ payload }) {
   try {
     yield call(updateOwnProfile, payload.username, payload)
     yield put(actions.updateProfileSuccess(payload))
@@ -20,7 +20,7 @@ function* updateProfile({ payload }) {
   }
 }
 
-function* updateAvatar({ payload }) {
+export function* updateAvatar({ payload }) {
   try {
     yield call(updateUserAvatar, payload.username, payload.avatar)
     yield put(actions.updateAvatarSuccess(payload.avatar))

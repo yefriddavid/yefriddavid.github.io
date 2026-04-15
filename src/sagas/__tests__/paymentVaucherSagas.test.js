@@ -2,17 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as paymentVaucherActions from '../../actions/CashFlow/paymentVaucherActions'
 import * as apiPaymentVaucherServices from '../../services/providers/firebase/CashFlow/paymentVaucher'
-
-// Step-through generator copy (standard redux-saga testing pattern)
-function* createPaymentVaucher({ payload }) {
-  try {
-    yield put(paymentVaucherActions.beginRequestCreate())
-    const response = yield call(apiPaymentVaucherServices.CreatePaymentVaucher, payload)
-    yield put(paymentVaucherActions.successRequestCreate(response.data))
-  } catch (e) {
-    yield put(paymentVaucherActions.errorRequestCreate(e.message))
-  }
-}
+import { createPaymentVaucher } from '../CashFlow/paymentVaucherSagas'
 
 describe('paymentVaucherSagas', () => {
   describe('createPaymentVaucher', () => {
