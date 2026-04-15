@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/CashFlow/salaryDistributionActions'
 
@@ -39,6 +39,7 @@ export default function SalaryDistribution() {
   const [editingTabName, setEditingTabName] = useState('')
   const [dragRowId, setDragRowId] = useState(null)
   const [dragOverRowId, setDragOverRowId] = useState(null)
+  const [dirty, setDirty] = useState(false)
 
   // Load on mount
   useEffect(() => {
@@ -54,24 +55,20 @@ export default function SalaryDistribution() {
 
   const activeConfig = distributions?.find((d) => d.id === activeId) ?? distributions?.[0]
 
-  // Debounced save
-  const saveTimer = useRef(null)
-  const scheduleSave = useCallback(
-    (newDists) => {
-      clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => dispatch(actions.saveRequest(newDists)), 600)
-    },
-    [dispatch],
-  )
+  const saveLocal = useCallback(() => {
+    if (!distributions) return
+    dispatch(actions.saveRequest(distributions))
+    setDirty(false)
+  }, [dispatch, distributions])
 
   const patchActive = useCallback(
     (patch) => {
       if (!activeConfig) return
       const newDists = distributions.map((d) => (d.id === activeConfig.id ? { ...d, ...patch } : d))
       dispatch(actions.successRequestSave(newDists))
-      scheduleSave(newDists)
+      setDirty(true)
     },
-    [distributions, activeConfig, dispatch, scheduleSave],
+    [distributions, activeConfig, dispatch],
   )
 
   const update = useCallback((patch) => patchActive(patch), [patchActive])
@@ -124,19 +121,19 @@ export default function SalaryDistribution() {
     }
     const newDists = [...(distributions ?? []), newDist]
     dispatch(actions.successRequestSave(newDists))
-    scheduleSave(newDists)
+    setDirty(true)
     setActiveId(newDist.id)
-  }, [distributions, dispatch, scheduleSave])
+  }, [distributions, dispatch])
 
   const removeDistribution = useCallback(
     (id) => {
       if (!distributions || distributions.length <= 1) return
       const newDists = distributions.filter((d) => d.id !== id)
       dispatch(actions.successRequestSave(newDists))
-      scheduleSave(newDists)
+      setDirty(true)
       if (activeId === id) setActiveId(newDists[0].id)
     },
-    [distributions, activeId, dispatch, scheduleSave],
+    [distributions, activeId, dispatch],
   )
 
   const commitTabRename = useCallback(
@@ -145,11 +142,11 @@ export default function SalaryDistribution() {
       if (trimmed) {
         const newDists = distributions.map((d) => (d.id === id ? { ...d, name: trimmed } : d))
         dispatch(actions.successRequestSave(newDists))
-        scheduleSave(newDists)
+        setDirty(true)
       }
       setEditingTabId(null)
     },
-    [editingTabName, distributions, dispatch, scheduleSave],
+    [editingTabName, distributions, dispatch],
   )
 
   if (fetching || !distributions || !activeConfig) return null
@@ -185,7 +182,21 @@ export default function SalaryDistribution() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h5 style={{ fontWeight: 700, margin: 0, color: '#1a1a2e' }}>Salary Distribution</h5>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {saving && <span style={{ fontSize: 11, color: '#adb5bd' }}>Guardando…</span>}
+          <button
+            onClick={saveLocal}
+            disabled={!dirty || saving}
+            title="Guardar en IndexedDB local"
+            style={{
+              padding: '6px 12px', borderRadius: 6, border: 'none',
+              background: dirty ? '#2f9e44' : '#e9ecef',
+              cursor: dirty && !saving ? 'pointer' : 'not-allowed',
+              fontSize: 13, fontWeight: 600, color: dirty ? '#fff' : '#adb5bd',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'background 0.2s',
+            }}
+          >
+            {saving ? '…' : '💾'} {saving ? 'Guardando' : 'Guardar local'}
+          </button>
           <button
             onClick={() => dispatch(actions.importRequest())}
             disabled={importing || syncing}

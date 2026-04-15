@@ -33,6 +33,7 @@ const fetchGeoInfo = async () => {
 }
 
 export const trackPageVisit = async (page) => {
+  if (import.meta.env.DEV) return
   try {
     const [geo, meta] = await Promise.all([fetchGeoInfo(), Promise.resolve(collectVisitorMeta())])
     await addDoc(collection(db, 'page_visits'), {
