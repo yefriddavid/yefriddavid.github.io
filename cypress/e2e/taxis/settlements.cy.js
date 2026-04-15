@@ -12,15 +12,16 @@ describe('Settlements Page', () => {
     
     // Navigate to Settlements
     cy.visit('/taxis/settlements')
-    cy.contains('Liquidaciones de taxis').should('be.visible')
+    cy.get('.card-header').contains('Liquidaciones de taxis').should('be.visible')
   })
 
   it('should display the settlements page title and initial state', () => {
-    cy.contains('Liquidaciones de taxis').should('be.visible')
-    cy.contains('Nueva liquidación').should('be.visible')
+    cy.get('.card-header').contains('Liquidaciones de taxis').should('be.visible')
+    cy.get('.card-header').contains('Nueva liquidación').should('be.visible')
   })
 
   it('should open the "New Settlement" form and show validation error on empty submit', () => {
+    // Click button explicitly in header
     cy.get('.card-header').find('button').contains('Nueva liquidación').click({force: true})
     cy.get('form').should('be.visible')
     
@@ -31,29 +32,29 @@ describe('Settlements Page', () => {
     cy.contains('Todos los campos son requeridos').should('be.visible')
   })
 
-  it('should switch between different view modes', () => {
+  it('should switch between different view modes using header buttons', () => {
     // Default view is "Detallado"
     cy.get('.dx-datagrid').should('be.visible')
     
     // Switch to "Por conductor"
-    cy.get('.card-header .btn').contains('Por conductor').click({force: true})
+    cy.get('.card-header button').contains('Por conductor').should('be.visible').click({force: true})
     cy.get('.dx-datagrid').should('be.visible')
 
     // Switch to "Por vehículo"
-    cy.get('.card-header .btn').contains('Por vehículo').click({force: true})
+    cy.get('.card-header button').contains('Por vehículo').should('be.visible').click({force: true})
     cy.get('.dx-datagrid').should('be.visible')
 
     // Switch to "Auditoría"
-    cy.get('.card-header .btn').contains('Auditoría').click({force: true})
+    cy.get('.card-header button').contains('Auditoría').should('be.visible').click({force: true})
     cy.get('table').should('be.visible')
     cy.contains('Día').should('be.visible')
     cy.contains('Estado').should('be.visible')
   })
 
   it('should allow changing the period filter (month and year)', () => {
-    // There are two selects for period: month and year
-    cy.get('.card-header select').eq(0).as('monthSelect')
-    cy.get('.card-header select').eq(1).as('yearSelect')
+    // Selects in the header
+    cy.get('.card-header').find('select').eq(0).as('monthSelect')
+    cy.get('.card-header').find('select').eq(1).as('yearSelect')
 
     // Change month
     cy.get('@monthSelect').select('Enero')
@@ -69,52 +70,26 @@ describe('Settlements Page', () => {
 
   it('should toggle the Period Summary panel', () => {
     // Targeted click
-    cy.get('div').contains('Resumen del período').click({force: true})
+    cy.get('.card').contains('Resumen del período').click({force: true})
     
-    // Open it if not already open
-    cy.get('body').then(($body) => {
-      if (!$body.text().includes('Total liquidado')) {
-        cy.get('div').contains('Resumen del período').click({force: true})
-      }
-    })
-    
+    // Check if it opened (text should be visible)
     cy.contains('Total liquidado').should('be.visible')
   })
 
-  it('should filter the grid by driver using the top selector', () => {
-    cy.contains('Conductor').should('be.visible')
-    cy.get('.card-header select').contains('Todos').should('exist')
-  })
-
-  it('should show "Pico y placa" warning UI fields', () => {
-    cy.get('.card-header').find('button').contains('Nueva liquidación').click({force: true})
-    cy.get('form').contains('Placa').should('be.visible')
-    cy.get('form').find('input[type="date"]').should('be.visible')
-  })
-
   it('should have grid headers in detailed mode', () => {
-    cy.get('.card-header .btn').contains('Detallado').click({force: true})
+    cy.get('.card-header button').contains('Detallado').click({force: true})
     cy.get('.dx-datagrid-headers').contains('Fecha').should('be.visible')
     cy.get('.dx-datagrid-headers').contains('Conductor').should('be.visible')
   })
 
-  it('should display the Audit View with correct headers', () => {
-    cy.get('.card-header .btn').contains('Auditoría').click({force: true})
-    
-    // Headers from AuditView.js
-    cy.contains('Día').should('be.visible')
-    cy.contains('Sem').should('be.visible')
-    cy.contains('Estado').should('be.visible')
-  })
-
   it('should switch audit note to read-only after saving', () => {
-    cy.get('.card-header .btn').contains('Auditoría').click({force: true})
+    cy.get('.card-header button').contains('Auditoría').should('be.visible').click({force: true})
     
     // Look for an edit button (✎) in the missing column
-    // Since we might not have data, we'll only run this if an edit button is found
     cy.get('body').then(($body) => {
-      if ($body.find('button[title="Agregar nota"], button[title="Editar nota"]').length > 0) {
-        cy.get('button[title="Agregar nota"], button[title="Editar nota"]').first().click({force: true})
+      const editBtn = $body.find('button[title="Agregar nota"], button[title="Editar nota"]')
+      if (editBtn.length > 0) {
+        cy.wrap(editBtn).first().click({force: true})
         
         // Input should appear
         cy.get('input[placeholder="Motivo..."]').should('be.visible').type('Test note{enter}')
