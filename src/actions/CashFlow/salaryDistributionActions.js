@@ -17,3 +17,5 @@ export const syncError = createAction('sync salary distribution to firebase erro
 export const importRequest = createAction('request import salary distribution from firebase')
 export const importSuccess = createAction('import salary distribution from firebase success')
 export const importError = createAction('import salary distribution from firebase error')
+
+export const clearLocalRequest = createAction('request clear local salary distribution')

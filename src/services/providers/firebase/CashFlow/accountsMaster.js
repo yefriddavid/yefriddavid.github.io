@@ -33,6 +33,14 @@ export const getAccountsMaster = async () => {
       paymentMethod: data.paymentMethod ?? null,
       active: data.active !== false,
       accountingName: data.accountingName ?? null,
+      defaultValue: data.defaultValue ?? 0,
+      targetAmount: data.targetAmount ?? 0,
+      maxDatePay: data.maxDatePay ?? null,
+      monthStartAt: data.monthStartAt ?? null,
+      important: data.important ?? false,
+      description: data.description ?? null,
+      notes: data.notes ?? null,
+      definition: data.definition ?? null,
       created_at: data.created_at?.toDate?.()?.toISOString() ?? null,
     }
   })

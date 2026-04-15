@@ -35,6 +35,15 @@ function* syncToFirebase({ payload }) {
   }
 }
 
+function* clearLocalConfig() {
+  try {
+    yield call(service.saveConfig, null)
+    yield put(actions.successRequestFetch(null))
+  } catch (e) {
+    yield put(actions.errorRequestFetch(e.message))
+  }
+}
+
 function* importFromFirebase() {
   try {
     const distributions = yield call(fb.fetchAllFromFirebase)
@@ -51,5 +60,6 @@ export default function* rootSagas() {
     takeLatest(actions.saveRequest, saveConfig),
     takeLatest(actions.syncRequest, syncToFirebase),
     takeLatest(actions.importRequest, importFromFirebase),
+    takeLatest(actions.clearLocalRequest, clearLocalConfig),
   ])
 }

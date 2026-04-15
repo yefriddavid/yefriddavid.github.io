@@ -116,8 +116,8 @@ export default function SalaryDistribution() {
       if (newIdx < 0 || newIdx >= distributions.length) return
       const newDists = [...distributions]
       ;[newDists[idx], newDists[newIdx]] = [newDists[newIdx], newDists[idx]]
-      dispatch(actions.successRequestSave(newDists))
-      setDirty(true)
+      // Auto-save order to IndexedDB without requiring "Guardar local"
+      dispatch(actions.saveRequest(newDists))
     },
     [distributions, dispatch],
   )
@@ -242,6 +242,31 @@ export default function SalaryDistribution() {
             }}
           >
             {syncing ? '…' : '☁️'} Sync
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm('¿Eliminar todas las distribuciones locales? Se restaurarán los valores por defecto.')) {
+                dispatch(actions.clearLocalRequest())
+                setDirty(false)
+                setActiveId(null)
+              }
+            }}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: 'none',
+              background: '#e03131',
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              minHeight: 40,
+            }}
+          >
+            🗑 Clear local
           </button>
         </div>
       </div>

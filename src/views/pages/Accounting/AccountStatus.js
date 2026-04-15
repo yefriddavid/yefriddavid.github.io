@@ -1024,6 +1024,11 @@ function AccountCard({
                 {account.category}
               </span>
             )}
+            {account.defaultValue > 0 && (
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#1e3a5f' }}>
+                {fmt(account.defaultValue)}
+              </span>
+            )}
             {account.maxDatePay && (
               <span style={{ fontSize: 11, color: '#6c757d' }}>día {account.maxDatePay}</span>
             )}
@@ -1053,9 +1058,6 @@ function AccountCard({
           >
             {status.label}
           </span>
-          {account.defaultValue > 0 && (
-            <div style={{ fontSize: 11, color: '#adb5bd' }}>{fmt(account.defaultValue)}</div>
-          )}
           {canPay && (
             <button
               onClick={() => !isSaving && onPay(account)}
@@ -2082,151 +2084,150 @@ export default function AccountStatus() {
             : 'Sin cuentas en este filtro.'}
         </div>
       ) : (
-        [...filtered.map((a) => ({ kind: 'account', day: a.maxDatePay || 31, data: a })),
-         ...adHocTransactions.map((t) => ({ kind: 'adhoc', day: parseInt(t.date?.split('-')[2]) || 31, data: t })),
-        ]
-          .sort((a, b) => a.day - b.day)
-          .map((item) => {
-            if (item.kind === 'account') {
-              const account = item.data
-              return (
-                <AccountCard
-                  key={account.id}
-                  account={account}
-                  payments={masterPaymentsMap[account.id] ?? []}
-                  monthStr={monthStr}
-                  cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
-                  onPay={setPaying}
-                  onDetail={setDetail}
-                  onDelete={handleDelete}
-                  onUpdate={handleUpdate}
-                  onViewAttachment={(src, filename) => setViewer({ src, filename })}
-                  onAttach={handleAttach}
-                  attachingId={attachProcessing ? attachingTx?.id : null}
-                  savingId={saving ? paying?.id : null}
-                />
-              )
-            }
-            const t = item.data
-            const isIncome = t.type === 'income'
-            const accentColor = isIncome ? '#2f9e44' : '#e03131'
-            const accentBg = isIncome ? '#ebfbee' : '#fff5f5'
-            const accentBorder = isIncome ? '#8ce99a' : '#ffc9c9'
-            return (
-              <div
-                key={t.id}
-                style={{
-                  background: '#f8f4ff',
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  marginBottom: 10,
-                  borderLeft: '4px solid #9775fa',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div
+        filtered
+          .slice()
+          .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
+          .map((account) => (
+            <AccountCard
+              key={account.id}
+              account={account}
+              payments={masterPaymentsMap[account.id] ?? []}
+              monthStr={monthStr}
+              cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
+              onPay={setPaying}
+              onDetail={setDetail}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
+              onViewAttachment={(src, filename) => setViewer({ src, filename })}
+              onAttach={handleAttach}
+              attachingId={attachProcessing ? attachingTx?.id : null}
+              savingId={saving ? paying?.id : null}
+            />
+          ))
+      )}
+
+      {/* Ad-hoc period transactions — at the bottom */}
+      {(() => {
+        const adHocFiltered = adHocTransactions.filter(
+          (t) => t.type === (typeTab === 'Incoming' ? 'income' : 'expense'),
+        )
+        return (
+          <div
+            style={{
+              background: '#fff',
+              border: '1px solid #e9ecef',
+              borderRadius: 14,
+              marginBottom: 16,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: adHocFiltered.length > 0 ? '1px solid #f1f5f9' : 'none',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 15 }}>💸</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>
+                  Otras cuentas
+                </span>
+                {adHocFiltered.length > 0 && (
+                  <span
                     style={{
-                      width: 44, height: 44, borderRadius: '50%',
-                      background: accentBg, border: `2px solid ${accentBorder}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0, fontSize: 18, fontWeight: 700, color: accentColor,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      background: '#eef4ff',
+                      color: '#1e3a5f',
+                      borderRadius: 10,
+                      padding: '1px 7px',
                     }}
                   >
-                    {isIncome ? '+' : '−'}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {t.description}
+                    {adHocFiltered.length}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setAddingAdHoc(true)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: 20,
+                  border: 'none',
+                  background: '#1e3a5f',
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                + Agregar
+              </button>
+            </div>
+            {adHocFiltered.map((t) => {
+              const isIncome = t.type === 'income'
+              const accentColor = isIncome ? '#2f9e44' : '#e03131'
+              const accentBg = isIncome ? '#ebfbee' : '#fff5f5'
+              const accentBorder = isIncome ? '#8ce99a' : '#ffc9c9'
+              return (
+                <div
+                  key={t.id}
+                  style={{
+                    padding: '14px 16px',
+                    borderBottom: '1px solid #f1f5f9',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        width: 44, height: 44, borderRadius: '50%',
+                        background: accentBg, border: `2px solid ${accentBorder}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0, fontSize: 18, fontWeight: 700, color: accentColor,
+                      }}
+                    >
+                      {isIncome ? '+' : '−'}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-                      {t.note && (
-                        <span style={{ fontSize: 11, color: '#6c757d', background: '#f1f5f9', borderRadius: 4, padding: '1px 6px', fontStyle: 'italic' }}>
-                          {t.note}
-                        </span>
-                      )}
-                      {t.date && <span style={{ fontSize: 11, color: '#6c757d' }}>{t.date}</span>}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {t.description}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {t.note && (
+                          <span style={{ fontSize: 11, color: '#6c757d', background: '#f1f5f9', borderRadius: 4, padding: '1px 6px', fontStyle: 'italic' }}>
+                            {t.note}
+                          </span>
+                        )}
+                        {t.date && <span style={{ fontSize: 11, color: '#6c757d' }}>{t.date}</span>}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, borderRadius: 20, padding: '3px 10px', background: accentBg, color: accentColor, border: `1px solid ${accentBorder}` }}>
-                      {isIncome ? '+' : '−'} {fmt(t.amount)}
-                    </span>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {t.attachment && (
-                        <button onClick={() => setViewer({ src: t.attachment, filename: t.attachmentName })} title="Ver adjunto"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: '2px 4px' }}>
-                          📎
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, borderRadius: 20, padding: '3px 10px', background: accentBg, color: accentColor, border: `1px solid ${accentBorder}` }}>
+                        {isIncome ? '+' : '−'} {fmt(t.amount)}
+                      </span>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {t.attachment && (
+                          <button onClick={() => setViewer({ src: t.attachment, filename: t.attachmentName })} title="Ver adjunto"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, padding: '2px 4px' }}>
+                            📎
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(t)} title="Eliminar"
+                          style={{ padding: '6px 14px', borderRadius: 20, border: 'none', background: '#e03131', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                          ✕
                         </button>
-                      )}
-                      <button onClick={() => handleDelete(t)} title="Eliminar"
-                        style={{ padding: '6px 14px', borderRadius: 20, border: 'none', background: '#e03131', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                        ✕
-                      </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-          })
-      )}
-
-      {/* Ad-hoc period transactions */}
-      <div
-        style={{
-          background: '#fff',
-          border: '1px solid #e9ecef',
-          borderRadius: 14,
-          marginBottom: 16,
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 16px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 15 }}>💸</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>
-              Movimientos extra del período
-            </span>
-            {adHocTransactions.length > 0 && (
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: '#eef4ff',
-                  color: '#1e3a5f',
-                  borderRadius: 10,
-                  padding: '1px 7px',
-                }}
-              >
-                {adHocTransactions.length}
-              </span>
-            )}
+              )
+            })}
           </div>
-          <button
-            onClick={() => setAddingAdHoc(true)}
-            style={{
-              padding: '5px 14px',
-              borderRadius: 20,
-              border: 'none',
-              background: '#1e3a5f',
-              color: '#fff',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            + Agregar
-          </button>
-        </div>
-      </div>
+        )
+      })()}
 
       {/* Hidden input for attaching to existing transactions */}
       <input
