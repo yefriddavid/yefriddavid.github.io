@@ -1,29 +1,16 @@
 import { createAction } from '@reduxjs/toolkit'
+import { createCRUDActions } from 'src/utils/crudFactory'
 
-export const fetchRequest = createAction('fetch users')
-export const beginRequestFetch = createAction('begin request fetch users')
-export const successRequestFetch = createAction('fetch users success')
-export const errorRequestFetch = createAction('request fetch users error')
+export const {
+  fetchRequest, beginRequestFetch, successRequestFetch, errorRequestFetch,
+  createRequest, beginRequestCreate, successRequestCreate, errorRequestCreate,
+  updateRequest, beginRequestUpdate, successRequestUpdate, errorRequestUpdate,
+  deleteRequest, beginRequestDelete, successRequestDelete, errorRequestDelete,
+} = createCRUDActions('users')
 
-export const createRequest = createAction('request create user')
-export const beginRequestCreate = createAction('begin request create user')
-export const successRequestCreate = createAction('request create user success')
-export const errorRequestCreate = createAction('request create user error')
-
-export const updateRequest = createAction('request update user')
-export const beginRequestUpdate = createAction('begin request update user')
-export const successRequestUpdate = createAction('request update user success')
-export const errorRequestUpdate = createAction('request update user error')
-
-export const deleteRequest = createAction('request delete user')
-export const beginRequestDelete = createAction('begin request delete user')
-export const successRequestDelete = createAction('request delete user success')
-export const errorRequestDelete = createAction('request delete user error')
-
-export const fetchSessionsRequest = createAction('fetch user sessions')
-export const fetchSessionsSuccess = createAction('fetch user sessions success')
-export const fetchSessionsError = createAction('fetch user sessions error')
-
-export const deleteSessionRequest = createAction('request delete user session')
-export const deleteSessionSuccess = createAction('request delete user session success')
-export const deleteSessionError = createAction('request delete user session error')
+export const fetchSessionsRequest = createAction('users/fetchSessionsRequest')
+export const fetchSessionsSuccess = createAction('users/fetchSessionsSuccess')
+export const fetchSessionsError = createAction('users/fetchSessionsError')
+export const deleteSessionRequest = createAction('users/deleteSessionRequest')
+export const deleteSessionSuccess = createAction('users/deleteSessionSuccess')
+export const deleteSessionError = createAction('users/deleteSessionError')
