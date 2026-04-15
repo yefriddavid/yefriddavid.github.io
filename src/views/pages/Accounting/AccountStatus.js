@@ -19,6 +19,8 @@ const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
 const CURRENT_MONTH = now.getMonth() + 1
 
+console.log(MONTH_NAMES);
+
   /*const monthLabels = [
   'Enero',
   'Febrero',
@@ -299,6 +301,7 @@ const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 function DetailModal({ account, saving, onUpdate, onClose }) {
   const [tab, setTab] = useState('info')
   const [form, setForm] = useState({ ...account })
+  const { monthLabels } = useLocaleData()
 
   const set = (field) => (e) => {
     const val = e.target.type === 'number' ? Number(e.target.value) : e.target.value
