@@ -23,8 +23,9 @@
     "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "serve:test": "vite preview --port 3005",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\""
   },
   "dependencies": {
     "@coreui/chartjs": "^4.0.0",
@@ -93,6 +94,7 @@
     "postcss": "^8.4.49",
     "prettier": "3.3.3",
     "sass": "^1.81.0",
+    "start-server-and-test": "^3.0.2",
     "terser": "^5.46.1",
     "vite": "^5.4.11",
     "vite-plugin-pwa": "^1.2.0",

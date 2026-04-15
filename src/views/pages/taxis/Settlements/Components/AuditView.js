@@ -1368,7 +1368,10 @@ const AuditView = ({
                                 editingNote={editingNote}
                                 setEditingNote={setEditingNote}
                                 handleResolvedToggle={handleResolvedToggle}
-                                handleNoteSave={handleNoteSave}
+                                handleNoteSave={(date, driver, note) => {
+                                  handleNoteSave(date, driver, note)
+                                  setEditingNote(null)
+                                }}
                                 loadingDay={loadingDay}
                                 dispatchCreate={dispatchCreate}
                                 t={t}

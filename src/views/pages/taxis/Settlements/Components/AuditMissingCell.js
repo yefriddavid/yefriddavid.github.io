@@ -11,6 +11,7 @@ const IssueEntry = ({
   onEditToggle,
   onNoteSave,
   onNoteDelete,
+  onCancel,
   onQuickSettle,
   t,
 }) => (
@@ -103,10 +104,16 @@ const IssueEntry = ({
         autoFocus
         defaultValue={note}
         placeholder={t('taxis.settlements.audit.notePlaceholder')}
-        onBlur={(e) => onNoteSave(e.target.value)}
+        onBlur={(e) => {
+          if (e.target.value === note) {
+            onCancel()
+          } else {
+            onNoteSave(e.target.value)
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') onNoteSave(e.target.value)
-          if (e.key === 'Escape') onNoteSave(note)
+          if (e.key === 'Escape') onCancel()
         }}
         style={{
           fontSize: 11,
@@ -196,6 +203,7 @@ const AuditMissingCell = ({
                 e.stopPropagation()
                 handleNoteSave(day.dateStr, driver.name, '')
               }}
+              onCancel={() => setEditingNote(null)}
               t={t}
             />
           )
@@ -245,6 +253,7 @@ const AuditMissingCell = ({
                 e.stopPropagation()
                 handleNoteSave(day.dateStr, dr, '')
               }}
+              onCancel={() => setEditingNote(null)}
               t={t}
             />
           )
