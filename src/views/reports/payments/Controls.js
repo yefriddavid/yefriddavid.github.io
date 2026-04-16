@@ -1,13 +1,6 @@
 import React, { Component } from 'react'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
-import {
-  CButton,
-  CFormSelect,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
-} from '@coreui/react'
+import { CButton, CFormSelect, CModal, CModalBody, CModalHeader, CModalTitle } from '@coreui/react'
 
 class SelectControl extends Component {
   state = {

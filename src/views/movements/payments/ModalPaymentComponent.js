@@ -1,12 +1,5 @@
 import React, { PureComponent } from 'react'
-import {
-  CButton,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
-  CSpinner,
-} from '@coreui/react'
+import { CButton, CModal, CModalBody, CModalHeader, CModalTitle, CSpinner } from '@coreui/react'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import { bindActionCreators } from 'redux'

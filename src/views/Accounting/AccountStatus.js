@@ -19,7 +19,6 @@ const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
 const CURRENT_MONTH = now.getMonth() + 1
 
-
 /*const monthLabels = [
   'Enero',
   'Febrero',
@@ -357,7 +356,7 @@ const TYPE_OPTIONS = ['Outcoming', 'Incoming']
 const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 
 // ── Detail modal (bottom sheet) ───────────────────────────────────────────────
-function DetailModal({ account, saving, onUpdate, onClose }) {
+function DetailModal({ account, saving, onUpdate, onClone, onClose }) {
   const [tab, setTab] = useState('info')
   const [form, setForm] = useState({ ...account })
   const { monthLabels } = useLocaleData()
@@ -489,23 +488,52 @@ function DetailModal({ account, saving, onUpdate, onClose }) {
                 </div>
               ))}
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                marginTop: 24,
-                width: '100%',
-                padding: '14px',
-                borderRadius: 12,
-                border: '1px solid #dee2e6',
-                background: '#fff',
-                fontSize: 15,
-                fontWeight: 600,
-                color: '#6c757d',
-                cursor: 'pointer',
-              }}
-            >
-              Cerrar
-            </button>
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <button
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  borderRadius: 12,
+                  border: '1px solid #dee2e6',
+                  background: '#fff',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: '#6c757d',
+                  cursor: 'pointer',
+                }}
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={() => onClone(account)}
+                disabled={saving}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  borderRadius: 12,
+                  border: 'none',
+                  background: saving ? '#e9ecef' : '#495057',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: saving ? '#adb5bd' : '#fff',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                {saving ? (
+                  <CSpinner
+                    size="sm"
+                    style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
+                  />
+                ) : (
+                  '⎘ Clonar'
+                )}
+              </button>
+            </div>
           </>
         )}
 
@@ -2091,6 +2119,18 @@ export default function AccountStatus() {
     }
   }
 
+  const handleClone = (account) => {
+    const { id: _id, ...fields } = account
+    dispatch(
+      accountsMasterActions.createRequest({
+        ...fields,
+        name: `${account.name} (Copia)`,
+        active: false,
+      }),
+    )
+    setDetail(null)
+  }
+
   const handleAddNote = (text) => {
     dispatch(accountStatusNoteActions.createRequest({ period: monthStr, text }))
   }
@@ -2670,6 +2710,7 @@ export default function AccountStatus() {
             dispatch(accountsMasterActions.updateRequest(updated))
             setDetail(null)
           }}
+          onClone={handleClone}
           onClose={() => setDetail(null)}
         />
       )}

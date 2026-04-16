@@ -15,13 +15,7 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilContrast,
-  cilMenu,
-  cilMoon,
-  cilPaint,
-  cilSun,
-} from '@coreui/icons'
+import { cilContrast, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
 
 import { AppBreadcrumb } from '../index'
 import AppHeaderDropdown from './AppHeaderDropdown'
