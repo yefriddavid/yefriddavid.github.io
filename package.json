@@ -28,7 +28,8 @@
     "cy:open": "cypress open",
     "cy:comp": "cypress run --component",
     "cy:comp:open": "cypress open --component",
-    "cy:run": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\"",
+    "cy:run-legacy": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\"",
+    "cy:run": "cypress run --config baseUrl=http://localhost:3000",
     "cy:run:raw": "cypress run --config baseUrl=http://localhost:3005",
     "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
     "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\""
