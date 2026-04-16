@@ -1,48 +1,46 @@
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('./views/pages/dashboard/Dashboard'))
+const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
 // Managment
-const Accounts = React.lazy(() => import('./views/pages/Accounting/Accounts'))
-const AccountsMaster = React.lazy(() => import('./views/pages/Accounting/AccountsMaster'))
-const Settlements = React.lazy(() => import('./views/pages/taxis/Settlements/Index'))
-const Drivers = React.lazy(() => import('./views/pages/taxis/Drivers'))
-const Vehicles = React.lazy(() => import('./views/pages/taxis/Vehicles'))
-const Expenses = React.lazy(() => import('./views/pages/taxis/Expenses'))
-const Summary = React.lazy(() => import('./views/pages/taxis/Summary'))
-const TaxisHome = React.lazy(() => import('./views/pages/taxis/Home'))
-const Partners = React.lazy(() => import('./views/pages/taxis/Partners'))
-const Distributions = React.lazy(() => import('./views/pages/taxis/Distributions'))
-const Operations = React.lazy(() => import('./views/pages/taxis/Operations'))
+const Accounts = React.lazy(() => import('./views/Accounting/Accounts'))
+const AccountsMaster = React.lazy(() => import('./views/Accounting/AccountsMaster'))
+const Settlements = React.lazy(() => import('./views/taxis/Settlements/Index'))
+const Drivers = React.lazy(() => import('./views/taxis/Drivers'))
+const Vehicles = React.lazy(() => import('./views/taxis/Vehicles'))
+const Expenses = React.lazy(() => import('./views/taxis/Expenses'))
+const Summary = React.lazy(() => import('./views/taxis/Summary'))
+const TaxisHome = React.lazy(() => import('./views/taxis/Home'))
+const Partners = React.lazy(() => import('./views/taxis/Partners'))
+const Distributions = React.lazy(() => import('./views/taxis/Distributions'))
+const Operations = React.lazy(() => import('./views/taxis/Operations'))
 
 // Users & Profile
-const Users = React.lazy(() => import('./views/pages/users/Users'))
-const PushSubscribers = React.lazy(() => import('./views/pages/users/PushSubscribers'))
-const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
-const AppSettings = React.lazy(() => import('./views/pages/settings/AppSettings'))
+const Users = React.lazy(() => import('./views/users/Users'))
+const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))
+const Profile = React.lazy(() => import('./views/profile/Profile'))
+const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
 
 // Movements
-const Payments = React.lazy(() => import('./views/pages/movements/payments/Payments'))
-const Transactions = React.lazy(() => import('./views/pages/Accounting/Transactions'))
-const AccountStatus = React.lazy(() => import('./views/pages/Accounting/AccountStatus'))
-const Reports = React.lazy(() => import('./views/pages/reports/Reports'))
+const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
+const Transactions = React.lazy(() => import('./views/Accounting/Transactions'))
+const AccountStatus = React.lazy(() => import('./views/Accounting/AccountStatus'))
+const Reports = React.lazy(() => import('./views/reports/Reports'))
 
-const AbountMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
+const AbountMe = React.lazy(() => import('./views/aboutMe/Index'))
 
-const Eggs = React.lazy(() => import('./views/pages/CashFlow/eggs/Eggs'))
-const MyProjects = React.lazy(() => import('./views/pages/CashFlow/projects/MyProjects'))
-const Assets = React.lazy(() => import('./views/pages/CashFlow/assets/Assets'))
+const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
+const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
+const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
-  () => import('./views/pages/tools/increase-decrease/IncreaseDecrease'),
+  () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
-const Visits = React.lazy(() => import('./views/pages/tools/visits/Visits'))
-const SalaryDistribution = React.lazy(
-  () => import('./views/pages/CashFlow/tools/SalaryDistribution'),
-)
+const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
+const SalaryDistribution = React.lazy(() => import('./views/CashFlow/tools/SalaryDistribution'))
 
 // Base
 //const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -94,7 +92,14 @@ const SalaryDistribution = React.lazy(
 const routes = [
   //  { path: '/', exact: true, name: 'Home' },
   //{ path: '/', exact: true, element: AbountMe },
-  { path: '/cash_flow/dashboard', name: 'Dashboard', longName: 'Dashboard', tKey: 'nav.dashboard', element: Dashboard, landingPage: true },
+  {
+    path: '/cash_flow/dashboard',
+    name: 'Dashboard',
+    longName: 'Dashboard',
+    tKey: 'nav.dashboard',
+    element: Dashboard,
+    landingPage: true,
+  },
   {
     path: '/cash_flow/management/accounts',
     name: 'Accounts',
@@ -157,8 +162,20 @@ const routes = [
     element: Summary,
     landingPage: true,
   },
-  { path: '/taxis/operations', name: 'Operaciones', longName: 'Taxi — Operaciones', element: Operations, landingPage: true },
-  { path: '/taxis/partners', name: 'Partners', longName: 'Taxi — Partners', element: Partners, landingPage: true },
+  {
+    path: '/taxis/operations',
+    name: 'Operaciones',
+    longName: 'Taxi — Operaciones',
+    element: Operations,
+    landingPage: true,
+  },
+  {
+    path: '/taxis/partners',
+    name: 'Partners',
+    longName: 'Taxi — Partners',
+    element: Partners,
+    landingPage: true,
+  },
   {
     path: '/taxis/profit-sharing',
     name: 'Distributions',
@@ -174,8 +191,20 @@ const routes = [
     element: Payments,
     landingPage: true,
   },
-  { path: '/cash_flow/management/transactions', name: 'Transactions', longName: 'Transacciones', element: Transactions, landingPage: true },
-  { path: '/cash_flow/management/account-status', name: 'Account Status', longName: 'Estado de Cuentas', element: AccountStatus, landingPage: true },
+  {
+    path: '/cash_flow/management/transactions',
+    name: 'Transactions',
+    longName: 'Transacciones',
+    element: Transactions,
+    landingPage: true,
+  },
+  {
+    path: '/cash_flow/management/account-status',
+    name: 'Account Status',
+    longName: 'Estado de Cuentas',
+    element: AccountStatus,
+    landingPage: true,
+  },
   {
     path: '/cash_flow/management/accounts-master',
     name: 'Accounts Master',
@@ -183,7 +212,14 @@ const routes = [
     element: AccountsMaster,
     landingPage: true,
   },
-  { path: '/cash_flow/management/reports', name: 'Reports', longName: 'Reportes', tKey: 'nav.reports', element: Reports, landingPage: true },
+  {
+    path: '/cash_flow/management/reports',
+    name: 'Reports',
+    longName: 'Reportes',
+    tKey: 'nav.reports',
+    element: Reports,
+    landingPage: true,
+  },
   { path: '/cash_flow/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
   {
     path: '/cash_flow/management/push-subscribers',
@@ -195,8 +231,20 @@ const routes = [
   { path: '/cash_flow/settings', name: 'Settings', element: AppSettings, roles: ['superAdmin'] },
 
   { path: '/cash_flow/eggs', name: 'Eggs', longName: 'Eggs', element: Eggs, landingPage: true },
-  { path: '/cash_flow/projects', name: 'My Projects', longName: 'Mis Proyectos', element: MyProjects, landingPage: true },
-  { path: '/cash_flow/assets', name: 'Assets', longName: 'Activos', element: Assets, landingPage: true },
+  {
+    path: '/cash_flow/projects',
+    name: 'My Projects',
+    longName: 'Mis Proyectos',
+    element: MyProjects,
+    landingPage: true,
+  },
+  {
+    path: '/cash_flow/assets',
+    name: 'Assets',
+    longName: 'Activos',
+    element: Assets,
+    landingPage: true,
+  },
   {
     path: '/cash_flow/tools/adjustments',
     name: 'Increase Decrease',
@@ -205,7 +253,14 @@ const routes = [
     element: IncreaseDecrease,
     landingPage: true,
   },
-  { path: '/cash_flow/tools/visits', name: 'Visits', longName: 'Herramientas — Visitas', tKey: 'nav.visits', element: Visits, landingPage: true },
+  {
+    path: '/cash_flow/tools/visits',
+    name: 'Visits',
+    longName: 'Herramientas — Visitas',
+    tKey: 'nav.visits',
+    element: Visits,
+    landingPage: true,
+  },
   {
     path: '/cash_flow/tools/salary-distribution',
     name: 'Salary Distribution',

@@ -66,7 +66,7 @@ export default defineConfig(() => {
     },
     esbuild: {
       loader: 'jsx',
-      include: /src\/.*\.jsx?$/,
+      include: /(?:src|cypress)\/.*\.jsx?$/,
       exclude: /src\/views\/BACKUP\//,
     },
     optimizeDeps: {
@@ -131,7 +131,7 @@ export default defineConfig(() => {
         },
         {
           find: '@appComponents',
-          replacement: path.resolve(__dirname, 'src/components/App'),
+          replacement: path.resolve(__dirname, 'src/components/shared'),
         },
       ],
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.scss'],
@@ -147,7 +147,7 @@ export default defineConfig(() => {
       environment: 'node',
       include: ['src/**/*.test.js'],
       setupFiles: ['src/__tests__/setup.js'],
-      exclude: ["node_modules", "/mnt/Zeus/Workspace/me/sources/My-Admin/src/views/BACKUP/management/taxis/__tests__/*"],
+      exclude: ["node_modules"],
       alias: {
         'firebase/app': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-app.js'),
         'firebase/auth': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-auth.js'),

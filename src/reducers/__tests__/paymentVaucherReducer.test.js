@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../CashFlow/paymentVaucherReducer'
-import * as paymentActions from '../../actions/CashFlow/paymentActions'
-import * as vaucherActions from '../../actions/CashFlow/paymentVaucherActions'
+import reducer from '../cashflow/paymentVaucherReducer'
+import * as paymentActions from '../../actions/cashflow/paymentActions'
+import * as vaucherActions from '../../actions/cashflow/paymentVaucherActions'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }
 
@@ -31,7 +31,10 @@ describe('paymentVaucherReducer', () => {
     })
 
     it('errorRequestCreate sets isError, stores error, clears fetching', () => {
-      const s = reducer({ ...initial, fetching: true }, vaucherActions.errorRequestCreate('upload failed'))
+      const s = reducer(
+        { ...initial, fetching: true },
+        vaucherActions.errorRequestCreate('upload failed'),
+      )
       expect(s.isError).toBe(true)
       expect(s.error).toBe('upload failed')
       expect(s.fetching).toBe(false)

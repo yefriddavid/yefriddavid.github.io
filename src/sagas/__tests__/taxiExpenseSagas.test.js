@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiExpenseActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiExpenses'
-import { fetchExpenses, createExpense, deleteExpense, togglePaid } from '../Taxi/taxiExpenseSagas'
+import * as actions from '../../actions/taxi/taxiExpenseActions'
+import * as service from '../../services/firebase/taxi/taxiExpenses'
+import { fetchExpenses, createExpense, deleteExpense, togglePaid } from '../taxi/taxiExpenseSagas'
 import { makeExpense } from '../../__tests__/factories'
 
 describe('taxiExpenseSagas', () => {
@@ -18,8 +18,11 @@ describe('taxiExpenseSagas', () => {
 
     it('error path dispatches errorRequestFetch', () => {
       const gen = fetchExpenses()
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('timeout')).value).toEqual(put(actions.errorRequestFetch('timeout')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('timeout')).value).toEqual(
+        put(actions.errorRequestFetch('timeout')),
+      )
     })
   })
 
@@ -27,8 +30,8 @@ describe('taxiExpenseSagas', () => {
     it('converts amount string to Number', () => {
       const payload = makeExpense({ id: undefined, amount: '80000' })
       const gen = createExpense({ payload })
-      gen.next()           // beginRequestCreate
-      gen.next()           // call createExpense
+      gen.next() // beginRequestCreate
+      gen.next() // call createExpense
       const { payload: dispatched } = gen.next('e-id').value.payload.action
       expect(dispatched.amount).toBe(80000)
       expect(typeof dispatched.amount).toBe('number')
@@ -45,8 +48,11 @@ describe('taxiExpenseSagas', () => {
 
     it('error path dispatches errorRequestCreate', () => {
       const gen = createExpense({ payload: makeExpense() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('write error')).value).toEqual(put(actions.errorRequestCreate('write error')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('write error')).value).toEqual(
+        put(actions.errorRequestCreate('write error')),
+      )
     })
   })
 
@@ -62,8 +68,11 @@ describe('taxiExpenseSagas', () => {
 
     it('error path dispatches errorRequestDelete', () => {
       const gen = deleteExpense({ payload: makeExpense() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 

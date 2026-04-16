@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/usersActions'
-import * as service from '../../services/providers/firebase/Security/users'
+import * as service from '../../services/firebase/security/users'
 import { fetchUsers, createUser, updateUser, deleteUser } from '../usersSagas'
 import { makeUser } from '../../__tests__/factories'
 
@@ -19,9 +19,11 @@ describe('usersSagas', () => {
 
     it('dispatches errorRequestFetch on service failure', () => {
       const gen = fetchUsers()
-      gen.next()  // beginRequestFetch
-      gen.next()  // call getAllUsers
-      expect(gen.throw(new Error('network error')).value).toEqual(put(actions.errorRequestFetch('network error')))
+      gen.next() // beginRequestFetch
+      gen.next() // call getAllUsers
+      expect(gen.throw(new Error('network error')).value).toEqual(
+        put(actions.errorRequestFetch('network error')),
+      )
     })
   })
 
@@ -38,8 +40,8 @@ describe('usersSagas', () => {
 
     it('dispatches errorRequestCreate on service failure', () => {
       const gen = createUser({ payload: makeUser() })
-      gen.next()  // beginRequestCreate
-      gen.next()  // call createUser
+      gen.next() // beginRequestCreate
+      gen.next() // call createUser
       expect(gen.throw(new Error('username already exists')).value).toEqual(
         put(actions.errorRequestCreate('username already exists')),
       )
@@ -59,8 +61,8 @@ describe('usersSagas', () => {
 
     it('dispatches errorRequestUpdate on service failure', () => {
       const gen = updateUser({ payload: makeUser() })
-      gen.next()  // beginRequestUpdate
-      gen.next()  // call updateUser
+      gen.next() // beginRequestUpdate
+      gen.next() // call updateUser
       expect(gen.throw(new Error('permission denied')).value).toEqual(
         put(actions.errorRequestUpdate('permission denied')),
       )
@@ -80,9 +82,11 @@ describe('usersSagas', () => {
 
     it('dispatches errorRequestDelete on service failure', () => {
       const gen = deleteUser({ payload: { username: 'jperez' } })
-      gen.next()  // beginRequestDelete
-      gen.next()  // call deleteUser
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      gen.next() // beginRequestDelete
+      gen.next() // call deleteUser
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 })

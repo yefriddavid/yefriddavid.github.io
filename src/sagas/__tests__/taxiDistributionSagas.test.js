@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiDistributionActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiDistributions'
-import { fetchDistributions, createDistribution, updatePartnerPayment, deleteDistribution } from '../Taxi/taxiDistributionSagas'
+import * as actions from '../../actions/taxi/taxiDistributionActions'
+import * as service from '../../services/firebase/taxi/taxiDistributions'
+import {
+  fetchDistributions,
+  createDistribution,
+  updatePartnerPayment,
+  deleteDistribution,
+} from '../taxi/taxiDistributionSagas'
 import { makeDistribution } from '../../__tests__/factories'
 
 describe('taxiDistributionSagas', () => {
@@ -18,8 +23,11 @@ describe('taxiDistributionSagas', () => {
 
     it('error path dispatches errorRequestFetch', () => {
       const gen = fetchDistributions()
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('unavailable')).value).toEqual(put(actions.errorRequestFetch('unavailable')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('unavailable')).value).toEqual(
+        put(actions.errorRequestFetch('unavailable')),
+      )
     })
   })
 
@@ -31,14 +39,19 @@ describe('taxiDistributionSagas', () => {
 
       expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
       expect(gen.next().value).toEqual(call(service.createDistribution, payload))
-      expect(gen.next(newId).value).toEqual(put(actions.successRequestCreate({ id: newId, ...payload })))
+      expect(gen.next(newId).value).toEqual(
+        put(actions.successRequestCreate({ id: newId, ...payload })),
+      )
       expect(gen.next().done).toBe(true)
     })
 
     it('error path dispatches errorRequestCreate', () => {
       const gen = createDistribution({ payload: makeDistribution() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('write failed')).value).toEqual(put(actions.errorRequestCreate('write failed')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('write failed')).value).toEqual(
+        put(actions.errorRequestCreate('write failed')),
+      )
     })
   })
 
@@ -55,7 +68,7 @@ describe('taxiDistributionSagas', () => {
 
     it('converts paidAmount string to Number', () => {
       const gen = updatePartnerPayment({ payload })
-      gen.next()           // beginRequestUpdatePayment
+      gen.next() // beginRequestUpdatePayment
 
       const callEffect = gen.next().value
       const paymentDataArg = callEffect.payload.args[2]
@@ -82,14 +95,15 @@ describe('taxiDistributionSagas', () => {
     it('full flow: begin → updatePartnerPayment → success', () => {
       const gen = updatePartnerPayment({ payload })
       expect(gen.next().value).toEqual(put(actions.beginRequestUpdatePayment()))
-      gen.next()           // call updatePartnerPayment
+      gen.next() // call updatePartnerPayment
       expect(gen.next().value).toEqual(put(actions.successRequestUpdatePayment(payload)))
       expect(gen.next().done).toBe(true)
     })
 
     it('error path dispatches errorRequestUpdatePayment', () => {
       const gen = updatePartnerPayment({ payload })
-      gen.next(); gen.next()
+      gen.next()
+      gen.next()
       expect(gen.throw(new Error('perm denied')).value).toEqual(
         put(actions.errorRequestUpdatePayment('perm denied')),
       )
@@ -108,7 +122,9 @@ describe('taxiDistributionSagas', () => {
     it('error path dispatches errorRequestDelete', () => {
       const gen = deleteDistribution({ payload: makeDistribution() })
       gen.next() // advance to call(service.deleteDistribution, ...)
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 })

@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiVehicleActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiVehicles'
-import { saveVehicles } from '../../services/providers/indexeddb/CashFlow/taxiVehicles'
-import { fetchVehicles, createVehicle, updateVehicle, deleteVehicle, updateRestrictions } from '../Taxi/taxiVehicleSagas'
+import * as actions from '../../actions/taxi/taxiVehicleActions'
+import * as service from '../../services/firebase/taxi/taxiVehicles'
+import { saveVehicles } from '../../services/idb/cashflow/taxiVehicles'
+import {
+  fetchVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  updateRestrictions,
+} from '../taxi/taxiVehicleSagas'
 import { makeVehicle } from '../../__tests__/factories'
 
 describe('taxiVehicleSagas', () => {
@@ -15,14 +21,17 @@ describe('taxiVehicleSagas', () => {
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
       expect(gen.next().value).toEqual(call(service.getVehicles))
       expect(gen.next(vehicles).value).toEqual(put(actions.successRequestFetch(vehicles)))
-      expect(gen.next().value).toEqual(call(saveVehicles, vehicles))  // IDB sync (non-critical)
+      expect(gen.next().value).toEqual(call(saveVehicles, vehicles)) // IDB sync (non-critical)
       expect(gen.next().done).toBe(true)
     })
 
     it('error path dispatches errorRequestFetch', () => {
       const gen = fetchVehicles()
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('unavailable')).value).toEqual(put(actions.errorRequestFetch('unavailable')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('unavailable')).value).toEqual(
+        put(actions.errorRequestFetch('unavailable')),
+      )
     })
   })
 
@@ -30,8 +39,8 @@ describe('taxiVehicleSagas', () => {
     it('uppercases plate before dispatching success', () => {
       const payload = makeVehicle({ id: undefined, plate: 'abc123' })
       const gen = createVehicle({ payload })
-      gen.next()           // beginRequestCreate
-      gen.next()           // call addVehicle
+      gen.next() // beginRequestCreate
+      gen.next() // call addVehicle
       const { payload: dispatched } = gen.next('new-id').value.payload.action
       expect(dispatched.plate).toBe('ABC123')
     })
@@ -39,7 +48,8 @@ describe('taxiVehicleSagas', () => {
     it('initializes restrictions as empty object', () => {
       const payload = makeVehicle({ id: undefined, restrictions: undefined })
       const gen = createVehicle({ payload })
-      gen.next(); gen.next()
+      gen.next()
+      gen.next()
       const { payload: dispatched } = gen.next('new-id').value.payload.action
       expect(dispatched.restrictions).toEqual({})
     })
@@ -55,8 +65,11 @@ describe('taxiVehicleSagas', () => {
 
     it('error path dispatches errorRequestCreate', () => {
       const gen = createVehicle({ payload: makeVehicle() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('write failed')).value).toEqual(put(actions.errorRequestCreate('write failed')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('write failed')).value).toEqual(
+        put(actions.errorRequestCreate('write failed')),
+      )
     })
   })
 
@@ -64,8 +77,8 @@ describe('taxiVehicleSagas', () => {
     it('uppercases plate in the success dispatch', () => {
       const payload = makeVehicle({ plate: 'xyz789' })
       const gen = updateVehicle({ payload })
-      gen.next()           // beginRequestUpdate
-      gen.next()           // call updateVehicle
+      gen.next() // beginRequestUpdate
+      gen.next() // call updateVehicle
       const { payload: dispatched } = gen.next().value.payload.action
       expect(dispatched.plate).toBe('XYZ789')
     })
@@ -79,8 +92,11 @@ describe('taxiVehicleSagas', () => {
 
     it('error path dispatches errorRequestUpdate', () => {
       const gen = updateVehicle({ payload: makeVehicle() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('conflict')).value).toEqual(put(actions.errorRequestUpdate('conflict')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('conflict')).value).toEqual(
+        put(actions.errorRequestUpdate('conflict')),
+      )
     })
   })
 
@@ -99,7 +115,9 @@ describe('taxiVehicleSagas', () => {
       const payload = { id: 'v1', restrictions: { 3: { d1: 5, d2: 15 } } }
       const gen = updateRestrictions({ payload })
 
-      expect(gen.next().value).toEqual(call(service.updateRestrictions, payload.id, payload.restrictions))
+      expect(gen.next().value).toEqual(
+        call(service.updateRestrictions, payload.id, payload.restrictions),
+      )
       expect(gen.next().value).toEqual(put(actions.successRequestUpdateRestrictions(payload)))
       expect(gen.next().done).toBe(true)
     })

@@ -18,7 +18,9 @@ export default createCRUDReducer('users', actions, {
       })
       .addCase(actions.deleteSessionSuccess, (s, { payload: { username, sessionId } }) => {
         if (s.sessions[username]) {
-          s.sessions[username].data = s.sessions[username].data.filter((sess) => sess.sessionId !== sessionId)
+          s.sessions[username].data = s.sessions[username].data.filter(
+            (sess) => sess.sessionId !== sessionId,
+          )
         }
       })
   },

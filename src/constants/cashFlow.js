@@ -1,4 +1,3 @@
-
 export const ACCOUNT_CATEGORIES = [
   'Gastos Fijos',
   'Servicios',

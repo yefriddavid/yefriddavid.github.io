@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiDriverActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiDrivers'
-import { fetchDrivers, createDriver, updateDriver, deleteDriver } from '../Taxi/taxiDriverSagas'
+import * as actions from '../../actions/taxi/taxiDriverActions'
+import * as service from '../../services/firebase/taxi/taxiDrivers'
+import { fetchDrivers, createDriver, updateDriver, deleteDriver } from '../taxi/taxiDriverSagas'
 import { makeDriver } from '../../__tests__/factories'
 
 describe('taxiDriverSagas', () => {
@@ -19,20 +19,26 @@ describe('taxiDriverSagas', () => {
 
     it('dispatches errorRequestFetch on service failure', () => {
       const gen = fetchDrivers()
-      gen.next()           // beginRequestFetch
-      gen.next()           // call getDrivers
-      expect(gen.throw(new Error('timeout')).value).toEqual(put(actions.errorRequestFetch('timeout')))
+      gen.next() // beginRequestFetch
+      gen.next() // call getDrivers
+      expect(gen.throw(new Error('timeout')).value).toEqual(
+        put(actions.errorRequestFetch('timeout')),
+      )
     })
   })
 
   describe('createDriver', () => {
     it('converts defaultAmount string to Number', () => {
-      const payload = makeDriver({ id: undefined, defaultAmount: '60000', defaultAmountSunday: '35000' })
+      const payload = makeDriver({
+        id: undefined,
+        defaultAmount: '60000',
+        defaultAmountSunday: '35000',
+      })
       const gen = createDriver({ payload })
       const newId = 'new-driver'
 
-      gen.next()           // beginRequestCreate
-      gen.next()           // call addDriver
+      gen.next() // beginRequestCreate
+      gen.next() // call addDriver
 
       const { payload: dispatched } = gen.next(newId).value.payload.action
       expect(dispatched.defaultAmount).toBe(60000)
@@ -43,7 +49,8 @@ describe('taxiDriverSagas', () => {
     it('sets defaultAmount to null when empty string', () => {
       const payload = makeDriver({ id: undefined, defaultAmount: '', defaultAmountSunday: '' })
       const gen = createDriver({ payload })
-      gen.next(); gen.next()
+      gen.next()
+      gen.next()
       const { payload: dispatched } = gen.next('id').value.payload.action
       expect(dispatched.defaultAmount).toBeNull()
       expect(dispatched.defaultAmountSunday).toBeNull()
@@ -52,7 +59,8 @@ describe('taxiDriverSagas', () => {
     it('sets defaultVehicle to null when empty string', () => {
       const payload = makeDriver({ id: undefined, defaultVehicle: '' })
       const gen = createDriver({ payload })
-      gen.next(); gen.next()
+      gen.next()
+      gen.next()
       const { payload: dispatched } = gen.next('id').value.payload.action
       expect(dispatched.defaultVehicle).toBeNull()
     })
@@ -62,14 +70,17 @@ describe('taxiDriverSagas', () => {
       const gen = createDriver({ payload })
       expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
       expect(gen.next().value).toEqual(call(service.addDriver, payload))
-      gen.next('new-id')   // success
+      gen.next('new-id') // success
       expect(gen.next().done).toBe(true)
     })
 
     it('dispatches errorRequestCreate on failure', () => {
       const gen = createDriver({ payload: makeDriver() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('forbidden')).value).toEqual(put(actions.errorRequestCreate('forbidden')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('forbidden')).value).toEqual(
+        put(actions.errorRequestCreate('forbidden')),
+      )
     })
   })
 
@@ -86,8 +97,11 @@ describe('taxiDriverSagas', () => {
 
     it('dispatches errorRequestUpdate on failure', () => {
       const gen = updateDriver({ payload: makeDriver() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('conflict')).value).toEqual(put(actions.errorRequestUpdate('conflict')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('conflict')).value).toEqual(
+        put(actions.errorRequestUpdate('conflict')),
+      )
     })
   })
 
@@ -104,8 +118,11 @@ describe('taxiDriverSagas', () => {
 
     it('dispatches errorRequestDelete on failure', () => {
       const gen = deleteDriver({ payload: makeDriver() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 })

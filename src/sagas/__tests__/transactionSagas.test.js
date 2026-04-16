@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/CashFlow/transactionActions'
-import * as service from '../../services/providers/firebase/CashFlow/transactions'
-import { fetchTransactions, createTransaction, updateTransaction, deleteTransaction } from '../CashFlow/transactionSagas'
+import * as actions from '../../actions/cashflow/transactionActions'
+import * as service from '../../services/firebase/cashflow/transactions'
+import {
+  fetchTransactions,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from '../cashflow/transactionSagas'
 
 const makeTxPayload = (overrides = {}) => ({
   type: 'income',
@@ -31,9 +36,7 @@ describe('fetchTransactions', () => {
     gen.next() // beginRequestFetch
     gen.next() // call getTransactions
     const error = new Error('Firestore unavailable')
-    expect(gen.throw(error).value).toEqual(
-      put(actions.errorRequestFetch('Firestore unavailable')),
-    )
+    expect(gen.throw(error).value).toEqual(put(actions.errorRequestFetch('Firestore unavailable')))
     expect(gen.next().done).toBe(true)
   })
 })
@@ -81,9 +84,7 @@ describe('updateTransaction', () => {
     gen.next() // beginRequestUpdate
     gen.next() // call updateTransaction
     const error = new Error('Network error')
-    expect(gen.throw(error).value).toEqual(
-      put(actions.errorRequestUpdate('Network error')),
-    )
+    expect(gen.throw(error).value).toEqual(put(actions.errorRequestUpdate('Network error')))
     expect(gen.next().done).toBe(true)
   })
 })
@@ -105,9 +106,7 @@ describe('deleteTransaction', () => {
     gen.next() // beginRequestDelete
     gen.next() // call deleteTransaction
     const error = new Error('Document not found')
-    expect(gen.throw(error).value).toEqual(
-      put(actions.errorRequestDelete('Document not found')),
-    )
+    expect(gen.throw(error).value).toEqual(put(actions.errorRequestDelete('Document not found')))
     expect(gen.next().done).toBe(true)
   })
 })

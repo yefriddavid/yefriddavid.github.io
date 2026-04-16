@@ -15,23 +15,21 @@ import './i18n'
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Standalone pages (no app layout)
-// const GenerarContrato = React.lazy(() => import('./views/pages/Contratos_REYDAVID/contratos/GenerarContrato'))
-const GenerarContrato = React.lazy(
-  () => import('./views/pages/Contratos/contratos/GenerarContrato'),
-)
+// const GenerarContrato = React.lazy(() => import('./views/Contratos_REYDAVID/contratos/GenerarContrato'))
+const GenerarContrato = React.lazy(() => import('./views/Contratos/contratos/GenerarContrato'))
 
 // Pages
-const Login = React.lazy(() => import('./views/pages/login/Login'))
-const Register = React.lazy(() => import('./views/pages/register/Register'))
-const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
-const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
-const AboutMe = React.lazy(() => import('./views/pages/aboutMe/Index'))
-const HardRefresh = React.lazy(() => import('./views/pages/hard-refresh/HardRefresh'))
+const Login = React.lazy(() => import('./views/login/Login'))
+const Register = React.lazy(() => import('./views/register/Register'))
+const Page404 = React.lazy(() => import('./views/page404/Page404'))
+const Page500 = React.lazy(() => import('./views/page500/Page500'))
+const AboutMe = React.lazy(() => import('./views/aboutMe/Index'))
+const HardRefresh = React.lazy(() => import('./views/hard-refresh/HardRefresh'))
 
 // temporary line
 localStorage.setItem('coreui-free-react-admin-template-theme', 'light')
 
-import * as accountsMasterActions from './actions/CashFlow/accountsMasterActions'
+import * as accountsMasterActions from './actions/cashflow/accountsMasterActions'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')

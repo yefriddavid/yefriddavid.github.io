@@ -1,7 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/usersActions'
-import * as service from '../services/providers/firebase/Security/users'
-import * as sessionService from '../services/providers/firebase/Security/sessions'
+import * as service from '../services/firebase/security/users'
+import * as sessionService from '../services/firebase/security/sessions'
 
 export function* fetchUsers() {
   try {

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as paymentActions from '../../actions/CashFlow/paymentActions'
-import * as apiServices from '../../services/providers/api/payments'
-import { fetchPayments, createPayment, deletePayment } from '../CashFlow/paymentSagas'
+import * as paymentActions from '../../actions/cashflow/paymentActions'
+import * as apiServices from '../../services/api/payments'
+import { fetchPayments, createPayment, deletePayment } from '../cashflow/paymentSagas'
 import { makePayment } from '../../__tests__/factories'
 
 describe('paymentSagas', () => {
@@ -14,15 +14,19 @@ describe('paymentSagas', () => {
 
       expect(gen.next().value).toEqual(put(paymentActions.beginRequestFetch()))
       expect(gen.next().value).toEqual(call(apiServices.fetchPayments, payload))
-      expect(gen.next(response).value).toEqual(put(paymentActions.successRequestFetch(response.data)))
+      expect(gen.next(response).value).toEqual(
+        put(paymentActions.successRequestFetch(response.data)),
+      )
       expect(gen.next().done).toBe(true)
     })
 
     it('dispatches errorRequestFetch on failure', () => {
       const gen = fetchPayments({ payload: {} })
-      gen.next()  // beginRequestFetch
-      gen.next()  // call fetchPayments
-      expect(gen.throw(new Error('timeout')).value).toEqual(put(paymentActions.errorRequestFetch('timeout')))
+      gen.next() // beginRequestFetch
+      gen.next() // call fetchPayments
+      expect(gen.throw(new Error('timeout')).value).toEqual(
+        put(paymentActions.errorRequestFetch('timeout')),
+      )
     })
   })
 
@@ -44,17 +48,19 @@ describe('paymentSagas', () => {
       const payload = { accountId: 'acc-1', value: 10000 }
       const responseData = { paymentId: 'pay-2' }
       const gen = createPayment({ payload })
-      gen.next()  // beginRequestCreate
-      gen.next()  // call createPayment
+      gen.next() // beginRequestCreate
+      gen.next() // call createPayment
       const { payload: dispatched } = gen.next({ data: responseData }).value.payload.action
       expect(dispatched.vaucher).toBeUndefined()
     })
 
     it('dispatches errorRequestCreate on failure', () => {
       const gen = createPayment({ payload: {} })
-      gen.next()  // beginRequestCreate
-      gen.next()  // call createPayment
-      expect(gen.throw(new Error('forbidden')).value).toEqual(put(paymentActions.errorRequestCreate('forbidden')))
+      gen.next() // beginRequestCreate
+      gen.next() // call createPayment
+      expect(gen.throw(new Error('forbidden')).value).toEqual(
+        put(paymentActions.errorRequestCreate('forbidden')),
+      )
     })
   })
 
@@ -71,9 +77,11 @@ describe('paymentSagas', () => {
 
     it('dispatches errorRequestDelete on failure', () => {
       const gen = deletePayment({ payload: { paymentId: 'pay-1' } })
-      gen.next()  // beginRequestDelete
-      gen.next()  // call deletePayment
-      expect(gen.throw(new Error('not found')).value).toEqual(put(paymentActions.errorRequestDelete('not found')))
+      gen.next() // beginRequestDelete
+      gen.next() // call deletePayment
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(paymentActions.errorRequestDelete('not found')),
+      )
     })
   })
 })

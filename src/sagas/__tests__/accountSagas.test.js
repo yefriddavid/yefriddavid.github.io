@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as accountActions from '../../actions/CashFlow/accountActions'
-import * as apiService from '../../services/providers/api/accounts'
-import { fetchAccounts } from '../CashFlow/accountSagas'
+import * as accountActions from '../../actions/cashflow/accountActions'
+import * as apiService from '../../services/api/accounts'
+import { fetchAccounts } from '../cashflow/accountSagas'
 
 describe('accountSagas', () => {
   describe('fetchAccounts', () => {
@@ -22,16 +22,16 @@ describe('accountSagas', () => {
       const response = { status: 'error', message: 'Unauthorized' }
       const gen = fetchAccounts({ payload: filters })
 
-      gen.next()                   // beginRequest
-      gen.next()                   // call fetchAccounts
+      gen.next() // beginRequest
+      gen.next() // call fetchAccounts
       expect(gen.next(response).value).toEqual(put(accountActions.errorRequest('Unauthorized')))
       expect(gen.next().done).toBe(true)
     })
 
     it('dispatches errorRequest on thrown exception', () => {
       const gen = fetchAccounts({ payload: {} })
-      gen.next()  // beginRequest
-      gen.next()  // call fetchAccounts
+      gen.next() // beginRequest
+      gen.next() // call fetchAccounts
       const error = new Error('Network error')
       expect(gen.throw(error).value).toEqual(put(accountActions.errorRequest(error.message)))
     })

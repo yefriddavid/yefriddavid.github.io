@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../CashFlow/transactionReducer'
-import * as actions from '../../actions/CashFlow/transactionActions'
+import reducer from '../cashflow/transactionReducer'
+import * as actions from '../../actions/cashflow/transactionActions'
 
 const initial = {
   data: null,
@@ -61,7 +61,10 @@ describe('transactionReducer', () => {
 
     it('successRequestCreate prepends transaction to empty data', () => {
       const tx = makeTx()
-      const state = reducer({ ...initial, saving: true, data: null }, actions.successRequestCreate(tx))
+      const state = reducer(
+        { ...initial, saving: true, data: null },
+        actions.successRequestCreate(tx),
+      )
       expect(state.data).toEqual([tx])
       expect(state.saving).toBe(false)
     })
@@ -79,7 +82,10 @@ describe('transactionReducer', () => {
     })
 
     it('errorRequestCreate stores error and clears saving', () => {
-      const state = reducer({ ...initial, saving: true }, actions.errorRequestCreate('permission denied'))
+      const state = reducer(
+        { ...initial, saving: true },
+        actions.errorRequestCreate('permission denied'),
+      )
       expect(state.error).toBe('permission denied')
       expect(state.saving).toBe(false)
       expect(state.isError).toBe(true)

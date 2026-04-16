@@ -1,6 +1,6 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
-import InstallBanner from '../components/InstallBanner'
+import InstallBanner from '../components/shared/InstallBanner'
 
 const DefaultLayout = () => {
   document.title = `Cash Flow`

@@ -1,15 +1,20 @@
 module.exports = {
-  // parser: '@typescript-eslint/parser', // Specifies the ESLint parser
+  root: true,
+  env: {
+    browser: true,
+    es2022: true,
+    node: true,
+  },
   parserOptions: {
-    ecmaVersion: 2020, // Allows for the parsing of modern ECMAScript features
-    sourceType: 'module', // Allows for the use of imports
+    ecmaVersion: 2022,
+    sourceType: 'module',
     ecmaFeatures: {
-      jsx: true, // Allows for the parsing of JSX
+      jsx: true,
     },
   },
   settings: {
     react: {
-      version: 'detect', // Tells eslint-plugin-react to automatically detect the version of React to use
+      version: 'detect',
     },
   },
   globals: {
@@ -19,12 +24,51 @@ module.exports = {
     __APP_VERSION__: 'readonly',
   },
   extends: [
-    'plugin:react/recommended', // Uses the recommended rules from @eslint-plugin-react
-    'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:prettier/recommended',
   ],
   plugins: ['react', 'react-hooks'],
   rules: {
-    // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
-    // e.g. "@typescript-eslint/explicit-function-return-type": "off",
+    // ── React ──────────────────────────────────────────────────────────────────
+    'react/react-in-jsx-scope': 'off',       // React 17+ new JSX transform
+    'react/prop-types': 'off',               // project uses no PropTypes/TypeScript
+    'react/display-name': 'warn',
+
+    // ── Hooks ──────────────────────────────────────────────────────────────────
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+
+    // ── Variables ──────────────────────────────────────────────────────────────
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    'no-var': 'error',
+    'prefer-const': ['warn', { destructuring: 'all' }],
+
+    // ── Quality ────────────────────────────────────────────────────────────────
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-debugger': 'error',
+    'eqeqeq': ['error', 'always', { null: 'ignore' }],
+    'no-duplicate-imports': 'error',
+    'no-else-return': 'warn',
   },
+  overrides: [
+    // ── Test files ─────────────────────────────────────────────────────────────
+    {
+      files: ['src/**/__tests__/**/*.js', 'src/**/*.test.js'],
+      env: { node: true },
+      rules: {
+        'no-unused-vars': 'off',
+        'react-hooks/rules-of-hooks': 'off',
+      },
+    },
+    // ── Service workers ────────────────────────────────────────────────────────
+    {
+      files: ['src/sw/*.js'],
+      env: { serviceworker: true },
+      rules: {
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+      },
+    },
+  ],
 }

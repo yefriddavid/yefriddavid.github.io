@@ -74,7 +74,11 @@ describe('usersReducer', () => {
       // Rename u2 to "Beatriz Lopez" — should now sort before Pedro
       const s = reducer(
         { ...initial, data: [u1, u2] },
-        actions.successRequestUpdate({ username: 'pramirez', name: 'Beatriz Lopez', role: 'manager' }),
+        actions.successRequestUpdate({
+          username: 'pramirez',
+          name: 'Beatriz Lopez',
+          role: 'manager',
+        }),
       )
       expect(s.data[0].name).toBe('Ana Garcia')
       expect(s.data[1].name).toBe('Beatriz Lopez')
@@ -100,7 +104,10 @@ describe('usersReducer', () => {
     it('successRequestDelete removes user by username', () => {
       const u1 = makeUser({ username: 'user1' })
       const u2 = makeUser({ username: 'user2' })
-      const s = reducer({ ...initial, data: [u1, u2] }, actions.successRequestDelete({ username: 'user1' }))
+      const s = reducer(
+        { ...initial, data: [u1, u2] },
+        actions.successRequestDelete({ username: 'user1' }),
+      )
       expect(s.data).toHaveLength(1)
       expect(s.data[0].username).toBe('user2')
     })

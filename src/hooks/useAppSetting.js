@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAppSettings } from 'src/services/providers/firebase/admin/appSettings'
+import { getAppSettings } from 'src/services/firebase/admin/appSettings'
 
 export function useAppSetting(key) {
   const [value, setValue] = useState(null)

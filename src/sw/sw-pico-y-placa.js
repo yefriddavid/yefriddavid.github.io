@@ -1,6 +1,6 @@
-import { openDB, DB_STORES } from '../services/providers/indexeddb/db'
-import { getVehicles, saveVehicles } from '../services/providers/indexeddb/CashFlow/taxiVehicles'
-import { getNotifyHours } from '../services/providers/indexeddb/picoPlacaConfig'
+import { openDB, DB_STORES } from '../services/idb/db'
+import { getVehicles, saveVehicles } from '../services/idb/cashflow/taxiVehicles'
+import { getNotifyHours } from '../services/idb/picoPlacaConfig'
 
 const DAY_LABELS = ['Hoy', 'Mañana', 'En 2 días', 'En 3 días', 'En 4 días']
 
@@ -86,8 +86,7 @@ async function fetchVehiclesFromFirestore() {
   try {
     const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
     const apiKey = import.meta.env.VITE_FIREBASE_API_KEY
-    const url =
-      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/CashFlow_taxi_vehiculos?key=${apiKey}`
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/CashFlow_taxi_vehiculos?key=${apiKey}`
     const res = await fetch(url)
     if (!res.ok) return []
     const data = await res.json()

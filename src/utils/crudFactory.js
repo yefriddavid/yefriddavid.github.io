@@ -32,16 +32,20 @@ export const createCRUDActions = (entity) => ({
  * @param {object} options.initialState       - merged into the default initial state
  * @param {function|null} options.extraCases  - (builder) => void for additional addCase calls
  */
-export const createCRUDReducer = (sliceName, actions, {
-  sortKey = null,
-  writeFlag = 'fetching',
-  idKey = 'id',
-  prependOnCreate = false,
-  beginUpdate = false,
-  beginDelete = false,
-  initialState: extra = {},
-  extraCases = null,
-} = {}) => {
+export const createCRUDReducer = (
+  sliceName,
+  actions,
+  {
+    sortKey = null,
+    writeFlag = 'fetching',
+    idKey = 'id',
+    prependOnCreate = false,
+    beginUpdate = false,
+    beginDelete = false,
+    initialState: extra = {},
+    extraCases = null,
+  } = {},
+) => {
   const sortFn = sortKey
     ? (arr) => [...arr].sort((a, b) => (a[sortKey] ?? '').localeCompare(b[sortKey] ?? ''))
     : null
@@ -64,23 +68,49 @@ export const createCRUDReducer = (sliceName, actions, {
     reducers: {},
     extraReducers: (builder) => {
       builder
-        .addCase(actions.fetchRequest, (s) => { s.fetching = true; s.isError = false })
-        .addCase(actions.beginRequestFetch, (s) => { s.fetching = true })
-        .addCase(actions.successRequestFetch, (s, { payload }) => { s.data = payload; s.fetching = false })
-        .addCase(actions.errorRequestFetch, (s, { payload }) => { s.error = payload; s.fetching = false; s.isError = true })
+        .addCase(actions.fetchRequest, (s) => {
+          s.fetching = true
+          s.isError = false
+        })
+        .addCase(actions.beginRequestFetch, (s) => {
+          s.fetching = true
+        })
+        .addCase(actions.successRequestFetch, (s, { payload }) => {
+          s.data = payload
+          s.fetching = false
+        })
+        .addCase(actions.errorRequestFetch, (s, { payload }) => {
+          s.error = payload
+          s.fetching = false
+          s.isError = true
+        })
 
-        .addCase(actions.beginRequestCreate, (s) => { s[writeFlag] = true })
-        .addCase(actions.successRequestCreate, (s, { payload }) => { s.data = addToData(s.data, payload); s[writeFlag] = false })
-        .addCase(actions.errorRequestCreate, (s, { payload }) => { s.error = payload; s[writeFlag] = false; s.isError = true })
+        .addCase(actions.beginRequestCreate, (s) => {
+          s[writeFlag] = true
+        })
+        .addCase(actions.successRequestCreate, (s, { payload }) => {
+          s.data = addToData(s.data, payload)
+          s[writeFlag] = false
+        })
+        .addCase(actions.errorRequestCreate, (s, { payload }) => {
+          s.error = payload
+          s[writeFlag] = false
+          s.isError = true
+        })
 
       if (beginUpdate) {
-        builder.addCase(actions.beginRequestUpdate, (s) => { s[writeFlag] = true; s.isError = false })
+        builder.addCase(actions.beginRequestUpdate, (s) => {
+          s[writeFlag] = true
+          s.isError = false
+        })
       }
 
       builder
         .addCase(actions.successRequestUpdate, (s, { payload }) => {
           if (s.data) {
-            const mapped = s.data.map((r) => r[idKey] === payload[idKey] ? { ...r, ...payload } : r)
+            const mapped = s.data.map((r) =>
+              r[idKey] === payload[idKey] ? { ...r, ...payload } : r,
+            )
             s.data = sortFn ? sortFn(mapped) : mapped
           }
           if (beginUpdate) s[writeFlag] = false
@@ -92,7 +122,9 @@ export const createCRUDReducer = (sliceName, actions, {
         })
 
       if (beginDelete) {
-        builder.addCase(actions.beginRequestDelete, (s) => { s[writeFlag] = true })
+        builder.addCase(actions.beginRequestDelete, (s) => {
+          s[writeFlag] = true
+        })
       }
 
       builder

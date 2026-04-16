@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../Taxi/taxiVehicleReducer'
-import * as actions from '../../actions/Taxi/taxiVehicleActions'
+import reducer from '../taxi/taxiVehicleReducer'
+import * as actions from '../../actions/taxi/taxiVehicleActions'
 import { makeVehicle } from '../../__tests__/factories'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }
@@ -91,7 +91,10 @@ describe('taxiVehicleReducer', () => {
       const v2 = makeVehicle({ id: 'v2', plate: 'XYZ999', restrictions: { 1: { d1: 2, d2: 12 } } })
       const s = reducer(
         { ...initial, data: [v1, v2] },
-        actions.successRequestUpdateRestrictions({ id: 'v1', restrictions: { 5: { d1: 1, d2: 11 } } }),
+        actions.successRequestUpdateRestrictions({
+          id: 'v1',
+          restrictions: { 5: { d1: 1, d2: 11 } },
+        }),
       )
       expect(s.data.find((v) => v.id === 'v2').restrictions).toEqual({ 1: { d1: 2, d2: 12 } })
     })

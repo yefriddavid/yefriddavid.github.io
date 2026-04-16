@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../Taxi/taxiExpenseReducer'
-import * as actions from '../../actions/Taxi/taxiExpenseActions'
+import reducer from '../taxi/taxiExpenseReducer'
+import * as actions from '../../actions/taxi/taxiExpenseActions'
 import { makeExpense } from '../../__tests__/factories'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }
@@ -73,26 +73,38 @@ describe('taxiExpenseReducer', () => {
   describe('togglePaid', () => {
     it('successRequestTogglePaid flips paid flag for matching expense', () => {
       const e = makeExpense({ id: 'e1', paid: false })
-      const s = reducer({ ...initial, data: [e] }, actions.successRequestTogglePaid({ id: 'e1', paid: true }))
+      const s = reducer(
+        { ...initial, data: [e] },
+        actions.successRequestTogglePaid({ id: 'e1', paid: true }),
+      )
       expect(s.data[0].paid).toBe(true)
     })
 
     it('successRequestTogglePaid can mark an expense as unpaid', () => {
       const e = makeExpense({ id: 'e1', paid: true })
-      const s = reducer({ ...initial, data: [e] }, actions.successRequestTogglePaid({ id: 'e1', paid: false }))
+      const s = reducer(
+        { ...initial, data: [e] },
+        actions.successRequestTogglePaid({ id: 'e1', paid: false }),
+      )
       expect(s.data[0].paid).toBe(false)
     })
 
     it('successRequestTogglePaid does not affect other expenses', () => {
       const e1 = makeExpense({ id: 'e1', paid: false })
       const e2 = makeExpense({ id: 'e2', paid: false })
-      const s = reducer({ ...initial, data: [e1, e2] }, actions.successRequestTogglePaid({ id: 'e1', paid: true }))
+      const s = reducer(
+        { ...initial, data: [e1, e2] },
+        actions.successRequestTogglePaid({ id: 'e1', paid: true }),
+      )
       expect(s.data[1].paid).toBe(false)
     })
 
     it('successRequestTogglePaid preserves all other fields', () => {
       const e = makeExpense({ id: 'e1', paid: false, amount: 80000, description: 'Aceite' })
-      const s = reducer({ ...initial, data: [e] }, actions.successRequestTogglePaid({ id: 'e1', paid: true }))
+      const s = reducer(
+        { ...initial, data: [e] },
+        actions.successRequestTogglePaid({ id: 'e1', paid: true }),
+      )
       expect(s.data[0].amount).toBe(80000)
       expect(s.data[0].description).toBe('Aceite')
     })

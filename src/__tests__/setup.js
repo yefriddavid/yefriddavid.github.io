@@ -4,10 +4,18 @@
 if (typeof globalThis.localStorage === 'undefined') {
   globalThis.localStorage = {
     _store: {},
-    getItem(key) { return this._store[key] ?? null },
-    setItem(key, value) { this._store[key] = String(value) },
-    removeItem(key) { delete this._store[key] },
-    clear() { this._store = {} },
+    getItem(key) {
+      return this._store[key] ?? null
+    },
+    setItem(key, value) {
+      this._store[key] = String(value)
+    },
+    removeItem(key) {
+      delete this._store[key]
+    },
+    clear() {
+      this._store = {}
+    },
   }
 }
 
@@ -22,7 +30,10 @@ if (typeof globalThis.navigator === 'undefined') {
 }
 
 if (typeof globalThis.Notification === 'undefined') {
-  globalThis.Notification = { permission: 'denied', requestPermission: () => Promise.resolve('denied') }
+  globalThis.Notification = {
+    permission: 'denied',
+    requestPermission: () => Promise.resolve('denied'),
+  }
 }
 
 if (typeof globalThis.window === 'undefined') {

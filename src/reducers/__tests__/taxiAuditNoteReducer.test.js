@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../Taxi/taxiAuditNoteReducer'
-import * as actions from '../../actions/Taxi/taxiAuditNoteActions'
+import reducer from '../taxi/taxiAuditNoteReducer'
+import * as actions from '../../actions/taxi/taxiAuditNoteActions'
 import { makeAuditNote } from '../../__tests__/factories'
 
 const initial = { notes: {}, fetching: false, isError: false }
@@ -21,7 +21,12 @@ describe('taxiAuditNoteReducer', () => {
     it('successRequestFetch normalizes array into object keyed by id', () => {
       const notes = [
         makeAuditNote({ id: '2024-01-05__Juan_Perez', date: '2024-01-05', driver: 'Juan Perez' }),
-        makeAuditNote({ id: '2024-01-06__Maria_Lopez', date: '2024-01-06', driver: 'Maria Lopez', note: 'Sin novedad' }),
+        makeAuditNote({
+          id: '2024-01-06__Maria_Lopez',
+          date: '2024-01-06',
+          driver: 'Maria Lopez',
+          note: 'Sin novedad',
+        }),
       ]
       const s = reducer({ ...initial, fetching: true }, actions.successRequestFetch(notes))
       expect(s.fetching).toBe(false)
@@ -68,14 +73,20 @@ describe('taxiAuditNoteReducer', () => {
     it('successRequestDelete removes note using computed id (spaces → underscores)', () => {
       const note = makeAuditNote({ id: '2024-03-15__Pedro_Rodriguez', driver: 'Pedro Rodriguez' })
       const prev = { ...initial, notes: { [note.id]: note } }
-      const s = reducer(prev, actions.successRequestDelete({ date: '2024-03-15', driver: 'Pedro Rodriguez' }))
+      const s = reducer(
+        prev,
+        actions.successRequestDelete({ date: '2024-03-15', driver: 'Pedro Rodriguez' }),
+      )
       expect(s.notes['2024-03-15__Pedro_Rodriguez']).toBeUndefined()
     })
 
     it('successRequestDelete handles multi-word driver names', () => {
       const note = makeAuditNote({ id: '2024-01-01__Maria_Del_Carmen', driver: 'Maria Del Carmen' })
       const prev = { ...initial, notes: { [note.id]: note } }
-      const s = reducer(prev, actions.successRequestDelete({ date: '2024-01-01', driver: 'Maria Del Carmen' }))
+      const s = reducer(
+        prev,
+        actions.successRequestDelete({ date: '2024-01-01', driver: 'Maria Del Carmen' }),
+      )
       expect(s.notes['2024-01-01__Maria_Del_Carmen']).toBeUndefined()
     })
 
@@ -83,7 +94,10 @@ describe('taxiAuditNoteReducer', () => {
       const nA = makeAuditNote({ id: '2024-03-15__Driver_A', driver: 'Driver A' })
       const nB = makeAuditNote({ id: '2024-03-15__Driver_B', driver: 'Driver B', note: 'B' })
       const prev = { ...initial, notes: { [nA.id]: nA, [nB.id]: nB } }
-      const s = reducer(prev, actions.successRequestDelete({ date: '2024-03-15', driver: 'Driver A' }))
+      const s = reducer(
+        prev,
+        actions.successRequestDelete({ date: '2024-03-15', driver: 'Driver A' }),
+      )
       expect(s.notes['2024-03-15__Driver_A']).toBeUndefined()
       expect(s.notes['2024-03-15__Driver_B']).toEqual(nB)
     })

@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiPartnerActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiPartners'
-import { fetchPartners, createPartner, updatePartner, deletePartner } from '../Taxi/taxiPartnerSagas'
+import * as actions from '../../actions/taxi/taxiPartnerActions'
+import * as service from '../../services/firebase/taxi/taxiPartners'
+import {
+  fetchPartners,
+  createPartner,
+  updatePartner,
+  deletePartner,
+} from '../taxi/taxiPartnerSagas'
 import { makePartner } from '../../__tests__/factories'
 
 describe('taxiPartnerSagas', () => {
@@ -18,8 +23,11 @@ describe('taxiPartnerSagas', () => {
 
     it('error path dispatches errorRequestFetch', () => {
       const gen = fetchPartners()
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('network')).value).toEqual(put(actions.errorRequestFetch('network')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('network')).value).toEqual(
+        put(actions.errorRequestFetch('network')),
+      )
     })
   })
 
@@ -27,8 +35,8 @@ describe('taxiPartnerSagas', () => {
     it('converts percentage string to Number', () => {
       const payload = makePartner({ id: undefined, percentage: '40' })
       const gen = createPartner({ payload })
-      gen.next()           // beginRequestCreate
-      gen.next()           // call addPartner
+      gen.next() // beginRequestCreate
+      gen.next() // call addPartner
       const { payload: dispatched } = gen.next('new-id').value.payload.action
       expect(dispatched.percentage).toBe(40)
       expect(typeof dispatched.percentage).toBe('number')
@@ -37,15 +45,19 @@ describe('taxiPartnerSagas', () => {
     it('only includes id, name, percentage in the dispatched payload (no extra fields)', () => {
       const payload = { id: undefined, name: 'Socio X', percentage: '30' }
       const gen = createPartner({ payload })
-      gen.next(); gen.next()
+      gen.next()
+      gen.next()
       const { payload: dispatched } = gen.next('p-id').value.payload.action
       expect(Object.keys(dispatched)).toEqual(['id', 'name', 'percentage'])
     })
 
     it('error path dispatches errorRequestCreate', () => {
       const gen = createPartner({ payload: makePartner() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('forbidden')).value).toEqual(put(actions.errorRequestCreate('forbidden')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('forbidden')).value).toEqual(
+        put(actions.errorRequestCreate('forbidden')),
+      )
     })
   })
 
@@ -70,8 +82,11 @@ describe('taxiPartnerSagas', () => {
 
     it('error path dispatches errorRequestDelete', () => {
       const gen = deletePartner({ payload: makePartner() })
-      gen.next(); gen.next()
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      gen.next()
+      gen.next()
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 })

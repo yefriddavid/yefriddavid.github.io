@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import reducer from '../Taxi/taxiSettlementReducer'
-import * as actions from '../../actions/Taxi/taxiSettlementActions'
+import reducer from '../taxi/taxiSettlementReducer'
+import * as actions from '../../actions/taxi/taxiSettlementActions'
 import { makeSettlement } from '../../__tests__/factories'
 
 const initial = { data: null, error: {}, fetching: false, isError: false }
@@ -77,14 +77,17 @@ describe('taxiSettlementReducer', () => {
       )
       expect(s.data[0].amount).toBe(60000)
       expect(s.data[0].comment).toBe('ajuste')
-      expect(s.data[0].driver).toBe(rec.driver)  // unchanged field preserved
+      expect(s.data[0].driver).toBe(rec.driver) // unchanged field preserved
       expect(s.fetching).toBe(false)
     })
 
     it('successRequestUpdate does not affect other records', () => {
       const r1 = makeSettlement({ id: 'r1', amount: 50000 })
       const r2 = makeSettlement({ id: 'r2', amount: 80000 })
-      const s = reducer({ ...initial, data: [r1, r2] }, actions.successRequestUpdate({ id: 'r1', amount: 55000 }))
+      const s = reducer(
+        { ...initial, data: [r1, r2] },
+        actions.successRequestUpdate({ id: 'r1', amount: 55000 }),
+      )
       expect(s.data.find((r) => r.id === 'r2').amount).toBe(80000)
     })
 

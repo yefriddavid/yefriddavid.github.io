@@ -1,0 +1,53 @@
+import { put, call, all, takeLatest } from 'redux-saga/effects'
+import * as taxiExpenseActions from '../../actions/taxi/taxiExpenseActions'
+import * as expenseService from '../../services/firebase/taxi/taxiExpenses'
+
+export function* fetchExpenses() {
+  try {
+    yield put(taxiExpenseActions.beginRequestFetch())
+    const data = yield call(expenseService.fetchExpenses)
+    yield put(taxiExpenseActions.successRequestFetch(data))
+  } catch (e) {
+    yield put(taxiExpenseActions.errorRequestFetch(e.message))
+  }
+}
+
+export function* createExpense({ payload }) {
+  try {
+    yield put(taxiExpenseActions.beginRequestCreate())
+    const id = yield call(expenseService.createExpense, payload)
+    yield put(
+      taxiExpenseActions.successRequestCreate({ id, ...payload, amount: Number(payload.amount) }),
+    )
+  } catch (e) {
+    yield put(taxiExpenseActions.errorRequestCreate(e.message))
+  }
+}
+
+export function* deleteExpense({ payload }) {
+  try {
+    yield put(taxiExpenseActions.beginRequestDelete())
+    yield call(expenseService.deleteExpense, payload.id)
+    yield put(taxiExpenseActions.successRequestDelete(payload))
+  } catch (e) {
+    yield put(taxiExpenseActions.errorRequestDelete(e.message))
+  }
+}
+
+export function* togglePaid({ payload }) {
+  try {
+    yield call(expenseService.toggleExpensePaid, payload.id, payload.paid)
+    yield put(taxiExpenseActions.successRequestTogglePaid(payload))
+  } catch (e) {
+    yield put(taxiExpenseActions.errorRequestTogglePaid(e.message))
+  }
+}
+
+export default function* rootSagas() {
+  yield all([
+    takeLatest(taxiExpenseActions.fetchRequest, fetchExpenses),
+    takeLatest(taxiExpenseActions.createRequest, createExpense),
+    takeLatest(taxiExpenseActions.deleteRequest, deleteExpense),
+    takeLatest(taxiExpenseActions.togglePaidRequest, togglePaid),
+  ])
+}

@@ -18,6 +18,7 @@
 - [Autenticación](#autenticación)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Instalación y comandos](#instalación-y-comandos)
+- [Pruebas](#pruebas)
 - [Backend y fuentes de datos](#backend-y-fuentes-de-datos)
 - [Estado global (Redux)](#estado-global-redux)
 - [Constantes por dominio](#constantes-por-dominio)
@@ -259,27 +260,63 @@ src/
 ## Instalación y comandos
 
 ```bash
-npm install            # Instalar dependencias
-npm start              # Dev server (http://localhost:3000)
-npm run build          # Build de producción → /build
-npm run serve          # Preview del build
-npm run lint           # ESLint en src/**/*.js
-npm test               # Ejecutar pruebas unitarias (Vitest)
-npm run cy:run         # Ejecutar pruebas E2E en modo headless (Cypress)
-npm run deploy         # Build + deploy a GitHub Pages
+npm install             # Instalar dependencias
+npm start               # Dev server (http://localhost:3000)
+npm run build           # Build de producción → /build
+npm run serve           # Preview del build
+npm run lint            # ESLint en src/**/*.js
+npm test                # Ejecutar pruebas unitarias (Vitest)
+npm run cy:comp         # Pruebas de componente Cypress (headless)
+npm run cy:comp:open    # Pruebas de componente Cypress (panel interactivo)
+npm run cy:run          # Pruebas E2E headless (requiere build previo)
+npm run cy:open         # Panel interactivo Cypress (E2E)
+npm run deploy          # Build + deploy a GitHub Pages
 ```
 
 ---
 
 ## Pruebas
 
-El proyecto cuenta con pruebas unitarias y de extremo a extremo (E2E):
+El proyecto cuenta con tres niveles de pruebas:
 
-| Comando | Herramienta | Descripción |
+### Unitarias e integración — Vitest
+
+```bash
+npm test            # headless, una sola pasada
+npm run test:watch  # modo watch para desarrollo
+```
+
+Archivos en `src/**/__tests__/` y `src/**/*.test.js`. Cubren reducers, sagas y helpers de dominio.
+
+### Componentes — Cypress Component Testing
+
+Las pruebas de componente montan componentes React de forma aislada dentro de Vite, sin necesidad de levantar ningún servidor externo.
+
+```bash
+npm run cy:comp        # headless (CI / terminal)
+npm run cy:comp:open   # panel interactivo con hot-reload
+```
+
+| Archivo | Componente | Cobertura |
 |---|---|---|
-| `npm test` | **Vitest** | Ejecuta todas las pruebas unitarias y de integración de la carpeta `src/`. |
-| `npm run cy:run` | **Cypress** | Levanta automáticamente un servidor en el puerto 3001 y ejecuta las pruebas E2E en modo headless. (Requiere `npm run build` previo). |
-| `npm run cy:open` | **Cypress** | Abre el panel interactivo de Cypress para depurar pruebas E2E. |
+| `cypress/component/AuditView.cy.js` | `AuditView` | Strip de estados, filtros, tabla, exportación, modal Análisis IA, filtro de vehículo, estado Redux |
+
+**Infraestructura de soporte:**
+
+| Archivo | Función |
+|---|---|
+| `cypress/support/component.jsx` | Comando `cy.mount` con `Provider` (Redux) + `I18nextProvider` |
+| `cypress/support/component-index.html` | HTML base con `data-cy-root` requerido por `cypress/react` |
+| `cypress.config.js` → sección `component` | Bundler Vite, patrón de specs, soporte |
+
+### E2E — Cypress
+
+```bash
+npm run build && npm run cy:run   # headless (requiere build previo)
+npm run cy:open                   # panel interactivo
+```
+
+Specs en `cypress/e2e/`. Levantan el preview del build en el puerto 3005.
 
 ---
 

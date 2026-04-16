@@ -9,4 +9,15 @@ export default defineConfig({
     screenshotOnRunFailure: true,
     allowCypressEnv: true,
   },
+  component: {
+    devServer: {
+      framework: 'react',
+      bundler: 'vite',
+    },
+    indexHtmlFile: 'cypress/support/component-index.html',
+    specPattern: 'cypress/component/**/*.cy.js',
+    supportFile: 'cypress/support/component.jsx',
+    video: false,
+    screenshotOnRunFailure: true,
+  },
 })

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/authActions'
-import { getUser, updateOwnProfile, updateUserAvatar } from '../../services/providers/firebase/Security/users'
+import { getUser, updateOwnProfile, updateUserAvatar } from '../../services/firebase/security/users'
 import { fetchProfile, updateProfile, updateAvatar } from '../profileSagas'
 import { makeUser } from '../../__tests__/factories'
 
@@ -18,13 +18,15 @@ describe('profileSagas', () => {
 
     it('dispatches fetchProfileError on service failure', () => {
       const gen = fetchProfile({ payload: 'jperez' })
-      gen.next()  // call getUser
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.fetchProfileError('not found')))
+      gen.next() // call getUser
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.fetchProfileError('not found')),
+      )
     })
 
     it('null response from getUser is forwarded to fetchProfileSuccess as-is', () => {
       const gen = fetchProfile({ payload: 'ghost' })
-      gen.next()  // call getUser
+      gen.next() // call getUser
       expect(gen.next(null).value).toEqual(put(actions.fetchProfileSuccess(null)))
     })
   })
@@ -41,8 +43,10 @@ describe('profileSagas', () => {
 
     it('dispatches updateProfileError on service failure', () => {
       const gen = updateProfile({ payload: makeUser() })
-      gen.next()  // call updateOwnProfile
-      expect(gen.throw(new Error('write denied')).value).toEqual(put(actions.updateProfileError('write denied')))
+      gen.next() // call updateOwnProfile
+      expect(gen.throw(new Error('write denied')).value).toEqual(
+        put(actions.updateProfileError('write denied')),
+      )
     })
   })
 
@@ -58,8 +62,10 @@ describe('profileSagas', () => {
 
     it('dispatches updateAvatarError on service failure', () => {
       const gen = updateAvatar({ payload: { username: 'jperez', avatar: 'data:...' } })
-      gen.next()  // call updateUserAvatar
-      expect(gen.throw(new Error('upload failed')).value).toEqual(put(actions.updateAvatarError('upload failed')))
+      gen.next() // call updateUserAvatar
+      expect(gen.throw(new Error('upload failed')).value).toEqual(
+        put(actions.updateAvatarError('upload failed')),
+      )
     })
   })
 })

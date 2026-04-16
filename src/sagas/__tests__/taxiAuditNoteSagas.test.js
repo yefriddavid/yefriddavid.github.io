@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
-import * as actions from '../../actions/Taxi/taxiAuditNoteActions'
-import * as service from '../../services/providers/firebase/Taxi/taxiAuditNotes'
-import { fetchNotes, upsertNote, deleteNote } from '../Taxi/taxiAuditNoteSagas'
+import * as actions from '../../actions/taxi/taxiAuditNoteActions'
+import * as service from '../../services/firebase/taxi/taxiAuditNotes'
+import { fetchNotes, upsertNote, deleteNote } from '../taxi/taxiAuditNoteSagas'
 import { makeAuditNote } from '../../__tests__/factories'
 
 describe('taxiAuditNoteSagas', () => {
@@ -18,7 +18,9 @@ describe('taxiAuditNoteSagas', () => {
     it('dispatches errorRequestFetch on failure', () => {
       const gen = fetchNotes()
       gen.next()
-      expect(gen.throw(new Error('network error')).value).toEqual(put(actions.errorRequestFetch('network error')))
+      expect(gen.throw(new Error('network error')).value).toEqual(
+        put(actions.errorRequestFetch('network error')),
+      )
     })
   })
 
@@ -57,7 +59,9 @@ describe('taxiAuditNoteSagas', () => {
     it('dispatches errorRequestDelete on failure', () => {
       const gen = deleteNote({ payload: { date: '2024-03-01', driver: 'Carlos' } })
       gen.next()
-      expect(gen.throw(new Error('not found')).value).toEqual(put(actions.errorRequestDelete('not found')))
+      expect(gen.throw(new Error('not found')).value).toEqual(
+        put(actions.errorRequestDelete('not found')),
+      )
     })
   })
 })
