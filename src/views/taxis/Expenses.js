@@ -314,7 +314,7 @@ const Gastos = () => {
 
   const handleCloneConfirm = () => {
     if (!cloneForm.date) return
-    const { id, ...rest } = cloneSource
+    const { id: _id, ...rest } = cloneSource
     dispatch(
       taxiExpenseActions.createRequest({
         ...rest,

@@ -1005,7 +1005,6 @@ export default function Assets() {
   const activeFilters =
     filterType !== 'all' || filterHorizon !== 'all' || filterLiquid !== 'all' || !!search
 
-  console.log(gridData)
 
   return (
     <div

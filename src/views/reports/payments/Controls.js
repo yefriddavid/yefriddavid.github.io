@@ -1,35 +1,13 @@
-import React, { useState, useEffect, Component } from 'react'
-// import { VaucherControlViewer } from './Database'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import React, { Component } from 'react'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
-  CCol,
-  CFormInput,
   CFormSelect,
-  CLink,
   CModal,
   CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
-  CPopover,
-  CRow,
-  CTooltip,
 } from '@coreui/react'
-import moment from 'src/utils/moment'
-import { useTranslation } from 'react-i18next'
-
-const currencyCode = 'COP'
-const myCode = 'es-CO'
 
 class SelectControl extends Component {
   state = {
@@ -124,22 +102,13 @@ class NewPaymentComponent extends Component {
     }
   }
   onChangeImage = async (e) => {
-    console.log(e.target.files)
     const file = e.target.files[0]
     let base64String
 
     const reader = new FileReader()
-    console.log('next')
 
     reader.onload = function () {
       base64String = reader.result
-      /*base64String = reader.result.replace("data:", "")
-          .replace(/^.+,/, "");*/
-
-      //imageBase64Stringsep = base64String;
-
-      // alert(imageBase64Stringsep);
-      console.log(base64String)
       this.setState({ ...formState, vaucher: base64String })
     }
     reader.readAsDataURL(file)

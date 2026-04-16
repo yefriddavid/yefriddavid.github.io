@@ -43,7 +43,7 @@ const HardRefresh = () => {
   const params = new URLSearchParams(window.location.search)
   const isDone = params.get('done') === '1'
 
-  const [status, setStatus] = useState(isDone ? 'done' : 'clearing')
+  const [status] = useState(isDone ? 'done' : 'clearing')
 
   useEffect(() => {
     if (isDone) return

@@ -1,5 +1,5 @@
 import { db, COL_APP_SETTINGS } from '../settings'
-import { collection, doc, getDoc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, doc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 
 //const COL = 'App_settings'

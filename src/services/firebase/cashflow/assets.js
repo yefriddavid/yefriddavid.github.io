@@ -55,7 +55,7 @@ export const createAsset = async ({
   quantity,
   type,
   unitPrice,
-  createdAt,
+  createdAt: _createdAt,
   name,
   date,
   price,

@@ -56,8 +56,6 @@ const addAccountPayment = async (params) => {
     const { data } = response
     const { paymentId } = data.data
     const t = await savePaymentVaucher({ paymentId, vaucher: params.vaucher })
-    console.log('t response')
-    console.log(t)
 
     return data
   } catch (error) {

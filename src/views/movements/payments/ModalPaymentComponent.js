@@ -1,30 +1,13 @@
-import React, { useState, useEffect, Component, PureComponent } from 'react'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import React, { PureComponent } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
-  CCol,
-  CFormInput,
-  CFormSelect,
-  CLink,
   CModal,
   CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
-  CPopover,
-  CRow,
   CSpinner,
-  CTooltip,
 } from '@coreui/react'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import { bindActionCreators } from 'redux'
 import PropTypes from 'prop-types'
@@ -79,7 +62,6 @@ class ModalPaymentComponent extends PureComponent {
     }
   }
   onChangeImage = async (e) => {
-    console.log(e.target.files)
     const file = e.target.files[0]
     let base64String
 

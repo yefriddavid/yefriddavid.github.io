@@ -8,9 +8,7 @@ import {
   CProgress,
   CBadge,
   CTable,
-  CTableHead,
   CTableRow,
-  CTableHeaderCell,
   CTableBody,
   CTableDataCell,
 } from '@coreui/react'

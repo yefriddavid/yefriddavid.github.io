@@ -79,7 +79,6 @@ class ModalPaymentComponent extends PureComponent {
     }
   }
   onChangeImage = async (e) => {
-    console.log(e.target.files)
     const file = e.target.files[0]
     let base64String
 
@@ -123,7 +122,6 @@ class ModalPaymentComponent extends PureComponent {
       //paymentMethod: state.paymentMethod,
       //vaucher: state.vaucher,
     }
-    console.log(formData)
 
     // const newPayment = await addAccountPayment(formData)
 

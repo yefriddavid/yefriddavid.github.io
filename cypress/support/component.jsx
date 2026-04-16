@@ -6,12 +6,16 @@ import React from 'react'
 import i18n from 'src/i18n'
 
 // ── Minimal store ─────────────────────────────────────────────────────────────
-// Only includes the slices AuditView reads from useSelector.
+// Includes every slice read by the tested components.
 import taxiSettlementReducer from 'src/reducers/taxi/taxiSettlementReducer'
+import taxiPeriodNoteReducer from 'src/reducers/taxi/taxiPeriodNoteReducer'
 
 function makeStore(preloadedState = {}) {
   return configureStore({
-    reducer: { taxiSettlement: taxiSettlementReducer },
+    reducer: {
+      taxiSettlement: taxiSettlementReducer,
+      taxiPeriodNote: taxiPeriodNoteReducer,
+    },
     preloadedState,
   })
 }

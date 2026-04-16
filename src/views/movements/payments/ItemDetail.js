@@ -1,32 +1,18 @@
-import React, { useState, useEffect, Component } from 'react'
+import React, { Component } from 'react'
 import { VaucherControlViewer } from './VaucherControlViewer'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import { fetchAccountPayments } from './Services'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
   CCol,
-  CFormInput,
-  CFormSelect,
-  CLink,
   CModal,
   CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
-  CPopover,
   CRow,
   CSpinner,
-  CTooltip,
 } from '@coreui/react'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import * as accountActions from '../../../actions/cashflow/accountActions'
 import { bindActionCreators } from 'redux'
@@ -38,7 +24,7 @@ import {
   UpdatePaymentVaucher,
   fetchVaucherPayment,
 } from '../../../services/firebase/cashflow/paymentVaucher'
-import { getCache, setCache, clearCache } from '../../../services/voucherCache'
+import { setCache, clearCache } from '../../../services/voucherCache'
 
 import './ItemDetail.scss'
 
@@ -592,7 +578,6 @@ class ItemDetail1 extends Component {
   }
   saveEdit = (updated) => {
     // TODO: dispatch update action
-    console.log('save', updated)
     this.setState({ editingPayment: null })
   }
 
@@ -649,8 +634,6 @@ class ItemDetail1 extends Component {
     const accountStatus = isPaid ? t('payments.status.paid') : t('payments.status.pending')
 
     const data = payments?.items || []
-    const comment = data.length ? data[0].comment : ''
-    const value = data.length ? data[0].value : ''
 
     //console.log("render");
     //console.log(account.vaucherLoaded);

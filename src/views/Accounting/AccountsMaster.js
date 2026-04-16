@@ -18,7 +18,6 @@ import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActio
 import {
   CLASSIFICATION_OPTIONS,
   PERIOD_OPTIONS,
-  TYPE_OPTIONS,
   ACCOUNT_MASTER_TYPES,
   ACCOUNT_MASTER_TYPE_LABELS,
   ACCOUNT_MASTER_NATURE,
@@ -381,7 +380,7 @@ const TYPE_COLOR = {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function AccountsMaster() {
-  const { monthLabels } = useLocaleData()
+  useLocaleData()
   const dispatch = useDispatch()
   const { data, fetching, saving, seeding, seedProgress, patching, patchProgress } = useSelector(
     (s) => s.accountsMaster,

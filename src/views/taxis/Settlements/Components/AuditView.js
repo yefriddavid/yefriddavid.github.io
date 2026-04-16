@@ -5,7 +5,6 @@ import { CModal, CModalHeader, CModalTitle, CModalBody, CSpinner } from '@coreui
 import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import { fmt } from './utils'
-import AuditAddForm from './AuditAddForm'
 import AuditMissingCell from './AuditMissingCell'
 import AuditSettledCell from './AuditSettledCell'
 import AuditDayDetail from './AuditDayDetail'
@@ -581,7 +580,7 @@ const AuditView = ({
     dispatch(taxiSettlementActions.createRequest(payload))
   }
 
-  const dispatchDelete = (dateStr, id) => {
+  const _dispatchDelete = (dateStr, id) => {
     setLoadingDay(dateStr)
     dispatch(taxiSettlementActions.deleteRequest({ id }))
   }
@@ -633,8 +632,6 @@ const AuditView = ({
       return false
     return true
   })
-
-  const auditAccent = { none: '#e03131', partial: '#e67700', full: '#2f9e44', future: '#cbd5e1' }
 
   const hasFilters = auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter.size > 0
 

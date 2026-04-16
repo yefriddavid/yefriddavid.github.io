@@ -15,7 +15,7 @@ export default defineConfig({
       bundler: 'vite',
     },
     indexHtmlFile: 'cypress/support/component-index.html',
-    specPattern: 'cypress/component/**/*.cy.js',
+    specPattern: 'cypress/component/**/*.cy.{js,jsx}',
     supportFile: 'cypress/support/component.jsx',
     video: false,
     screenshotOnRunFailure: true,

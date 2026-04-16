@@ -96,7 +96,7 @@ const MatrixRain = () => {
   return <canvas ref={canvasRef} className="about__matrix" />
 }
 
-const useCursorGlow = (containerRef) => {
+const useCursorGlow = (_containerRef) => {
   const dotRef = useRef()
   const ringRef = useRef()
   const glowRef = useRef()

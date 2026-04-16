@@ -1,9 +1,6 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
-const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
-
 // Managment
 const Accounts = React.lazy(() => import('./views/Accounting/Accounts'))
 const AccountsMaster = React.lazy(() => import('./views/Accounting/AccountsMaster'))
@@ -28,8 +25,6 @@ const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Transactions = React.lazy(() => import('./views/Accounting/Transactions'))
 const AccountStatus = React.lazy(() => import('./views/Accounting/AccountStatus'))
 const Reports = React.lazy(() => import('./views/reports/Reports'))
-
-const AbountMe = React.lazy(() => import('./views/aboutMe/Index'))
 
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))

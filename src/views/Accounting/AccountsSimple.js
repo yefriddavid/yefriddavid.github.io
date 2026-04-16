@@ -1,9 +1,6 @@
-import React, { useEffect, useState, createRef } from 'react'
-import PropTypes from 'prop-types'
-import classNames from 'classnames'
+import React, { useEffect, useState } from 'react'
 import {
   CRow,
-  CCol,
   CCard,
   CCardHeader,
   CCardBody,
@@ -14,7 +11,6 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-import { rgbToHex } from '@coreui/utils'
 import { DocsLink } from 'src/components'
 import axios from 'axios'
 
@@ -40,8 +36,6 @@ function JsonTable() {
 
         const { data } = response.data
         const { items } = data
-        console.log(items)
-
         // const jsonData = await response.json()
 
         setData(items)
@@ -55,7 +49,6 @@ function JsonTable() {
 
   const elementItems = data.map((i) => <AccountItem key={i.accountId} account={i} />)
 
-  console.log('end')
   // return (<div>pruebaaaa<div/>)
   return elementItems
 }
@@ -71,12 +64,6 @@ const AccountItem = ({ account: i }) => (
 )
 
 const Accounts = () => {
-  const jsonData = [
-    { id: 1, name: 'John Doe', value: 30000 },
-    { id: 2, name: 'Jane Smith', value: 25000 },
-    { id: 3, name: 'David Lee', value: 35000 },
-  ]
-
   return (
     <>
       <CCard className="mb-4">

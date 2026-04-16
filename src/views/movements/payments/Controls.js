@@ -1,35 +1,13 @@
-import React, { useState, useEffect, Component } from 'react'
-// import { VaucherControlViewer } from './Database'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import React, { Component } from 'react'
 //import CFormInput from '@coreui/react/src/components/form/CFormInput'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
-  CCol,
-  CFormInput,
   CFormSelect,
-  CLink,
   CModal,
   CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
-  CPopover,
-  CRow,
-  CTooltip,
 } from '@coreui/react'
-import moment from 'src/utils/moment'
-import { useTranslation } from 'react-i18next'
-
-const currencyCode = 'COP'
-const myCode = 'es-CO'
 
 class SelectControl extends Component {
   onChangeValueHandler = (e) => {
@@ -65,7 +43,7 @@ class SelectControl extends Component {
     )
   }
 }
-const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) => {
+const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name: _name }) => {
   //const [formState, setState] = useState({ value: 0, fullPayed: true })
   //console.log("visible");
   //console.log(visible);
@@ -114,7 +92,7 @@ class NewPaymentComponent extends Component {
     // this.fetchData()
   }
 
-  setFormState = (e, b) => {
+  setFormState = (e, _b) => {
     return
     const { value, name } = e.target
     const { state: formState } = this
@@ -132,22 +110,13 @@ class NewPaymentComponent extends Component {
     }
   }
   onChangeImage = async (e) => {
-    console.log(e.target.files)
     const file = e.target.files[0]
     let base64String
 
     const reader = new FileReader()
-    console.log('next')
 
     reader.onload = function () {
       base64String = reader.result
-      /*base64String = reader.result.replace("data:", "")
-          .replace(/^.+,/, "");*/
-
-      //imageBase64Stringsep = base64String;
-
-      // alert(imageBase64Stringsep);
-      console.log(base64String)
       this.setState({ ...formState, vaucher: base64String })
     }
     reader.readAsDataURL(file)
@@ -158,21 +127,7 @@ class NewPaymentComponent extends Component {
     this.setState({ ...formState, value: account.value })
   }
   savePayment = async () => {
-    // console.log("start save");
-    const formData = {
-      accountId: account.accountId,
-      comment: formState.comment,
-      deviceId: 'web',
-      date: formState.date,
-      value: formState.value,
-      month: account.month,
-      year: account.year,
-      paymentMethod: formState.paymentMethod,
-      vaucher: formState.vaucher,
-    }
-    // const newPayment = await addAccountPayment(formData)
-    const { paymentId } = newPayment.data
-    // console.log(paymentId);
+    // const newPayment = await addAccountPayment({ ... })
   }
   // const [visible1, setVisible] = useState(false)
 

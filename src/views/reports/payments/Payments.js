@@ -91,7 +91,6 @@ class App extends Component {
   }
 
   loadVauchers(item) {
-    console.log(item)
     const { key } = item
     const data = this.props.accounts?.data?.data?.items
     const account = data.find((e) => e.accountId === key)
@@ -123,7 +122,6 @@ class App extends Component {
   render() {
     const data = this.props.accounts?.data?.data?.items
     const { selectedAccount, isError: fetchIsError, error: fetchErrorMessage } = this.props.accounts
-    console.log(fetchErrorMessage)
     //console.log("selectedAccount");
     //console.log(selectedAccount);
     //console.log(this.props.accounts);

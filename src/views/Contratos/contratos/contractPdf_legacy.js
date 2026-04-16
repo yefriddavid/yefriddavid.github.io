@@ -168,7 +168,7 @@ function formatCOP(value) {
 
 // ── HTML template ─────────────────────────────────────────────────────────────
 
-export function buildContractHtml(p, isPreview = false) {
+export function buildContractHtml(p, _isPreview = false) {
   const tenant = p.tenant || {}
   const guarantor = p.guarantor || {}
   const owner = p.owner || {}

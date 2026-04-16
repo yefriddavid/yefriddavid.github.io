@@ -10,14 +10,12 @@ import {
   cilCarAlt,
   cilCash,
   cilCheck,
-  cilCreditCard,
   cilFile,
   cilFolder,
   cilGroup,
   cilHome,
   cilLightbulb,
   cilChart,
-  cilList,
   cilPeople,
   cilSettings,
   cilSpeedometer,
@@ -32,8 +30,6 @@ import { CNavGroup, CNavItem } from '@coreui/react'
 const getNav = (t, role) => {
   const isSuperAdmin = !role || role === 'superAdmin'
   const isManager = !role || role === 'manager' || role === 'superAdmin'
-  const isConductor = true // all roles can see read-only taxis section
-
   const items = []
 
   items.push({

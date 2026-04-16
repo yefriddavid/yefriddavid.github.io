@@ -1,7 +1,7 @@
 import React from 'react'
 import { CToast, CToastBody, CToastHeader } from '@coreui/react'
 
-export const Notification = ({ visible, message, type = 'error' }) => {
+export const Notification = ({ visible, message, type: _type = 'error' }) => {
   return (
     <CToast animation={false} autohide={false} visible={visible}>
       <CToastHeader closeButton>

@@ -19,7 +19,6 @@ const now = new Date()
 const CURRENT_YEAR = now.getFullYear()
 const CURRENT_MONTH = now.getMonth() + 1
 
-console.log(MONTH_NAMES)
 
 /*const monthLabels = [
   'Enero',
@@ -139,7 +138,7 @@ const fieldInput = {
 }
 
 // ── Period notes ──────────────────────────────────────────────────────────────
-function PeriodNotes({ period, notes, saving, fetching, onAdd, onToggle, onDelete }) {
+function PeriodNotes({ period: _period, notes, saving, fetching, onAdd, onToggle, onDelete }) {
   const [text, setText] = useState('')
   const [open, setOpen] = useState(false)
 
@@ -1908,11 +1907,6 @@ export default function AccountStatus() {
 
   const year = Number(searchParams.get('year')) || CURRENT_YEAR
   const month = Number(searchParams.get('month')) || CURRENT_MONTH
-  const setYear = (value) =>
-    setSearchParams((prev) => {
-      prev.set('year', value)
-      return prev
-    })
   const setMonth = (value) =>
     setSearchParams((prev) => {
       prev.set('month', value)

@@ -89,7 +89,7 @@ const Taxis = () => {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState(null)
-  const [editingRow, setEditingRow] = useState(null)
+  const [, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null)
   const [summaryOpen, setSummaryOpen] = useState(
     () => localStorage.getItem('settlements_summaryOpen') !== 'false',

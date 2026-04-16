@@ -29,7 +29,7 @@ const PeriodSummary = ({
   total,
   projection,
   isCurrentPeriod,
-  daysElapsed,
+  daysElapsed: _daysElapsed,
   daysInMonth,
   totalExpenses,
   periodExpenses,

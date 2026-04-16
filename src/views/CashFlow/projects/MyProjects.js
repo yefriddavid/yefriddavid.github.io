@@ -1025,7 +1025,7 @@ function ProjectCard({
       {/* Items preview */}
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
         {localItems.length > 0 &&
-          localItems.map((item, itemIdx) => (
+          localItems.map((item) => (
             <div
               key={item.id}
               onDragOver={(e) => {

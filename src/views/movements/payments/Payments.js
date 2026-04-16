@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from 'react'
+import React, { Component } from 'react'
 import {
   Editing,
   Column,
@@ -8,16 +8,10 @@ import {
   Button as GButton,
 } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { Button } from 'devextreme-react/button'
-import { SelectControl, NewPaymentComponent } from './Controls'
+import { SelectControl } from './Controls'
 import ItemDetail from './ItemDetail'
 import ModalPaymentComponent from './ModalPaymentComponent'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-import { cilX, cilCheckCircle } from '@coreui/icons'
-import { CIcon } from '@coreui/icons-react'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import * as accountActions from '../../../actions/cashflow/accountActions'
 import { bindActionCreators } from 'redux'
@@ -27,23 +21,7 @@ import './Payments.scss'
 
 //import { Controller, useFormContext } from "react-hook-form"
 import moment from 'src/utils/moment'
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CLink,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CPopover,
-  CRow,
-  CSpinner,
-  CTooltip,
-} from '@coreui/react'
+import { CSpinner } from '@coreui/react'
 
 const initialState = {
   year: moment().format('Y'),
@@ -130,7 +108,6 @@ class App extends Component {
   }
 
   loadVauchers(item) {
-    console.log(item)
     const { key } = item
     const data = this.props.accounts?.data?.data?.items
     if (!data) return
@@ -161,7 +138,7 @@ class App extends Component {
   closeAddPayment = () => this.setState({ addingPaymentAccountId: null })
 
   addAccountPayment(item) {
-    const { state, onChangeAnyState } = this
+    const { state } = this
     const { data } = item.row
 
     this.setState({ ...state, showNewPaymentModal: true, currentAccount: data })
