@@ -4,7 +4,6 @@ import {
   Column,
   MasterDetail,
   Selection,
-  LoadPanel,
   Button as GButton,
 } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'

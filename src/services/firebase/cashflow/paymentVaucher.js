@@ -27,7 +27,7 @@ const UpdatePaymentVaucher = async ({ paymentId, vaucher, year = 2025 }) => {
   }
 }
 
-const RemovePaymentVaucher = async ({ vaucherId, year = 2025 }) => {
+const _RemovePaymentVaucher = async ({ vaucherId, year = 2025 }) => {
   try {
     const collectionName = 'paymentVauchers-' + year
     const docRef = doc(db, collectionName, vaucherId)

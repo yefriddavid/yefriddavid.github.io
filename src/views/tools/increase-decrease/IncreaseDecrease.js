@@ -38,7 +38,7 @@ const IncreaseDecrease = () => {
 
   const diff = Number(finalValue) - Number(initialValue)
   const increaseValue = Number(initialValue) > 0 ? (diff / Number(initialValue)) * 100 : 0
-  const decreaseValue = diff < 0 ? Math.abs(increaseValue) : null
+  const _decreaseValue = diff < 0 ? Math.abs(increaseValue) : null
   const inversionProfit = (Number(inversionValue) * increaseValue) / 100
   const earnCOP = inversionProfit * 4000
 

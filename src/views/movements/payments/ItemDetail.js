@@ -576,7 +576,7 @@ class ItemDetail1 extends Component {
       payments: { ...account.payments, items: freshItems },
     })
   }
-  saveEdit = (updated) => {
+  saveEdit = (_updated) => {
     // TODO: dispatch update action
     this.setState({ editingPayment: null })
   }

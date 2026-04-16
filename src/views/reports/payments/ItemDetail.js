@@ -1,35 +1,12 @@
-import React, { useState, useEffect, Component } from 'react'
+import React, { Component } from 'react'
 import { VaucherControlViewer } from './VaucherControlViewer'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-//import CFormInput from '@coreui/react/src/components/form/CFormInput'
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
-  CCol,
-  CFormInput,
-  CFormSelect,
-  CLink,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CPopover,
-  CRow,
-  CTooltip,
-} from '@coreui/react'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { fetchAccountPayments } from './Services'
+import { CButton, CCard, CCardBody, CCardText, CCardTitle, CCol, CRow } from '@coreui/react'
+import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import * as accountActions from '../../../actions/cashflow/accountActions'
 import { bindActionCreators } from 'redux'
-import moment, { formatDate } from 'src/utils/moment'
+import { formatDate } from 'src/utils/moment'
 import { useTranslation } from 'react-i18next'
 import { VaucherModalViewer } from './Controls'
 
@@ -108,8 +85,8 @@ class ItemDetail1 extends Component {
     const { payments } = account
 
     const data = payments?.items || []
-    const comment = data.length ? data[0].comment : ''
-    const value = data.length ? data[0].value : ''
+    const _comment = data.length ? data[0].comment : ''
+    const _value = data.length ? data[0].value : ''
 
     //console.log("render");
     //console.log(account.vaucherLoaded);
@@ -198,7 +175,7 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-const ItemDetail = (account, year, month) => {
+const ItemDetail = (account, _year, _month) => {
   return <ItemDetailControl account={account} />
 }
 

@@ -12,7 +12,7 @@ class SelectControl extends Component {
   }
 
   render() {
-    const { value, onChange, title, options } = this.props
+    const { value, title, options } = this.props
 
     return (
       <>
@@ -28,7 +28,7 @@ class SelectControl extends Component {
     )
   }
 }
-const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name }) => {
+const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name: _name }) => {
   //const [formState, setState] = useState({ value: 0, fullPayed: true })
   //console.log("visible");
   //console.log(visible);
@@ -77,7 +77,7 @@ class NewPaymentComponent extends Component {
     // this.fetchData()
   }
 
-  setFormState = (e, b) => {
+  setFormState = (e, _b) => {
     return
     const { value, name } = e.target
     const { state: formState } = this
@@ -107,13 +107,11 @@ class NewPaymentComponent extends Component {
     reader.readAsDataURL(file)
   }
 
-  setValueDefault = async (e) => {
-    // console.log(e.target.value);
+  setValueDefault = async (_e) => {
     this.setState({ ...formState, value: account.value })
   }
   savePayment = async () => {
-    // console.log("start save");
-    const formData = {
+    const _formData = {
       accountId: account.accountId,
       comment: formState.comment,
       deviceId: 'web',
@@ -124,9 +122,8 @@ class NewPaymentComponent extends Component {
       paymentMethod: formState.paymentMethod,
       vaucher: formState.vaucher,
     }
-    // const newPayment = await addAccountPayment(formData)
-    const { paymentId } = newPayment.data
-    // console.log(paymentId);
+    // const newPayment = await addAccountPayment(_formData)
+    const { paymentId: _paymentId } = newPayment.data
   }
   // const [visible1, setVisible] = useState(false)
 

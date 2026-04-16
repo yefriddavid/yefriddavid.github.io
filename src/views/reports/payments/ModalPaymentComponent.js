@@ -1,35 +1,21 @@
-import React, { useState, useEffect, Component, PureComponent } from 'react'
-import { fetchAccounts, fetchAccountPayments, addAccountPayment } from './Services'
-import TextField from '@material-ui/core/TextField'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import React, { PureComponent } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCardImage,
-  CCardText,
-  CCardTitle,
-  CCol,
   CFormInput,
   CFormSelect,
-  CLink,
   CModal,
   CModalBody,
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CPopover,
-  CRow,
   CSpinner,
-  CTooltip,
 } from '@coreui/react'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import { bindActionCreators } from 'redux'
 import PropTypes from 'prop-types'
 import DatePicker from 'react-datepicker'
-import moment, { formatDate } from 'src/utils/moment'
+import { formatDate } from 'src/utils/moment'
 
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -59,7 +45,7 @@ class ModalPaymentComponent extends PureComponent {
   setDate = (date) => {
     this.setFormState({ target: { name: 'date', value: date } })
   }
-  setFormState = (e, b) => {
+  setFormState = (e, _b) => {
     const { value, name } = e.target
     const { state: formState } = this
     const { account } = this.props
@@ -102,7 +88,7 @@ class ModalPaymentComponent extends PureComponent {
     reader.readAsDataURL(file)
   }
 
-  setValueDefault = async (e) => {
+  setValueDefault = async (_e) => {
     this.setState({ ...formState, value: account.value })
   }
   savePayment = async () => {

@@ -55,7 +55,7 @@ const addAccountPayment = async (params) => {
     const response = await axios.post(url, bodyFormData)
     const { data } = response
     const { paymentId } = data.data
-    const t = await savePaymentVaucher({ paymentId, vaucher: params.vaucher })
+    await savePaymentVaucher({ paymentId, vaucher: params.vaucher })
 
     return data
   } catch (error) {
@@ -63,7 +63,7 @@ const addAccountPayment = async (params) => {
   }
 }
 
-const savePaymentVaucher = async (data) => {
+const savePaymentVaucher = async (_data) => {
   //return await CreatePaymentVaucher(data)
 }
 

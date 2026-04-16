@@ -115,7 +115,7 @@ class NewPaymentComponent extends Component {
     reader.readAsDataURL(file)
   }
 
-  setValueDefault = async (e) => {
+  setValueDefault = async (_e) => {
     // console.log(e.target.value);
     this.setState({ ...formState, value: account.value })
   }
