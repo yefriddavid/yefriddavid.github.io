@@ -177,11 +177,26 @@ describe('Login form', () => {
       expect(setCookie).toHaveBeenCalledWith('password', 'pass')
     })
 
-    it('deletes cookies when remember-me is unchecked', () => {
+    it('deletes cookies when remember-me is unchecked via toggle', () => {
       getCookie.mockImplementation((key) => (key === 'username' ? 'dave' : 'secret'))
       renderLogin()
       // checkbox starts checked because cookie exists; uncheck it
       fireEvent.click(getRememberCheck())
+      expect(deleteCookie).toHaveBeenCalledWith('username')
+      expect(deleteCookie).toHaveBeenCalledWith('password')
+    })
+
+    it('clears cookies on login when remember-me is off (stale cookies from previous session)', async () => {
+      mockSignIn.mockResolvedValue({
+        username: 'dave', landingPage: '/', sessionId: 's', token: 't',
+      })
+      // No cookies set — rememberMe starts false
+      renderLogin()
+      fireEvent.change(getUsername(), { target: { value: 'dave' } })
+      fireEvent.change(getPassword(), { target: { value: 'pass' } })
+
+      await act(async () => fireEvent.click(getSubmitBtn()))
+
       expect(deleteCookie).toHaveBeenCalledWith('username')
       expect(deleteCookie).toHaveBeenCalledWith('password')
     })

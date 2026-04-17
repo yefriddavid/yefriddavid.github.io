@@ -123,7 +123,7 @@ const App = () => {
           <Route exact path="/register" name="Register Page" element={<Register />} />
           <Route exact path="/404" name="Page 404" element={<Page404 />} />
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
-          <Route exact path="/abountMe" name="Abount Me" element={<AboutMe />} />
+          <Route exact path="/aboutMe" name="About Me" element={<AboutMe />} />
           <Route exact path="/hard-refresh" name="Hard Refresh" element={<HardRefresh />} />
           <Route
             exact

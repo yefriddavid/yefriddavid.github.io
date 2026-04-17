@@ -76,7 +76,7 @@ const AppContent = () => {
     return (
       <CContainer className="px-2" fluid>
         <Routes>
-          <Route path="/" element={<Navigate to="/abountMe" replace />} />
+          <Route path="/" element={<Navigate to="/aboutMe" replace />} />
           <Route path="/*" element={<Navigate to="/login" replace />} />
         </Routes>
       </CContainer>

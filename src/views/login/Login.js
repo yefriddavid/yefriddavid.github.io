@@ -152,6 +152,9 @@ const Login = () => {
       if (form.rememberMe) {
         setCookie('username', form.username)
         setCookie('password', form.password)
+      } else {
+        deleteCookie('username')
+        deleteCookie('password')
       }
 
       dispatch(fetchProfile(username))
