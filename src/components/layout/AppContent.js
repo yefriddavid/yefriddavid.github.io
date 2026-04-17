@@ -94,17 +94,19 @@ const AppContent = () => {
     <CContainer className="px-2" fluid>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
-          {routes.map((route, idx) =>
-            route.element && canAccess(route) ? (
-              <Route
-                key={idx}
-                path={route.path}
-                exact={route.exact}
-                name={route.name}
-                element={<route.element />}
-              />
-            ) : null,
-          )}
+          {routes.map((route, idx) => {
+            const Component = route.element
+            return (
+              Component &&
+              canAccess(route) && (
+                <Route
+                  key={idx}
+                  path={route.path}
+                  element={<Component />}
+                />
+              )
+            )
+          })}
           <Route path="/" element={<Navigate to={landingPage} replace />} />
           <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
         </Routes>

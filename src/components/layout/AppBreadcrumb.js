@@ -16,14 +16,16 @@ const AppBreadcrumb = () => {
       const currentPathname = `${prev}/${curr}`
       const currentRoute = routes.find((route) => route.path === currentPathname)
       if (currentRoute) {
+        const rawName = currentRoute.tKey ? t(currentRoute.tKey) : currentRoute.name
+        const name = typeof rawName === 'string' ? rawName : String(rawName || '')
         breadcrumbs.push({
           pathname: currentPathname,
-          name: currentRoute.tKey ? t(currentRoute.tKey) : currentRoute.name,
+          name,
           active: index + 1 === array.length,
         })
       }
       return currentPathname
-    })
+    }, '')
     return breadcrumbs
   }
 

@@ -16,7 +16,7 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Standalone pages (no app layout)
 // const GenerarContrato = React.lazy(() => import('./views/Contratos_REYDAVID/contratos/GenerarContrato'))
-const GenerarContrato = React.lazy(() => import('./views/Contratos/contratos/GenerarContrato'))
+const GenerarContrato = React.lazy(() => import('./views/Contratos/contratos/GenerarContrato/index.js'))
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
@@ -38,9 +38,11 @@ const App = () => {
   const dispatch = useDispatch()
 
   const {
-    needRefresh: [needRefresh],
+    needRefresh: needRefreshState,
     updateServiceWorker,
   } = useRegisterSW()
+
+  const needRefresh = Array.isArray(needRefreshState) ? needRefreshState[0] : !!needRefreshState
 
   // Background sync for accounting accounts
   useEffect(() => {
@@ -56,7 +58,10 @@ const App = () => {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1])
-    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
+    const themeParam = urlParams.get('theme')
+    const themeMatch = themeParam ? themeParam.match(/^[A-Za-z0-9\s]+/) : null
+    const theme = themeMatch ? themeMatch[0] : null
+    
     if (theme) {
       setColorMode(theme)
     }
@@ -119,19 +124,14 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/login" name="Login Page" element={<Login />} />
-          <Route exact path="/register" name="Register Page" element={<Register />} />
-          <Route exact path="/404" name="Page 404" element={<Page404 />} />
-          <Route exact path="/500" name="Page 500" element={<Page500 />} />
-          <Route exact path="/aboutMe" name="About Me" element={<AboutMe />} />
-          <Route exact path="/hard-refresh" name="Hard Refresh" element={<HardRefresh />} />
-          <Route
-            exact
-            path="/contratos/contratos/generar"
-            name="Generar Contrato"
-            element={<GenerarContrato />}
-          />
-          <Route path="/*" name="Home" element={<DefaultLayout />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/404" element={<Page404 />} />
+          <Route path="/500" element={<Page500 />} />
+          <Route path="/aboutMe" element={<AboutMe />} />
+          <Route path="/hard-refresh" element={<HardRefresh />} />
+          <Route path="/contratos/generar" element={<GenerarContrato />} />
+          <Route path="/*" element={<DefaultLayout />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

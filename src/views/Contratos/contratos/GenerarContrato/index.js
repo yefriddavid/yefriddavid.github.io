@@ -317,7 +317,11 @@ export default function GenerarContrato() {
 
   const validate = () => {
     const errs = {}
-    requiredFields.forEach((f) => { if (!form[f]?.toString().trim()) errs[f] = true })
+    requiredFields.forEach((f) => {
+      const val = form[f]
+      const isInvalid = val === null || val === undefined || (typeof val === 'string' && !val.trim())
+      if (isInvalid) errs[f] = true
+    })
     setErrors(errs)
     if (Object.keys(errs).length > 0) {
       const firstId = requiredFields.find((f) => errs[f])
@@ -404,7 +408,10 @@ export default function GenerarContrato() {
     }
   }
 
-  const titleText = currentContract ? currentContract.name : 'Contratos de Arrendamiento'
+  const titleText =
+    currentContract && typeof currentContract.name === 'string'
+      ? currentContract.name
+      : 'Contratos de Arrendamiento'
 
   return (
     <div className="contratos-page">
@@ -449,11 +456,9 @@ export default function GenerarContrato() {
               ['#sec-inmueble', 'Inmueble'],
               ['#sec-contrato', 'Contrato'],
               ['#sec-cuenta', 'Cuenta bancaria'],
-              currentContract && ['#sec-notas', 'Notas'],
-              currentContract && ['#sec-adjuntos', 'Adjuntos'],
-            ]
-              .filter(Boolean)
-              .map(([href, label]) => (
+              ...(currentContract ? [['#sec-notas', 'Notas']] : []),
+              ...(currentContract ? [['#sec-adjuntos', 'Adjuntos']] : []),
+            ].map(([href, label]) => (
                 <li key={href}>
                   <a
                     href={href}
