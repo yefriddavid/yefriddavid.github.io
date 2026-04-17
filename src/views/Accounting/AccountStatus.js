@@ -34,7 +34,7 @@ const CURRENT_MONTH = now.getMonth() + 1
   'Diciembre',
 ]*/
 
-const fmt = (n) =>
+export const fmt = (n) =>
   new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -42,7 +42,7 @@ const fmt = (n) =>
   }).format(n ?? 0)
 
 // ── Domain helpers ─────────────────────────────────────────────────────────────
-function isApplicableToMonth(account, month) {
+export function isApplicableToMonth(account, month) {
   if (!account.active) return false
   if (account.period === 'Mensuales') return true
   if (account.period === 'Anuales') return MONTH_NAMES.indexOf(account.monthStartAt) + 1 === month
@@ -60,7 +60,7 @@ function isApplicableToMonth(account, month) {
   return true
 }
 
-function getStatus(account, payments, monthStr, cumulativePaid = null) {
+export function getStatus(account, payments, monthStr, cumulativePaid = null) {
   const target = account.targetAmount > 0 ? account.targetAmount : null
 
   if (target !== null) {

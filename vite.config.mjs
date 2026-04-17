@@ -19,7 +19,8 @@ function versionPlugin(gitHash, commitMessage, buildDate, appVersion) {
   }
 }
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const isTest = mode === 'test' || process.env.VITEST
   let gitHash = 'dev'
   let commitMessage = ''
   try {
@@ -31,6 +32,13 @@ export default defineConfig(() => {
 
   return {
     base: '/',
+    // Vitest bundles Vite 6 which uses oxc instead of esbuild. oxc excludes .js
+    // from JSX transform by default — override so src/.js files with JSX work in tests.
+    oxc: {
+      include: /src\/.*\.[jt]sx?$/,
+      exclude: /node_modules/,
+      jsx: { runtime: 'automatic' },
+    },
     define: {
       __COMMIT_HASH__: JSON.stringify(gitHash),
       __COMMIT_MESSAGE__: JSON.stringify(commitMessage),
@@ -78,7 +86,7 @@ export default defineConfig(() => {
       },
     },
     plugins: [
-      react(),
+      react(isTest ? { babel: { presets: ['@babel/preset-react'] } } : {}),
       legacy({ targets: ['defaults', 'not IE 11'] }),
       VitePWA({
         strategies: 'injectManifest',
@@ -145,7 +153,7 @@ export default defineConfig(() => {
     test: {
       globals: true,
       environment: 'node',
-      include: ['src/**/*.test.js'],
+      include: ['src/**/*.test.js', 'src/**/*.test.jsx'],
       setupFiles: ['src/__tests__/setup.js'],
       exclude: ["node_modules"],
       alias: {

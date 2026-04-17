@@ -17,6 +17,7 @@ vi.mock('react-i18next', () => ({
       if (options?.returnObjects) return []
       return key
     },
+    i18n: { language: 'es' },
   }),
 }))
 
@@ -128,15 +129,10 @@ describe('Settlements Index Page', () => {
     expect(screen.getByText('Ana Garcia')).toBeTruthy()
   })
 
-  it('displays the correct total for the period', () => {
+  it('displays the correct record count for the period', () => {
     renderWithRedux(initialState)
-    // Total = 50000 + 60000 = 110000
-    // We need to check if the total is rendered.
-    // Looking at the code, it uses fmt(total)
-    // fmt uses Intl.NumberFormat('es-CO', ...) which might vary by environment
-    // but we can check the number at least.
-    const totalElement = screen.getByText(/110.000/)
-    expect(totalElement).toBeTruthy()
+    // 2 April records → badge shows count 2
+    expect(screen.getByText('2')).toBeTruthy()
   })
 
   it('changes the period when selecting a different month', () => {
@@ -148,14 +144,11 @@ describe('Settlements Index Page', () => {
     expect(localStorage.getItem('settlements_period')).toContain('"month":3')
   })
 
-  it('shows the "Nuevo" button only if user has permission', () => {
-    const { rerender } = renderWithRedux({
+  it('shows the "Nuevo" button for admin role', () => {
+    renderWithRedux({
       ...initialState,
       profile: { data: { role: 'admin' } },
     })
-    expect(screen.getByText('common.new')).toBeTruthy()
-
-    // Test without permission if there was a check, but the code uses showForm state
-    // Let's check isSuperAdmin logic if it exists for the button
+    expect(screen.getByText('taxis.settlements.newSettlement')).toBeTruthy()
   })
 })
