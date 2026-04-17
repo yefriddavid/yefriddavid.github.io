@@ -173,6 +173,9 @@ const AboutMe = () => {
           <p className="about__title">
             Full-Stack <strong>Software Engineer</strong>
           </p>
+          <p className="about__title">
+            Whatapp <strong>+57 305 291 5122</strong>
+          </p>
 
           <p className="about__quote">&ldquo;I love to travel but, I hate to arrive.&rdquo;</p>
 
