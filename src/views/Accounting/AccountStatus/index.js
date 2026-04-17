@@ -298,226 +298,140 @@ export default function AccountStatus() {
   const loading = (fetching && !transactions) || (fetchingMasters && !masters)
 
   return (
-    <div
-      style={{
-        maxWidth: 540,
-        margin: '0 auto',
-        padding: '0 12px 32px',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}
-    >
-      {/* Balance strip */}
-      {(totalIncome > 0 || totalExpenses > 0) &&
-        (() => {
-          const balance = totalIncome - totalExpenses
-          const isPositive = balance >= 0
-          return (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '10px 14px',
-                borderRadius: 12,
-                marginTop: 12,
-                background: isPositive ? '#f0fdf4' : '#fff5f5',
-                border: `1px solid ${isPositive ? '#86efac' : '#fca5a5'}`,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 500 }}>
-                  Ingresos − Egresos
-                </span>
-                <span style={{ fontSize: 11, color: '#adb5bd' }}>
-                  {fmt(totalIncome)} − {fmt(totalExpenses)}
-                </span>
-              </div>
-              <span
-                style={{
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: isPositive ? '#2f9e44' : '#e03131',
-                }}
-              >
-                {isPositive ? '+' : ''}
-                {fmt(balance)}
-              </span>
-            </div>
-          )
-        })()}
-
-      {/* Type tabs */}
-      <div style={{ display: 'flex', gap: 8, padding: '16px 0 4px' }}>
-        {[
-          { key: 'Outcoming', label: 'Egresos' },
-          { key: 'Incoming', label: 'Ingresos' },
-        ].map((t) => (
-          <button
-            key={t.key}
-            onClick={() => {
-              setTypeTab(t.key)
-              setFilter('all')
-            }}
-            style={{
-              flex: 1,
-              padding: '9px 0',
-              border: 'none',
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: typeTab === t.key ? 700 : 500,
-              cursor: 'pointer',
-              background: typeTab === t.key ? '#1e3a5f' : '#e9ecef',
-              color: typeTab === t.key ? '#fff' : '#6c757d',
-              transition: 'all 0.15s',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* OCR importer */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-        <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
-      </div>
-
-      {/* Month navigator */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '20px 0 16px',
-          position: 'sticky',
-          top: 0,
-          background: 'var(--cui-body-bg, #f8f9fa)',
-          zIndex: 10,
-        }}
-      >
-        <button
-          onClick={prevMonth}
+    <div className="account-status-page">
+      {/* ── LEFT PANEL ─────────────────────────────────────────────── */}
+      <div className="as-left-panel">
+        {/* Month navigator */}
+        <div
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '1px solid #dee2e6',
-            background: '#fff',
-            fontSize: 18,
-            cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: '#1e3a5f',
+            justifyContent: 'space-between',
+            padding: '20px 0 16px',
           }}
         >
-          ‹
-        </button>
+          <button
+            onClick={prevMonth}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '1px solid #dee2e6',
+              background: '#fff',
+              fontSize: 18,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#1e3a5f',
+            }}
+          >
+            ‹
+          </button>
 
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>
-            {monthLabels[month - 1]}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>
+              {monthLabels[month - 1]}
+            </div>
+            <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
+            <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>
+              <CIcon icon={cilCalendar} size="sm" />{' '}
+              {now
+                .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
+                .replace(/^\w/, (c) => c.toUpperCase())}
+            </div>
           </div>
-          <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
-          <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>
-            <CIcon icon={cilCalendar} size="sm" />{' '}
-            {now
-              .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
-              .replace(/^\w/, (c) => c.toUpperCase())}
-          </div>
+
+          <button
+            onClick={nextMonth}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '1px solid #dee2e6',
+              background: '#fff',
+              fontSize: 18,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#1e3a5f',
+            }}
+          >
+            ›
+          </button>
         </div>
 
-        <button
-          onClick={nextMonth}
+        {/* Summary strip */}
+        <div
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '1px solid #dee2e6',
-            background: '#fff',
-            fontSize: 18,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#1e3a5f',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 8,
+            marginBottom: 16,
           }}
         >
-          ›
-        </button>
-      </div>
-
-      {/* Summary strip */}
-      <div
-        style={{
-          padding: '10px 0px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 8,
-          marginBottom: 16,
-        }}
-      >
-        {[
-          {
-            label: 'Pagadas',
-            value: paid,
-            total: totalPaid,
-            color: '#2f9e44',
-            bg: '#f0fdf4',
-            border: '#86efac',
-          },
-          {
-            label: 'Pendientes',
-            value: pending,
-            total: totalPending,
-            color: '#f59f00',
-            bg: '#fff9db',
-            border: '#ffe066',
-          },
-          {
-            label: 'Vencidas',
-            value: overdue,
-            total: totalOverdue,
-            color: '#e03131',
-            bg: '#fff5f5',
-            border: '#fca5a5',
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            style={{
-              background: s.bg,
-              border: `1px solid ${s.border}`,
-              borderRadius: 12,
-              padding: '10px 0',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>
-              {s.value}
-            </div>
-            <div style={{ fontSize: 11, color: s.color, marginTop: 3, fontWeight: 600 }}>
-              {s.label}
-            </div>
-            {s.total > 0 && (
-              <div
-                style={{
-                  fontSize: 10,
-                  color: s.color,
-                  marginTop: 4,
-                  opacity: 0.85,
-                  paddingLeft: 4,
-                  paddingRight: 4,
-                }}
-              >
-                {fmt(s.total)}
+          {[
+            {
+              label: 'Pagadas',
+              value: paid,
+              total: totalPaid,
+              color: '#2f9e44',
+              bg: '#f0fdf4',
+              border: '#86efac',
+            },
+            {
+              label: 'Pendientes',
+              value: pending,
+              total: totalPending,
+              color: '#f59f00',
+              bg: '#fff9db',
+              border: '#ffe066',
+            },
+            {
+              label: 'Vencidas',
+              value: overdue,
+              total: totalOverdue,
+              color: '#e03131',
+              bg: '#fff5f5',
+              border: '#fca5a5',
+            },
+          ].map((s) => (
+            <div
+              key={s.label}
+              style={{
+                background: s.bg,
+                border: `1px solid ${s.border}`,
+                borderRadius: 12,
+                padding: '10px 0',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>
+                {s.value}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              <div style={{ fontSize: 11, color: s.color, marginTop: 3, fontWeight: 600 }}>
+                {s.label}
+              </div>
+              {s.total > 0 && (
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: s.color,
+                    marginTop: 4,
+                    opacity: 0.85,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                  }}
+                >
+                  {fmt(s.total)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-      {/* Total */}
-      {
+        {/* Total */}
         <div
           style={{
             background: '#eef4ff',
@@ -535,89 +449,182 @@ export default function AccountStatus() {
             {fmt(totalPaid + totalPending + totalOverdue)}
           </span>
         </div>
-      }
 
-      {/* Filter tabs */}
-      <div
-        style={{
-          display: 'flex',
-          background: '#f1f5f9',
-          borderRadius: 10,
-          padding: 3,
-          marginBottom: 16,
-          gap: 3,
-        }}
-      >
-        {[
-          { key: 'all', label: `Todas (${applicable.length})` },
-          { key: 'pending', label: `Sin pagar (${pending + overdue})` },
-          { key: 'paid', label: `Pagadas (${paid})` },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            style={{
-              flex: 1,
-              padding: '7px 4px',
-              border: 'none',
-              borderRadius: 8,
-              fontSize: 12,
-              fontWeight: filter === tab.key ? 700 : 400,
-              cursor: 'pointer',
-              background: filter === tab.key ? '#fff' : 'transparent',
-              color: filter === tab.key ? '#1e3a5f' : '#6c757d',
-              boxShadow: filter === tab.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-              transition: 'all 0.15s',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {/* Period notes */}
+        {!fetching && (
+          <PeriodNotes
+            period={monthStr}
+            notes={periodNotes}
+            fetching={fetchingNotes}
+            saving={savingNotes}
+            onAdd={handleAddNote}
+            onToggle={handleToggleNote}
+            onDelete={handleDeleteNote}
+          />
+        )}
       </div>
 
-      {/* List */}
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-          <CSpinner color="primary" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}>
-          {applicable.length === 0
-            ? 'No hay cuentas configuradas para este mes.'
-            : 'Sin cuentas en este filtro.'}
-        </div>
-      ) : (
-        filtered
-          .slice()
-          .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
-          .map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              payments={masterPaymentsMap[account.id] ?? []}
-              monthStr={monthStr}
-              cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
-              onPay={setPaying}
-              onDetail={setDetail}
-              onDelete={handleDelete}
-              onUpdate={handleUpdate}
-              onViewAttachment={(src, filename) => setViewer({ src, filename })}
-              onAttach={handleAttach}
-              attachingId={attachProcessing ? attachingTx?.id : null}
-              savingId={saving ? paying?.id : null}
-            />
-          ))
-      )}
+      {/* ── RIGHT PANEL ────────────────────────────────────────────── */}
+      <div className="as-right-panel">
+        {/* Balance strip */}
+        {(totalIncome > 0 || totalExpenses > 0) &&
+          (() => {
+            const balance = totalIncome - totalExpenses
+            const isPositive = balance >= 0
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  marginTop: 12,
+                  background: isPositive ? '#f0fdf4' : '#fff5f5',
+                  border: `1px solid ${isPositive ? '#86efac' : '#fca5a5'}`,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 500 }}>
+                    Ingresos − Egresos
+                  </span>
+                  <span style={{ fontSize: 11, color: '#adb5bd' }}>
+                    {fmt(totalIncome)} − {fmt(totalExpenses)}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: isPositive ? '#2f9e44' : '#e03131',
+                  }}
+                >
+                  {isPositive ? '+' : ''}
+                  {fmt(balance)}
+                </span>
+              </div>
+            )
+          })()}
 
-      {/* Ad-hoc period transactions */}
-      <AdHocSection
-        adHocTransactions={adHocTransactions}
-        typeTab={typeTab}
-        onAdd={() => setAddingAdHoc(true)}
-        onEdit={setEditingAdHoc}
-        onDelete={handleDelete}
-        onViewAttachment={(src, filename) => setViewer({ src, filename })}
-      />
+        {/* Type tabs */}
+        <div style={{ display: 'flex', gap: 8, padding: '16px 0 4px' }}>
+          {[
+            { key: 'Outcoming', label: 'Egresos' },
+            { key: 'Incoming', label: 'Ingresos' },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => {
+                setTypeTab(t.key)
+                setFilter('all')
+              }}
+              style={{
+                flex: 1,
+                padding: '9px 0',
+                border: 'none',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: typeTab === t.key ? 700 : 500,
+                cursor: 'pointer',
+                background: typeTab === t.key ? '#1e3a5f' : '#e9ecef',
+                color: typeTab === t.key ? '#fff' : '#6c757d',
+                transition: 'all 0.15s',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* OCR importer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
+        </div>
+
+        {/* Filter tabs */}
+        <div
+          style={{
+            display: 'flex',
+            background: '#f1f5f9',
+            borderRadius: 10,
+            padding: 3,
+            marginBottom: 16,
+            gap: 3,
+          }}
+        >
+          {[
+            { key: 'all', label: `Todas (${applicable.length})` },
+            { key: 'pending', label: `Sin pagar (${pending + overdue})` },
+            { key: 'paid', label: `Pagadas (${paid})` },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              style={{
+                flex: 1,
+                padding: '7px 4px',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: filter === tab.key ? 700 : 400,
+                cursor: 'pointer',
+                background: filter === tab.key ? '#fff' : 'transparent',
+                color: filter === tab.key ? '#1e3a5f' : '#6c757d',
+                boxShadow: filter === tab.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* List */}
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+            <CSpinner color="primary" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}
+          >
+            {applicable.length === 0
+              ? 'No hay cuentas configuradas para este mes.'
+              : 'Sin cuentas en este filtro.'}
+          </div>
+        ) : (
+          filtered
+            .slice()
+            .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
+            .map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                payments={masterPaymentsMap[account.id] ?? []}
+                monthStr={monthStr}
+                cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
+                onPay={setPaying}
+                onDetail={setDetail}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+                onViewAttachment={(src, filename) => setViewer({ src, filename })}
+                onAttach={handleAttach}
+                attachingId={attachProcessing ? attachingTx?.id : null}
+                savingId={saving ? paying?.id : null}
+              />
+            ))
+        )}
+
+        {/* Ad-hoc period transactions */}
+        <AdHocSection
+          adHocTransactions={adHocTransactions}
+          typeTab={typeTab}
+          onAdd={() => setAddingAdHoc(true)}
+          onEdit={setEditingAdHoc}
+          onDelete={handleDelete}
+          onViewAttachment={(src, filename) => setViewer({ src, filename })}
+        />
+      </div>
 
       {/* Hidden input for attaching to existing transactions */}
       <input
@@ -685,19 +692,6 @@ export default function AccountStatus() {
           src={viewer.src}
           filename={viewer.filename}
           onClose={() => setViewer(null)}
-        />
-      )}
-
-      {/* Period notes */}
-      {!fetching && (
-        <PeriodNotes
-          period={monthStr}
-          notes={periodNotes}
-          fetching={fetchingNotes}
-          saving={savingNotes}
-          onAdd={handleAddNote}
-          onToggle={handleToggleNote}
-          onDelete={handleDeleteNote}
         />
       )}
     </div>
