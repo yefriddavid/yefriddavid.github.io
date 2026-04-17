@@ -4,9 +4,10 @@ export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:3005',
     specPattern: 'cypress/e2e/**/*.cy.js',
-    supportFile: false,
+    supportFile: 'cypress/support/e2e.js',
     video: false,
     screenshotOnRunFailure: true,
+    screenshotsFolder: 'cypress/screenshots',
     allowCypressEnv: true,
   },
   component: {

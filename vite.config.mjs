@@ -153,6 +153,7 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'node',
+      pool: 'vmThreads',
       include: ['src/**/*.test.js', 'src/**/*.test.jsx'],
       setupFiles: ['src/__tests__/setup.js'],
       exclude: ["node_modules"],
