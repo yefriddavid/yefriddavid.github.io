@@ -149,6 +149,14 @@ body[data-app-theme="blue"] {
   flex-shrink: 0;
 }
 
+// ─── Sidebar nav link size & padding ──────────────────────────────
+.sidebar .nav-link,
+.sidebar .nav-group-toggle {
+  font-size: 0.8rem !important;
+  padding-top: 0.4rem !important;
+  padding-bottom: 0.4rem !important;
+}
+
 // ─── Sidebar sub-item indentation ─────────────────────────────────
 .sidebar .nav-group-items .nav-link {
   padding-left: 3.5rem;
