@@ -23,7 +23,7 @@
     "start:prod": "vite --mode production",
     "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
-    "test:app": "vitest run src/__tests__/AppContent.test.jsx",
+    "test:app": "vitest run --config vitest.app.config.mjs",
     "test:watch": "vitest",
     "serve:test": "vite preview --port 3005",
     "cy:open": "cypress open",
