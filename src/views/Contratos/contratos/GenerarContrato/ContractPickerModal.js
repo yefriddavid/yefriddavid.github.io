@@ -42,10 +42,18 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
           <div className="c-card-icon" style={{ width: 40, height: 40 }}>
             <IcoDoc />
           </div>
-          <div>
+          <div style={{ flex: 1 }}>
             <h2>¿Qué contrato vamos a ejecutar?</h2>
-            <p>Contratos guardados en Firebase</p>
+            <p>Contratos guardados</p>
           </div>
+          <button
+            type="button"
+            className="c-dropdown-delete"
+            onClick={onClose}
+            title="Cerrar"
+          >
+            <IcoClose />
+          </button>
         </div>
 
         <div className="c-picker-tabs">

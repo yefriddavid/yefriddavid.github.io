@@ -1,4 +1,5 @@
 import { generateHtmlToPdf } from '../contractPdf'
+import { OWNER_SIGNATURE_DATA_URL } from './ownerSignature'
 
 const MONTHS_ES = [
   'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -68,10 +69,10 @@ export function buildAutorizacionIngresoHtml(p) {
   .body     { margin-bottom: 40px; }
   .closing  { margin-bottom: 70px; }
   .signature-area { margin-top: 20px; }
+  .signature-img { height: 80px; display: block; margin-bottom: 4px; }
   .signature-line {
     border-top: 1px solid #333;
     width: 240px;
-    margin-top: 70px;
     margin-bottom: 6px;
   }
   .signature-name { font-weight: bold; font-size: 13px; }
@@ -117,6 +118,7 @@ export function buildAutorizacionIngresoHtml(p) {
   <p class="closing">Atentamente,</p>
 
   <div class="signature-area">
+    <img class="signature-img" src="${OWNER_SIGNATURE_DATA_URL}" alt="firma" />
     <div class="signature-line"></div>
     <p class="signature-name">${ownerName}</p>
     <p class="signature-role">Propietario/a — Apartamento ${apartment}</p>
