@@ -17,14 +17,19 @@ vi.mock('@coreui/icons-react', () => ({ default: () => <span data-testid="icon" 
 vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilX: 'x', cilTrash: 'trash' }))
 vi.mock('src/views/taxis/masters.scss', () => ({}))
 
-vi.mock('@coreui/react', async () => {
-  const actual = await vi.importActual('@coreui/react')
-  return {
-    ...actual,
-    CCollapse: ({ visible, children }) =>
-      visible ? <div data-testid="collapse">{children}</div> : null,
-  }
-})
+vi.mock('@coreui/react', () => ({
+  CCard: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
+  CCardBody: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
+  CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
+  CSpinner: () => <span className="spinner-border" />,
+  CBadge: ({ children }) => <span>{children}</span>,
+  CAlert: ({ children }) => <div>{children}</div>,
+  CButton: ({ children, onClick, disabled }) => <button onClick={onClick} disabled={disabled}>{children}</button>,
+  CCollapse: ({ visible, children }) => visible ? <div data-testid="collapse">{children}</div> : null,
+  CRow: ({ children }) => <div>{children}</div>,
+  CCol: ({ children }) => <div>{children}</div>,
+  CFormSelect: ({ children, onChange, value, className }) => <select onChange={onChange} value={value} className={className}>{children}</select>,
+}))
 
 vi.mock('src/components/shared/StandardGrid/Index', () => ({
   __esModule: true,

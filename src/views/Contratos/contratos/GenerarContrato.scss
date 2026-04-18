@@ -749,6 +749,18 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Touch devices: always show hover-only controls ── */
+@media (hover: none) {
+  .c-note-actions { opacity: 1; }
+
+  .c-attach-delete { opacity: 1; }
+}
+
 /* ── Page loader ── */
 .c-page-loader {
   position: fixed;
@@ -1084,19 +1096,63 @@
     max-width: none;
   }
 
-  /* All overlays: add padding so modals don't touch screen edges */
-  .c-overlay { padding: 16px; }
+  /* All overlays: safe-area-aware padding, bottom-sheet alignment */
+  .c-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
 
-  /* Picker modal */
-  .c-picker { max-width: none; }
-  .c-picker-list { max-height: 55vh; }
+  .c-overlay--preview { padding: 0; align-items: stretch; }
 
-  /* Clone / New modals */
-  .c-clone-modal { max-width: none; width: 100%; }
+  /* Picker modal — bottom sheet */
+  .c-picker {
+    max-width: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: slideUp .3s ease;
+  }
+
+  .c-picker-header {
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+    h2 { font-size: 1.1rem; }
+    p { width: 100%; }
+  }
+
+  .c-picker-list {
+    max-height: calc(55vh - env(safe-area-inset-bottom, 0px));
+  }
+
+  .c-picker-item { min-height: 52px; }
+
+  /* Clone / New modals — bottom sheet */
+  .c-clone-modal {
+    max-width: none;
+    width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: slideUp .3s ease;
+  }
+
+  /* Stack clone actions vertically, full-width */
+  .c-clone-actions {
+    flex-direction: column;
+    margin-top: 4px;
+
+    .btn-generate,
+    .btn-secondary { width: 100%; justify-content: center; min-height: 48px; }
+  }
+
+  .c-clone-header { padding: 16px 20px; }
+  .c-clone-body { padding: 16px 20px 20px; }
+
+  /* Enlarge delete touch targets */
+  .c-dropdown-delete { width: 44px; height: 44px; }
 
   /* Preview modal: full screen */
-  .c-overlay--preview { padding: 0; }
-
   .c-preview-modal {
     border-radius: 0;
     max-width: none;

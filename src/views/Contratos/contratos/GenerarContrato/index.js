@@ -301,8 +301,6 @@ export default function GenerarContrato() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [newOpen, setNewOpen] = useState(false)
   const [cloneOpen, setCloneOpen] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewHtml, setPreviewHtml] = useState('')
 
   const handlePickerSelect = (item, renameOnly = false) => {
     if (!renameOnly) dispatch(contractActions.loadRequest({ id: item.id }))
@@ -310,11 +308,6 @@ export default function GenerarContrato() {
       setCurrentContract({ id: item.id, name: item.name })
     }
     setPickerOpen(false)
-  }
-
-  const handlePreview = () => {
-    setPreviewHtml(buildContractHtml(buildPayload(form), true))
-    setPreviewOpen(true)
   }
 
   const set = (field) => (e) => {
@@ -436,13 +429,20 @@ export default function GenerarContrato() {
     return () => observer.disconnect()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [generating, setGenerating] = useState(false)
   const [generatingTemplate, setGeneratingTemplate] = useState(null)
   const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false)
   const [templatePreviewHtml, setTemplatePreviewHtml] = useState('')
   const [templatePreviewTitle, setTemplatePreviewTitle] = useState('')
 
   const templates = [
+    {
+      id: 'contrato',
+      label: 'Contrato de Arrendamiento',
+      buildHtml: (payload) => buildContractHtml(payload, true),
+      generatePdf: generateContractPdf,
+      filename: (name) => `Contrato_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+      requiresValidation: true,
+    },
     {
       id: 'acta-entrega',
       label: 'Acta de entrega',
@@ -474,6 +474,10 @@ export default function GenerarContrato() {
       showToast('Selecciona un contrato antes de generar la plantilla.', 'error')
       return
     }
+    if (tpl.requiresValidation && !validate()) {
+      showToast('Por favor completa todos los campos obligatorios.', 'error')
+      return
+    }
     setGeneratingTemplate(tpl.id)
     showToast(`Generando ${tpl.label}…`, 'info')
     try {
@@ -484,27 +488,6 @@ export default function GenerarContrato() {
       showToast(`Error al generar ${tpl.label}: ` + err.message, 'error')
     } finally {
       setGeneratingTemplate(null)
-    }
-  }
-
-  const handleGenerate = async (e) => {
-    e.preventDefault()
-    if (!validate()) {
-      showToast('Por favor completa todos los campos obligatorios.', 'error')
-      return
-    }
-    setGenerating(true)
-    showToast('Generando contrato…', 'info')
-    try {
-      const filename = currentContract
-        ? `Contrato_${currentContract.name.replace(/\s+/g, '_')}.pdf`
-        : `Contrato_${form.tenant_full_name.replace(/\s+/g, '_')}.pdf`
-      await generateContractPdf(buildPayload(form), filename)
-      showToast('¡Contrato generado exitosamente!', 'success')
-    } catch (err) {
-      showToast('Error al generar el contrato: ' + err.message, 'error')
-    } finally {
-      setGenerating(false)
     }
   }
 
@@ -579,7 +562,7 @@ export default function GenerarContrato() {
         </nav>
 
         <main className="contratos-form-main">
-          <form className="contratos-form" onSubmit={handleGenerate} noValidate>
+          <form className="contratos-form" onSubmit={(e) => e.preventDefault()} noValidate>
             {/* INQUILINO */}
             <section className="c-card" id="sec-inquilino">
               <div className="c-card-header">
@@ -1189,8 +1172,7 @@ export default function GenerarContrato() {
             {/* SUBMIT BAR */}
             <div className="c-submit-bar">
               <p>
-                Al hacer clic en <strong>Generar Contrato</strong> se creará el documento PDF listo
-                para imprimir y firmar. El archivo se descargará automáticamente.
+                Guarda los cambios antes de generar. El PDF se descargará automáticamente.
               </p>
               <div className="c-submit-actions">
                 <button
@@ -1201,18 +1183,6 @@ export default function GenerarContrato() {
                 >
                   {contractSaving ? <IcoSpinner /> : <IcoSave />}
                   Guardar cambios
-                </button>
-                <button type="button" className="btn-secondary" onClick={handlePreview}>
-                  <IcoEye /> Vista previa
-                </button>
-                <button
-                  type="submit"
-                  className={`btn-generate${generating ? ' loading' : ''}`}
-                  disabled={generating}
-                >
-                  <IcoDownload />
-                  <span className="btn-text">Generar Contrato</span>
-                  <div className="spinner" />
                 </button>
               </div>
             </div>
@@ -1295,25 +1265,6 @@ export default function GenerarContrato() {
           }}
           onCancel={() => setCloneOpen(false)}
         />
-      )}
-
-      {previewOpen && (
-        <div className="c-overlay c-overlay--preview">
-          <div className="c-preview-modal">
-            <div className="c-preview-topbar">
-              <span>{titleText} — Vista previa</span>
-              <button onClick={() => setPreviewOpen(false)}>
-                <IcoClose />
-              </button>
-            </div>
-            <iframe
-              className="c-preview-frame"
-              srcDoc={previewHtml}
-              sandbox="allow-same-origin"
-              title="Vista previa contrato"
-            />
-          </div>
-        </div>
       )}
 
       {templatePreviewOpen && (
