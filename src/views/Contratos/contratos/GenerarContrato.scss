@@ -419,12 +419,15 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--cream);
+  overflow: hidden;
 }
 
 .c-template-label {
   font-size: .88rem;
   font-weight: 500;
   color: var(--ink);
+  flex: 1;
+  min-width: 0;
 }
 
 .c-template-actions {
@@ -984,6 +987,23 @@
 }
 
 @media (max-width: 640px) {
+  /* Templates bar: stack label + buttons vertically */
+  .c-templates-bar { padding: 16px; }
+
+  .c-template-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .c-template-actions {
+    flex-direction: column;
+    flex-shrink: 1;
+
+    .btn-generate,
+    .btn-secondary { width: 100%; justify-content: center; }
+  }
+
   /* Header: stack title row + buttons row */
   .contratos-header {
     padding: 16px 20px;
