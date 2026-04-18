@@ -40,3 +40,6 @@ notifier/service-notify-*
 
 # cypress credentials
 cypress.env.json
+
+# Local production backups
+prod-backups/

@@ -13,6 +13,8 @@
   "license": "MIT",
   "author": "The CoreUI Team (https://github.com/orgs/coreui/people)",
   "scripts": {
+    "sync-test-with-prod": "node scripts/reset-test-from-prod.mjs",
+    "backup:prod": "node scripts/backup-prod.mjs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "local:build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build",
