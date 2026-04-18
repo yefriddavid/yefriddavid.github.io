@@ -1,4 +1,6 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { registerRoute, NavigationRoute } from 'workbox-routing'
+import { NetworkOnly } from 'workbox-strategies'
 import { initializeApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 import { openDB, DB_STORES } from '../services/idb/db'
@@ -8,6 +10,15 @@ import { checkPicoYPlaca } from './sw-pico-y-placa'
 // Workbox precaching (injected by VitePWA)
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
+
+// Serve offline.html for any navigation request that fails (no network)
+registerRoute(
+  new NavigationRoute(
+    new NetworkOnly({
+      plugins: [{ handlerDidError: async () => caches.match('/offline.html') }],
+    }),
+  ),
+)
 
 // Allow the app to trigger skipWaiting from the update prompt
 self.addEventListener('message', (event) => {
