@@ -312,6 +312,7 @@ ${watermark}
       Las cuotas de administración de la copropiedad corren por cuenta de <b>EL ARRENDADOR</b>.
     </p>
 
+<!--
     <p class="justify">
       <b>NOVENA:</b> PREAVISO, PRÓRROGA Y DEVOLUCIÓN DEL DEPÓSITO: Las partes acuerdan que, si <b>EL ARRENDATARIO</b>
       decide no renovar el contrato al vencimiento del plazo inicial o de sus prórrogas, deberá notificarlo por
@@ -325,6 +326,23 @@ ${watermark}
       obligará a <b>EL ARRENDATARIO</b> al pago de los cánones restantes hasta completar el periodo vigente,
       a menos que se pacte algo distinto por escrito.
     </p>
+-->
+<p>
+  <b>NOVENA: PREAVISO Y PRÓRROGA AUTOMÁTICA.</b> Las partes acuerdan que, si
+  <b>EL ARRENDATARIO</b> decide no renovar el presente contrato al vencimiento del plazo inicial o de sus prórrogas,
+  deberá notificarlo por escrito a <b>EL ARRENDADOR</b> con una antelación no menor a cuarenta y cinco (45) días
+  calendario. De no recibirse dicha comunicación en el tiempo y forma pactados, el contrato se entenderá prorrogado
+  automáticamente por un periodo igual al inicialmente pactado y bajo las mismas condiciones.
+</p>
+
+<p>
+  <b>PARÁGRAFO: INCUMPLIMIENTO DEL PREAVISO.</b> En caso de que <b>EL ARRENDATARIO</b> desocupe el inmueble al
+  vencimiento del plazo sin haber otorgado el preaviso de cuarenta y cinco (45) días aquí establecido, se obligará
+  a pagar a <b>EL ARRENDADOR</b> una suma equivalente a un (1) canon de arrendamiento mensual a título de
+  indemnización por falta de preaviso. Asimismo, la entrega anticipada del inmueble antes del vencimiento del
+  plazo contractual obligará a <b>EL ARRENDATARIO</b> al pago de los cánones restantes hasta completar el periodo
+  vigente, salvo acuerdo en contrario consignado por escrito.
+</p>
 
     <p class="justify">
       <b>DECIMA:</b> La simple demora en el pago de una de las mensualidades del arrendamiento, la demora en el
@@ -399,10 +417,9 @@ CC No. ________________________ De ____________________________
 </html>`
 }
 
-// ── PDF generation — renders the same HTML as the preview ─────────────────────
+// ── Shared HTML-to-PDF renderer ───────────────────────────────────────────────
 
-export async function generateContractPdf(payload, filename) {
-  const html = buildContractHtml(payload, false)
+export async function generateHtmlToPdf(html, filename) {
 
   // Mount a hidden container with letter-page width
   const container = document.createElement('div')
@@ -485,10 +502,16 @@ export async function generateContractPdf(payload, filename) {
       pageStartPx = endPx
     }
 
-    const name =
-      filename || `Contrato_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
-    pdf.save(name)
+    pdf.save(filename || 'documento.pdf')
   } finally {
     document.body.removeChild(container)
   }
+}
+
+// ── PDF generation — renders the same HTML as the preview ─────────────────────
+
+export async function generateContractPdf(payload, filename) {
+  const html = buildContractHtml(payload, false)
+  const name = filename || `Contrato_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
+  await generateHtmlToPdf(html, name)
 }

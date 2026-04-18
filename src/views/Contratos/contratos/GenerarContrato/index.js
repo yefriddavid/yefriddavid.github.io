@@ -8,6 +8,8 @@ import * as contractActions from 'src/actions/contratos/contractActions'
 import * as contractNoteActions from 'src/actions/contratos/contractNoteActions'
 import * as contractAttachmentActions from 'src/actions/contratos/contractAttachmentActions'
 import { generateContractPdf, buildContractHtml } from '../contractPdf'
+import { generateActaEntregaPdf, buildActaEntregaHtml } from '../templates/actaEntrega'
+import { generateInventarioPdf, buildInventarioHtml } from '../templates/inventario'
 import { CLink } from '@coreui/react'
 import {
   formatCOP,
@@ -386,6 +388,55 @@ export default function GenerarContrato() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [generating, setGenerating] = useState(false)
+  const [generatingTemplate, setGeneratingTemplate] = useState(null)
+  const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false)
+  const [templatePreviewHtml, setTemplatePreviewHtml] = useState('')
+  const [templatePreviewTitle, setTemplatePreviewTitle] = useState('')
+
+  const templates = [
+    {
+      id: 'acta-entrega',
+      label: 'Acta de entrega',
+      buildHtml: buildActaEntregaHtml,
+      generatePdf: generateActaEntregaPdf,
+      filename: (name) => `ActaEntrega_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+    },
+    {
+      id: 'inventario',
+      label: 'Inventario',
+      buildHtml: buildInventarioHtml,
+      generatePdf: generateInventarioPdf,
+      filename: (name) => `Inventario_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+    },
+  ]
+
+  const handleTemplatePreview = (tpl) => {
+    if (!currentContract) {
+      showToast('Selecciona un contrato antes de previsualizar la plantilla.', 'error')
+      return
+    }
+    setTemplatePreviewHtml(tpl.buildHtml(buildPayload(form)))
+    setTemplatePreviewTitle(tpl.label)
+    setTemplatePreviewOpen(true)
+  }
+
+  const handleTemplateGenerate = async (tpl) => {
+    if (!currentContract) {
+      showToast('Selecciona un contrato antes de generar la plantilla.', 'error')
+      return
+    }
+    setGeneratingTemplate(tpl.id)
+    showToast(`Generando ${tpl.label}…`, 'info')
+    try {
+      const contractName = currentContract?.name || form.tenant_full_name
+      await tpl.generatePdf(buildPayload(form), tpl.filename(contractName))
+      showToast(`¡${tpl.label} generada exitosamente!`, 'success')
+    } catch (err) {
+      showToast(`Error al generar ${tpl.label}: ` + err.message, 'error')
+    } finally {
+      setGeneratingTemplate(null)
+    }
+  }
 
   const handleGenerate = async (e) => {
     e.preventDefault()
@@ -772,6 +823,37 @@ export default function GenerarContrato() {
                 </button>
               </div>
             </div>
+
+            {/* TEMPLATES BAR */}
+            <div className="c-templates-bar">
+              <span className="c-templates-title">Plantillas</span>
+              <div className="c-templates-list">
+                {templates.map((tpl) => (
+                  <div key={tpl.id} className="c-template-item">
+                    <span className="c-template-label">{tpl.label}</span>
+                    <div className="c-template-actions">
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => handleTemplatePreview(tpl)}
+                      >
+                        <IcoEye /> Vista previa
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn-generate${generatingTemplate === tpl.id ? ' loading' : ''}`}
+                        disabled={generatingTemplate === tpl.id}
+                        onClick={() => handleTemplateGenerate(tpl)}
+                      >
+                        <IcoDownload />
+                        <span className="btn-text">Generar</span>
+                        <div className="spinner" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </form>
         </main>
       </div>
@@ -836,6 +918,25 @@ export default function GenerarContrato() {
               srcDoc={previewHtml}
               sandbox="allow-same-origin"
               title="Vista previa contrato"
+            />
+          </div>
+        </div>
+      )}
+
+      {templatePreviewOpen && (
+        <div className="c-overlay c-overlay--preview">
+          <div className="c-preview-modal">
+            <div className="c-preview-topbar">
+              <span>{templatePreviewTitle} — Vista previa</span>
+              <button onClick={() => setTemplatePreviewOpen(false)}>
+                <IcoClose />
+              </button>
+            </div>
+            <iframe
+              className="c-preview-frame"
+              srcDoc={templatePreviewHtml}
+              sandbox="allow-same-origin"
+              title="Vista previa plantilla"
             />
           </div>
         </div>
