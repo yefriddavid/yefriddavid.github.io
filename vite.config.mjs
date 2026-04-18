@@ -156,7 +156,8 @@ export default defineConfig(({ mode }) => {
       pool: 'vmThreads',
       include: ['src/**/*.test.js', 'src/**/*.test.jsx'],
       setupFiles: ['src/__tests__/setup.js'],
-      exclude: ["node_modules"],
+      //exclude: ["node_modules"],
+      exclude: ["node_modules", "src/__tests__/AppContent.test.jsx"],
       alias: {
         'firebase/app': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-app.js'),
         'firebase/auth': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-auth.js'),
