@@ -36,7 +36,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import { buildAuditExporters } from './auditExport'
 
 const Taxis = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { dayNames } = useLocaleData()
   const dispatch = useDispatch()
   const {
@@ -89,6 +89,9 @@ const Taxis = () => {
   const [toast, setToast] = useState(null)
   const [summaryOpen, setSummaryOpen] = useState(
     () => localStorage.getItem('settlements_summaryOpen') !== 'false',
+  )
+  const [weekdayFull, setWeekdayFull] = useState(
+    () => localStorage.getItem('settlements_weekdayFull') === 'true',
   )
 
   const savingRef = useRef(false)
@@ -749,6 +752,20 @@ const Taxis = () => {
           </div>
 
           <div className="d-flex align-items-center gap-1 flex-wrap">
+            <CButton
+              size="sm"
+              color="secondary"
+              variant={weekdayFull ? undefined : 'outline'}
+              title={weekdayFull ? t('taxis.settlements.weekdayShort') : t('taxis.settlements.weekdayFull')}
+              onClick={() => {
+                const next = !weekdayFull
+                setWeekdayFull(next)
+                localStorage.setItem('settlements_weekdayFull', String(next))
+              }}
+              style={{ fontSize: 12, minWidth: 32 }}
+            >
+              {weekdayFull ? t('taxis.settlements.weekdayFull') : t('taxis.settlements.weekdayShort')}
+            </CButton>
             Mode:
             {[
               { key: 'detail', label: t('taxis.settlements.viewDetail'), color: 'secondary' },
@@ -838,12 +855,14 @@ const Taxis = () => {
               <Column
                 dataField="date"
                 caption={t('taxis.settlements.fields.date')}
-                width={110}
+                width={weekdayFull ? 160 : 110}
                 hidingPriority={5}
                 sortOrder="asc"
                 defaultSortIndex={0}
                 cellRender={({ value }) => (
-                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtDate(value)}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {fmtDate(value, i18n.language, weekdayFull ? 'long' : 'short')}
+                  </span>
                 )}
               />
               <Column

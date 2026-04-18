@@ -5,11 +5,11 @@ export const fmt = (n) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-export const fmtDate = (dateStr) => {
+export const fmtDate = (dateStr, locale = 'es-CO', weekdayFormat = 'short') => {
   if (!dateStr) return ''
   const [y, m, d] = dateStr.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  const weekday = date.toLocaleDateString('es-CO', { weekday: 'short' })
+  const weekday = date.toLocaleDateString(locale, { weekday: weekdayFormat })
   const day = String(d).padStart(2, '0')
   return `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} ${day}`
 }

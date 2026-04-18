@@ -163,6 +163,8 @@
       "confirmDelete": "¿Eliminar esta liquidación?",
       "period": "Periodo",
       "all": "Todos",
+      "weekdayFull": "Día completo",
+      "weekdayShort": "Día abrev.",
       "viewDetail": "Detallado",
       "viewByDriver": "Por conductor",
       "viewByVehicle": "Por vehículo",

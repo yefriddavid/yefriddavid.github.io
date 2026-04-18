@@ -163,6 +163,8 @@
       "confirmDelete": "Delete this settlement?",
       "period": "Period",
       "all": "All",
+      "weekdayFull": "Full day",
+      "weekdayShort": "Short day",
       "viewDetail": "Detailed",
       "viewByDriver": "By driver",
       "viewByVehicle": "By vehicle",
