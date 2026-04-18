@@ -63,6 +63,16 @@ function* deleteContract({ payload }) {
   }
 }
 
+function* archiveContract({ payload }) {
+  try {
+    yield put(actions.beginRequestArchive())
+    yield call(service.archiveContract, payload.id, payload.archived)
+    yield put(actions.successRequestArchive(payload))
+  } catch (e) {
+    yield put(actions.errorRequestArchive(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchContracts),
@@ -71,5 +81,6 @@ export default function* rootSagas() {
     takeLatest(actions.updateRequest, updateContract),
     takeLatest(actions.cloneRequest, cloneContract),
     takeLatest(actions.deleteRequest, deleteContract),
+    takeLatest(actions.archiveRequest, archiveContract),
   ])
 }

@@ -122,6 +122,24 @@ const contractSlice = createSlice({
         state.saving = false
         state.isError = true
       })
+
+      // Archive / unarchive
+      .addCase(actions.beginRequestArchive, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.successRequestArchive, (state, { payload }) => {
+        if (state.list) {
+          state.list = state.list.map((r) =>
+            r.id === payload.id ? { ...r, archived: payload.archived } : r,
+          )
+        }
+        state.saving = false
+      })
+      .addCase(actions.errorRequestArchive, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+        state.isError = true
+      })
   },
 })
 

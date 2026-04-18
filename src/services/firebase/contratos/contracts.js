@@ -17,7 +17,15 @@ const COL = 'Contratos_Contratos'
 export const getContracts = async () => {
   const q = query(collection(db, COL), orderBy('name', 'asc'))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, name: d.data().name }))
+  return snap.docs.map((d) => ({
+    id: d.id,
+    name: d.data().name,
+    archived: d.data().archived === true,
+  }))
+}
+
+export const archiveContract = async (id, archived) => {
+  await updateDoc(doc(db, COL, id), { archived, updatedAt: serverTimestamp() })
 }
 
 export const getContract = async (id) => {

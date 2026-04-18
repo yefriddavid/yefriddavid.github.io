@@ -29,3 +29,8 @@ export const deleteRequest = createAction('request delete contrato')
 export const beginRequestDelete = createAction('begin request delete contrato')
 export const successRequestDelete = createAction('request delete contrato success')
 export const errorRequestDelete = createAction('request delete contrato error')
+
+export const archiveRequest = createAction('request archive contrato')
+export const beginRequestArchive = createAction('begin request archive contrato')
+export const successRequestArchive = createAction('request archive contrato success')
+export const errorRequestArchive = createAction('request archive contrato error')
