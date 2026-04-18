@@ -10,6 +10,14 @@ import * as contractAttachmentActions from 'src/actions/contratos/contractAttach
 import { generateContractPdf, buildContractHtml } from '../contractPdf'
 import { generateActaEntregaPdf, buildActaEntregaHtml } from '../templates/actaEntrega'
 import { generateInventarioPdf, buildInventarioHtml } from '../templates/inventario'
+import {
+  generateAutorizacionIngresoPdf,
+  buildAutorizacionIngresoHtml,
+} from '../templates/autorizacionIngreso'
+import {
+  generateAutorizacionEgresoPdf,
+  buildAutorizacionEgresoHtml,
+} from '../templates/autorizacionEgreso'
 import { CLink } from '@coreui/react'
 import {
   formatCOP,
@@ -457,14 +465,49 @@ export default function GenerarContrato() {
       generatePdf: generateInventarioPdf,
       filename: (name) => `Inventario_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
     },
+    {
+      id: 'autorizacion-ingreso',
+      label: 'Autorización Ingreso Nuevo Inquilino',
+      buildHtml: buildAutorizacionIngresoHtml,
+      generatePdf: generateAutorizacionIngresoPdf,
+      filename: (name) =>
+        `AutorizacionIngreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+      fixedOwnerId: 'CA035OjLAaJJTHV7XMw5',
+    },
+    {
+      id: 'autorizacion-egreso',
+      label: 'Autorización de Egreso',
+      buildHtml: buildAutorizacionEgresoHtml,
+      generatePdf: generateAutorizacionEgresoPdf,
+      filename: (name) =>
+        `AutorizacionEgreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+      fixedOwnerId: 'CA035OjLAaJJTHV7XMw5',
+    },
   ]
+
+  const resolvePayload = (tpl) => {
+    const payload = buildPayload(form)
+    if (tpl.fixedOwnerId) {
+      const fixedOwner = (owners || []).find((o) => o.id === tpl.fixedOwnerId)
+      if (fixedOwner) {
+        payload.owner = {
+          full_name: fixedOwner.full_name,
+          identification: {
+            number: fixedOwner.identification_number,
+            city: fixedOwner.identification_city,
+          },
+        }
+      }
+    }
+    return payload
+  }
 
   const handleTemplatePreview = (tpl) => {
     if (!currentContract) {
       showToast('Selecciona un contrato antes de previsualizar la plantilla.', 'error')
       return
     }
-    setTemplatePreviewHtml(tpl.buildHtml(buildPayload(form)))
+    setTemplatePreviewHtml(tpl.buildHtml(resolvePayload(tpl)))
     setTemplatePreviewTitle(tpl.label)
     setTemplatePreviewOpen(true)
   }
@@ -482,7 +525,7 @@ export default function GenerarContrato() {
     showToast(`Generando ${tpl.label}…`, 'info')
     try {
       const contractName = currentContract?.name || form.tenant_full_name
-      await tpl.generatePdf(buildPayload(form), tpl.filename(contractName))
+      await tpl.generatePdf(resolvePayload(tpl), tpl.filename(contractName))
       showToast(`¡${tpl.label} generada exitosamente!`, 'success')
     } catch (err) {
       showToast(`Error al generar ${tpl.label}: ` + err.message, 'error')
