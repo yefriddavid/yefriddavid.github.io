@@ -420,7 +420,6 @@ CC No. ________________________ De ____________________________
 // ── Shared HTML-to-PDF renderer ───────────────────────────────────────────────
 
 export async function generateHtmlToPdf(html, filename) {
-
   // Mount a hidden container with letter-page width
   const container = document.createElement('div')
   container.style.cssText =
@@ -512,6 +511,7 @@ export async function generateHtmlToPdf(html, filename) {
 
 export async function generateContractPdf(payload, filename) {
   const html = buildContractHtml(payload, false)
-  const name = filename || `Contrato_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
+  const name =
+    filename || `Contrato_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
   await generateHtmlToPdf(html, name)
 }

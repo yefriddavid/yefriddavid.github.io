@@ -13,7 +13,21 @@ import { makeDriver, makeSettlement } from 'src/__tests__/factories'
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, options) => {
-      if (key === 'taxis.months') return ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+      if (key === 'taxis.months')
+        return [
+          'Enero',
+          'Febrero',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre',
+        ]
       if (options?.returnObjects) return []
       return key
     },
@@ -29,7 +43,10 @@ vi.mock('src/components/shared/StandardGrid/Index', () => ({
       {dataSource && dataSource.length > 0 ? (
         <table>
           <thead>
-            <tr><th>Driver</th><th>Amount</th></tr>
+            <tr>
+              <th>Driver</th>
+              <th>Amount</th>
+            </tr>
           </thead>
           <tbody>
             {dataSource.map((item, i) => (
@@ -49,11 +66,17 @@ vi.mock('src/components/shared/StandardGrid/Index', () => ({
 }))
 
 // Mock other sub-components to keep the test focused on the Index page logic
-vi.mock('../Components/PeriodSummary', () => ({ default: () => <div data-testid="period-summary" /> }))
+vi.mock('../Components/PeriodSummary', () => ({
+  default: () => <div data-testid="period-summary" />,
+}))
 vi.mock('../Components/AuditView', () => ({ default: () => <div data-testid="audit-view" /> }))
 vi.mock('../Components/PeriodNotes', () => ({ default: () => <div data-testid="period-notes" /> }))
-vi.mock('../Components/SettlementCreateForm', () => ({ default: () => <div data-testid="create-form" /> }))
-vi.mock('src/components/shared/MultiSelectDropdown', () => ({ default: () => <div data-testid="multiselect" /> }))
+vi.mock('../Components/SettlementCreateForm', () => ({
+  default: () => <div data-testid="create-form" />,
+}))
+vi.mock('src/components/shared/MultiSelectDropdown', () => ({
+  default: () => <div data-testid="multiselect" />,
+}))
 
 // ── Test Setup ───────────────────────────────────────────────────────────────
 
@@ -66,7 +89,7 @@ const renderWithRedux = (initialState = {}) => {
     ...render(
       <Provider store={store}>
         <Taxis />
-      </Provider>
+      </Provider>,
     ),
     store,
   }

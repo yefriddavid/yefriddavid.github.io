@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { VaucherControlViewer } from './VaucherControlViewer'
 import { fetchAccountPayments } from './Services'
-//import CFormInput from '@coreui/react/src/components/form/CFormInput'
+import { pdfToSingleImage } from 'src/utils/fileHelpers'
 import {
   CButton,
   CCol,
@@ -245,10 +245,8 @@ const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
     if (file.type === 'application/pdf') {
       setConverting(true)
       try {
-        const blob = await pdfToBlob(file)
-        const reader = new FileReader()
-        reader.onload = (e) => setVaucher(e.target.result)
-        reader.readAsDataURL(blob)
+        const dataUrl = await pdfToSingleImage(file)
+        setVaucher(dataUrl)
       } catch {
       } finally {
         setConverting(false)
@@ -594,12 +592,12 @@ class ItemDetail1 extends Component {
 
   fetchData = async () => {
     try {
+      const { year, month, itemAccount } = this.props
       const accounts = await fetchAccountPayments({ year, month, accountId: itemAccount.accountId })
 
       const payments = accounts.data?.payments?.items || []
 
-      setLoad(true)
-      setData(payments)
+      this.setState({ load: true, data: payments })
     } catch (error) {
       console.error('Error loading jQuery:', error)
     }

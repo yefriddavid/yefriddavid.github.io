@@ -18,7 +18,6 @@ const myCode = 'es-CO'
 class ItemDetail1 extends Component {
   t = (e) => {
     return e
-    return useTranslation()(e)
   }
 
   loaded = false
@@ -60,12 +59,12 @@ class ItemDetail1 extends Component {
 
   fetchData = async () => {
     try {
+      const { year, month, itemAccount } = this.props
       const accounts = await fetchAccountPayments({ year, month, accountId: itemAccount.accountId })
 
       const payments = accounts.data?.payments?.items || []
 
-      setLoad(true)
-      setData(payments)
+      this.setState({ load: true, data: payments })
     } catch (error) {
       console.error('Error loading jQuery:', error)
     }

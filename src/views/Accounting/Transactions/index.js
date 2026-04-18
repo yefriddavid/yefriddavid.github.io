@@ -18,14 +18,7 @@ import {
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
-import {
-  fmt,
-  CURRENT_YEAR,
-  CURRENT_MONTH,
-  YEARS,
-  MONTHS,
-  isApplicableToMonth,
-} from './helpers'
+import { fmt, CURRENT_YEAR, CURRENT_MONTH, YEARS, MONTHS, isApplicableToMonth } from './helpers'
 import SummaryCard from './SummaryCard'
 import MigrationModal from './MigrationModal'
 import TransactionForm from './TransactionForm'

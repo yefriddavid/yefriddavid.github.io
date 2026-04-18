@@ -13,8 +13,18 @@ vi.mock('../../InlinePaymentMethod', () => ({
 
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return { default: { localeData: () => ({ months: () => months }) } }
 })
@@ -217,9 +227,7 @@ describe('AccountCard', () => {
       const input = screen.getByDisplayValue('200000')
       fireEvent.change(input, { target: { value: '250000' } })
       fireEvent.click(screen.getByText('Guardar'))
-      expect(onUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'p1', amount: 250000 }),
-      )
+      expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1', amount: 250000 }))
     })
 
     it('save button disabled when amount unchanged', () => {
@@ -238,7 +246,11 @@ describe('AccountCard', () => {
     })
 
     it('shows attachment button when payment has attachment', () => {
-      const payWithAttach = { ...payments[0], attachment: 'data:image/png;base64,...', attachmentName: 'rec.png' }
+      const payWithAttach = {
+        ...payments[0],
+        attachment: 'data:image/png;base64,...',
+        attachmentName: 'rec.png',
+      }
       renderCard({ payments: [payWithAttach], monthStr: FUTURE })
       expect(screen.getByTitle('Ver adjunto')).toBeTruthy()
     })

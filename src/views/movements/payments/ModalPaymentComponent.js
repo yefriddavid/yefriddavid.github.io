@@ -1,5 +1,15 @@
 import React, { PureComponent } from 'react'
-import { CButton, CModal, CModalBody, CModalHeader, CModalTitle, CSpinner } from '@coreui/react'
+import {
+  CButton,
+  CFormInput,
+  CFormSelect,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CSpinner,
+} from '@coreui/react'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import { bindActionCreators } from 'redux'
@@ -79,7 +89,8 @@ class ModalPaymentComponent extends PureComponent {
   }
 
   setValueDefault = async (_e) => {
-    this.setState({ ...formState, value: account.value })
+    const { account } = this.props
+    this.setState({ ...this.state, value: account.value })
   }
   savePayment = async () => {
     const { account } = this.props

@@ -3,7 +3,13 @@ import { useDispatch } from 'react-redux'
 import * as contractAttachmentActions from 'src/actions/contratos/contractAttachmentActions'
 import { IcoDoc, IcoSpinner, IcoTrash, IcoDownload, IcoShare, IcoClose } from './icons'
 
-export default function AttachmentsSection({ contractId, attachments, saving, fetching, onAttachFiles }) {
+export default function AttachmentsSection({
+  contractId,
+  attachments,
+  saving,
+  fetching,
+  onAttachFiles,
+}) {
   const dispatch = useDispatch()
   const [attachDragOver, setAttachDragOver] = useState(false)
   const [deletingAttachId, setDeletingAttachId] = useState(null)

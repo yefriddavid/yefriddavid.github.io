@@ -1,7 +1,15 @@
 import React, { useState } from 'react'
 import { CSpinner } from '@coreui/react'
 
-export default function PeriodNotes({ period: _period, notes, saving, fetching, onAdd, onToggle, onDelete }) {
+export default function PeriodNotes({
+  period: _period,
+  notes,
+  saving,
+  fetching,
+  onAdd,
+  onToggle,
+  onDelete,
+}) {
   const [text, setText] = useState('')
   const [open, setOpen] = useState(false)
 

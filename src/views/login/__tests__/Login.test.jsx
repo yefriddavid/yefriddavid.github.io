@@ -134,7 +134,10 @@ describe('Login form', () => {
 
   it('Enter key on any input triggers submit', async () => {
     mockSignIn.mockResolvedValue({
-      username: 'dave', landingPage: '/dashboard', sessionId: 's', token: 't',
+      username: 'dave',
+      landingPage: '/dashboard',
+      sessionId: 's',
+      token: 't',
     })
     renderLogin()
     fireEvent.change(getUsername(), { target: { value: 'dave' } })
@@ -147,24 +150,35 @@ describe('Login form', () => {
 
   it('disables the button and shows loading text while submitting', async () => {
     let resolveFn
-    mockSignIn.mockReturnValue(new Promise((r) => { resolveFn = r }))
+    mockSignIn.mockReturnValue(
+      new Promise((r) => {
+        resolveFn = r
+      }),
+    )
     renderLogin()
     fireEvent.change(getUsername(), { target: { value: 'dave' } })
     fireEvent.change(getPassword(), { target: { value: 'pass' } })
 
-    act(() => { fireEvent.click(getSubmitBtn()) })
+    act(() => {
+      fireEvent.click(getSubmitBtn())
+    })
 
     await waitFor(() => expect(getSubmitBtn().disabled).toBe(true))
     expect(screen.getByText('Ingresando...')).toBeTruthy()
 
     // Resolve and restore
-    await act(async () => resolveFn({ username: 'dave', landingPage: '/', sessionId: 's', token: 't' }))
+    await act(async () =>
+      resolveFn({ username: 'dave', landingPage: '/', sessionId: 's', token: 't' }),
+    )
   })
 
   describe('Remember me', () => {
     it('saves cookies when remember-me is checked and login succeeds', async () => {
       mockSignIn.mockResolvedValue({
-        username: 'dave', landingPage: '/', sessionId: 's', token: 't',
+        username: 'dave',
+        landingPage: '/',
+        sessionId: 's',
+        token: 't',
       })
       renderLogin()
       fireEvent.change(getUsername(), { target: { value: 'dave' } })
@@ -188,7 +202,10 @@ describe('Login form', () => {
 
     it('clears cookies on login when remember-me is off (stale cookies from previous session)', async () => {
       mockSignIn.mockResolvedValue({
-        username: 'dave', landingPage: '/', sessionId: 's', token: 't',
+        username: 'dave',
+        landingPage: '/',
+        sessionId: 's',
+        token: 't',
       })
       // No cookies set — rememberMe starts false
       renderLogin()

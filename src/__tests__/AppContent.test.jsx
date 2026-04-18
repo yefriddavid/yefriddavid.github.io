@@ -76,10 +76,12 @@ describe('AppContent Routing', () => {
     render(
       <MemoryRouter>
         <AppContent />
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
-    expect(document.querySelector('.spinner-grow') || document.querySelector('.spinner-border')).toBeTruthy()
+    expect(
+      document.querySelector('.spinner-grow') || document.querySelector('.spinner-border'),
+    ).toBeTruthy()
   })
 
   it('renders public routes for authenticated user', async () => {
@@ -91,7 +93,7 @@ describe('AppContent Routing', () => {
     render(
       <MemoryRouter initialEntries={['/public']}>
         <AppContent />
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(await screen.findByText('Public Route')).toBeTruthy()
@@ -106,7 +108,7 @@ describe('AppContent Routing', () => {
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <AppContent />
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     // It should not find "Admin Route"
@@ -135,7 +137,7 @@ describe('AppContent Routing', () => {
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <AppContent />
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(await screen.findByText('Admin Route')).toBeTruthy()

@@ -18,17 +18,17 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
 
   const confirmRename = (id) => {
     const trimmed = renameValue.trim()
-    if (!trimmed) { setRenamingId(null); return }
+    if (!trimmed) {
+      setRenamingId(null)
+      return
+    }
     dispatch(contractActions.updateRequest({ id, data: { name: trimmed } }))
     onSelect({ id, name: trimmed }, true)
     setRenamingId(null)
   }
 
   return (
-    <div
-      className="c-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="c-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="c-picker">
         <div className="c-picker-header">
           <div className="c-card-icon" style={{ width: 40, height: 40 }}>
@@ -71,7 +71,10 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                     type="button"
                     className="c-dropdown-delete"
                     style={{ color: 'var(--gold)' }}
-                    onMouseDown={(e) => { e.stopPropagation(); confirmRename(item.id) }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation()
+                      confirmRename(item.id)
+                    }}
                     title="Confirmar nombre"
                   >
                     <IcoCheck />
@@ -79,18 +82,17 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                   <button
                     type="button"
                     className="c-dropdown-delete"
-                    onMouseDown={(e) => { e.stopPropagation(); setRenamingId(null) }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation()
+                      setRenamingId(null)
+                    }}
                     title="Cancelar"
                   >
                     <IcoClose />
                   </button>
                 </div>
               ) : (
-                <div
-                  key={item.id}
-                  className="c-picker-item"
-                  onClick={() => onSelect(item)}
-                >
+                <div key={item.id} className="c-picker-item" onClick={() => onSelect(item)}>
                   <IcoDoc />
                   <span>{item.name}</span>
                   <button

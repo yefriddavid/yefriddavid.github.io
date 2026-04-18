@@ -14,8 +14,18 @@ vi.mock('src/constants/cashFlow', () => ({
 
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return { default: { localeData: () => ({ months: () => months }) } }
 })
@@ -23,10 +33,20 @@ vi.mock('src/utils/moment', () => {
 vi.mock('src/hooks/useLocaleData', () => ({
   default: () => ({
     monthLabels: [
-      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ],
-    dayNames: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
+    dayNames: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
   }),
 }))
 

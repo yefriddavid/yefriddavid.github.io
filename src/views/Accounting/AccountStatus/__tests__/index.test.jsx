@@ -14,8 +14,18 @@ vi.mock('@coreui/icons', () => ({ cilCalendar: null }))
 
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return { default: { localeData: () => ({ months: () => months }) } }
 })
@@ -23,8 +33,18 @@ vi.mock('src/utils/moment', () => {
 vi.mock('src/hooks/useLocaleData', () => ({
   default: () => ({
     monthLabels: [
-      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ],
   }),
 }))
@@ -97,12 +117,15 @@ vi.mock('../PayModal', () => ({
 }))
 
 vi.mock('../AccountCard', () => ({
-  default: ({ account, onDetail, onPay, onDelete, onUpdate }) => (
+  default: ({ account, onDetail, onPay, onDelete, onUpdate, onViewAttachment }) => (
     <div data-testid={`card-${account.id}`}>
       <button onClick={() => onDetail(account)}>Detail {account.name}</button>
       <button onClick={() => onPay(account)}>Pay {account.name}</button>
       <button onClick={() => onDelete({ id: 'pay1', amount: 1000 })}>Delete Pay</button>
       <button onClick={() => onUpdate({ id: 'pay1', amount: 2000 })}>Update Pay</button>
+      <button onClick={() => onViewAttachment('data:img', 'receipt.png')}>
+        View Attachment {account.name}
+      </button>
     </div>
   ),
 }))
@@ -126,7 +149,13 @@ vi.mock('../AdHocSection', () => ({
 }))
 
 vi.mock('../PeriodNotes', () => ({
-  default: () => <div data-testid="period-notes" />,
+  default: ({ onAdd, onToggle, onDelete }) => (
+    <div data-testid="period-notes">
+      <button onClick={() => onAdd('test note')}>Add Note</button>
+      <button onClick={() => onToggle({ id: 'n1', checked: false })}>Toggle Note</button>
+      <button onClick={() => onDelete({ id: 'n1' })}>Delete Note</button>
+    </div>
+  ),
 }))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -153,6 +182,28 @@ const MONTH_ACCOUNT = {
   classification: 'indispensable',
 }
 
+const PAID_ACCOUNT = {
+  id: 'acc2',
+  name: 'Internet',
+  type: 'Outcoming',
+  active: true,
+  period: 'Mensuales',
+  monthStartAt: 'January',
+  defaultValue: 100000,
+  maxDatePay: 5,
+  targetAmount: 0,
+  category: 'Servicios',
+  important: false,
+  classification: 'indispensable',
+}
+
+const PAYMENT_FOR_ACC2 = {
+  id: 'pay-acc2',
+  accountMasterId: 'acc2',
+  accountMonth: '2024-04',
+  amount: 100000,
+}
+
 const defaultStore = {
   transaction: { data: [], fetching: false, saving: false },
   accountsMaster: { data: [MONTH_ACCOUNT], fetching: false, saving: false },
@@ -169,7 +220,10 @@ const setupStore = (overrides = {}) => {
     selector({
       transaction: { ...defaultStore.transaction, ...(overrides.transaction ?? {}) },
       accountsMaster: { ...defaultStore.accountsMaster, ...(overrides.accountsMaster ?? {}) },
-      accountStatusNote: { ...defaultStore.accountStatusNote, ...(overrides.accountStatusNote ?? {}) },
+      accountStatusNote: {
+        ...defaultStore.accountStatusNote,
+        ...(overrides.accountStatusNote ?? {}),
+      },
     }),
   )
 }
@@ -200,9 +254,7 @@ describe('AccountStatus (index)', () => {
   describe('mount effects', () => {
     it('dispatches transactionActions.fetchRequest on mount', () => {
       renderComponent()
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'TX_FETCH' }),
-      )
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'TX_FETCH' }))
     })
 
     it('dispatches accountsMasterActions.fetchRequest when masters is null', () => {
@@ -213,9 +265,7 @@ describe('AccountStatus (index)', () => {
 
     it('does not re-fetch masters when data is already loaded', () => {
       renderComponent()
-      const accFetchCalls = mockDispatch.mock.calls.filter(
-        (c) => c[0]?.type === 'ACC_FETCH',
-      )
+      const accFetchCalls = mockDispatch.mock.calls.filter((c) => c[0]?.type === 'ACC_FETCH')
       expect(accFetchCalls.length).toBe(0)
     })
 
@@ -413,6 +463,211 @@ describe('AccountStatus (index)', () => {
       renderComponent()
       fireEvent.click(screen.getByText('Update Pay'))
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'TX_UPDATE' }))
+    })
+  })
+
+  describe('month navigation logic', () => {
+    it('clicking ‹ calls setSearchParams', () => {
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('‹'))
+      expect(mockSetSearchParams).toHaveBeenCalled()
+    })
+
+    it('clicking › calls setSearchParams', () => {
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('›'))
+      expect(mockSetSearchParams).toHaveBeenCalled()
+    })
+
+    it('clicking ‹ decrements month by one', () => {
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('‹'))
+      const fn = mockSetSearchParams.mock.calls[0][0]
+      const sp = new URLSearchParams({ tab: 'Outcoming', month: '4', year: '2024' })
+      fn(sp)
+      expect(sp.get('month')).toBe('3')
+    })
+
+    it('clicking › increments month by one', () => {
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('›'))
+      const fn = mockSetSearchParams.mock.calls[0][0]
+      const sp = new URLSearchParams({ tab: 'Outcoming', month: '4', year: '2024' })
+      fn(sp)
+      expect(sp.get('month')).toBe('5')
+    })
+
+    it('clicking ‹ when month=1 sets month=12 and decrements year', () => {
+      setupSearchParams({ tab: 'Outcoming', month: '1', year: '2024' })
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('‹'))
+      const fn = mockSetSearchParams.mock.calls[0][0]
+      const sp = new URLSearchParams({ tab: 'Outcoming', month: '1', year: '2024' })
+      fn(sp)
+      expect(sp.get('month')).toBe('12')
+      expect(sp.get('year')).toBe('2023')
+    })
+
+    it('clicking › when month=12 sets month=1 and increments year', () => {
+      setupSearchParams({ tab: 'Outcoming', month: '12', year: '2024' })
+      renderComponent()
+      mockSetSearchParams.mockClear()
+      fireEvent.click(screen.getByText('›'))
+      const fn = mockSetSearchParams.mock.calls[0][0]
+      const sp = new URLSearchParams({ tab: 'Outcoming', month: '12', year: '2024' })
+      fn(sp)
+      expect(sp.get('month')).toBe('1')
+      expect(sp.get('year')).toBe('2025')
+    })
+  })
+
+  describe('filter behavior', () => {
+    it('filter=paid shows only Pagado accounts and hides others', () => {
+      setupStore({
+        accountsMaster: { data: [MONTH_ACCOUNT, PAID_ACCOUNT], fetching: false, saving: false },
+        transaction: { data: [PAYMENT_FOR_ACC2], fetching: false, saving: false },
+      })
+      renderComponent()
+      fireEvent.click(screen.getByText(/Pagadas \(/))
+      expect(screen.queryByTestId('card-acc1')).toBeNull()
+      expect(screen.getByTestId('card-acc2')).toBeTruthy()
+    })
+
+    it('filter=pending shows only non-paid accounts and hides paid ones', () => {
+      setupStore({
+        accountsMaster: { data: [MONTH_ACCOUNT, PAID_ACCOUNT], fetching: false, saving: false },
+        transaction: { data: [PAYMENT_FOR_ACC2], fetching: false, saving: false },
+      })
+      renderComponent()
+      fireEvent.click(screen.getByText(/Sin pagar \(/))
+      expect(screen.getByTestId('card-acc1')).toBeTruthy()
+      expect(screen.queryByTestId('card-acc2')).toBeNull()
+    })
+
+    it('shows "Sin cuentas en este filtro" when filter matches nothing', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText(/Pagadas \(/))
+      expect(screen.getByText('Sin cuentas en este filtro.')).toBeTruthy()
+    })
+
+    it('switching back to Todas shows all accounts', () => {
+      setupStore({
+        accountsMaster: { data: [MONTH_ACCOUNT, PAID_ACCOUNT], fetching: false, saving: false },
+        transaction: { data: [PAYMENT_FOR_ACC2], fetching: false, saving: false },
+      })
+      renderComponent()
+      fireEvent.click(screen.getByText(/Pagadas \(/))
+      fireEvent.click(screen.getByText(/Todas \(/))
+      expect(screen.getByTestId('card-acc1')).toBeTruthy()
+      expect(screen.getByTestId('card-acc2')).toBeTruthy()
+    })
+  })
+
+  describe('summary strip totals', () => {
+    it('renders Total: label', () => {
+      renderComponent()
+      expect(screen.getByText('Total:')).toBeTruthy()
+    })
+  })
+
+  describe('balance strip', () => {
+    it('shows Ingresos − Egresos strip when expenses exist', () => {
+      renderComponent()
+      expect(screen.getByText('Ingresos − Egresos')).toBeTruthy()
+    })
+
+    it('shows a negative balance when expenses exceed income', () => {
+      renderComponent()
+      const balanceEl = screen.getAllByText((text) => text.startsWith('-') && text.includes('$'))
+      expect(balanceEl.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('note handlers', () => {
+    it('dispatches NOTE_CREATE when note added via PeriodNotes', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText('Add Note'))
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'NOTE_CREATE',
+          payload: { period: '2024-04', text: 'test note' },
+        }),
+      )
+    })
+
+    it('dispatches NOTE_UPDATE when note toggled via PeriodNotes', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText('Toggle Note'))
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'NOTE_UPDATE',
+          payload: { id: 'n1', checked: true },
+        }),
+      )
+    })
+
+    it('dispatches NOTE_DELETE when note deleted via PeriodNotes', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText('Delete Note'))
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'NOTE_DELETE',
+          payload: { id: 'n1' },
+        }),
+      )
+    })
+  })
+
+  describe('attachment viewer', () => {
+    it('opens AttachmentViewer when card triggers onViewAttachment', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText('View Attachment Arriendo'))
+      expect(screen.getByTestId('attachment-viewer')).toBeTruthy()
+    })
+
+    it('closes AttachmentViewer when viewer onClose is called', () => {
+      renderComponent()
+      fireEvent.click(screen.getByText('View Attachment Arriendo'))
+      fireEvent.click(screen.getByText('Cerrar viewer'))
+      expect(screen.queryByTestId('attachment-viewer')).toBeNull()
+    })
+  })
+
+  describe('saving auto-close', () => {
+    it('closes PayModal when saving transitions from true to false', () => {
+      setupStore({ transaction: { data: [], fetching: false, saving: false } })
+      const { rerender } = render(<AccountStatus />)
+
+      fireEvent.click(screen.getByText('Pay Arriendo'))
+      expect(screen.getByTestId('pay-modal')).toBeTruthy()
+
+      setupStore({ transaction: { data: [], fetching: false, saving: true } })
+      rerender(<AccountStatus />)
+      expect(screen.getByTestId('pay-modal')).toBeTruthy()
+
+      setupStore({ transaction: { data: [], fetching: false, saving: false } })
+      rerender(<AccountStatus />)
+      expect(screen.queryByTestId('pay-modal')).toBeNull()
+    })
+
+    it('closes AdHocModal when saving transitions from true to false', () => {
+      setupStore({ transaction: { data: [], fetching: false, saving: false } })
+      const { rerender } = render(<AccountStatus />)
+
+      fireEvent.click(screen.getByText('+ Agregar'))
+      expect(screen.getByTestId('adhoc-add-modal')).toBeTruthy()
+
+      setupStore({ transaction: { data: [], fetching: false, saving: true } })
+      rerender(<AccountStatus />)
+
+      setupStore({ transaction: { data: [], fetching: false, saving: false } })
+      rerender(<AccountStatus />)
+      expect(screen.queryByTestId('adhoc-add-modal')).toBeNull()
     })
   })
 })

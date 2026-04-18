@@ -57,12 +57,6 @@ class Reports extends Component {
         onZoomChange={this.handleZoomChange}
       />
     )
-
-    return (
-      <div>
-        <Viewer report={{ id: 'blank.rdlx-json', displayName: 'my report' }}></Viewer>
-      </div>
-    )
   }
 }
 

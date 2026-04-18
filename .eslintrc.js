@@ -31,34 +31,60 @@ module.exports = {
   plugins: ['react', 'react-hooks'],
   rules: {
     // ── React ──────────────────────────────────────────────────────────────────
-    'react/react-in-jsx-scope': 'off',       // React 17+ new JSX transform
-    'react/prop-types': 'off',               // project uses no PropTypes/TypeScript
-    'react/display-name': 'warn',
+    'react/react-in-jsx-scope': 'off',  // React 17+ new JSX transform
+    'react/prop-types': 'off',          // project uses no PropTypes/TypeScript
+    'react/display-name': 'off',        // noise: anonymous render functions are intentional
 
     // ── Hooks ──────────────────────────────────────────────────────────────────
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
 
     // ── Variables ──────────────────────────────────────────────────────────────
+    'no-undef': 'error',
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     'no-var': 'error',
     'prefer-const': ['warn', { destructuring: 'all' }],
+    'no-shadow': ['warn', { builtinGlobals: false, allow: ['resolve', 'reject', 'error'] }],
+
+    // ── Control flow ───────────────────────────────────────────────────────────
+    'no-fallthrough': 'error',
+    'no-unreachable': 'error',
+    'no-constant-condition': 'warn',
+    'no-else-return': 'warn',
 
     // ── Quality ────────────────────────────────────────────────────────────────
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'error',
+    'no-empty': ['warn', { allowEmptyCatch: true }],
     'eqeqeq': ['error', 'always', { null: 'ignore' }],
     'no-duplicate-imports': 'error',
-    'no-else-return': 'warn',
   },
   overrides: [
     // ── Test files ─────────────────────────────────────────────────────────────
     {
-      files: ['src/**/__tests__/**/*.js', 'src/**/*.test.js'],
+      files: [
+        'src/**/__tests__/**/*.{js,jsx}',
+        'src/**/*.test.{js,jsx}',
+        'src/**/*.spec.{js,jsx}',
+      ],
       env: { node: true },
+      globals: {
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        suite: 'readonly',
+      },
       rules: {
         'no-unused-vars': 'off',
+        'no-undef': 'error',
         'react-hooks/rules-of-hooks': 'off',
+        'no-shadow': 'off',
       },
     },
     // ── Service workers ────────────────────────────────────────────────────────

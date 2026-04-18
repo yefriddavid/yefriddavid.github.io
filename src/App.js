@@ -16,7 +16,9 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Standalone pages (no app layout)
 // const GenerarContrato = React.lazy(() => import('./views/Contratos_REYDAVID/contratos/GenerarContrato'))
-const GenerarContrato = React.lazy(() => import('./views/Contratos/contratos/GenerarContrato/index.js'))
+const GenerarContrato = React.lazy(
+  () => import('./views/Contratos/contratos/GenerarContrato/index.js'),
+)
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
@@ -37,10 +39,7 @@ const App = () => {
   const appTheme = useSelector((state) => state.ui.appTheme)
   const dispatch = useDispatch()
 
-  const {
-    needRefresh: needRefreshState,
-    updateServiceWorker,
-  } = useRegisterSW()
+  const { needRefresh: needRefreshState, updateServiceWorker } = useRegisterSW()
 
   const needRefresh = Array.isArray(needRefreshState) ? needRefreshState[0] : !!needRefreshState
 
@@ -61,7 +60,7 @@ const App = () => {
     const themeParam = urlParams.get('theme')
     const themeMatch = themeParam ? themeParam.match(/^[A-Za-z0-9\s]+/) : null
     const theme = themeMatch ? themeMatch[0] : null
-    
+
     if (theme) {
       setColorMode(theme)
     }

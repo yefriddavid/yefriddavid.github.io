@@ -20,8 +20,18 @@ vi.mock('src/constants/cashFlow', () => ({
 
 vi.mock('src/constants/commons', () => ({
   MONTH_NAMES: [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ],
 }))
 
@@ -31,14 +41,7 @@ const mockOnSave = vi.fn()
 const mockOnCancel = vi.fn()
 
 const renderForm = (props = {}) =>
-  render(
-    <TransactionForm
-      saving={false}
-      onSave={mockOnSave}
-      onCancel={mockOnCancel}
-      {...props}
-    />,
-  )
+  render(<TransactionForm saving={false} onSave={mockOnSave} onCancel={mockOnCancel} {...props} />)
 
 describe('TransactionForm', () => {
   beforeEach(() => {

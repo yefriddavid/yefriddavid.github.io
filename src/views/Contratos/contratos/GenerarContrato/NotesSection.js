@@ -25,9 +25,7 @@ export default function NotesSection({ contractId, notes, saving }) {
         <p>Observaciones del contrato</p>
       </div>
       <div className="c-notes-list">
-        {notes.length === 0 && (
-          <div className="c-notes-empty">Sin notas para este contrato.</div>
-        )}
+        {notes.length === 0 && <div className="c-notes-empty">Sin notas para este contrato.</div>}
         {notes.map((note) => (
           <div key={note.id} className={`c-note-item${note.resolved ? ' resolved' : ''}`}>
             <button

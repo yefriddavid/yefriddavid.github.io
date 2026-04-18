@@ -1,6 +1,15 @@
 import React, { Component } from 'react'
-//import CFormInput from '@coreui/react/src/components/form/CFormInput'
-import { CButton, CFormSelect, CModal, CModalBody, CModalHeader, CModalTitle } from '@coreui/react'
+import { Autocomplete, TextField } from '@material-ui/lab'
+import {
+  CButton,
+  CFormInput,
+  CFormSelect,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+} from '@coreui/react'
 
 class SelectControl extends Component {
   state = {
@@ -46,10 +55,10 @@ const VaucherModalViewer = ({ paymentId, vaucher, visible, setVisible, name: _na
           </center>
         </CModalBody>
         <CModalFooter>
-          <CButton color="primary" onClick={() => savePayment()}>
+          <CButton color="primary" onClick={() => {}}>
             Delete
           </CButton>
-          <CButton color="primary" onClick={() => savePayment()}>
+          <CButton color="primary" onClick={() => {}}>
             Change
           </CButton>
           <CButton color="secondary" onClick={() => setVisible(null)}>
@@ -77,40 +86,26 @@ class NewPaymentComponent extends Component {
     // this.fetchData()
   }
 
-  setFormState = (e, _b) => {
+  setFormState = (_e, _b) => {
     return
-    const { value, name } = e.target
-    const { state: formState } = this
-
-    if (name === 'fullPayed') {
-      if (formState.fullPayed === true) {
-        this.setState({ ...formState, value: account.value })
-      } else {
-        //setFormState({ target: { name: "value", value: 0 } })
-        this.setState({ ...formState, value: 0 })
-      }
-      this.setState({ ...formState, [name]: !formState.fullPayed })
-    } else {
-      this.setState({ ...formState, [name]: value })
-    }
   }
   onChangeImage = async (e) => {
     const file = e.target.files[0]
-    let base64String
-
+    if (!file) return
     const reader = new FileReader()
-
-    reader.onload = function () {
-      base64String = reader.result
-      this.setState({ ...formState, vaucher: base64String })
+    reader.onload = (event) => {
+      this.setState({ ...this.state, vaucher: event.target.result })
     }
     reader.readAsDataURL(file)
   }
 
   setValueDefault = async (_e) => {
-    this.setState({ ...formState, value: account.value })
+    const { account } = this.props
+    this.setState({ ...this.state, value: account.value })
   }
   savePayment = async () => {
+    const { account } = this.props
+    const formState = this.state
     const _formData = {
       accountId: account.accountId,
       comment: formState.comment,
@@ -123,7 +118,6 @@ class NewPaymentComponent extends Component {
       vaucher: formState.vaucher,
     }
     // const newPayment = await addAccountPayment(_formData)
-    const { paymentId: _paymentId } = newPayment.data
   }
   // const [visible1, setVisible] = useState(false)
 

@@ -5,8 +5,18 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return { default: { localeData: () => ({ months: () => months }) } }
 })
@@ -151,7 +161,13 @@ describe('AdHocSection', () => {
   })
 
   it('renders multiple transactions', () => {
-    const exp2 = { id: 'tx3', type: 'expense', description: 'Taxi', amount: 20000, date: '2024-04-06' }
+    const exp2 = {
+      id: 'tx3',
+      type: 'expense',
+      description: 'Taxi',
+      amount: 20000,
+      date: '2024-04-06',
+    }
     renderSection({ adHocTransactions: [expense, exp2], typeTab: 'Outcoming' })
     expect(screen.getByText('Mercado')).toBeTruthy()
     expect(screen.getByText('Taxi')).toBeTruthy()

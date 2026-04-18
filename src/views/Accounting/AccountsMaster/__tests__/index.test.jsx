@@ -227,9 +227,7 @@ describe('AccountsMaster', () => {
       render(<AccountsMaster />)
       fireEvent.click(screen.getByText('+ Nueva cuenta'))
       fireEvent.click(screen.getByText('Guardar'))
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'MASTER_CREATE' }),
-      )
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'MASTER_CREATE' }))
     })
 
     it('closes modal after save', () => {
@@ -302,9 +300,7 @@ describe('AccountsMaster', () => {
       setupStore({ data: [masterNoAccounting] })
       render(<AccountsMaster />)
       fireEvent.click(screen.getByText(/Actualizar nombres contables/))
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'MASTER_PATCH' }),
-      )
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'MASTER_PATCH' }))
     })
 
     it('alerts when no account names match patch data', () => {

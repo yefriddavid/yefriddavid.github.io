@@ -4,8 +4,18 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 // moment locale mock — MONTH_NAMES comes from moment EN months
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return {
     default: {
@@ -148,6 +158,27 @@ describe('getStatus', () => {
       expect(status.label).toBe('Pagado')
       expect(status.paid).toBe(1200)
     })
+
+    it('Pendiente carries correct remaining (full target when nothing paid)', () => {
+      const status = getStatus(account, [], FUTURE)
+      expect(status.label).toBe('Pendiente')
+      expect(status.remaining).toBe(1000)
+      expect(status.paid).toBe(0)
+    })
+
+    it('Vencido carries correct remaining (full target when nothing paid)', () => {
+      const status = getStatus(account, [], PAST)
+      expect(status.label).toBe('Vencido')
+      expect(status.remaining).toBe(1000)
+      expect(status.paid).toBe(0)
+    })
+
+    it('Parcial remaining equals target minus paid', () => {
+      const status = getStatus(account, [{ amount: 250 }], FUTURE)
+      expect(status.label).toBe('Parcial')
+      expect(status.remaining).toBe(750)
+      expect(status.paid).toBe(250)
+    })
   })
 
   describe('without targetAmount (targetAmount = 0)', () => {
@@ -189,10 +220,10 @@ describe('getStatus', () => {
   it('all status labels have expected color fields', () => {
     const account = { targetAmount: 1000, maxDatePay: 10 }
     const statuses = [
-      getStatus(account, [], FUTURE, 1000),   // Pagado
-      getStatus(account, [], FUTURE, 400),    // Parcial
-      getStatus(account, [], PAST),           // Vencido
-      getStatus(account, [], FUTURE),         // Pendiente
+      getStatus(account, [], FUTURE, 1000), // Pagado
+      getStatus(account, [], FUTURE, 400), // Parcial
+      getStatus(account, [], PAST), // Vencido
+      getStatus(account, [], FUTURE), // Pendiente
     ]
     for (const s of statuses) {
       expect(s).toHaveProperty('label')

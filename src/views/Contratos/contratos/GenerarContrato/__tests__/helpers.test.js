@@ -27,11 +27,11 @@ describe('GenerarContrato Helpers', () => {
         ...emptyForm,
         tenant_full_name: 'John Doe',
         rental_value: '1.200.000',
-        property_city: 'Medellín'
+        property_city: 'Medellín',
       }
-      
+
       const payload = buildPayload(form)
-      
+
       expect(payload.tenant.full_name).toBe('John Doe')
       expect(payload.rental.value).toBe('1200000')
       expect(payload.property.city).toBe('Medellín')
@@ -42,7 +42,7 @@ describe('GenerarContrato Helpers', () => {
     it('should map Firestore document to form state correctly', () => {
       const doc = {
         tenant: { full_name: 'Jane Doe', identification: { number: '456' } },
-        rental: { value: '2000000' }
+        rental: { value: '2000000' },
       }
       const form = fillFormFromDoc(doc)
       expect(form.tenant_full_name).toBe('Jane Doe')

@@ -89,7 +89,8 @@ class ModalPaymentComponent extends PureComponent {
   }
 
   setValueDefault = async (_e) => {
-    this.setState({ ...formState, value: account.value })
+    const { account } = this.props
+    this.setState({ ...this.state, value: account.value })
   }
   savePayment = async () => {
     const { account } = this.props

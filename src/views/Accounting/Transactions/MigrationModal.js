@@ -1,13 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  CButton,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
-  CSpinner,
-} from '@coreui/react'
+import { CButton, CModal, CModalBody, CModalHeader, CModalTitle, CSpinner } from '@coreui/react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import { fetchAccounts } from 'src/services/api/accounts'
 import { EXPENSE_CATEGORIES } from 'src/constants/cashFlow'

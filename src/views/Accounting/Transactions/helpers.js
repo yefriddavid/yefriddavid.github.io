@@ -22,8 +22,18 @@ export const MONTHS = [
 ]
 
 export const MONTHS_SHORT = [
-  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
 ]
 
 export const fmt = (n) =>
@@ -67,7 +77,10 @@ export function isApplicableToMonth(account, month) {
 const CATEGORY_KEYWORDS = [
   { keywords: ['arriendo', 'alquiler', 'administracion', 'administración'], category: 'Hogar' },
   { keywords: ['agua', 'acueducto', 'alcantarillado', 'aseo'], category: 'Servicios públicos' },
-  { keywords: ['energia', 'energía', 'luz', 'epm', 'electricidad'], category: 'Servicios públicos' },
+  {
+    keywords: ['energia', 'energía', 'luz', 'epm', 'electricidad'],
+    category: 'Servicios públicos',
+  },
   { keywords: ['gas', 'naturgas'], category: 'Servicios públicos' },
   {
     keywords: ['internet', 'wifi', 'claro', 'tigo', 'movistar', 'telefono', 'teléfono', 'celular'],

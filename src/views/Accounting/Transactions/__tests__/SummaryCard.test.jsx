@@ -12,9 +12,7 @@ describe('SummaryCard', () => {
   })
 
   it('renders sub text when provided', () => {
-    render(
-      <SummaryCard label="Pagadas" value="3" color="#2f9e44" bg="#f0fdf4" sub="$ 1.200.000" />,
-    )
+    render(<SummaryCard label="Pagadas" value="3" color="#2f9e44" bg="#f0fdf4" sub="$ 1.200.000" />)
     expect(screen.getByText('$ 1.200.000')).toBeTruthy()
   })
 
@@ -35,7 +33,12 @@ describe('SummaryCard', () => {
 
   it('renders React node as value', () => {
     render(
-      <SummaryCard label="Ingresos" value={<span data-testid="node-value">Cargando…</span>} color="#000" bg="#fff" />,
+      <SummaryCard
+        label="Ingresos"
+        value={<span data-testid="node-value">Cargando…</span>}
+        color="#000"
+        bg="#fff"
+      />,
     )
     expect(screen.getByTestId('node-value')).toBeTruthy()
   })

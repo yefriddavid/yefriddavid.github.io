@@ -98,13 +98,7 @@ const AppContent = () => {
             const Component = route.element
             return (
               Component &&
-              canAccess(route) && (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  element={<Component />}
-                />
-              )
+              canAccess(route) && <Route key={idx} path={route.path} element={<Component />} />
             )
           })}
           <Route path="/" element={<Navigate to={landingPage} replace />} />

@@ -120,6 +120,7 @@ export function buildInventarioHtml(p) {
 
 export async function generateInventarioPdf(payload, filename) {
   const html = buildInventarioHtml(payload)
-  const name = filename || `Inventario_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
+  const name =
+    filename || `Inventario_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
   await generateHtmlToPdf(html, name)
 }

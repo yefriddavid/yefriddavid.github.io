@@ -1,8 +1,18 @@
 import { generateHtmlToPdf } from '../contractPdf'
 
 const MONTHS_ES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ]
 
 function parseDate(str) {
@@ -21,23 +31,73 @@ function numToWords(n) {
   const num = parseInt(n, 10)
   if (isNaN(num) || num < 0) return ''
   if (num === 0) return 'cero'
-  const units = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
-    'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve']
-  const tens = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
-  const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
-    'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+  const units = [
+    '',
+    'un',
+    'dos',
+    'tres',
+    'cuatro',
+    'cinco',
+    'seis',
+    'siete',
+    'ocho',
+    'nueve',
+    'diez',
+    'once',
+    'doce',
+    'trece',
+    'catorce',
+    'quince',
+    'dieciséis',
+    'diecisiete',
+    'dieciocho',
+    'diecinueve',
+  ]
+  const tens = [
+    '',
+    '',
+    'veinte',
+    'treinta',
+    'cuarenta',
+    'cincuenta',
+    'sesenta',
+    'setenta',
+    'ochenta',
+    'noventa',
+  ]
+  const hundreds = [
+    '',
+    'ciento',
+    'doscientos',
+    'trescientos',
+    'cuatrocientos',
+    'quinientos',
+    'seiscientos',
+    'setecientos',
+    'ochocientos',
+    'novecientos',
+  ]
   if (num === 100) return 'cien'
   if (num === 1000) return 'mil'
   if (num >= 1000000) {
     const m = Math.floor(num / 1000000)
-    return (m === 1 ? 'un millón' : numToWords(m) + ' millones') + (num % 1000000 ? ' ' + numToWords(num % 1000000) : '')
+    return (
+      (m === 1 ? 'un millón' : numToWords(m) + ' millones') +
+      (num % 1000000 ? ' ' + numToWords(num % 1000000) : '')
+    )
   }
   if (num >= 1000) {
     const t = Math.floor(num / 1000)
-    return (t === 1 ? 'mil' : numToWords(t) + ' mil') + (num % 1000 ? ' ' + numToWords(num % 1000) : '')
+    return (
+      (t === 1 ? 'mil' : numToWords(t) + ' mil') + (num % 1000 ? ' ' + numToWords(num % 1000) : '')
+    )
   }
-  if (num >= 100) return hundreds[Math.floor(num / 100)] + (num % 100 ? ' ' + numToWords(num % 100) : '')
-  if (num >= 20) { const t = Math.floor(num / 10); return tens[t] + (num % 10 ? ' y ' + units[num % 10] : '') }
+  if (num >= 100)
+    return hundreds[Math.floor(num / 100)] + (num % 100 ? ' ' + numToWords(num % 100) : '')
+  if (num >= 20) {
+    const t = Math.floor(num / 10)
+    return tens[t] + (num % 10 ? ' y ' + units[num % 10] : '')
+  }
   return units[num]
 }
 
@@ -57,7 +117,7 @@ export function buildActaEntregaHtml(p) {
 
   const endDay = startDate ? startDate.getDate() : '[día]'
   const endMonthYear = startDate
-    ? `${MONTHS_ES[startDate.getMonth()]} de ${startDate.getFullYear() + Math.floor((parseInt(rental.duration || 0)) / 12)}`
+    ? `${MONTHS_ES[startDate.getMonth()]} de ${startDate.getFullYear() + Math.floor(parseInt(rental.duration || 0) / 12)}`
     : '[mes/año]'
 
   const tenantUpper = (tenant.full_name || '').toUpperCase()
@@ -128,6 +188,8 @@ CC No. ________________________ De ____________________________
 
 export async function generateActaEntregaPdf(payload, filename) {
   const html = buildActaEntregaHtml(payload)
-  const name = filename || `ActaEntrega_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
+  const name =
+    filename ||
+    `ActaEntrega_${(payload.tenant?.full_name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`
   await generateHtmlToPdf(html, name)
 }

@@ -18,8 +18,18 @@ vi.mock('src/utils/fileHelpers', () => ({
 
 vi.mock('src/utils/moment', () => {
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
   return { default: { localeData: () => ({ months: () => months }) } }
 })
