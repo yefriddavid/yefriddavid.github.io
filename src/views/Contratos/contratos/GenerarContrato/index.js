@@ -315,7 +315,7 @@ export default function GenerarContrato() {
     if (renameOnly && currentContract?.id === item.id) {
       setCurrentContract({ id: item.id, name: item.name })
     }
-    setPickerOpen(false)
+    //setPickerOpen(false)
   }
 
   const set = (field) => (e) => {

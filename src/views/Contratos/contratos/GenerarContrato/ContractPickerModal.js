@@ -130,24 +130,26 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                 >
                   <IcoDoc />
                   <span>{item.name}</span>
-                  {tab === 'activos' && (
+                  <div style={{ display: 'flex', marginLeft: 'auto' }}>
+                    {tab === 'activos' && (
+                      <button
+                        type="button"
+                        className="c-dropdown-delete"
+                        onMouseDown={(e) => startRename(e, item)}
+                        title="Renombrar contrato"
+                      >
+                        <IcoPencil />
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="c-dropdown-delete"
-                      onMouseDown={(e) => startRename(e, item)}
-                      title="Renombrar contrato"
+                      onMouseDown={(e) => toggleArchive(e, item)}
+                      title={item.archived ? 'Restaurar contrato' : 'Archivar contrato'}
                     >
-                      <IcoPencil />
+                      {item.archived ? <IcoUnarchive /> : <IcoArchive />}
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className="c-dropdown-delete"
-                    onMouseDown={(e) => toggleArchive(e, item)}
-                    title={item.archived ? 'Restaurar contrato' : 'Archivar contrato'}
-                  >
-                    {item.archived ? <IcoUnarchive /> : <IcoArchive />}
-                  </button>
+                  </div>
                   {tab === 'activos' && <span className="arrow">→</span>}
                 </div>
               ),
