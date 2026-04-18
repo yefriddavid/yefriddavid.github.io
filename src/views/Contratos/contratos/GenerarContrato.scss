@@ -1040,6 +1040,22 @@
     .btn-secondary { width: 100%; justify-content: center; }
   }
 
+  /* Templates bar: stack each item vertically */
+  .c-templates-bar { padding: 16px; }
+
+  .c-template-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .c-template-actions {
+    flex-direction: column;
+
+    .btn-generate,
+    .btn-secondary { width: 100%; justify-content: center; }
+  }
+
   /* Toast: full-width at bottom */
   .c-toast {
     left: 12px;
