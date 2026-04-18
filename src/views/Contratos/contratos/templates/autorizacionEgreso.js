@@ -2,8 +2,18 @@ import { generateHtmlToPdf } from '../contractPdf'
 import { OWNER_SIGNATURE_DATA_URL } from './ownerSignature'
 
 const MONTHS_ES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ]
 
 function parseDate(str) {
@@ -15,26 +25,26 @@ function parseDate(str) {
 export function buildAutorizacionEgresoHtml(p) {
   const contract = p.contract || {}
   const property = p.property || {}
-  const tenant   = p.tenant   || {}
-  const owner    = p.owner    || {}
+  const tenant = p.tenant || {}
+  const owner = p.owner || {}
 
   const contractDate = parseDate(contract.date)
 
-  const day   = contractDate ? contractDate.getDate() : '[día]'
+  const day = contractDate ? contractDate.getDate() : '[día]'
   const month = contractDate ? MONTHS_ES[contractDate.getMonth()] : '[mes]'
-  const year  = contractDate ? contractDate.getFullYear() : '[año]'
+  const year = contractDate ? contractDate.getFullYear() : '[año]'
 
-  const city       = contract.city              || '[ciudad]'
-  const building   = property.urbanization_name || '[edificio]'
-  const apartment  = property.appartment_number || '[apartamento]'
-  const propCity   = property.city              || '[ciudad]'
-  const propState  = property.state             || '[departamento]'
-  const ownerName  = owner.full_name            || '[propietario]'
-  const ownerId    = owner.identification?.number || '[C.C]'
-  const tenantName = tenant.full_name           || '[autorizado]'
-  const tenantId   = tenant.identification?.number || '[C.C]'
+  const city = contract.city || '[ciudad]'
+  const building = property.urbanization_name || '[edificio]'
+  const apartment = property.appartment_number || '[apartamento]'
+  const propCity = property.city || '[ciudad]'
+  const propState = property.state || '[departamento]'
+  const ownerName = owner.full_name || '[propietario]'
+  const ownerId = owner.identification?.number || '[C.C]'
+  const tenantName = tenant.full_name || '[autorizado]'
+  const tenantId = tenant.identification?.number || '[C.C]'
 
-  const ownerUpper  = ownerName.toUpperCase()
+  const ownerUpper = ownerName.toUpperCase()
   const tenantUpper = tenantName.toUpperCase()
 
   return `<!DOCTYPE html>

@@ -6,27 +6,31 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  orderBy,
   query,
   serverTimestamp,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_partners'
 
 export const getPartners = async () => {
-  const q = query(collection(db, COL), orderBy('name'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({
-    id: d.id,
-    name: d.data().name,
-    percentage: d.data().percentage,
-  }))
+  return snap.docs
+    .map((d) => ({
+      id: d.id,
+      name: d.data().name,
+      percentage: d.data().percentage,
+    }))
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
 }
 
 export const addPartner = async ({ name, percentage }) => {
   const ref = await addDoc(collection(db, COL), {
     name,
     percentage: Number(percentage),
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

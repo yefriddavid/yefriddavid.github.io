@@ -22,14 +22,27 @@ vi.mock('@coreui/icons', () => ({
 }))
 
 vi.mock('@coreui/react', () => ({
-  CCard: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
-  CCardBody: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
+  CCard: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
+  CCardBody: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
   CSpinner: () => <span className="spinner-border" />,
   CBadge: ({ children }) => <span>{children}</span>,
   CAlert: ({ children }) => <div>{children}</div>,
-  CButton: ({ children, onClick, disabled }) => <button onClick={onClick} disabled={disabled}>{children}</button>,
-  CCollapse: ({ visible, children }) => visible ? <div data-testid="collapse">{children}</div> : null,
+  CButton: ({ children, onClick, disabled }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+  CCollapse: ({ visible, children }) =>
+    visible ? <div data-testid="collapse">{children}</div> : null,
   CRow: ({ children }) => <div>{children}</div>,
   CCol: ({ children }) => <div>{children}</div>,
 }))
@@ -152,7 +165,9 @@ describe('Partners', () => {
     it('form closes after saving valid name and percentage (createRequest dispatched)', () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(partnerState())
-      act(() => { store.dispatch(taxiPartnerActions.successRequestFetch([])) })
+      act(() => {
+        store.dispatch(taxiPartnerActions.successRequestFetch([]))
+      })
 
       fireEvent.click(screen.getByText('Nuevo socio'))
       fireEvent.change(screen.getByPlaceholderText('Nombre completo'), {

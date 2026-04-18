@@ -1,5 +1,15 @@
 import { db } from '../settings'
-import { collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  deleteDoc,
+  serverTimestamp,
+  query,
+  where,
+} from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_my_projects'
 
@@ -7,12 +17,14 @@ export const syncProjectToFirebase = async (project) => {
   const { id, ...data } = project
   await setDoc(doc(collection(db, COL), id), {
     ...data,
+    tenantId: getTenantId(),
     syncedAt: serverTimestamp(),
   })
 }
 
 export const fetchAllFromFirebase = async () => {
-  const snap = await getDocs(collection(db, COL))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+  const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
     return {

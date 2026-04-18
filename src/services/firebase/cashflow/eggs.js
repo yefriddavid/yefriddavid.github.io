@@ -6,26 +6,29 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  orderBy,
   query,
   serverTimestamp,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_eggs'
 
 export const fetchEggs = async () => {
-  const q = query(collection(db, COL), orderBy('date', 'desc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      name: data.name,
-      date: data.date,
-      quantity: data.quantity,
-      price: data.price,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        name: data.name,
+        date: data.date,
+        quantity: data.quantity,
+        price: data.price,
+      }
+    })
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
 }
 
 export const createEgg = async ({ name, date, quantity, price }) => {
@@ -34,6 +37,7 @@ export const createEgg = async ({ name, date, quantity, price }) => {
     date,
     quantity: Number(quantity),
     price: Number(price),
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

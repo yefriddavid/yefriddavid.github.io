@@ -150,6 +150,12 @@ const getNav = (t, role) => {
               to: '/cash_flow/management/push-subscribers',
               icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
             },
+            {
+              component: CNavItem,
+              name: 'Tenants',
+              to: '/admin/tenants',
+              icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+            },
           ]
         : []),
     ],

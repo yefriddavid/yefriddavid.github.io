@@ -18,17 +18,34 @@ vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilX: 'x', cilTrash: 'trash' 
 vi.mock('src/views/taxis/masters.scss', () => ({}))
 
 vi.mock('@coreui/react', () => ({
-  CCard: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
-  CCardBody: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
+  CCard: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
+  CCardBody: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
   CSpinner: () => <span className="spinner-border" />,
   CBadge: ({ children }) => <span>{children}</span>,
   CAlert: ({ children }) => <div>{children}</div>,
-  CButton: ({ children, onClick, disabled }) => <button onClick={onClick} disabled={disabled}>{children}</button>,
-  CCollapse: ({ visible, children }) => visible ? <div data-testid="collapse">{children}</div> : null,
+  CButton: ({ children, onClick, disabled }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+  CCollapse: ({ visible, children }) =>
+    visible ? <div data-testid="collapse">{children}</div> : null,
   CRow: ({ children }) => <div>{children}</div>,
   CCol: ({ children }) => <div>{children}</div>,
-  CFormSelect: ({ children, onChange, value, className }) => <select onChange={onChange} value={value} className={className}>{children}</select>,
+  CFormSelect: ({ children, onChange, value, className }) => (
+    <select onChange={onChange} value={value} className={className}>
+      {children}
+    </select>
+  ),
 }))
 
 vi.mock('src/components/shared/StandardGrid/Index', () => ({
@@ -172,7 +189,9 @@ describe('Conductores (Drivers)', () => {
     it('form closes after saving with valid name and idNumber (createRequest dispatched)', () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(driverState())
-      act(() => { store.dispatch(taxiDriverActions.successRequestFetch([])) })
+      act(() => {
+        store.dispatch(taxiDriverActions.successRequestFetch([]))
+      })
 
       fireEvent.click(screen.getByText('Nuevo conductor'))
       fireEvent.change(screen.getByPlaceholderText('Nombre completo'), {

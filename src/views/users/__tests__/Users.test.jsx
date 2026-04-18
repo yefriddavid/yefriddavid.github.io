@@ -17,17 +17,34 @@ vi.mock('@coreui/icons-react', () => ({ default: () => <span data-testid="icon" 
 vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilX: 'x', cilTrash: 'trash' }))
 
 vi.mock('@coreui/react', () => ({
-  CCard: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
-  CCardBody: ({ children, className, style }) => <div className={className} style={style}>{children}</div>,
+  CCard: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
+  CCardBody: ({ children, className, style }) => (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
   CSpinner: () => <span className="spinner-border" />,
   CBadge: ({ children }) => <span>{children}</span>,
   CAlert: ({ children }) => <div>{children}</div>,
-  CButton: ({ children, onClick, disabled }) => <button onClick={onClick} disabled={disabled}>{children}</button>,
-  CCollapse: ({ visible, children }) => visible ? <div data-testid="collapse">{children}</div> : null,
+  CButton: ({ children, onClick, disabled }) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+  CCollapse: ({ visible, children }) =>
+    visible ? <div data-testid="collapse">{children}</div> : null,
   CRow: ({ children }) => <div>{children}</div>,
   CCol: ({ children }) => <div>{children}</div>,
-  CFormSelect: ({ children, onChange, value, className }) => <select onChange={onChange} value={value} className={className}>{children}</select>,
+  CFormSelect: ({ children, onChange, value, className }) => (
+    <select onChange={onChange} value={value} className={className}>
+      {children}
+    </select>
+  ),
 }))
 
 vi.mock('src/services/firebase/security/users', () => ({
@@ -130,7 +147,9 @@ describe('Users', () => {
     it('shows error alert after a failed fetch', () => {
       // fetchRequest clears isError; simulate error after mount
       const { store } = renderWithRedux(usersState())
-      act(() => { store.dispatch(usersActions.errorRequestFetch('Error de red')) })
+      act(() => {
+        store.dispatch(usersActions.errorRequestFetch('Error de red'))
+      })
       expect(screen.getByText('Error de red')).toBeTruthy()
     })
   })
@@ -180,7 +199,9 @@ describe('Users', () => {
     it('form closes after saving with valid data (createRequest dispatched)', () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(usersState())
-      act(() => { store.dispatch(usersActions.successRequestFetch([])) })
+      act(() => {
+        store.dispatch(usersActions.successRequestFetch([]))
+      })
 
       fireEvent.click(screen.getByText('Nuevo usuario'))
 
@@ -204,9 +225,15 @@ describe('Users', () => {
 describe('UserForm validation', () => {
   const renderForm = () => {
     const store = configureStore({ reducer: combinedReducers, preloadedState: usersState() })
-    render(<Provider store={store}><Users /></Provider>)
+    render(
+      <Provider store={store}>
+        <Users />
+      </Provider>,
+    )
     // fetchRequest on mount sets fetching=true → save button disabled; reset it
-    act(() => { store.dispatch(usersActions.successRequestFetch([])) })
+    act(() => {
+      store.dispatch(usersActions.successRequestFetch([]))
+    })
     fireEvent.click(screen.getByText('Nuevo usuario'))
     return screen
   }

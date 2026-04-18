@@ -15,7 +15,8 @@
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build",
+    "local:build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build",
+    "build": "vite build",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "serve": "vite preview",
@@ -23,7 +24,7 @@
     "start:prod": "vite --mode production",
     "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
-    "test:app": "vitest run --config vitest.app.config.mjs",
+    "test:app": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vitest run --config vitest.app.config.mjs --no-file-parallelism",
     "test:watch": "vitest",
     "serve:test": "vite preview --port 3005",
     "cy:open": "cypress open",

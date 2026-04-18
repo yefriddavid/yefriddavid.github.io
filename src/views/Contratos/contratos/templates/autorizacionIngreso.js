@@ -2,8 +2,18 @@ import { generateHtmlToPdf } from '../contractPdf'
 import { OWNER_SIGNATURE_DATA_URL } from './ownerSignature'
 
 const MONTHS_ES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ]
 
 function parseDate(str) {
@@ -13,16 +23,16 @@ function parseDate(str) {
 }
 
 export function buildAutorizacionIngresoHtml(p) {
-  const contract  = p.contract  || {}
-  const property  = p.property  || {}
-  const tenant    = p.tenant    || {}
-  const owner     = p.owner     || {}
-  const rental    = p.rental    || {}
+  const contract = p.contract || {}
+  const property = p.property || {}
+  const tenant = p.tenant || {}
+  const owner = p.owner || {}
+  const rental = p.rental || {}
 
   const contractDate = parseDate(contract.date)
-  const startDate    = parseDate(rental.start_date)
+  const startDate = parseDate(rental.start_date)
 
-  const day   = contractDate ? contractDate.getDate() : '[día]'
+  const day = contractDate ? contractDate.getDate() : '[día]'
   const month = contractDate
     ? MONTHS_ES[contractDate.getMonth()].charAt(0).toUpperCase() +
       MONTHS_ES[contractDate.getMonth()].slice(1)
@@ -32,15 +42,15 @@ export function buildAutorizacionIngresoHtml(p) {
   const moveDay1 = startDate ? startDate.getDate() : '[día]'
   const moveDay2 = startDate ? startDate.getDate() + 1 : '[día+1]'
   const moveMonth = startDate ? MONTHS_ES[startDate.getMonth()] : '[mes]'
-  const moveYear  = startDate ? startDate.getFullYear() : '[año]'
+  const moveYear = startDate ? startDate.getFullYear() : '[año]'
 
-  const city         = contract.city              || '[ciudad]'
-  const building     = property.urbanization_name || '[edificio]'
-  const address      = property.address           || property.full_address || '[dirección]'
-  const apartment    = property.appartment_number || '[apartamento]'
-  const ownerName    = owner.full_name            || '[propietario]'
-  const tenantName   = tenant.full_name           || '[inquilino]'
-  const tenantId     = tenant.identification?.number || '[C.C]'
+  const city = contract.city || '[ciudad]'
+  const building = property.urbanization_name || '[edificio]'
+  const address = property.address || property.full_address || '[dirección]'
+  const apartment = property.appartment_number || '[apartamento]'
+  const ownerName = owner.full_name || '[propietario]'
+  const tenantName = tenant.full_name || '[inquilino]'
+  const tenantId = tenant.identification?.number || '[C.C]'
 
   return `<!DOCTYPE html>
 <html>

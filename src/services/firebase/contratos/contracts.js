@@ -5,23 +5,26 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
   getDoc,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'Contratos_Contratos'
 
 export const getContracts = async () => {
-  const q = query(collection(db, COL), orderBy('name', 'asc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({
-    id: d.id,
-    name: d.data().name,
-    archived: d.data().archived === true,
-  }))
+  return snap.docs
+    .map((d) => ({
+      id: d.id,
+      name: d.data().name,
+      archived: d.data().archived === true,
+    }))
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
 }
 
 export const archiveContract = async (id, archived) => {
@@ -38,6 +41,7 @@ export const addContract = async (name, payload) => {
   const ref = await addDoc(collection(db, COL), {
     name,
     ...payload,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })
@@ -55,6 +59,7 @@ export const cloneContract = async (sourceId, newName) => {
   const ref = await addDoc(collection(db, COL), {
     ...rest,
     name: newName,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })

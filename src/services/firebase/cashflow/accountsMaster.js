@@ -6,49 +6,54 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore'
-
-//const COL = 'CashFlow_AccountsMaster'
+import { getTenantId } from 'src/services/tenantContext'
 
 export { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 export { MONTH_NAMES } from 'src/constants/commons'
 
 export const getAccountsMaster = async () => {
-  const q = query(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), orderBy('name'))
+  const q = query(
+    collection(db, COL_CASHFLOW_ACCOUNTS_MASTER),
+    where('tenantId', '==', getTenantId()),
+  )
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      name: data.name ?? null,
-      type: data.type ?? null,
-      code: data.code ?? null,
-      period: data.period ?? null,
-      classification: data.classification ?? null,
-      category: data.category ?? null,
-      paymentMethod: data.paymentMethod ?? null,
-      active: data.active !== false,
-      accountingName: data.accountingName ?? null,
-      defaultValue: data.defaultValue ?? 0,
-      targetAmount: data.targetAmount ?? 0,
-      maxDatePay: data.maxDatePay ?? null,
-      monthStartAt: data.monthStartAt ?? null,
-      important: data.important ?? false,
-      description: data.description ?? null,
-      notes: data.notes ?? null,
-      definition: data.definition ?? null,
-      created_at: data.created_at?.toDate?.()?.toISOString() ?? null,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        name: data.name ?? null,
+        type: data.type ?? null,
+        code: data.code ?? null,
+        period: data.period ?? null,
+        classification: data.classification ?? null,
+        category: data.category ?? null,
+        paymentMethod: data.paymentMethod ?? null,
+        active: data.active !== false,
+        accountingName: data.accountingName ?? null,
+        defaultValue: data.defaultValue ?? 0,
+        targetAmount: data.targetAmount ?? 0,
+        maxDatePay: data.maxDatePay ?? null,
+        monthStartAt: data.monthStartAt ?? null,
+        important: data.important ?? false,
+        description: data.description ?? null,
+        notes: data.notes ?? null,
+        definition: data.definition ?? null,
+        created_at: data.created_at?.toDate?.()?.toISOString() ?? null,
+      }
+    })
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
 }
 
 export const addAccountMaster = async (payload) => {
   const ref = await addDoc(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), {
     ...payload,
+    tenantId: getTenantId(),
     active: true,
     created_at: serverTimestamp(),
   })

@@ -5,28 +5,31 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_vehiculos'
 
 export const getVehicles = async () => {
-  const q = query(collection(db, COL), orderBy('plate', 'asc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      plate: data.plate,
-      brand: data.brand,
-      model: data.model,
-      year: data.year,
-      restrictions: data.restrictions ?? {},
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        plate: data.plate,
+        brand: data.brand,
+        model: data.model,
+        year: data.year,
+        restrictions: data.restrictions ?? {},
+      }
+    })
+    .sort((a, b) => (a.plate ?? '').localeCompare(b.plate ?? ''))
 }
 
 export const addVehicle = async ({ plate, brand, model, year }) => {
@@ -36,6 +39,7 @@ export const addVehicle = async ({ plate, brand, model, year }) => {
     model,
     year,
     restrictions: {},
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

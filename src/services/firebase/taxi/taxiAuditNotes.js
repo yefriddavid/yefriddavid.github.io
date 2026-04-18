@@ -1,12 +1,14 @@
 import { db } from '../settings'
-import { collection, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, setDoc, deleteDoc, doc, query, where } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_audit_notas'
 
 const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
 
 export const getNotes = async () => {
-  const snap = await getDocs(collection(db, COL))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+  const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
     return {
@@ -21,7 +23,7 @@ export const getNotes = async () => {
 
 export const upsertNote = async ({ date, driver, note, resolved = false }) => {
   const id = noteId(date, driver)
-  await setDoc(doc(db, COL, id), { date, driver, note, resolved })
+  await setDoc(doc(db, COL, id), { date, driver, note, resolved, tenantId: getTenantId() })
   return id
 }
 

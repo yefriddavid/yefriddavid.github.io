@@ -5,32 +5,35 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_conductores'
 
 export const getDrivers = async () => {
-  const q = query(collection(db, COL), orderBy('name', 'asc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      name: data.name,
-      idNumber: data.idNumber,
-      phone: data.phone,
-      defaultAmount: data.defaultAmount,
-      defaultAmountSunday: data.defaultAmountSunday,
-      defaultVehicle: data.defaultVehicle,
-      active: data.active !== false,
-      startDate: data.startDate ?? null,
-      endDate: data.endDate ?? null,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        name: data.name,
+        idNumber: data.idNumber,
+        phone: data.phone,
+        defaultAmount: data.defaultAmount,
+        defaultAmountSunday: data.defaultAmountSunday,
+        defaultVehicle: data.defaultVehicle,
+        active: data.active !== false,
+        startDate: data.startDate ?? null,
+        endDate: data.endDate ?? null,
+      }
+    })
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
 }
 
 export const addDriver = async ({
@@ -53,6 +56,7 @@ export const addDriver = async ({
     active: active !== false,
     startDate: startDate || null,
     endDate: null,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

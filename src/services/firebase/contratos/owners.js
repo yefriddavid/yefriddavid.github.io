@@ -5,30 +5,37 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'Contratos_Propietarios'
 
 export const getOwners = async () => {
-  const q = query(collection(db, COL), orderBy('full_name', 'asc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      full_name: data.full_name,
-      identification_number: data.identification_number,
-      identification_city: data.identification_city,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        full_name: data.full_name,
+        identification_number: data.identification_number,
+        identification_city: data.identification_city,
+      }
+    })
+    .sort((a, b) => (a.full_name ?? '').localeCompare(b.full_name ?? ''))
 }
 
 export const addOwner = async (payload) => {
-  const ref = await addDoc(collection(db, COL), { ...payload, createdAt: serverTimestamp() })
+  const ref = await addDoc(collection(db, COL), {
+    ...payload,
+    tenantId: getTenantId(),
+    createdAt: serverTimestamp(),
+  })
   return ref.id
 }
 

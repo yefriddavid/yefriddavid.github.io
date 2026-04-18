@@ -1,10 +1,12 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/authActions'
 import { getUser, updateOwnProfile, updateUserAvatar } from '../services/firebase/security/users'
+import { setTenantId } from '../services/tenantContext'
 
 export function* fetchProfile({ payload: username }) {
   try {
     const data = yield call(getUser, username)
+    setTenantId(data?.tenantId ?? null)
     yield put(actions.fetchProfileSuccess(data))
   } catch (e) {
     yield put(actions.fetchProfileError(e.message))

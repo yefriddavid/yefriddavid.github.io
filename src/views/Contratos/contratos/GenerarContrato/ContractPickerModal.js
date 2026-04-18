@@ -10,9 +10,9 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
   const [renameValue, setRenameValue] = useState('')
   const renameInputRef = useRef(null)
 
-  const active   = (contracts || []).filter((c) => !c.archived)
-  const archived = (contracts || []).filter((c) =>  c.archived)
-  const list     = tab === 'activos' ? active : archived
+  const active = (contracts || []).filter((c) => !c.archived)
+  const archived = (contracts || []).filter((c) => c.archived)
+  const list = tab === 'activos' ? active : archived
 
   const startRename = (e, item) => {
     e.stopPropagation()
@@ -23,7 +23,10 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
 
   const confirmRename = (id) => {
     const trimmed = renameValue.trim()
-    if (!trimmed) { setRenamingId(null); return }
+    if (!trimmed) {
+      setRenamingId(null)
+      return
+    }
     dispatch(contractActions.updateRequest({ id, data: { name: trimmed } }))
     onSelect({ id, name: trimmed }, true)
     setRenamingId(null)
@@ -37,7 +40,6 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
   return (
     <div className="c-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="c-picker">
-
         <div className="c-picker-header">
           <div className="c-card-icon" style={{ width: 40, height: 40 }}>
             <IcoDoc />
@@ -46,12 +48,7 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
             <h2>¿Qué contrato vamos a ejecutar?</h2>
             <p>Contratos guardados</p>
           </div>
-          <button
-            type="button"
-            className="c-dropdown-delete"
-            onClick={onClose}
-            title="Cerrar"
-          >
+          <button type="button" className="c-dropdown-delete" onClick={onClose} title="Cerrar">
             <IcoClose />
           </button>
         </div>
@@ -81,9 +78,13 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
           ) : list.length === 0 ? (
             <div className="c-picker-empty">
               <p>
-                {tab === 'activos'
-                  ? <span>No hay contratos activos. Usa <strong>Nuevo</strong> para crear uno.</span>
-                  : 'No hay contratos archivados.'}
+                {tab === 'activos' ? (
+                  <span>
+                    No hay contratos activos. Usa <strong>Nuevo</strong> para crear uno.
+                  </span>
+                ) : (
+                  'No hay contratos archivados.'
+                )}
               </p>
             </div>
           ) : (
@@ -107,7 +108,10 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                     type="button"
                     className="c-dropdown-delete"
                     style={{ color: 'var(--gold)' }}
-                    onMouseDown={(e) => { e.stopPropagation(); confirmRename(item.id) }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation()
+                      confirmRename(item.id)
+                    }}
                     title="Confirmar nombre"
                   >
                     <IcoCheck />
@@ -115,7 +119,10 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                   <button
                     type="button"
                     className="c-dropdown-delete"
-                    onMouseDown={(e) => { e.stopPropagation(); setRenamingId(null) }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation()
+                      setRenamingId(null)
+                    }}
                     title="Cancelar"
                   >
                     <IcoClose />
@@ -126,7 +133,7 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                   key={item.id}
                   className="c-picker-item"
                   onClick={() => tab === 'activos' && onSelect(item)}
-                  style={tab === 'archivados' ? { cursor: 'default', opacity: .75 } : undefined}
+                  style={tab === 'archivados' ? { cursor: 'default', opacity: 0.75 } : undefined}
                 >
                   <IcoDoc />
                   <span>{item.name}</span>
@@ -156,7 +163,6 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
             )
           )}
         </div>
-
       </div>
     </div>
   )

@@ -6,30 +6,33 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  orderBy,
   query,
   serverTimestamp,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_gastos'
 
 export const fetchExpenses = async () => {
-  const q = query(collection(db, COL), orderBy('date', 'desc'))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
   const snap = await getDocs(q)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      description: data.description,
-      category: data.category,
-      amount: data.amount,
-      date: data.date,
-      plate: data.plate ?? null,
-      comment: data.comment ?? null,
-      paid: data.paid === true,
-      nextDate: data.nextDate ?? null,
-    }
-  })
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        description: data.description,
+        category: data.category,
+        amount: data.amount,
+        date: data.date,
+        plate: data.plate ?? null,
+        comment: data.comment ?? null,
+        paid: data.paid === true,
+        nextDate: data.nextDate ?? null,
+      }
+    })
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
 }
 
 export const createExpense = async ({ description, category, amount, date, plate, nextDate }) => {
@@ -40,6 +43,7 @@ export const createExpense = async ({ description, category, amount, date, plate
     date,
     plate: plate || null,
     nextDate: nextDate || null,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

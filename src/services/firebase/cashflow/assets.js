@@ -7,18 +7,25 @@ import {
   getDocs,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_assets'
 
 export const syncAssetToFirebase = async (asset) => {
   const { id, ...data } = asset
-  await setDoc(doc(collection(db, COL), id), { ...data, syncedAt: serverTimestamp() })
+  await setDoc(doc(collection(db, COL), id), {
+    ...data,
+    tenantId: getTenantId(),
+    syncedAt: serverTimestamp(),
+  })
 }
 
-// export const fetchAllFromFirebase = async () => {
 export const fetchAll = async () => {
-  const snap = await getDocs(collection(db, COL))
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+  const snap = await getDocs(q)
   return snap.docs.map((d) => {
     const data = d.data()
     return {
@@ -44,7 +51,6 @@ export const deleteAssetFromFirebase = async (id) => {
   await deleteDoc(doc(collection(db, COL), id))
 }
 
-//export const createAsset = async ({ name, date, quantity, price }) => {
 export const createAsset = async ({
   archived,
   horizon,
@@ -73,6 +79,7 @@ export const createAsset = async ({
     unitPrice,
     date: date ? date : null,
     price: price ? Number(price) : null,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
   return ref.id

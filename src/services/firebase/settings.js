@@ -50,6 +50,9 @@ export const COL_CONTRATOS_BANK_ACCOUNTS = 'Contratos_CuentasBancarias'
 export const COL_CONTRATOS_NOTES = 'Contratos_contract_notes'
 export const COL_CONTRATOS_ATTACHMENTS = 'Contratos_contract_attachments'
 
+// Admin
+export const COL_TENANTS = 'Admin_Tenants'
+
 // Security
 export const COL_USERS = 'users'
 export const COL_SESSIONS = 'sessions'

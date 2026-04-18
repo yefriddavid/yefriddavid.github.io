@@ -97,6 +97,10 @@ export const deleteUser = async (username) => {
   await deleteDoc(doc(db, COL, username))
 }
 
+export const setUserTenant = async (username, tenantId) => {
+  await updateDoc(doc(db, COL, username), { tenantId: tenantId ?? null })
+}
+
 // Admin: sends password reset — placeholder for when Firebase Auth is enabled
 export const sendUserPasswordReset = async (_email) => {
   throw new Error('Requiere activar Firebase Authentication en la consola de Firebase')

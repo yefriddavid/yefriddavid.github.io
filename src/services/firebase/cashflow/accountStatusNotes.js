@@ -10,11 +10,16 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
+import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_account_status_period_notes'
 
 export const fetchPeriodNotes = async (period) => {
-  const q = query(collection(db, COL), where('period', '==', period))
+  const q = query(
+    collection(db, COL),
+    where('tenantId', '==', getTenantId()),
+    where('period', '==', period),
+  )
   const snap = await getDocs(q)
   return snap.docs
     .map((d) => {
@@ -36,6 +41,7 @@ export const createPeriodNote = async ({ period, text }) => {
     period,
     text,
     checked: false,
+    tenantId: getTenantId(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })

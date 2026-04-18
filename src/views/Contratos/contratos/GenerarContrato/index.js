@@ -470,8 +470,7 @@ export default function GenerarContrato() {
       label: 'Autorización Ingreso Nuevo Inquilino',
       buildHtml: buildAutorizacionIngresoHtml,
       generatePdf: generateAutorizacionIngresoPdf,
-      filename: (name) =>
-        `AutorizacionIngreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+      filename: (name) => `AutorizacionIngreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
       fixedOwnerId: 'CA035OjLAaJJTHV7XMw5',
     },
     {
@@ -479,8 +478,7 @@ export default function GenerarContrato() {
       label: 'Autorización de Egreso',
       buildHtml: buildAutorizacionEgresoHtml,
       generatePdf: generateAutorizacionEgresoPdf,
-      filename: (name) =>
-        `AutorizacionEgreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
+      filename: (name) => `AutorizacionEgreso_${(name || 'Sin_nombre').replace(/\s+/g, '_')}.pdf`,
       fixedOwnerId: 'CA035OjLAaJJTHV7XMw5',
     },
   ]
@@ -1214,9 +1212,7 @@ export default function GenerarContrato() {
 
             {/* SUBMIT BAR */}
             <div className="c-submit-bar">
-              <p>
-                Guarda los cambios antes de generar. El PDF se descargará automáticamente.
-              </p>
+              <p>Guarda los cambios antes de generar. El PDF se descargará automáticamente.</p>
               <div className="c-submit-actions">
                 <button
                   type="button"

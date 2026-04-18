@@ -16,6 +16,7 @@ const Operations = React.lazy(() => import('./views/taxis/Operations'))
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/users/Users'))
+const Tenants = React.lazy(() => import('./views/admin/Tenants'))
 const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))
 const Profile = React.lazy(() => import('./views/profile/Profile'))
 const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
@@ -167,6 +168,13 @@ const routes = [
     landingPage: true,
   },
   { path: '/cash_flow/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
+  {
+    path: '/admin/tenants',
+    name: 'Tenants',
+    longName: 'Admin — Tenants',
+    element: Tenants,
+    roles: ['superAdmin'],
+  },
   {
     path: '/cash_flow/management/push-subscribers',
     name: 'Push Subscribers',
