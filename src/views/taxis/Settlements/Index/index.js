@@ -37,7 +37,7 @@ import { buildAuditExporters } from './auditExport'
 
 const Taxis = () => {
   const { t, i18n } = useTranslation()
-  const { dayNames } = useLocaleData()
+  const { dayNames, dayNamesFull } = useLocaleData()
   const dispatch = useDispatch()
   const {
     data: settlementsData,
@@ -593,7 +593,7 @@ const Taxis = () => {
 
   const { exportAuditToExcel, exportAuditToPdf } = buildAuditExporters({
     auditDays,
-    dayNames,
+    dayNames: weekdayFull ? dayNamesFull : dayNames,
     period,
     auditMonthStr,
     isAllResolved,
@@ -1165,6 +1165,7 @@ const Taxis = () => {
             </StandardGrid>
           ) : viewMode === 'audit' ? (
             <AuditView
+              weekdayFull={weekdayFull}
               auditDays={auditDays}
               dayFilter={dayFilter}
               drivers={drivers}

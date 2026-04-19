@@ -26,6 +26,7 @@ const AUDIT_COLS_ORDER_LS_KEY = 'auditColOrder'
 const AUDIT_COLS_DEFAULT = Object.fromEntries(AUDIT_COL_DEFS.map((c) => [c.key, true]))
 
 const AuditView = ({
+  weekdayFull,
   auditDays,
   dayFilter,
   drivers,
@@ -43,7 +44,8 @@ const AuditView = ({
   exportAuditToPdf,
 }) => {
   const { t } = useTranslation()
-  const { dayNames } = useLocaleData()
+  const { dayNames, dayNamesFull } = useLocaleData()
+  const activeDayNames = weekdayFull ? dayNamesFull : dayNames
   const dispatch = useDispatch()
   const { fetching: settlementFetching } = useSelector((s) => s.taxiSettlement)
 
@@ -740,7 +742,7 @@ const AuditView = ({
                                   ...col('weekday'),
                                 }}
                               >
-                                {dayNames[day.dow]}
+                                {activeDayNames[day.dow]}
                                 {day.isHoliday && (
                                   <span
                                     style={{

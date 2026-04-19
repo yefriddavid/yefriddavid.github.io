@@ -18,6 +18,12 @@ const useLocaleData = () => {
         d.setDate(SUNDAY_ANCHOR.getDate() + i)
         return d.toLocaleDateString(lang, { weekday: 'short' })
       }),
+      dayNamesFull: Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(SUNDAY_ANCHOR)
+        d.setDate(SUNDAY_ANCHOR.getDate() + i)
+        const name = d.toLocaleDateString(lang, { weekday: 'long' })
+        return name.charAt(0).toUpperCase() + name.slice(1)
+      }),
     }),
     [lang],
   )
