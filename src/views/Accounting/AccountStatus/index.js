@@ -68,8 +68,10 @@ export default function AccountStatus() {
 
   const tenantId = useSelector((s) => s.profile.data?.tenantId)
   useEffect(() => {
-    dispatch(accountsMasterActions.fetchRequest())
-  }, [dispatch, tenantId])
+    if (!masters || masters.length === 0) {
+      dispatch(accountsMasterActions.fetchRequest())
+    }
+  }, [dispatch, tenantId, masters])
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
 

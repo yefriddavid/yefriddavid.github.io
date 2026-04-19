@@ -34,7 +34,13 @@ export const archiveContract = async (id, archived) => {
 export const getContract = async (id) => {
   const snap = await getDoc(doc(db, COL, id))
   if (!snap.exists()) throw new Error('Contrato no encontrado')
-  return { id: snap.id, ...snap.data() }
+  const data = snap.data()
+  return {
+    id: snap.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
+    updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
+  }
 }
 
 export const addContract = async (name, payload) => {

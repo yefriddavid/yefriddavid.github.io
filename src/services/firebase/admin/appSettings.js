@@ -11,7 +11,15 @@ export const SETTING_LABELS = {
 export const getAppSettings = () =>
   firestoreCall(async () => {
     const snap = await getDocs(collection(db, COL_APP_SETTINGS))
-    return snap.docs.map((d) => ({ key: d.id, value: d.data().value ?? '', ...d.data() }))
+    return snap.docs.map((d) => {
+      const data = d.data()
+      return {
+        key: d.id,
+        value: data.value ?? '',
+        ...data,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
+      }
+    })
   })
 
 export const setAppSetting = (key, value) =>

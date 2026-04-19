@@ -21,9 +21,19 @@ export const getAttachments = async (contractId) => {
   )
   const snap = await getDocs(q)
   return snap.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        ...data,
+      }
+    })
     .filter((r) => r.active !== false)
     .sort((a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0))
+    .map((r) => ({
+      ...r,
+      createdAt: r.createdAt?.toDate?.()?.toISOString() ?? r.createdAt ?? null,
+    }))
 }
 
 export const addAttachment = async (payload) => {

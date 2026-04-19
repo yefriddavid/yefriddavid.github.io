@@ -40,8 +40,8 @@ export const fetchAll = async () => {
       monthlyGain: data.monthlyGain ?? 0,
       archived: data.archived ?? false,
       notes: data.notes ?? '',
-      createdAt: data.createdAt ?? null,
-      updatedAt: data.updatedAt ?? null,
+      createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
+      updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
       syncedAt: data.syncedAt?.toDate?.()?.toISOString() ?? null,
     }
   })

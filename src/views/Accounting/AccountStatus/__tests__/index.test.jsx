@@ -208,6 +208,7 @@ const defaultStore = {
   transaction: { data: [], fetching: false, saving: false },
   accountsMaster: { data: [MONTH_ACCOUNT], fetching: false, saving: false },
   accountStatusNote: { notes: [], fetching: false, saving: false },
+  profile: { data: { tenantId: 'test-tenant' }, fetching: false },
 }
 
 const setupSearchParams = (params = {}) => {
@@ -224,6 +225,7 @@ const setupStore = (overrides = {}) => {
         ...defaultStore.accountStatusNote,
         ...(overrides.accountStatusNote ?? {}),
       },
+      profile: { ...defaultStore.profile, ...(overrides.profile ?? {}) },
     }),
   )
 }
@@ -278,25 +280,24 @@ describe('AccountStatus (index)', () => {
   })
 
   describe('type tabs', () => {
-    it('renders Egresos and Ingresos tabs', () => {
-      renderComponent()
-      expect(screen.getByText('Egresos')).toBeTruthy()
-      expect(screen.getByText('Ingresos')).toBeTruthy()
-    })
-
-    it('Egresos tab is active by default', () => {
-      renderComponent()
-      const egresosBtn = screen.getByText('Egresos')
-      expect(egresosBtn.style.fontWeight).toBe('700')
-    })
-
-    it('Ingresos tab active when tab param is Incoming', () => {
-      setupSearchParams({ tab: 'Incoming' })
-      renderComponent()
-      expect(screen.getByText('Ingresos').style.fontWeight).toBe('700')
-    })
+  it('renders Egresos and Ingresos tabs', () => {
+    renderComponent()
+    expect(screen.getByText('Egresos')).toBeTruthy()
+    expect(screen.getByText('Ingresos')).toBeTruthy()
   })
 
+  it('Egresos tab is active by default', () => {
+    renderComponent()
+    const egresosBtn = screen.getByText('Egresos')
+    expect(egresosBtn.className).toContain('tab-btn--active')
+  })
+
+  it('Ingresos tab active when tab param is Incoming', () => {
+    setupSearchParams({ tab: 'Incoming' })
+    renderComponent()
+    expect(screen.getByText('Ingresos').className).toContain('tab-btn--active')
+  })
+  })
   describe('month navigator', () => {
     it('shows current month label', () => {
       renderComponent()

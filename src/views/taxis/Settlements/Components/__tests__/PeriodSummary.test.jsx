@@ -154,16 +154,16 @@ describe('PeriodSummary — by driver card', () => {
 })
 
 describe('PeriodSummary — pending card', () => {
-  it('shows "--" amounts when not current period', () => {
+  it('shows "—" amounts when not current period', () => {
     renderSummary({ isCurrentPeriod: false, pendingRows: [] })
-    // Multiple "--" may appear (pending amount and button text)
-    const dashes = screen.getAllByText('--')
+    // Multiple "—" may appear (pending amount and button text)
+    const dashes = screen.getAllByText('—')
     expect(dashes.length).toBeGreaterThanOrEqual(1)
   })
 
   it('disables pending button when not current period', () => {
     renderSummary({ isCurrentPeriod: false })
-    const pendingBtn = screen.getByText('--', { selector: 'button' })
+    const pendingBtn = screen.getByText('—', { selector: 'button' })
     expect(pendingBtn.disabled).toBe(true)
   })
 
