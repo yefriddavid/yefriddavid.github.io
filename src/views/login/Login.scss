@@ -306,6 +306,13 @@
   }
 }
 
+.login-page__register-link {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 193, 7, 0.85) !important;
+  &:hover { color: #ffc107 !important; }
+}
+
 /* ── Error shake ────────────────────────────────────────────────── */
 .login-page__card--error {
   animation: shake 0.4s ease;

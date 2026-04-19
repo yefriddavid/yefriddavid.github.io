@@ -268,6 +268,10 @@ const Login = () => {
         </div>
 
         <div className="login-page__footer">
+          <Link to="/register" className="login-page__register-link">
+            Crear cuenta
+          </Link>
+          <span style={{ margin: '0 8px', opacity: 0.3 }}>·</span>
           Powered by <Link to="https://yefriddavid.github.io">@yefriddavid</Link>
         </div>
       </div>
