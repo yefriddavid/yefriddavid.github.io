@@ -24,6 +24,7 @@ export default function DisplayPreferences() {
   const handleChange = (key, value) => {
     localStorage.setItem(key, value)
     setValues((prev) => ({ ...prev, [key]: value }))
+    window.dispatchEvent(new CustomEvent('displayPrefChanged', { detail: { key, value } }))
   }
 
   return (

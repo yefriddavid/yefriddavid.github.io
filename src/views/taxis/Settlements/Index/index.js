@@ -90,7 +90,19 @@ const Taxis = () => {
   const [summaryOpen, setSummaryOpen] = useState(
     () => localStorage.getItem('settlements_summaryOpen') !== 'false',
   )
-  const weekdayFull = localStorage.getItem('settlements_weekdayFull') === 'true'
+  const [weekdayFull, setWeekdayFull] = useState(
+    () => localStorage.getItem('settlements_weekdayFull') === 'true',
+  )
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.key === 'settlements_weekdayFull') {
+        setWeekdayFull(e.detail.value === 'true')
+      }
+    }
+    window.addEventListener('displayPrefChanged', handler)
+    return () => window.removeEventListener('displayPrefChanged', handler)
+  }, [])
 
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
