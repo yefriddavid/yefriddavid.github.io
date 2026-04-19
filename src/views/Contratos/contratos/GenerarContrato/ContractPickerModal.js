@@ -132,7 +132,7 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
                 <div
                   key={item.id}
                   className="c-picker-item"
-                  onClick={() => tab === 'activos' && onSelect(item)}
+                  onClick={() => tab === 'activos' && onSelect(item, false, true)}
                   style={tab === 'archivados' ? { cursor: 'default', opacity: 0.75 } : undefined}
                 >
                   <IcoDoc />

@@ -37,6 +37,8 @@
 
 ## Módulos
 
+![Diagrama de módulos — Software de Gestión de Taxis](docs/Gemini_Generated_Image_epllpfepllpfepll.png)
+
 | Módulo | Ruta base | Descripción |
 |---|---|---|
 | **Contabilidad** | `/cash_flow/management/` | Transacciones, maestro de cuentas, estado de cuentas con OCR |

@@ -310,12 +310,16 @@ export default function GenerarContrato() {
   const [newOpen, setNewOpen] = useState(false)
   const [cloneOpen, setCloneOpen] = useState(false)
 
-  const handlePickerSelect = (item, renameOnly = false) => {
+  const handlePickerSelect = (item, renameOnly = false, closeModal = false) => {
     if (!renameOnly) dispatch(contractActions.loadRequest({ id: item.id }))
     if (renameOnly && currentContract?.id === item.id) {
       setCurrentContract({ id: item.id, name: item.name })
     }
-    //setPickerOpen(false)
+    if (closeModal === true) {
+
+      setPickerOpen(false)
+
+    }
   }
 
   const set = (field) => (e) => {
