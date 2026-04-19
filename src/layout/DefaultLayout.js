@@ -1,9 +1,10 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
 import InstallBanner from '../components/shared/InstallBanner'
+import { APP_NAME } from '../components/BrandName'
 
 const DefaultLayout = () => {
-  document.title = `Cash Flow`
+  document.title = APP_NAME
 
   return (
     <div className="app-layout">

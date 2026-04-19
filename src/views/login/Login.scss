@@ -126,11 +126,12 @@
 .login-page__title {
   font-size: 28px;
   font-weight: 800;
-  color: #fff;
+  color: #ffc107;
   letter-spacing: -0.5px;
   margin: 0 0 6px;
 
-  span { color: #ffc107; }
+  /*em { color: #ffc107; font-style: normal; }*/
+  span { color: white; font-style: normal; }
 }
 
 .login-page__subtitle {

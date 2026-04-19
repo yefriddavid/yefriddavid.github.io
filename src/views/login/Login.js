@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { deleteCookie, getCookie, setCookie } from 'cookies-next'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandName from '../../components/BrandName'
 import { useDispatch } from 'react-redux'
 import withRouter from '../../context/searchParamsContext'
 import { fetchProfile } from '../../actions/authActions'
@@ -41,18 +42,18 @@ const IconLock = () => (
 )
 
 const IconCash = () => (
-  <svg
-    width="32"
-    height="32"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="12" y1="1" x2="12" y2="23" />
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  <svg width="52" height="28" viewBox="0 0 52 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="50" height="26" rx="5" fill="#000"/>
+    <rect x="1" y="1" width="50" height="26" rx="5" stroke="#000" strokeWidth="1.5"/>
+    <text
+      x="26" y="19"
+      textAnchor="middle"
+      fontSize="14"
+      fontWeight="900"
+      fontFamily="Arial Black, Arial, sans-serif"
+      fill="#ffc107"
+      letterSpacing="3"
+    >TAXI</text>
   </svg>
 )
 
@@ -189,7 +190,7 @@ const Login = () => {
             <IconCash />
           </div>
           <h1 className="login-page__title">
-            Cash<span>Flow</span>
+            <BrandName />
           </h1>
           <p className="login-page__subtitle">
             Management Dashboard

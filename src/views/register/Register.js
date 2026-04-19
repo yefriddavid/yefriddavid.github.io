@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Captcha from '../../components/Captcha'
 import { registerNewTenant } from '../../services/firebase/register'
+import BrandName, { APP_NAME } from '../../components/BrandName'
 import '../login/Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -134,7 +135,7 @@ const Register = () => {
     success: false,
   })
 
-  document.title = 'Crear cuenta — CashFlow'
+  document.title = `Crear cuenta — ${APP_NAME}`
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value, error: null }))
 
@@ -202,7 +203,7 @@ const Register = () => {
             <IconCash />
           </div>
           <h1 className="login-page__title">
-            Cash<span>Flow</span>
+            <BrandName />
           </h1>
           <p className="login-page__subtitle">
             Crear cuenta nueva
