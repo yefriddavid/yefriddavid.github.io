@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Captcha from '../../components/Captcha'
+import { registerNewTenant } from '../../services/firebase/register'
 import '../login/Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -30,6 +31,22 @@ const IconLock = () => (
 const IconShield = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+)
+
+const IconBuilding = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="7" width="20" height="15" rx="2" />
+    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    <line x1="12" y1="12" x2="12" y2="12" />
+    <path d="M9 12h6M9 16h6" />
+  </svg>
+)
+
+const IconMail = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
   </svg>
 )
 
@@ -105,7 +122,9 @@ const Register = () => {
   const captchaRef = useRef(null)
   const [captchaValid, setCaptchaValid] = useState(false)
   const [form, setForm] = useState({
+    company: '',
     name: '',
+    email: '',
     username: '',
     password: '',
     confirm: '',
@@ -120,9 +139,12 @@ const Register = () => {
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value, error: null }))
 
   const validate = () => {
+    if (!form.company.trim()) return 'Ingresa el nombre de tu empresa u organización'
     if (!form.name.trim()) return 'Ingresa tu nombre completo'
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'El email no es válido'
     if (!form.username.trim()) return 'Elige un nombre de usuario'
     if (form.username.trim().length < 3) return 'El usuario debe tener al menos 3 caracteres'
+    if (!/^[a-zA-Z0-9_]+$/.test(form.username.trim())) return 'El usuario solo puede tener letras, números y _'
     if (!form.password) return 'Ingresa una contraseña'
     if (getPasswordStrength(form.password) < 2) return 'La contraseña es demasiado débil'
     if (form.password !== form.confirm) return 'Las contraseñas no coinciden'
@@ -143,9 +165,22 @@ const Register = () => {
       return
     }
     setForm((prev) => ({ ...prev, loading: true, error: null }))
-    // Placeholder — wire to actual signup logic
-    await new Promise((r) => setTimeout(r, 800))
-    setForm((prev) => ({ ...prev, loading: false, success: true }))
+    try {
+      await registerNewTenant({
+        company: form.company.trim(),
+        name: form.name.trim(),
+        email: form.email.trim(),
+        username: form.username.trim().toLowerCase(),
+        password: form.password,
+      })
+      setForm((prev) => ({ ...prev, loading: false, success: true }))
+    } catch (err) {
+      const msg = err?.code === 'permission-denied'
+        ? 'No se pudo completar el registro. Intenta más tarde.'
+        : err?.message || 'Error al crear la cuenta. Intenta nuevamente.'
+      setForm((prev) => ({ ...prev, loading: false, error: msg, shake: true }))
+      setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
+    }
   }, [form, captchaValid])
 
   const handleKeyDown = (e) => {
@@ -203,6 +238,22 @@ const Register = () => {
           ) : (
             <>
               <div className="login-page__field">
+                <label className="login-page__label">Empresa / Organización</label>
+                <div className="login-page__input-wrap">
+                  <span className="login-page__icon"><IconBuilding /></span>
+                  <input
+                    className="login-page__input"
+                    type="text"
+                    placeholder="Nombre de tu empresa"
+                    autoComplete="organization"
+                    value={form.company}
+                    onChange={set('company')}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              </div>
+
+              <div className="login-page__field">
                 <label className="login-page__label">Nombre completo</label>
                 <div className="login-page__input-wrap">
                   <span className="login-page__icon"><IconName /></span>
@@ -219,6 +270,24 @@ const Register = () => {
               </div>
 
               <div className="login-page__field">
+                <label className="login-page__label">Email <span style={{ opacity: 0.4, fontWeight: 400 }}>(opcional)</span></label>
+                <div className="login-page__input-wrap">
+                  <span className="login-page__icon"><IconMail /></span>
+                  <input
+                    className="login-page__input"
+                    type="email"
+                    placeholder="tu@email.com"
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={set('email')}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '4px 0 20px' }} />
+
+              <div className="login-page__field">
                 <label className="login-page__label">Usuario</label>
                 <div className="login-page__input-wrap">
                   <span className="login-page__icon"><IconUser /></span>
@@ -233,8 +302,6 @@ const Register = () => {
                   />
                 </div>
               </div>
-
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '4px 0 20px' }} />
 
               <div className="login-page__field">
                 <label className="login-page__label">Contraseña</label>
