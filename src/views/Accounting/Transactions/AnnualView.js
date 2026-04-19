@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { fmt, isApplicableToMonth, MONTHS_SHORT } from './helpers'
+import './AnnualView.scss'
 
 export default function AnnualView({ masters, transactions, year }) {
   const todayYear = new Date().getFullYear()
@@ -79,49 +80,17 @@ export default function AnnualView({ masters, transactions, year }) {
     [incomingMasters, paymentMap],
   )
 
-  const thStyle = {
-    padding: '8px 6px',
-    color: '#fff',
-    fontWeight: 600,
-    textAlign: 'center',
-    whiteSpace: 'nowrap',
-    fontSize: 11,
-  }
-  const tdBase = {
-    padding: '6px 6px',
-    textAlign: 'right',
-    fontSize: 11,
-    whiteSpace: 'nowrap',
-  }
-
   const renderRows = (accounts) =>
-    accounts.map((account, idx) => {
+    accounts.map((account) => {
       const accountTotal = Array.from(
         { length: 12 },
         (_, i) => paymentMap[account.id]?.[i + 1] || 0,
       ).reduce((s, v) => s + v, 0)
 
       return (
-        <tr
-          key={account.id}
-          style={{
-            borderBottom: '1px solid #f1f5f9',
-            background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-          }}
-        >
-          <td
-            style={{
-              padding: '7px 12px',
-              fontSize: 12,
-              fontWeight: 600,
-              color: '#1a1a2e',
-              whiteSpace: 'nowrap',
-              maxWidth: 200,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {account.important && <span style={{ color: '#e03131', marginRight: 4 }}>★</span>}
+        <tr key={account.id}>
+          <td className="account-name-cell">
+            {account.important && <span className="important-star">★</span>}
             {account.name}
           </td>
           {Array.from({ length: 12 }, (_, i) => {
@@ -131,38 +100,29 @@ export default function AnnualView({ masters, transactions, year }) {
             const isPast = year < todayYear || (year === todayYear && month <= todayMonth)
 
             if (!applies)
-              return (
-                <td key={month} style={{ ...tdBase, background: '#f1f5f9', color: '#dee2e6' }} />
-              )
+              return <td key={month} className="status-cell--not-applicable" />
+            
             if (paid > 0)
               return (
-                <td
-                  key={month}
-                  style={{ ...tdBase, background: '#f0fdf4', color: '#2f9e44', fontWeight: 700 }}
-                >
+                <td key={month} className="status-cell--paid">
                   {fmt(paid)}
                 </td>
               )
+            
             if (isPast)
               return (
-                <td key={month} style={{ ...tdBase, background: '#fff5f5', color: '#e03131' }}>
+                <td key={month} className="status-cell--past">
                   —
                 </td>
               )
+            
             return (
-              <td key={month} style={{ ...tdBase, color: '#adb5bd' }}>
+              <td key={month} className="status-cell--pending">
                 {account.defaultValue ? fmt(account.defaultValue) : '—'}
               </td>
             )
           })}
-          <td
-            style={{
-              ...tdBase,
-              fontWeight: 700,
-              color: accountTotal > 0 ? '#1e3a5f' : '#adb5bd',
-              background: accountTotal > 0 ? '#eef4ff' : undefined,
-            }}
-          >
+          <td className={`total-cell ${accountTotal > 0 ? 'total-cell--has-value' : 'total-cell--empty'}`}>
             {accountTotal > 0 ? fmt(accountTotal) : '—'}
           </td>
         </tr>
@@ -170,36 +130,27 @@ export default function AnnualView({ masters, transactions, year }) {
     })
 
   const renderTotalsRow = (totals, label, bg) => (
-    <tr style={{ background: bg, fontWeight: 700 }}>
-      <td style={{ padding: '8px 12px', color: '#fff', fontSize: 12 }}>{label}</td>
+    <tr className="totals-row" style={{ background: bg }}>
+      <td className="label-cell">{label}</td>
       {totals.map((total, i) => (
         <td
           key={i}
-          style={{
-            ...tdBase,
-            color: total > 0 ? '#fff' : 'rgba(255,255,255,0.35)',
-            fontWeight: 700,
-          }}
+          className={total > 0 ? '' : 'value-cell--empty'}
         >
           {total > 0 ? fmt(total) : '—'}
         </td>
       ))}
-      <td style={{ ...tdBase, color: '#fff', fontWeight: 800, fontSize: 13 }}>
+      <td className="grand-total">
         {fmt(totals.reduce((s, t) => s + t, 0))}
       </td>
     </tr>
   )
 
   const renderSectionHeader = (label, color) => (
-    <tr>
+    <tr className="section-header-row">
       <td
         colSpan={14}
         style={{
-          padding: '6px 12px',
-          fontSize: 11,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
           color,
           background: `${color}18`,
           borderTop: `2px solid ${color}`,
@@ -211,23 +162,21 @@ export default function AnnualView({ masters, transactions, year }) {
     </tr>
   )
 
-  const colHeader = (
-    <tr style={{ background: '#1e3a5f' }}>
-      <th style={{ ...thStyle, textAlign: 'left', minWidth: 160, padding: '8px 12px' }}>Cuenta</th>
-      {MONTHS_SHORT.map((m) => (
-        <th key={m} style={{ ...thStyle, minWidth: 72 }}>
-          {m}
-        </th>
-      ))}
-      <th style={{ ...thStyle, minWidth: 90 }}>Total</th>
-    </tr>
-  )
-
   return (
     <>
-      <div style={{ overflowX: 'auto', border: '1px solid #e9ecef', borderRadius: 8 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead>{colHeader}</thead>
+      <div className="annual-view">
+        <table>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', minWidth: 160, padding: '8px 12px' }}>Cuenta</th>
+              {MONTHS_SHORT.map((m) => (
+                <th key={m} style={{ minWidth: 72 }}>
+                  {m}
+                </th>
+              ))}
+              <th style={{ minWidth: 90 }}>Total</th>
+            </tr>
+          </thead>
           <tbody>
             {outcomingMasters.length > 0 && (
               <>
@@ -253,33 +202,17 @@ export default function AnnualView({ masters, transactions, year }) {
                 const netTotals = incomingTotals.map((inc, i) => inc - outcomingTotals[i])
                 const netTotal = netTotals.reduce((s, v) => s + v, 0)
                 return (
-                  <tr
-                    style={{ background: '#1e3a5f', fontWeight: 700, borderTop: '2px solid #fff' }}
-                  >
-                    <td style={{ padding: '8px 12px', color: '#fff', fontSize: 12 }}>
-                      Balance neto
-                    </td>
+                  <tr className="balance-neto">
+                    <td>Balance neto</td>
                     {netTotals.map((val, i) => (
                       <td
                         key={i}
-                        style={{
-                          ...tdBase,
-                          fontWeight: 700,
-                          color:
-                            val > 0 ? '#69db7c' : val < 0 ? '#ff8787' : 'rgba(255,255,255,0.35)',
-                        }}
+                        className={val > 0 ? 'positive' : val < 0 ? 'negative' : 'zero'}
                       >
                         {val !== 0 ? fmt(Math.abs(val)) : '—'}
                       </td>
                     ))}
-                    <td
-                      style={{
-                        ...tdBase,
-                        fontWeight: 800,
-                        fontSize: 13,
-                        color: netTotal > 0 ? '#69db7c' : netTotal < 0 ? '#ff8787' : '#fff',
-                      }}
-                    >
+                    <td className={`grand-total ${netTotal > 0 ? 'positive' : netTotal < 0 ? 'negative' : ''}`}>
                       {netTotal !== 0 ? fmt(Math.abs(netTotal)) : '—'}
                     </td>
                   </tr>
@@ -290,31 +223,11 @@ export default function AnnualView({ masters, transactions, year }) {
       </div>
 
       {Object.keys(freeExpensesByMonth).length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: '#e03131',
-              background: '#e0313118',
-              borderTop: '2px solid #e03131',
-              borderBottom: '1px solid #e0313140',
-              padding: '6px 12px',
-              borderRadius: '8px 8px 0 0',
-            }}
-          >
+        <div className="annual-view-others">
+          <div className="section-title">
             Otros egresos
           </div>
-          <div
-            style={{
-              border: '1px solid #e9ecef',
-              borderTop: 'none',
-              borderRadius: '0 0 8px 8px',
-              overflow: 'hidden',
-            }}
-          >
+          <div className="section-content">
             {Object.keys(freeExpensesByMonth)
               .map(Number)
               .sort((a, b) => a - b)
@@ -322,50 +235,25 @@ export default function AnnualView({ masters, transactions, year }) {
                 const monthRows = freeExpensesByMonth[m]
                 const monthTotal = monthRows.reduce((s, t) => s + (t.amount || 0), 0)
                 return (
-                  <div key={m}>
-                    <div
-                      style={{
-                        padding: '5px 12px',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#1e3a5f',
-                        background: '#eef4ff',
-                        borderBottom: '1px solid #e9ecef',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                      }}
-                    >
+                  <div key={m} className="month-group">
+                    <div className="month-header">
                       <span>{MONTHS_SHORT[m - 1]}</span>
-                      <span style={{ color: '#e03131' }}>{fmt(monthTotal)}</span>
+                      <span className="month-total">{fmt(monthTotal)}</span>
                     </div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <table>
                       <tbody>
                         {monthRows.map((t, idx) => (
-                          <tr
-                            key={t.id ?? idx}
-                            style={{
-                              borderBottom: '1px solid #f1f5f9',
-                              background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-                            }}
-                          >
-                            <td style={{ padding: '5px 12px', color: '#6c757d', width: 90 }}>
+                          <tr key={t.id ?? idx}>
+                            <td className="date-cell">
                               {t.date?.slice(5)}
                             </td>
-                            <td style={{ padding: '5px 12px', fontWeight: 600 }}>
+                            <td className="desc-cell">
                               {t.description || '—'}
                             </td>
-                            <td style={{ padding: '5px 12px', color: '#6c757d' }}>
+                            <td className="cat-cell">
                               {t.category || '—'}
                             </td>
-                            <td
-                              style={{
-                                padding: '5px 12px',
-                                textAlign: 'right',
-                                fontWeight: 700,
-                                color: '#e03131',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <td className="amount-cell">
                               {fmt(t.amount)}
                             </td>
                           </tr>
@@ -380,93 +268,40 @@ export default function AnnualView({ masters, transactions, year }) {
       )}
 
       {debtMasters.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: '#7c3aed',
-              background: '#7c3aed18',
-              borderTop: '2px solid #7c3aed',
-              borderBottom: '1px solid #7c3aed40',
-              padding: '6px 12px',
-              borderRadius: '8px 8px 0 0',
-            }}
-          >
+        <div className="annual-view-debts">
+          <div className="section-title">
             Deudas activas
           </div>
-          <div
-            style={{
-              border: '1px solid #e9ecef',
-              borderTop: 'none',
-              borderRadius: '0 0 8px 8px',
-              overflow: 'hidden',
-            }}
-          >
-            {debtMasters.map((account, idx) => {
+          <div className="section-content">
+            {debtMasters.map((account) => {
               const cumPaid = cumulativeDebtMap[account.id] ?? 0
               const remaining = Math.max(0, account.targetAmount - cumPaid)
               const pct = Math.min(100, Math.round((cumPaid / account.targetAmount) * 100))
               const isDone = remaining <= 0
               return (
-                <div
-                  key={account.id}
-                  style={{
-                    padding: '14px 16px',
-                    background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-                    borderBottom: idx < debtMasters.length - 1 ? '1px solid #f1f5f9' : 'none',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      flexWrap: 'wrap',
-                      gap: 8,
-                    }}
-                  >
+                <div key={account.id} className="debt-card">
+                  <div className="debt-header">
                     <div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>
-                        {account.important && (
-                          <span style={{ color: '#e03131', marginRight: 4 }}>★</span>
-                        )}
+                      <span className="debt-name">
+                        {account.important && <span className="important-star">★</span>}
                         {account.name}
                       </span>
                       {account.category && (
-                        <span style={{ marginLeft: 8, fontSize: 11, color: '#6c757d' }}>
+                        <span className="debt-category">
                           {account.category}
                         </span>
                       )}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: isDone ? '#2f9e44' : '#7c3aed',
-                      }}
-                    >
+                    <div className="debt-status" style={{ color: isDone ? '#2f9e44' : '#7c3aed' }}>
                       {isDone ? 'Saldada' : `Saldo: ${fmt(remaining)}`}
                     </div>
                   </div>
-                  <div
-                    style={{
-                      marginTop: 10,
-                      display: 'flex',
-                      gap: 20,
-                      flexWrap: 'wrap',
-                      fontSize: 12,
-                      color: '#6c757d',
-                    }}
-                  >
+                  <div className="debt-stats">
                     <span>
-                      Meta:{' '}
-                      <strong style={{ color: '#1a1a2e' }}>{fmt(account.targetAmount)}</strong>
+                      Meta: <strong>{fmt(account.targetAmount)}</strong>
                     </span>
                     <span>
-                      Pagado: <strong style={{ color: '#2f9e44' }}>{fmt(cumPaid)}</strong>
+                      Pagado: <strong className="paid-value">{fmt(cumPaid)}</strong>
                     </span>
                     <span>
                       Restante:{' '}
@@ -475,26 +310,16 @@ export default function AnnualView({ masters, transactions, year }) {
                       </strong>
                     </span>
                   </div>
-                  <div
-                    style={{
-                      marginTop: 8,
-                      height: 8,
-                      background: '#e9ecef',
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <div className="progress-bar-container">
                     <div
+                      className="progress-bar-fill"
                       style={{
-                        height: '100%',
-                        borderRadius: 4,
                         background: isDone ? '#2f9e44' : '#7c3aed',
                         width: `${pct}%`,
-                        transition: 'width 0.4s ease',
                       }}
                     />
                   </div>
-                  <div style={{ marginTop: 4, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
+                  <div className="pct-label">
                     {pct}% completado
                   </div>
                 </div>

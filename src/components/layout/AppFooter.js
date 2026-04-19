@@ -1,5 +1,6 @@
 import React from 'react'
 import { CFooter } from '@coreui/react'
+import './AppFooter.scss'
 
 const AppFooter = () => {
   return (

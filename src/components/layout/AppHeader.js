@@ -21,6 +21,7 @@ import { AppBreadcrumb } from '../index'
 import AppHeaderDropdown from './AppHeaderDropdown'
 import LanguageSwitcher from '../shared/LanguageSwitcher'
 import useVersionCheck from '../../hooks/useVersionCheck'
+import './AppHeader.scss'
 
 const AppHeader = () => {
   const headerRef = useRef()

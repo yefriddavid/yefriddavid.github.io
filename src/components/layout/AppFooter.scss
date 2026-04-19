@@ -1,0 +1,7 @@
+.footer {
+  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+
+  [data-coreui-theme="dark"] & {
+    --cui-footer-bg: var(--cui-body-bg);
+  }
+}

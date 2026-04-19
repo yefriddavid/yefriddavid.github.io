@@ -1,0 +1,42 @@
+.header {
+  // Theme specific styles for yellow theme
+  [data-app-theme="yellow"] & {
+    background-color: #ffffff !important;
+    color: unset;
+
+    .nav-link,
+    .header-toggler {
+      color: unset !important;
+      &:hover { color: #ffc107 !important; }
+    }
+
+    .breadcrumb-item,
+    .breadcrumb-item a {
+      color: unset;
+      &.active { color: #ffc107; }
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before { color: unset; }
+  }
+
+  // Responsive behavior
+  @media (max-width: 991.98px) {
+    transition: transform 0.3s ease;
+    &.header--hidden {
+      transform: translateY(-100%);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .breadcrumb { font-size: 12px; }
+  }
+
+  // Layout
+  & > .container-fluid {
+    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+
+    & + .container-fluid {
+      min-height: 3rem;
+    }
+  }
+}

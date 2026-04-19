@@ -12,85 +12,87 @@ body {
   font-weight: 700;
 }
 
-// ─── Mixin de tema ────────────────────────────────────────────────
-@mixin app-theme($bg, $accent) {
+// ─── Mixin de tema (Sidebar) ──────────────────────────────────────
+@mixin app-theme-sidebar($bg, $accent) {
   $accent-dim: rgba($accent, 0.15);
   $divider:    rgba(255, 255, 255, 0.08);
   $text:       rgba(255, 255, 255, 0.70);
   $text-hi:    #ffffff;
 
-  // ── Sidebar ──────────────────────────────────────────────────────
-  .sidebar {
-    --cui-sidebar-bg:                          #{$bg};
-    --cui-sidebar-brand-color:                 #{$text-hi};
-    --cui-sidebar-header-border-color:         #{$divider};
-    --cui-sidebar-nav-link-color:              #{$text};
-    --cui-sidebar-nav-link-icon-color:         rgba(255, 255, 255, 0.40);
-    --cui-sidebar-nav-link-hover-color:        #{$accent};
-    --cui-sidebar-nav-link-hover-icon-color:   #{$accent};
-    --cui-sidebar-nav-link-hover-bg:           #{$accent-dim};
-    --cui-sidebar-nav-link-active-color:       #{$accent};
-    --cui-sidebar-nav-link-active-icon-color:  #{$accent};
-    /*--cui-sidebar-nav-link-active-bg:          red;*/
-    --cui-sidebar-nav-link-active-bg:          #{$accent-dim};
-    --cui-sidebar-nav-title-color:             rgba(255, 255, 255, 0.35);
-    --cui-sidebar-nav-group-bg:                rgba(255, 255, 255, 0.04);
-    --cui-sidebar-nav-group-toggle-show-color: #{$text-hi};
-    --cui-sidebar-footer-border-color:         #{$divider};
-    --cui-sidebar-toggler-bg:                  rgba(255, 255, 255, 0.06);
-    --cui-sidebar-toggler-hover-bg:            #{$accent-dim};
-    --cui-sidebar-toggler-indicator-color:     rgba(255, 255, 255, 0.50);
-    --cui-sidebar-toggler-indicator-hover-color: #{$accent};
+  --cui-sidebar-bg:                          #{$bg};
+  --cui-sidebar-brand-color:                 #{$text-hi};
+  --cui-sidebar-header-border-color:         #{$divider};
+  --cui-sidebar-nav-link-color:              #{$text};
+  --cui-sidebar-nav-link-icon-color:         rgba(255, 255, 255, 0.40);
+  --cui-sidebar-nav-link-hover-color:        #{$accent};
+  --cui-sidebar-nav-link-hover-icon-color:   #{$accent};
+  --cui-sidebar-nav-link-hover-bg:           #{$accent-dim};
+  --cui-sidebar-nav-link-active-color:       #{$accent};
+  --cui-sidebar-nav-link-active-icon-color:  #{$accent};
+  /*--cui-sidebar-nav-link-active-bg:          red;*/
+  --cui-sidebar-nav-link-active-bg:          #{$accent-dim};
+  --cui-sidebar-nav-title-color:             rgba(255, 255, 255, 0.35);
+  --cui-sidebar-nav-group-bg:                rgba(255, 255, 255, 0.04);
+  --cui-sidebar-nav-group-toggle-show-color: #{$text-hi};
+  --cui-sidebar-footer-border-color:         #{$divider};
+  --cui-sidebar-toggler-bg:                  rgba(255, 255, 255, 0.06);
+  --cui-sidebar-toggler-hover-bg:            #{$accent-dim};
+  --cui-sidebar-toggler-indicator-color:     rgba(255, 255, 255, 0.50);
+  --cui-sidebar-toggler-indicator-hover-color: #{$accent};
 
-    border-right: 1px solid #{$divider} !important;
+  border-right: 1px solid #{$divider} !important;
 
-    .nav-link.active {
-      border-left: 3px solid $accent;
-      border-radius: 0 !important;
-      padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
-    }
+  .nav-link.active {
+    border-left: 3px solid $accent;
+    border-radius: 0 !important;
+    padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px);
+  }
 
-    .nav-group-items .nav-link.active {
-      padding-left: calc(3.5rem - 3px);
-      border-radius: 0 !important;
-    }
+  .nav-group-items .nav-link.active {
+    padding-left: calc(3.5rem - 3px);
+    border-radius: 0 !important;
+  }
 
-    // Expanded group indicator
-    .nav-group.show > .nav-group-toggle {
-      color: $text-hi !important;
-      background: rgba(255, 255, 255, 0.07) !important;
-      border-left: 3px solid $accent !important;
-      border-radius: 0 !important;
-      padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px) !important;
+  // Expanded group indicator
+  .nav-group.show > .nav-group-toggle {
+    color: $text-hi !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-left: 3px solid $accent !important;
+    border-radius: 0 !important;
+    padding-left: calc(var(--cui-sidebar-nav-link-padding-x, 1rem) - 3px) !important;
 
-      .nav-icon {
-        color: $accent !important;
-      }
-    }
-
-    .sidebar-brand, h3 {
-      color: $text-hi;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      span, em { color: $accent; font-style: normal; }
-    }
-
-    .nav-link:hover,
-    .nav-group-toggle:hover {
+    .nav-icon {
       color: $accent !important;
-      .nav-icon { color: $accent !important; }
-    }
-
-    .nav-link.active {
-      color: $accent !important;
-      .nav-icon { color: $accent !important; }
-    }
-
-    .nav-group-items {
-      background-color: rgba(41.5, 48, 61);
-      /*background-color: rgba(255, 193, 7, 0.15);*/
     }
   }
+
+  .sidebar-brand, h3 {
+    color: $text-hi;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    span, em { color: $accent; font-style: normal; }
+  }
+
+  .nav-link:hover,
+  .nav-group-toggle:hover {
+    color: $accent !important;
+    .nav-icon { color: $accent !important; }
+  }
+
+  .nav-link.active {
+    color: $accent !important;
+    .nav-icon { color: $accent !important; }
+  }
+
+  .nav-group-items {
+    background-color: rgba(41.5, 48, 61);
+    /*background-color: rgba(255, 193, 7, 0.15);*/
+  }
+}
+
+// ─── Mixin de tema (Global) ───────────────────────────────────────
+@mixin app-theme($bg, $accent) {
+  $accent-dim: rgba($accent, 0.15);
 
   // ── Botones primarios ─────────────────────────────────────────────
   .btn-primary,
@@ -133,26 +135,6 @@ body {
 // ─── Tema Yellow/Black (Cash) ─────────────────────────────────────
 body[data-app-theme="yellow"] {
   @include app-theme(#000000, #ffc107);
-
-  // Header queda claro (default CoreUI), solo el borde inferior es amarillo
-  .header {
-    background-color: #ffffff !important;
-    color: unset;
-
-    .nav-link,
-    .header-toggler {
-      color: unset !important;
-      &:hover { color: #ffc107 !important; }
-    }
-
-    .breadcrumb-item,
-    .breadcrumb-item a {
-      color: unset;
-      &.active { color: #ffc107; }
-    }
-
-    .breadcrumb-item + .breadcrumb-item::before { color: unset; }
-  }
 }
 
 // ─── Tema Blue/Emerald (Ocean) ────────────────────────────────────
@@ -160,60 +142,8 @@ body[data-app-theme="blue"] {
   @include app-theme(#1e3a5f, #10b981);
 }
 
-// ─── Sidebar nav icon size ─────────────────────────────────────────
-.sidebar .nav-icon {
-  width: 0.85rem !important;
-  height: 0.85rem !important;
-  flex-shrink: 0;
-}
-
-// ─── Sidebar nav link size & padding ──────────────────────────────
-.sidebar .nav-link,
-.sidebar .nav-group-toggle {
-  font-size: 0.8rem !important;
-  padding-top: 0.4rem !important;
-  padding-bottom: 0.4rem !important;
-}
-
-// ─── Sidebar sub-item indentation ─────────────────────────────────
-.sidebar .nav-group-items .nav-link {
-  padding-left: 3.5rem;
-}
-
-// ─── Account Status — responsive layout ───────────────────────────
-.account-status-page {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 0 12px 32px;
-
-  @media (min-width: 992px) {
-    max-width: 1140px;
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 32px;
-    align-items: start;
-    padding: 0 24px 32px;
-
-    .as-left-panel {
-      position: sticky;
-      top: 16px;
-    }
-  }
-}
-
 // ─── Responsive global ────────────────────────────────────────────
 @media (max-width: 991.98px) {
-  .sidebar {
-    position: fixed !important;
-    z-index: 1050;
-  }
-
-  .header {
-    transition: transform 0.3s ease;
-    &.header--hidden {
-      transform: translateY(-100%);
-    }
-  }
 }
 
 @media (max-width: 767.98px) {
@@ -221,13 +151,11 @@ body[data-app-theme="blue"] {
 
   .btn,
   .dx-button { min-height: 40px; }
+}
 
-  .header .breadcrumb { font-size: 12px; }
-
-  .wrapper > .body {
-    padding-left: 0;
-    padding-right: 0;
-  }
+.wrapper > .body {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 // ─── DevExtreme adaptive detail row ───────────────────────────────

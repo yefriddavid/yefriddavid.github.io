@@ -17,6 +17,7 @@ import { cilAccountLogout } from '@coreui/icons'
 import { AppSidebarNav } from './AppSidebarNav'
 import BrandName from '../BrandName'
 import { signOut } from '../../services/firebase/auth'
+import './AppSidebar.scss'
 
 import { sygnet } from 'src/assets/brand/sygnet'
 
@@ -66,23 +67,7 @@ const AppSidebar = () => {
       <CSidebarFooter className="border-top d-none d-lg-flex" style={{ flexDirection: 'column', gap: 0 }}>
         <button
           onClick={handleLogout}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            background: 'none',
-            border: 'none',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-            color: 'rgba(255,255,255,0.55)',
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            transition: 'color 0.2s, background 0.2s',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#ffc107'; e.currentTarget.style.background = 'rgba(255,193,7,0.07)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'none' }}
+          className="logout-btn"
         >
           <CIcon icon={cilAccountLogout} size="sm" />
           Cerrar sesión

@@ -18,6 +18,7 @@ import AccountCard from './AccountCard'
 import AdHocExpenseModal from './AdHocExpenseModal'
 import AdHocSection from './AdHocSection'
 import PeriodNotes from './PeriodNotes'
+import './AccountStatus.scss'
 
 export { fmt, isApplicableToMonth, getStatus }
 
@@ -303,39 +304,15 @@ export default function AccountStatus() {
       {/* ── LEFT PANEL ─────────────────────────────────────────────── */}
       <div className="as-left-panel">
         {/* Month navigator */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '20px 0 16px',
-          }}
-        >
-          <button
-            onClick={prevMonth}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              border: '1px solid #dee2e6',
-              background: '#fff',
-              fontSize: 18,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#1e3a5f',
-            }}
-          >
-            ‹
-          </button>
+        <div className="as-month-navigator">
+          <button onClick={prevMonth} className="nav-btn">‹</button>
 
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e' }}>
+          <div className="current-period">
+            <div className="month-name">
               {monthLabels[month - 1]}
             </div>
-            <div style={{ fontSize: 13, color: '#6c757d' }}>{year}</div>
-            <div style={{ fontSize: 12, color: '#adb5bd', marginTop: 2 }}>
+            <div className="year-name">{year}</div>
+            <div className="current-day">
               <CIcon icon={cilCalendar} size="sm" />{' '}
               {now
                 .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
@@ -343,88 +320,43 @@ export default function AccountStatus() {
             </div>
           </div>
 
-          <button
-            onClick={nextMonth}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              border: '1px solid #dee2e6',
-              background: '#fff',
-              fontSize: 18,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#1e3a5f',
-            }}
-          >
-            ›
-          </button>
+          <button onClick={nextMonth} className="nav-btn">›</button>
         </div>
 
         {/* Summary strip */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 8,
-            marginBottom: 16,
-          }}
-        >
+        <div className="as-summary-strip">
           {[
             {
               label: 'Pagadas',
               value: paid,
               total: totalPaid,
-              color: '#2f9e44',
-              bg: '#f0fdf4',
-              border: '#86efac',
+              type: 'paid',
             },
             {
               label: 'Pendientes',
               value: pending,
               total: totalPending,
-              color: '#f59f00',
-              bg: '#fff9db',
-              border: '#ffe066',
+              type: 'pending',
             },
             {
               label: 'Vencidas',
               value: overdue,
               total: totalOverdue,
-              color: '#e03131',
-              bg: '#fff5f5',
-              border: '#fca5a5',
+              type: 'overdue',
             },
           ].map((s) => (
             <div
               key={s.label}
-              style={{
-                background: s.bg,
-                border: `1px solid ${s.border}`,
-                borderRadius: 12,
-                padding: '10px 0',
-                textAlign: 'center',
-              }}
+              className={`summary-card summary-card--${s.type}`}
             >
-              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>
+              <div className="summary-value">
                 {s.value}
               </div>
-              <div style={{ fontSize: 11, color: s.color, marginTop: 3, fontWeight: 600 }}>
+              <div className="summary-label">
                 {s.label}
               </div>
               {s.total > 0 && (
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: s.color,
-                    marginTop: 4,
-                    opacity: 0.85,
-                    paddingLeft: 4,
-                    paddingRight: 4,
-                  }}
-                >
+                <div className="summary-total">
                   {fmt(s.total)}
                 </div>
               )}
@@ -433,20 +365,9 @@ export default function AccountStatus() {
         </div>
 
         {/* Total */}
-        <div
-          style={{
-            background: '#eef4ff',
-            border: '1px solid #c5d8ff',
-            borderRadius: 12,
-            padding: '10px 16px',
-            marginBottom: 16,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Total:</span>
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f' }}>
+        <div className="as-total-strip">
+          <span className="total-label">Total:</span>
+          <span className="total-value">
             {fmt(totalPaid + totalPending + totalOverdue)}
           </span>
         </div>
@@ -473,33 +394,16 @@ export default function AccountStatus() {
             const balance = totalIncome - totalExpenses
             const isPositive = balance >= 0
             return (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  marginTop: 12,
-                  background: isPositive ? '#f0fdf4' : '#fff5f5',
-                  border: `1px solid ${isPositive ? '#86efac' : '#fca5a5'}`,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#6c757d', fontWeight: 500 }}>
+              <div className={`as-balance-strip as-balance-strip--${isPositive ? 'positive' : 'negative'}`}>
+                <div className="balance-info">
+                  <span className="balance-label">
                     Ingresos − Egresos
                   </span>
-                  <span style={{ fontSize: 11, color: '#adb5bd' }}>
+                  <span className="balance-formula">
                     {fmt(totalIncome)} − {fmt(totalExpenses)}
                   </span>
                 </div>
-                <span
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 800,
-                    color: isPositive ? '#2f9e44' : '#e03131',
-                  }}
-                >
+                <span className="balance-value">
                   {isPositive ? '+' : ''}
                   {fmt(balance)}
                 </span>
@@ -508,7 +412,7 @@ export default function AccountStatus() {
           })()}
 
         {/* Type tabs */}
-        <div style={{ display: 'flex', gap: 8, padding: '16px 0 4px' }}>
+        <div className="as-type-tabs">
           {[
             { key: 'Outcoming', label: 'Egresos' },
             { key: 'Incoming', label: 'Ingresos' },
@@ -519,18 +423,7 @@ export default function AccountStatus() {
                 setTypeTab(t.key)
                 setFilter('all')
               }}
-              style={{
-                flex: 1,
-                padding: '9px 0',
-                border: 'none',
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: typeTab === t.key ? 700 : 500,
-                cursor: 'pointer',
-                background: typeTab === t.key ? '#1e3a5f' : '#e9ecef',
-                color: typeTab === t.key ? '#fff' : '#6c757d',
-                transition: 'all 0.15s',
-              }}
+              className={`tab-btn ${typeTab === t.key ? 'tab-btn--active' : ''}`}
             >
               {t.label}
             </button>
@@ -543,16 +436,7 @@ export default function AccountStatus() {
         </div>
 
         {/* Filter tabs */}
-        <div
-          style={{
-            display: 'flex',
-            background: '#f1f5f9',
-            borderRadius: 10,
-            padding: 3,
-            marginBottom: 16,
-            gap: 3,
-          }}
-        >
+        <div className="as-filter-tabs">
           {[
             { key: 'all', label: `Todas (${applicable.length})` },
             { key: 'pending', label: `Sin pagar (${pending + overdue})` },
@@ -561,19 +445,7 @@ export default function AccountStatus() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              style={{
-                flex: 1,
-                padding: '7px 4px',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: filter === tab.key ? 700 : 400,
-                cursor: 'pointer',
-                background: filter === tab.key ? '#fff' : 'transparent',
-                color: filter === tab.key ? '#1e3a5f' : '#6c757d',
-                boxShadow: filter === tab.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s',
-              }}
+              className={`filter-btn ${filter === tab.key ? 'filter-btn--active' : ''}`}
             >
               {tab.label}
             </button>
@@ -582,13 +454,11 @@ export default function AccountStatus() {
 
         {/* List */}
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+          <div className="as-loading-container">
             <CSpinner color="primary" />
           </div>
         ) : filtered.length === 0 ? (
-          <div
-            style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}
-          >
+          <div className="as-empty-container">
             {applicable.length === 0
               ? 'No hay cuentas configuradas para este mes.'
               : 'Sin cuentas en este filtro.'}
