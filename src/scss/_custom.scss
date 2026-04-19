@@ -75,6 +75,17 @@ body {
       span, em { color: $accent; font-style: normal; }
     }
 
+    .nav-link:hover,
+    .nav-group-toggle:hover {
+      color: $accent !important;
+      .nav-icon { color: $accent !important; }
+    }
+
+    .nav-link.active {
+      color: $accent !important;
+      .nav-icon { color: $accent !important; }
+    }
+
     .nav-group-items {
       background-color: rgba(41.5, 48, 61);
       /*background-color: rgba(255, 193, 7, 0.15);*/
