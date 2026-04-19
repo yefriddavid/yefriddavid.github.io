@@ -90,9 +90,7 @@ const Taxis = () => {
   const [summaryOpen, setSummaryOpen] = useState(
     () => localStorage.getItem('settlements_summaryOpen') !== 'false',
   )
-  const [weekdayFull, setWeekdayFull] = useState(
-    () => localStorage.getItem('settlements_weekdayFull') === 'true',
-  )
+  const weekdayFull = localStorage.getItem('settlements_weekdayFull') === 'true'
 
   const savingRef = useRef(false)
   const dataGridRef = useRef(null)
@@ -752,20 +750,6 @@ const Taxis = () => {
           </div>
 
           <div className="d-flex align-items-center gap-1 flex-wrap">
-            <CButton
-              size="sm"
-              color="secondary"
-              variant={weekdayFull ? undefined : 'outline'}
-              title={weekdayFull ? t('taxis.settlements.weekdayShort') : t('taxis.settlements.weekdayFull')}
-              onClick={() => {
-                const next = !weekdayFull
-                setWeekdayFull(next)
-                localStorage.setItem('settlements_weekdayFull', String(next))
-              }}
-              style={{ fontSize: 12, minWidth: 32 }}
-            >
-              {weekdayFull ? t('taxis.settlements.weekdayFull') : t('taxis.settlements.weekdayShort')}
-            </CButton>
             Mode:
             {[
               { key: 'detail', label: t('taxis.settlements.viewDetail'), color: 'secondary' },
