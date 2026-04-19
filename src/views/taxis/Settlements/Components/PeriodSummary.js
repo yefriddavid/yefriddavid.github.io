@@ -21,7 +21,7 @@ import {
   CTooltip,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilChevronBottom, cilChevronRight, cilInfo } from '@coreui/icons'
+import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import { fmt } from './utils'
 
 const PeriodSummary = ({
@@ -47,11 +47,27 @@ const PeriodSummary = ({
 
   const InfoTip = ({ content }) => (
     <CTooltip content={content} placement="top">
-      <CIcon
-        icon={cilInfo}
-        size="sm"
-        style={{ marginLeft: 5, color: '#adb5bd', cursor: 'help', verticalAlign: 'middle' }}
-      />
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 14,
+          height: 14,
+          borderRadius: '50%',
+          border: '1.5px solid #adb5bd',
+          color: '#adb5bd',
+          fontSize: 9,
+          fontWeight: 700,
+          cursor: 'help',
+          marginLeft: 5,
+          verticalAlign: 'middle',
+          lineHeight: 1,
+          userSelect: 'none',
+        }}
+      >
+        !
+      </span>
     </CTooltip>
   )
 
