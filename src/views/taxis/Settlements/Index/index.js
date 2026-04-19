@@ -834,6 +834,7 @@ const Taxis = () => {
           ) : viewMode === 'detail' ? (
             <StandardGrid
               ref={dataGridRef}
+              key={`paymentsGrid-${i18n.language}-${weekdayFull}`}
               id="paymentsGrid"
               keyExpr="id"
               dataSource={filtered}
