@@ -1,22 +1,23 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import moment from 'src/utils/moment'
 
-/**
- * Returns locale-sensitive date labels that update reactively when
- * the i18n language changes.
- *
- * - monthLabels: full month names in the current locale (Jan→'January' / 'enero')
- * - dayNames:    short weekday names starting from Sunday (0='Dom'/'Sun')
- */
+// Jan 1 2023 is a Sunday — so offset i gives day i (0=Sun, 1=Mon, ..., 6=Sat)
+const SUNDAY_ANCHOR = new Date(2023, 0, 1)
+
 const useLocaleData = () => {
   const { i18n } = useTranslation()
   const lang = i18n.language
 
   return useMemo(
     () => ({
-      monthLabels: moment.localeData(lang).months(),
-      dayNames: moment.localeData(lang).weekdaysShort(),
+      monthLabels: Array.from({ length: 12 }, (_, i) =>
+        new Date(2023, i, 1).toLocaleDateString(lang, { month: 'long' }),
+      ),
+      dayNames: Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(SUNDAY_ANCHOR)
+        d.setDate(SUNDAY_ANCHOR.getDate() + i)
+        return d.toLocaleDateString(lang, { weekday: 'short' })
+      }),
     }),
     [lang],
   )
