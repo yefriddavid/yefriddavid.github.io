@@ -18,9 +18,10 @@ import {
   CNavLink,
   CTabContent,
   CTabPane,
+  CTooltip,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
+import { cilChevronBottom, cilChevronRight, cilInfo } from '@coreui/icons'
 import { fmt } from './utils'
 
 const PeriodSummary = ({
@@ -43,6 +44,17 @@ const PeriodSummary = ({
   loading,
 }) => {
   const { t } = useTranslation()
+
+  const InfoTip = ({ content }) => (
+    <CTooltip content={content} placement="top">
+      <CIcon
+        icon={cilInfo}
+        size="sm"
+        style={{ marginLeft: 5, color: '#adb5bd', cursor: 'help', verticalAlign: 'middle' }}
+      />
+    </CTooltip>
+  )
+
   const [expensesModalOpen, setExpensesModalOpen] = useState(false)
   const [byDriverModalOpen, setByDriverModalOpen] = useState(false)
   const [pendingModalOpen, setPendingModalOpen] = useState(false)
@@ -95,6 +107,7 @@ const PeriodSummary = ({
               <CCardBody>
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.totalSettled')}
+                  <InfoTip content="Suma total de todas las liquidaciones registradas en el período." />
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
               </CCardBody>
@@ -217,6 +230,7 @@ const PeriodSummary = ({
                   <span style={{ marginLeft: 6, fontStyle: 'italic', fontSize: 11 }}>
                     si todos pagaran
                   </span>
+                  <InfoTip content="Total hipotético si todos los conductores activos liquidaran cada día hábil del mes al valor por defecto. No es extrapolación lineal." />
                 </div>
                 <div
                   style={{
@@ -237,6 +251,7 @@ const PeriodSummary = ({
               <CCardBody>
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.deficit')}
+                  <InfoTip content="Diferencia entre la proyección del mes y lo efectivamente liquidado. Rojo = falta por cobrar, verde = se superó la proyección." />
                 </div>
                 {projection !== null ? (
                   (() => {
@@ -277,6 +292,7 @@ const PeriodSummary = ({
               >
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.totalExpenses')}
+                  <InfoTip content="Suma de todos los gastos registrados en el período (pagados y pendientes)." />
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: '#e67700', marginBottom: 8 }}>
                   {fmt(totalExpenses)}
@@ -404,6 +420,7 @@ const PeriodSummary = ({
               <CCardBody>
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.net')}
+                  <InfoTip content="Total liquidado menos gastos. Activar 'Incluir pendientes' para descontar también los gastos aún no pagados." />
                 </div>
                 <div
                   style={{
@@ -454,6 +471,7 @@ const PeriodSummary = ({
               >
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 8 }}>
                   {t('taxis.settlements.summary.byDriver')}
+                  <InfoTip content="Liquidaciones del período agrupadas por conductor: total pagado, por cobrar y proyección del resto del mes." />
                 </div>
                 <CButton
                   size="sm"
@@ -611,6 +629,7 @@ const PeriodSummary = ({
               >
                 <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
                   {t('taxis.settlements.summary.pendingDrivers')}
+                  <InfoTip content="Monto que los conductores activos aún deben pagar por los días restantes del mes actual, calculado a su valor por defecto." />
                 </div>
                 <div
                   style={{
