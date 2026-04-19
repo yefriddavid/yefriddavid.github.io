@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  CCard,
-  CCardBody,
   CButton,
   CSpinner,
   CBadge,
@@ -18,11 +16,11 @@ import {
   CNavLink,
   CTabContent,
   CTabPane,
-  CTooltip,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import { fmt } from './utils'
+import StatCard from 'src/components/StatCard'
 
 const PeriodSummary = ({
   summaryOpen,
@@ -44,32 +42,6 @@ const PeriodSummary = ({
   loading,
 }) => {
   const { t } = useTranslation()
-
-  const InfoTip = ({ content }) => (
-    <CTooltip content={content} placement="top">
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          border: '1.5px solid #adb5bd',
-          color: '#adb5bd',
-          fontSize: 9,
-          fontWeight: 700,
-          cursor: 'help',
-          marginLeft: 5,
-          verticalAlign: 'middle',
-          lineHeight: 1,
-          userSelect: 'none',
-        }}
-      >
-        !
-      </span>
-    </CTooltip>
-  )
 
   const [expensesModalOpen, setExpensesModalOpen] = useState(false)
   const [byDriverModalOpen, setByDriverModalOpen] = useState(false)
@@ -112,22 +84,16 @@ const PeriodSummary = ({
       </div>
 
       <CCollapse visible={summaryOpen}>
-        <CRow className="mb-3">
+        <CRow className="g-2 mb-2">
           {/* Total settled */}
           <CCol xs={6} sm={2}>
-            <CCard
-              className="text-center"
-              style={{ cursor: 'pointer' }}
+            <StatCard
+              label={t('taxis.settlements.summary.totalSettled')}
+              value={fmt(total)}
+              color="#2f9e44"
+              tip="Suma total de todas las liquidaciones registradas en el período."
               onClick={() => setTotalSettledModalOpen(true)}
-            >
-              <CCardBody>
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.totalSettled')}
-                  <InfoTip content="Suma total de todas las liquidaciones registradas en el período." />
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#2f9e44' }}>{fmt(total)}</div>
-              </CCardBody>
-            </CCard>
+            />
 
             <CModal
               visible={totalSettledModalOpen}
@@ -239,94 +205,56 @@ const PeriodSummary = ({
 
           {/* Projection */}
           <CCol xs={6} sm={2}>
-            <CCard className="text-center">
-              <CCardBody>
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.monthProjection')}
-                  <span style={{ marginLeft: 6, fontStyle: 'italic', fontSize: 11 }}>
-                    si todos pagaran
-                  </span>
-                  <InfoTip content="Total hipotético si todos los conductores activos liquidaran cada día hábil del mes al valor por defecto. No es extrapolación lineal." />
-                </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: projection ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
-                  }}
-                >
-                  {projection ? fmt(projection) : '—'}
-                </div>
-              </CCardBody>
-            </CCard>
+            <StatCard
+              label={
+                <>{t('taxis.settlements.summary.monthProjection')}{' '}
+                  <span style={{ fontStyle: 'italic', fontSize: 10, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>si todos pagaran</span>
+                </>
+              }
+              value={projection ? fmt(projection) : '—'}
+              color={projection ? 'var(--cui-primary)' : 'var(--cui-secondary-color)'}
+              tip="Total hipotético si todos los conductores activos liquidaran cada día hábil del mes al valor por defecto. No es extrapolación lineal."
+            />
           </CCol>
 
           {/* Deficit */}
           <CCol xs={6} sm={2}>
-            <CCard className="text-center">
-              <CCardBody>
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.deficit')}
-                  <InfoTip content="Diferencia entre la proyección del mes y lo efectivamente liquidado. Rojo = falta por cobrar, verde = se superó la proyección." />
-                </div>
-                {projection !== null ? (
-                  (() => {
-                    const diff = projection - total
-                    return (
-                      <div
-                        style={{
-                          fontSize: 22,
-                          fontWeight: 700,
-                          color: diff > 0 ? '#e03131' : '#2f9e44',
-                        }}
-                      >
-                        {fmt(Math.abs(diff))}
-                      </div>
-                    )
-                  })()
-                ) : (
-                  <div
-                    style={{ fontSize: 22, fontWeight: 700, color: 'var(--cui-secondary-color)' }}
-                  >
-                    —
-                  </div>
-                )}
-              </CCardBody>
-            </CCard>
+            {(() => {
+              const diff = projection !== null ? projection - total : null
+              return (
+                <StatCard
+                  label={t('taxis.settlements.summary.deficit')}
+                  value={diff !== null ? fmt(Math.abs(diff)) : '—'}
+                  color={diff === null ? 'var(--cui-secondary-color)' : diff > 0 ? '#e03131' : '#2f9e44'}
+                  tip="Diferencia entre la proyección del mes y lo efectivamente liquidado. Rojo = falta por cobrar, verde = se superó la proyección."
+                />
+              )
+            })()}
           </CCol>
 
           {/* Expenses */}
           <CCol xs={6} sm={2}>
-            <CCard style={{ height: '100%' }}>
-              <CCardBody
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
+            <StatCard
+              label={t('taxis.settlements.summary.totalExpenses')}
+              value={fmt(totalExpenses)}
+              color="#e67700"
+              tip="Suma de todos los gastos registrados en el período (pagados y pendientes)."
+            >
+              <CButton
+                size="sm"
+                color="warning"
+                variant="outline"
+                disabled={periodExpenses.length === 0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCheckedExpenses(new Set(periodExpenses.map((r) => r.id)))
+                  setExpensesModalOpen(true)
                 }}
+                style={{ alignSelf: 'flex-start', fontSize: 11 }}
               >
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.totalExpenses')}
-                  <InfoTip content="Suma de todos los gastos registrados en el período (pagados y pendientes)." />
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#e67700', marginBottom: 8 }}>
-                  {fmt(totalExpenses)}
-                </div>
-                <CButton
-                  size="sm"
-                  color="warning"
-                  variant="outline"
-                  disabled={periodExpenses.length === 0}
-                  onClick={() => {
-                    setCheckedExpenses(new Set(periodExpenses.map((r) => r.id)))
-                    setExpensesModalOpen(true)
-                  }}
-                >
-                  {`${periodExpenses.length} gastos`}
-                </CButton>
-              </CCardBody>
-            </CCard>
+                {`${periodExpenses.length} gastos`}
+              </CButton>
+            </StatCard>
 
             <CModal
               visible={expensesModalOpen}
@@ -432,74 +360,45 @@ const PeriodSummary = ({
 
           {/* Net */}
           <CCol xs={6} sm={2}>
-            <CCard className="text-center">
-              <CCardBody>
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.net')}
-                  <InfoTip content="Total liquidado menos gastos. Activar 'Incluir pendientes' para descontar también los gastos aún no pagados." />
-                </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color:
-                      total - (includePending ? totalExpenses : totalExpensesPaid) >= 0
-                        ? '#1e40af'
-                        : '#e03131',
-                  }}
+            {(() => {
+              const net = total - (includePending ? totalExpenses : totalExpensesPaid)
+              return (
+                <StatCard
+                  label={t('taxis.settlements.summary.net')}
+                  value={fmt(net)}
+                  color={net >= 0 ? '#1e40af' : '#e03131'}
+                  tip="Total liquidado menos gastos. Activar 'Incluir pendientes' para descontar también los gastos aún no pagados."
                 >
-                  {fmt(total - (includePending ? totalExpenses : totalExpensesPaid))}
-                </div>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 5,
-                    marginTop: 8,
-                    cursor: 'pointer',
-                    fontSize: 11,
-                    color: 'var(--cui-secondary-color)',
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <input
-                    type="checkbox"
-                    checked={includePending}
-                    onChange={(e) => setIncludePending(e.target.checked)}
-                  />
-                  Incluir pendientes
-                </label>
-              </CCardBody>
-            </CCard>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', fontSize: 11, color: 'var(--cui-secondary-color)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input type="checkbox" checked={includePending} onChange={(e) => setIncludePending(e.target.checked)} />
+                    Incluir pendientes
+                  </label>
+                </StatCard>
+              )
+            })()}
           </CCol>
 
           {/* By driver */}
           <CCol xs={6} sm={2}>
-            <CCard style={{ height: '100%' }}>
-              <CCardBody
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
+            <StatCard
+              label={t('taxis.settlements.summary.byDriver')}
+              color="#6f42c1"
+              tip="Liquidaciones del período agrupadas por conductor: total pagado, por cobrar y proyección del resto del mes."
+            >
+              <CButton
+                size="sm"
+                color="primary"
+                variant="outline"
+                disabled={loading || byDriver.length === 0}
+                onClick={(e) => { e.stopPropagation(); setByDriverModalOpen(true) }}
+                style={{ alignSelf: 'flex-start', fontSize: 11 }}
               >
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 8 }}>
-                  {t('taxis.settlements.summary.byDriver')}
-                  <InfoTip content="Liquidaciones del período agrupadas por conductor: total pagado, por cobrar y proyección del resto del mes." />
-                </div>
-                <CButton
-                  size="sm"
-                  color="primary"
-                  variant="outline"
-                  disabled={loading || byDriver.length === 0}
-                  onClick={() => setByDriverModalOpen(true)}
-                >
-                  {loading ? <CSpinner size="sm" /> : `${byDriver.length} conductores`}
-                </CButton>
-              </CCardBody>
-            </CCard>
+                {loading ? <CSpinner size="sm" /> : `${byDriver.length} conductores`}
+              </CButton>
+            </StatCard>
 
             <CModal
               visible={byDriverModalOpen}
@@ -629,58 +528,31 @@ const PeriodSummary = ({
               </CModalBody>
             </CModal>
           </CCol>
-        </CRow>
-
-        <CRow className="mb-3">
           {/* Pending */}
           <CCol xs={6} sm={2}>
-            <CCard style={!isCurrentPeriod ? { opacity: 0.5 } : undefined}>
-              <CCardBody
-                style={{
-                  padding: '12px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
+            <StatCard
+              label={t('taxis.settlements.summary.pendingDrivers')}
+              value={isCurrentPeriod ? fmt(pendingRows.reduce((s, r) => s + r.amount, 0)) : '—'}
+              color={isCurrentPeriod && pendingRows.length > 0 ? '#e67700' : '#2f9e44'}
+              tip="Monto que los conductores activos aún deben pagar por los días restantes del mes actual, calculado a su valor por defecto."
+              fade={!isCurrentPeriod}
+            >
+              {isCurrentPeriod && (
+                <div style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
+                  {t('taxis.settlements.summary.remainingDays', { days: daysInMonth - now.getDate() })}
+                </div>
+              )}
+              <CButton
+                size="sm"
+                color="warning"
+                variant="outline"
+                disabled={!isCurrentPeriod || pendingRows.length === 0}
+                onClick={(e) => { e.stopPropagation(); setPendingModalOpen(true) }}
+                style={{ alignSelf: 'flex-start', fontSize: 11 }}
               >
-                <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-                  {t('taxis.settlements.summary.pendingDrivers')}
-                  <InfoTip content="Monto que los conductores activos aún deben pagar por los días restantes del mes actual, calculado a su valor por defecto." />
-                </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: isCurrentPeriod && pendingRows.length > 0 ? '#e67700' : '#2f9e44',
-                    marginBottom: 4,
-                  }}
-                >
-                  {isCurrentPeriod ? fmt(pendingRows.reduce((s, r) => s + r.amount, 0)) : '--'}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: 'var(--cui-secondary-color)',
-                    marginBottom: 8,
-                  }}
-                >
-                  {isCurrentPeriod
-                    ? t('taxis.settlements.summary.remainingDays', {
-                        days: daysInMonth - now.getDate(),
-                      })
-                    : '--'}
-                </div>
-                <CButton
-                  size="sm"
-                  color="warning"
-                  variant="outline"
-                  disabled={!isCurrentPeriod || pendingRows.length === 0}
-                  onClick={() => setPendingModalOpen(true)}
-                >
-                  {isCurrentPeriod ? `${pendingRows.length} pendientes` : '--'}
-                </CButton>
-              </CCardBody>
-            </CCard>
+                {isCurrentPeriod ? `${pendingRows.length} pendientes` : '—'}
+              </CButton>
+            </StatCard>
 
             <CModal
               visible={pendingModalOpen}
@@ -774,6 +646,7 @@ const PeriodSummary = ({
           </CCol>
         </CRow>
       </CCollapse>
+
     </>
   )
 }
