@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CModal, CModalHeader, CModalTitle, CModalBody, CSpinner } from '@coreui/react'
-import { applyOcrRules, findAccountByIdentifier, parseRawAmount } from './ocrAccountRules'
+import { applyOcrRules, findAccountByIdentifier, parseRawAmount } from '../ocrAccountRules'
+import "./OcrReceiptImporter.scss"
 
 // ── Confirmation modal ─────────────────────────────────────────────────────────
 function ConfirmModal({
@@ -36,56 +37,35 @@ function ConfirmModal({
 
   return (
     <CModal visible={visible} onClose={onClose} size="lg">
-      <CModalHeader style={{ background: '#f0f4ff', borderBottom: '1px solid #c7d2fe' }}>
-        <CModalTitle style={{ color: '#3730a3', fontWeight: 700, fontSize: 15 }}>
+      <CModalHeader className="ocr-receipt-importer__modal-header">
+        <CModalTitle className="ocr-receipt-importer__modal-title">
           📄 Confirmar registro desde comprobante
         </CModalTitle>
       </CModalHeader>
-      <CModalBody style={{ padding: 20 }}>
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+      <CModalBody className="ocr-receipt-importer__modal-body">
+        <div className="ocr-receipt-importer__container">
           {/* Image thumbnail */}
           {imageUrl && (
-            <div style={{ flexShrink: 0 }}>
+            <div className="ocr-receipt-importer__image-container">
               <img
                 src={imageUrl}
                 alt="Comprobante"
-                style={{
-                  width: 160,
-                  borderRadius: 10,
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                }}
+                className="ocr-receipt-importer__image"
               />
             </div>
           )}
 
           {/* Form */}
-          <div style={{ flex: 1, minWidth: 240 }}>
+          <div className="ocr-receipt-importer__form">
             {/* Account selector */}
-            <div style={{ marginBottom: 16 }}>
-              <label
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#6c757d',
-                  display: 'block',
-                  marginBottom: 6,
-                }}
-              >
+            <div className="ocr-receipt-importer__field-container">
+              <label className="ocr-receipt-importer__label">
                 Cuenta
               </label>
               <select
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 8,
-                  border: '1.5px solid #c7d2fe',
-                  fontSize: 13,
-                  color: '#1e3a5f',
-                  background: '#f8faff',
-                }}
+                className="ocr-receipt-importer__input-select"
               >
                 <option value="">— Seleccione una cuenta —</option>
                 {allAccounts.map((a) => (
@@ -95,29 +75,21 @@ function ConfirmModal({
                 ))}
               </select>
               {matchedAccount && selectedId === matchedAccount.id && (
-                <div style={{ fontSize: 11, color: '#16a34a', marginTop: 4 }}>
+                <div className="ocr-receipt-importer__match-info">
                   ✓ Identificada como comprobante <strong>{matchedRuleLabel}</strong> por número de
                   contrato
                 </div>
               )}
               {!matchedAccount && (
-                <div style={{ fontSize: 11, color: '#f59f00', marginTop: 4 }}>
+                <div className="ocr-receipt-importer__match-warning">
                   ⚠ Tipo de comprobante no reconocido — seleccione la cuenta manualmente
                 </div>
               )}
             </div>
 
             {/* Amount */}
-            <div style={{ marginBottom: 16 }}>
-              <label
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#6c757d',
-                  display: 'block',
-                  marginBottom: 6,
-                }}
-              >
+            <div className="ocr-receipt-importer__field-container">
+              <label className="ocr-receipt-importer__label">
                 Valor (COP)
               </label>
               <input
@@ -125,85 +97,40 @@ function ConfirmModal({
                 value={editAmount}
                 onChange={(e) => setEditAmount(e.target.value)}
                 placeholder="Ingrese el valor manualmente"
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 8,
-                  border: `1.5px solid ${!editAmount ? '#fca5a5' : '#c7d2fe'}`,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: '#1e3a5f',
-                  background: '#f8faff',
-                }}
+                className={`ocr-receipt-importer__input-text ${!editAmount ? 'ocr-receipt-importer__input-text--error' : ''}`}
               />
               {!editAmount && (
-                <div style={{ fontSize: 11, color: '#e03131', marginTop: 4 }}>
+                <div className="ocr-receipt-importer__error-message">
                   No se detectó el valor — ingréselo manualmente
                 </div>
               )}
             </div>
 
             {/* Date */}
-            <div style={{ marginBottom: 20 }}>
-              <label
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#6c757d',
-                  display: 'block',
-                  marginBottom: 6,
-                }}
-              >
+            <div className="ocr-receipt-importer__date-container">
+              <label className="ocr-receipt-importer__label">
                 Fecha
               </label>
               <input
                 type="date"
                 value={editDate}
                 onChange={(e) => setEditDate(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 8,
-                  border: '1.5px solid #c7d2fe',
-                  fontSize: 13,
-                  color: '#1e3a5f',
-                  background: '#f8faff',
-                }}
+                className="ocr-receipt-importer__input-select"
               />
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div className="ocr-receipt-importer__actions">
               <button
                 onClick={onClose}
-                style={{
-                  flex: 1,
-                  padding: '10px 0',
-                  borderRadius: 8,
-                  border: '1px solid #dee2e6',
-                  background: '#f8fafc',
-                  color: '#6c757d',
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
+                className="ocr-receipt-importer__button-cancel"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={!selectedId || !editAmount}
-                style={{
-                  flex: 2,
-                  padding: '10px 0',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: !selectedId || !editAmount ? '#e2e8f0' : '#1e3a5f',
-                  color: !selectedId || !editAmount ? '#94a3b8' : '#fff',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: !selectedId || !editAmount ? 'not-allowed' : 'pointer',
-                }}
+                className={`ocr-receipt-importer__button-confirm ${!selectedId || !editAmount ? 'ocr-receipt-importer__button-confirm--disabled' : ''}`}
               >
                 Registrar pago
               </button>
@@ -213,35 +140,15 @@ function ConfirmModal({
 
         {/* Raw OCR text toggle */}
         {ocrText && (
-          <div style={{ marginTop: 16, borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
+          <div className="ocr-receipt-importer__ocr-toggle">
             <button
               onClick={() => setShowRaw((v) => !v)}
-              style={{
-                fontSize: 11,
-                color: '#94a3b8',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-              }}
+              className="ocr-receipt-importer__ocr-toggle-button"
             >
               {showRaw ? '▲ Ocultar' : '▼ Ver'} texto extraído por OCR
             </button>
             {showRaw && (
-              <pre
-                style={{
-                  marginTop: 8,
-                  fontSize: 11,
-                  color: '#64748b',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 6,
-                  padding: '8px 10px',
-                  whiteSpace: 'pre-wrap',
-                  maxHeight: 160,
-                  overflowY: 'auto',
-                }}
-              >
+              <pre className="ocr-receipt-importer__ocr-text">
                 {ocrText}
               </pre>
             )}
@@ -336,21 +243,7 @@ export default function OcrReceiptImporter({ masters, monthStr, onConfirm }) {
         onClick={() => inputRef.current.click()}
         disabled={processing}
         title="Cargar comprobante y registrar automáticamente con OCR"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: 12,
-          fontWeight: 600,
-          padding: '7px 14px',
-          borderRadius: 9,
-          border: '1.5px solid #6366f1',
-          background: '#f5f3ff',
-          color: processing ? '#a5b4fc' : '#4338ca',
-          cursor: processing ? 'not-allowed' : 'pointer',
-          transition: 'all 0.15s',
-          whiteSpace: 'nowrap',
-        }}
+        className="ocr-receipt-importer__trigger-button"
       >
         {processing ? (
           <>

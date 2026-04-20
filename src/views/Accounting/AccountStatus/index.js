@@ -10,7 +10,7 @@ import * as accountStatusNoteActions from 'src/actions/cashflow/accountStatusNot
 import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
-import OcrReceiptImporter from '../OcrReceiptImporter'
+import OcrReceiptImporter from '../OcrReceiptImporter/OcrReceiptImporter'
 import { fmt, isApplicableToMonth, getStatus, CURRENT_YEAR, CURRENT_MONTH, now } from './helpers'
 import DetailModal from './DetailModal'
 import PayModal from './PayModal'
@@ -386,6 +386,10 @@ export default function AccountStatus() {
             onDelete={handleDeleteNote}
           />
         )}
+      {/* OCR importer  */}
+          <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
+          <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
+        </div>
       </div>
 
       {/* ── RIGHT PANEL ────────────────────────────────────────────── */}
@@ -432,11 +436,12 @@ export default function AccountStatus() {
           ))}
         </div>
 
-        {/* OCR importer */}
+        {/* OCR importer
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
           <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
         </div>
 
+        */}
         {/* Filter tabs */}
         <div className="as-filter-tabs">
           {[
