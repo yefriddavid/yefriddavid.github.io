@@ -206,7 +206,7 @@ export default function PeriodNotes({
                   style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
                 />
               ) : (
-                '+ Agregar'
+                '+'
               )}
             </button>
           </div>

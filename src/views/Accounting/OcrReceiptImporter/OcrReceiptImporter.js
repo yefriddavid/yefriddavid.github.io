@@ -107,7 +107,7 @@ function ConfirmModal({
             </div>
 
             {/* Date */}
-            <div className="ocr-receipt-importer__date-container">
+            <div className="ocr-receipt-importer__field-container ocr-receipt-importer__field-container--spaced">
               <label className="ocr-receipt-importer__label">
                 Fecha
               </label>
@@ -130,7 +130,7 @@ function ConfirmModal({
               <button
                 onClick={handleConfirm}
                 disabled={!selectedId || !editAmount}
-                className={`ocr-receipt-importer__button-confirm ${!selectedId || !editAmount ? 'ocr-receipt-importer__button-confirm--disabled' : ''}`}
+                className="ocr-receipt-importer__button-confirm"
               >
                 Registrar pago
               </button>

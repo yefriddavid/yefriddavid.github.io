@@ -1,8 +1,75 @@
+// ── Block ──────────────────────────────────────────────────────────────────────
+// ocr-receipt-importer
+
+// ── Trigger button ─────────────────────────────────────────────────────────────
+.ocr-receipt-importer__trigger-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: 1.5px solid #6366f1;
+  background: #f5f3ff;
+  color: #4338ca;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  width: 100%;
+
+  &:disabled {
+    color: #a5b4fc;
+    cursor: not-allowed;
+  }
+}
+
+// ── Modal chrome ───────────────────────────────────────────────────────────────
+.ocr-receipt-importer__modal-header {
+  background: #f0f4ff;
+  border-bottom: 1px solid #c7d2fe;
+}
+
+.ocr-receipt-importer__modal-title {
+  color: #3730a3;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.ocr-receipt-importer__modal-body {
+  padding: 20px;
+}
+
+// ── Layout ─────────────────────────────────────────────────────────────────────
+.ocr-receipt-importer__container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ocr-receipt-importer__image-container {
+  flex-shrink: 0;
+}
+
 .ocr-receipt-importer__image {
   width: 160px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ocr-receipt-importer__form {
+  flex: 1;
+  min-width: 240px;
+}
+
+// ── Form fields ────────────────────────────────────────────────────────────────
+.ocr-receipt-importer__field-container {
+  margin-bottom: 16px;
+
+  &--spaced {
+    margin-bottom: 20px;
+  }
 }
 
 .ocr-receipt-importer__label {
@@ -32,46 +99,13 @@
   color: #1e3a5f;
   background: #f8faff;
   border: 1.5px solid #c7d2fe;
+
+  &--error {
+    border-color: #fca5a5;
+  }
 }
 
-.ocr-receipt-importer__input-text--error {
-  border-color: #fca5a5;
-}
-
-.ocr-receipt-importer__modal-header {
-  background: #f0f4ff;
-  border-bottom: 1px solid #c7d2fe;
-}
-
-.ocr-receipt-importer__modal-title {
-  color: #3730a3;
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.ocr-receipt-importer__modal-body {
-  padding: 20px;
-}
-
-.ocr-receipt-importer__container {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.ocr-receipt-importer__image-container {
-  flex-shrink: 0;
-}
-
-.ocr-receipt-importer__form {
-  flex: 1;
-  min-width: 240px;
-}
-
-.ocr-receipt-importer__field-container {
-  margin-bottom: 16px;
-}
-
+// ── Field feedback ─────────────────────────────────────────────────────────────
 .ocr-receipt-importer__match-info {
   font-size: 11px;
   color: #16a34a;
@@ -90,10 +124,7 @@
   margin-top: 4px;
 }
 
-.ocr-receipt-importer__date-container {
-  margin-bottom: 20px;
-}
-
+// ── Actions ────────────────────────────────────────────────────────────────────
 .ocr-receipt-importer__actions {
   display: flex;
   gap: 10px;
@@ -121,14 +152,15 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+
+  &:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
 }
 
-.ocr-receipt-importer__button-confirm--disabled {
-  background: #e2e8f0;
-  color: #94a3b8;
-  cursor: not-allowed;
-}
-
+// ── OCR raw text toggle ────────────────────────────────────────────────────────
 .ocr-receipt-importer__ocr-toggle {
   margin-top: 16px;
   border-top: 1px solid #f1f5f9;
@@ -155,25 +187,4 @@
   white-space: pre-wrap;
   max-height: 160px;
   overflow-y: auto;
-}
-
-.ocr-receipt-importer__trigger-button {
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 9px;
-  border: 1.5px solid #6366f1;
-  background: #f5f3ff;
-  color: #4338ca;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.ocr-receipt-importer__trigger-button:disabled {
-  color: #a5b4fc;
-  cursor: not-allowed;
 }
