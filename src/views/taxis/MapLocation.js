@@ -17,6 +17,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
+import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import 'leaflet/dist/leaflet.css'
 
 const DEFAULT_CENTER = [6.2442, -75.5812]
@@ -87,15 +88,17 @@ const MapController = ({ positions, isFullScreen }) => {
 
 const MapLocation = () => {
   const dispatch = useDispatch()
-  const { data: vehicles, fetching } = useSelector((s) => s.taxiVehicle)
+  const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
+  const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
   const [locations, setLocations] = useState({})
   const [isFullScreen, setIsFullScreen] = useState(false)
 
+  const fetching = fetchingVehicles || fetchingDrivers
+
   useEffect(() => {
-    if (!vehicles) {
-      dispatch(taxiVehicleActions.fetchRequest())
-    }
-  }, [dispatch, vehicles])
+    if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
+    if (!drivers) dispatch(taxiDriverActions.fetchRequest())
+  }, [dispatch, vehicles, drivers])
 
   // WebSocket Simulation
   useEffect(() => {
@@ -135,12 +138,17 @@ const MapLocation = () => {
   }, [vehicles])
 
   const activeLocations = useMemo(() => {
-    return Object.entries(locations).map(([plate, pos]) => ({
-      plate,
-      ...pos,
-      vehicle: vehicles?.find((v) => v.plate === plate),
-    }))
-  }, [locations, vehicles])
+    return Object.entries(locations).map(([plate, pos]) => {
+      const vehicle = vehicles?.find((v) => v.plate === plate)
+      const driver = drivers?.find((d) => d.defaultVehicle === plate && d.active !== false)
+      return {
+        plate,
+        ...pos,
+        vehicle,
+        driver,
+      }
+    })
+  }, [locations, vehicles, drivers])
 
   const toggleFullScreen = () => {
     setIsFullScreen(!isFullScreen)
@@ -184,12 +192,26 @@ const MapLocation = () => {
                       icon={createTaxiIcon(loc.plate)}
                     >
                       <Popup>
-                        <div style={{ minWidth: '150px' }}>
-                          <h6 className="mb-1" style={{ fontFamily: 'monospace' }}>${loc.plate}</h6>
-                          <div className="small text-muted">
-                            {loc.vehicle?.brand} {loc.vehicle?.model}<br />
-                            <strong>Velocidad:</strong> ${Math.round(loc.speed)} km/h<br />
-                            <strong>Último reporte:</strong> ${loc.lastUpdate}
+                        <div style={{ minWidth: '180px' }}>
+                          <h6 className="mb-1" style={{ fontFamily: 'monospace', fontSize: '14px' }}>${loc.plate}</h6>
+                          <div className="small text-muted mb-2">
+                            {loc.vehicle?.brand} {loc.vehicle?.model}
+                          </div>
+                          <div style={{ borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                            <div className="mb-1">
+                              <strong>Conductor:</strong><br />
+                              {loc.driver ? loc.driver.name : 'Sin asignar'}
+                            </div>
+                            {loc.driver?.phone && (
+                              <div className="mb-1">
+                                <strong>Celular:</strong><br />
+                                {loc.driver.phone}
+                              </div>
+                            )}
+                            <div className="mt-2 pt-2 border-top" style={{ fontSize: '10px' }}>
+                              <strong>Velocidad:</strong> ${Math.round(loc.speed)} km/h<br />
+                              <strong>Reporte:</strong> ${loc.lastUpdate}
+                            </div>
                           </div>
                         </div>
                       </Popup>
@@ -204,15 +226,26 @@ const MapLocation = () => {
                 <h6 className="mb-3 px-2 mt-2 mt-lg-0">Flota Activa ({activeLocations.length})</h6>
                 <CListGroup flush style={{ maxHeight: '560px', overflowY: 'auto' }}>
                   {activeLocations.map((loc) => (
-                    <CListGroupItem key={loc.plate} className="px-2">
+                    <CListGroupItem key={loc.plate} className="px-2 py-3">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold" style={{ fontFamily: 'monospace' }}>${loc.plate}</span>
+                        <span className="fw-bold" style={{ fontFamily: 'monospace', fontSize: '14px' }}>${loc.plate}</span>
                         <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
                           ${Math.round(loc.speed)} km/h
                         </CBadge>
                       </div>
-                      <div className="small text-muted mt-1" style={{ fontSize: '10px' }}>
-                        ${loc.lastUpdate}
+                      <div className="mt-2">
+                        <div style={{ fontSize: '12px', fontWeight: '500' }}>
+                          {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
+                        </div>
+                        {loc.driver?.phone && (
+                          <div className="text-muted" style={{ fontSize: '11px' }}>
+                            📞 {loc.driver.phone}
+                          </div>
+                        )}
+                      </div>
+                      <div className="small text-muted mt-2 d-flex justify-content-between" style={{ fontSize: '10px' }}>
+                        <span>{loc.vehicle?.brand} {loc.vehicle?.model}</span>
+                        <span>${loc.lastUpdate}</span>
                       </div>
                     </CListGroupItem>
                   ))}

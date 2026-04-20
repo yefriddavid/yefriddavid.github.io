@@ -218,16 +218,15 @@ const Operations = () => {
   const upcomingEvents = useMemo(() => {
     if (month !== 0) return []
     const events = []
+    const yearStr = String(year)
     for (const cat of MAINTENANCE_CATEGORIES) {
       if (!selected.has(cat)) continue
       const plateMap = lastByCategory.get(cat)
       if (!plateMap) continue
       for (const v of vehicles) {
         const last = plateMap.get(v.plate)
-        if (!last?.nextDate || last.nextDate < todayStr) continue
-        const daysLeft = Math.ceil(
-          (new Date(last.nextDate) - new Date(todayStr)) / 86_400_000,
-        )
+        if (!last?.nextDate || !last.nextDate.startsWith(yearStr + '-')) continue
+        const daysLeft = Math.ceil((new Date(last.nextDate) - new Date(todayStr)) / 86_400_000)
         events.push({
           type: cat,
           vehicle: v,
@@ -239,7 +238,7 @@ const Operations = () => {
       }
     }
     return events.sort((a, b) => a.nextDate.localeCompare(b.nextDate))
-  }, [month, selected, vehicles, driversByVehicle, lastByCategory, todayStr])
+  }, [month, year, selected, vehicles, driversByVehicle, lastByCategory, todayStr])
 
   // unified items per day from all selected types
   const itemsByDay = useMemo(() => {
@@ -338,20 +337,18 @@ const Operations = () => {
               </option>
             ))}
           </CFormSelect>
-          {month !== 0 && (
-            <CFormSelect
-              size="sm"
-              style={{ width: 90 }}
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {availableYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </CFormSelect>
-          )}
+          <CFormSelect
+            size="sm"
+            style={{ width: 90 }}
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
+            {availableYears.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </CFormSelect>
         </div>
       </CCardHeader>
 
