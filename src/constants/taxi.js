@@ -20,6 +20,7 @@ export const TAXI_EXPENSE_CATEGORIES = [
   'Cambio de Correa Dentada',
   'SOAT',
   'RTM',
+  'Póliza Resp. Civil',
   'Multa',
   'Otro',
 ]
@@ -37,4 +38,5 @@ export const TAXI_MAINTENANCE_CATEGORIES = [
   'Repuestos',
   'SOAT',
   'RTM',
+  'Póliza Resp. Civil',
 ]
