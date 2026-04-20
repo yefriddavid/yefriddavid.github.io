@@ -82,6 +82,9 @@ export const makeExpense = (overrides = {}) => ({
   plate: 'ABC123',
   comment: null,
   paid: false,
+  payedAt: null,
+  receipt: null,
+  receiptName: null,
   ...overrides,
 })
 

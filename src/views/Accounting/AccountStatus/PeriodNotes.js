@@ -185,6 +185,7 @@ export default function PeriodNotes({
             <button
               onClick={handleAdd}
               disabled={saving || !text.trim()}
+              data-testid="add-note-btn"
               style={{
                 padding: '8px 16px',
                 borderRadius: 10,

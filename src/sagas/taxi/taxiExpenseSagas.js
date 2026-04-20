@@ -36,8 +36,8 @@ export function* deleteExpense({ payload }) {
 
 export function* togglePaid({ payload }) {
   try {
-    yield call(expenseService.toggleExpensePaid, payload.id, payload.paid)
-    yield put(taxiExpenseActions.successRequestTogglePaid(payload))
+    const payedAt = yield call(expenseService.toggleExpensePaid, payload.id, payload.paid)
+    yield put(taxiExpenseActions.successRequestTogglePaid({ ...payload, payedAt }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestTogglePaid(e.message))
   }

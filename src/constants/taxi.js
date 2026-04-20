@@ -18,6 +18,8 @@ export const TAXI_EXPENSE_CATEGORIES = [
   'Lavado',
   'Cambio Aceite',
   'Cambio de Correa Dentada',
+  'SOAT',
+  'RTM',
   'Multa',
   'Otro',
 ]
@@ -33,4 +35,6 @@ export const TAXI_MAINTENANCE_CATEGORIES = [
   'Mantenimiento',
   'Lavado',
   'Repuestos',
+  'SOAT',
+  'RTM',
 ]

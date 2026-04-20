@@ -30,12 +30,25 @@ export const fetchExpenses = async () => {
         comment: data.comment ?? null,
         paid: data.paid === true,
         nextDate: data.nextDate ?? null,
+        payedAt: data.payedAt ?? null,
+        receipt: data.receipt ?? null,
+        receiptName: data.receiptName ?? null,
       }
     })
     .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
 }
 
-export const createExpense = async ({ description, category, amount, date, plate, nextDate }) => {
+export const createExpense = async ({
+  description,
+  category,
+  amount,
+  date,
+  plate,
+  nextDate,
+  payedAt,
+  receipt,
+  receiptName,
+}) => {
   const ref = await addDoc(collection(db, COL), {
     description,
     category,
@@ -43,6 +56,9 @@ export const createExpense = async ({ description, category, amount, date, plate
     date,
     plate: plate || null,
     nextDate: nextDate || null,
+    payedAt: payedAt || null,
+    receipt: receipt || null,
+    receiptName: receiptName || null,
     tenantId: getTenantId(),
     createdAt: serverTimestamp(),
   })
@@ -59,11 +75,16 @@ export const updateExpense = async (id, data) => {
     comment: data.comment || null,
     paid: data.paid === true,
     nextDate: data.nextDate || null,
+    payedAt: data.payedAt || null,
+    receipt: data.receipt || null,
+    receiptName: data.receiptName || null,
   })
 }
 
 export const toggleExpensePaid = async (id, paid) => {
-  await updateDoc(doc(db, COL, id), { paid })
+  const payedAt = paid ? new Date().toISOString().split('T')[0] : null
+  await updateDoc(doc(db, COL, id), { paid, payedAt })
+  return payedAt
 }
 
 export const deleteExpense = async (id) => {

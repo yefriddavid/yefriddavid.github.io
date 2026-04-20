@@ -28,6 +28,8 @@ import { updateExpense } from 'src/services/firebase/taxi/taxiExpenses'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
+import AttachmentViewer from 'src/components/shared/AttachmentViewer'
+import { processAttachmentFile } from 'src/utils/fileHelpers'
 import useLocaleData from 'src/hooks/useLocaleData'
 import {
   TAXI_EXPENSE_CATEGORIES as CATEGORIES,
@@ -56,6 +58,9 @@ const EMPTY = {
   plate: '',
   comment: '',
   nextDate: '',
+  payedAt: '',
+  receipt: null,
+  receiptName: '',
 }
 
 const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
@@ -178,7 +183,26 @@ const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
 
 const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
   const [form, setForm] = useState(initial)
+  const [processingFile, setProcessingFile] = useState(false)
+  const [fileError, setFileError] = useState('')
+  const fileRef = useRef()
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFileError('')
+    setProcessingFile(true)
+    try {
+      const data = await processAttachmentFile(file)
+      setForm((p) => ({ ...p, receipt: data, receiptName: file.name }))
+    } catch (err) {
+      setFileError(`Error procesando archivo: ${err.message}`)
+    } finally {
+      setProcessingFile(false)
+      fileRef.current.value = ''
+    }
+  }
 
   return (
     <StandardForm
@@ -238,6 +262,14 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
           />
         </StandardField>
       )}
+      <StandardField label="Fecha de pago">
+        <input
+          className={SF.input}
+          type="date"
+          value={form.payedAt || ''}
+          onChange={set('payedAt')}
+        />
+      </StandardField>
       <StandardField label="Comentario">
         <textarea
           className={SF.textarea}
@@ -246,6 +278,94 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
           onChange={set('comment')}
           rows={2}
         />
+      </StandardField>
+
+      {/* Receipt attachment */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,application/pdf"
+        style={{ display: 'none' }}
+        onChange={handleFile}
+      />
+      <StandardField label="Comprobante">
+        {!form.receipt && !processingFile && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: 8,
+              border: '2px dashed #dee2e6',
+              background: '#fafafa',
+              fontSize: 13,
+              color: '#6c757d',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>📎</span> Adjuntar imagen, foto o PDF
+          </button>
+        )}
+        {processingFile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
+            <CSpinner size="sm" />
+            <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando…</span>
+          </div>
+        )}
+        {fileError && (
+          <div style={{ fontSize: 12, color: '#e03131', marginTop: 4 }}>{fileError}</div>
+        )}
+        {form.receipt && (
+          <div style={{ position: 'relative' }}>
+            <img
+              src={form.receipt}
+              alt="comprobante"
+              style={{ width: '100%', borderRadius: 8, border: '1px solid #dee2e6', display: 'block' }}
+            />
+            <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 4 }}>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: 5,
+                  border: 'none',
+                  background: 'rgba(0,0,0,0.55)',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cambiar
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, receipt: null, receiptName: '' }))}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: 5,
+                  border: 'none',
+                  background: 'rgba(220,53,69,0.85)',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Quitar
+              </button>
+            </div>
+            {form.receiptName && (
+              <div style={{ fontSize: 11, color: '#6c757d', marginTop: 3 }}>{form.receiptName}</div>
+            )}
+          </div>
+        )}
       </StandardField>
     </StandardForm>
   )
@@ -269,6 +389,7 @@ const Gastos = () => {
   const [paidFilter, setPaidFilter] = useState('')
   const [cloneSource, setCloneSource] = useState(null)
   const [cloneForm, setCloneForm] = useState({ date: today(), plate: '' })
+  const [receiptViewer, setReceiptViewer] = useState(null)
 
   useEffect(() => {
     dispatch(taxiExpenseActions.fetchRequest())
@@ -606,6 +727,19 @@ const Gastos = () => {
                 hidingPriority={6}
               />
               <Column
+                dataField="payedAt"
+                caption="Fecha pago"
+                width={110}
+                hidingPriority={5}
+                cellRender={({ value }) =>
+                  value ? (
+                    <span style={{ color: '#16a34a', fontWeight: 600 }}>{value}</span>
+                  ) : (
+                    <span style={{ color: '#d1d5db' }}>—</span>
+                  )
+                }
+              />
+              <Column
                 dataField="comment"
                 caption={t('taxis.expenses.columns.comment')}
                 minWidth={140}
@@ -646,11 +780,29 @@ const Gastos = () => {
               />
               <Column
                 caption=""
-                width={90}
+                width={115}
                 allowSorting={false}
                 allowResizing={false}
                 cellRender={({ data }) => (
                   <div style={{ display: 'flex', gap: 4 }}>
+                    {data.receipt && (
+                      <button
+                        onClick={() =>
+                          setReceiptViewer({ src: data.receipt, name: data.receiptName })
+                        }
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#0891b2',
+                          cursor: 'pointer',
+                          padding: '2px 6px',
+                          fontSize: 14,
+                        }}
+                        title="Ver comprobante"
+                      >
+                        📎
+                      </button>
+                    )}
                     <button
                       onClick={() => handleEdit(data)}
                       style={{
@@ -729,7 +881,29 @@ const Gastos = () => {
                         {data.nextDate && (
                           <DetailRow label="Próximo servicio" value={data.nextDate} />
                         )}
+                        {data.payedAt && (
+                          <DetailRow label="Fecha de pago" value={data.payedAt} />
+                        )}
                         <DetailRow label="Comentario" value={data.comment} />
+                        {data.receipt && (
+                          <div style={{ marginTop: 8 }}>
+                            <img
+                              src={data.receipt}
+                              alt="comprobante"
+                              onClick={() =>
+                                setReceiptViewer({ src: data.receipt, name: data.receiptName })
+                              }
+                              style={{
+                                maxWidth: 200,
+                                borderRadius: 8,
+                                border: '1px solid #dee2e6',
+                                cursor: 'pointer',
+                                display: 'block',
+                              }}
+                              title="Ver comprobante"
+                            />
+                          </div>
+                        )}
                       </DetailSection>
                     </DetailPanel>
                   )
@@ -819,6 +993,13 @@ const Gastos = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+      {receiptViewer && (
+        <AttachmentViewer
+          src={receiptViewer.src}
+          filename={receiptViewer.name}
+          onClose={() => setReceiptViewer(null)}
+        />
+      )}
     </>
   )
 }

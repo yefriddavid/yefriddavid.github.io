@@ -127,7 +127,7 @@ describe('PeriodNotes', () => {
   it('+ Agregar button disabled when input is empty', () => {
     renderNotes()
     openPanel()
-    const addBtn = screen.getByText('+ Agregar')
+    const addBtn = screen.getByTestId('add-note-btn')
     expect(addBtn.disabled).toBe(true)
   })
 
@@ -137,7 +137,7 @@ describe('PeriodNotes', () => {
     fireEvent.change(screen.getByPlaceholderText('Nueva nota…'), {
       target: { value: 'nueva nota' },
     })
-    expect(screen.getByText('+ Agregar').disabled).toBe(false)
+    expect(screen.getByTestId('add-note-btn').disabled).toBe(false)
   })
 
   it('calls onAdd with trimmed text when + Agregar clicked', () => {
@@ -147,7 +147,7 @@ describe('PeriodNotes', () => {
     fireEvent.change(screen.getByPlaceholderText('Nueva nota…'), {
       target: { value: '  mi nota  ' },
     })
-    fireEvent.click(screen.getByText('+ Agregar'))
+    fireEvent.click(screen.getByTestId('add-note-btn'))
     expect(onAdd).toHaveBeenCalledWith('mi nota')
   })
 
@@ -166,7 +166,7 @@ describe('PeriodNotes', () => {
     openPanel()
     const input = screen.getByPlaceholderText('Nueva nota…')
     fireEvent.change(input, { target: { value: 'algo' } })
-    fireEvent.click(screen.getByText('+ Agregar'))
+    fireEvent.click(screen.getByTestId('add-note-btn'))
     expect(input.value).toBe('')
   })
 

@@ -54,6 +54,8 @@ const TYPE_COLORS = {
   Mantenimiento: { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af', label: 'Mantto.' },
   Lavado: { bg: '#f0fdf4', border: '#22c55e', text: '#166534', label: 'Lavado' },
   Repuestos: { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', label: 'Repuesto' },
+  SOAT: { bg: '#ecfeff', border: '#06b6d4', text: '#155e75', label: 'SOAT' },
+  RTM: { bg: '#f7fee7', border: '#65a30d', text: '#365314', label: 'RTM' },
 }
 
 // ── badge ─────────────────────────────────────────────────────────────────────

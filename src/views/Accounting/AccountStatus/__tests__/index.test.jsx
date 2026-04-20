@@ -7,6 +7,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 vi.mock('@coreui/react', () => ({
   CSpinner: ({ color }) => <span data-testid={`spinner-${color ?? 'default'}`} />,
+  CModal: ({ children, visible }) => (visible ? <div data-testid="modal">{children}</div> : null),
+  CModalHeader: ({ children }) => <div>{children}</div>,
+  CModalTitle: ({ children }) => <div>{children}</div>,
+  CModalBody: ({ children }) => <div>{children}</div>,
 }))
 
 vi.mock('@coreui/icons-react', () => ({ default: () => null }))

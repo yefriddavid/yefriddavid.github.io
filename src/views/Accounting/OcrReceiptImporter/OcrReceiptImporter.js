@@ -230,7 +230,7 @@ export default function OcrReceiptImporter({ masters, monthStr, onConfirm }) {
   }
 
   return (
-    <>
+    <div data-testid="ocr-importer">
       <input
         ref={inputRef}
         type="file"
@@ -267,6 +267,6 @@ export default function OcrReceiptImporter({ masters, monthStr, onConfirm }) {
         onConfirm={handleConfirm}
         onClose={() => setShowModal(false)}
       />
-    </>
+    </div>
   )
 }

@@ -55,7 +55,7 @@ const taxiExpenseSlice = createSlice({
       .addCase(taxiExpenseActions.successRequestTogglePaid, (state, { payload }) => {
         if (state.data) {
           state.data = state.data.map((e) =>
-            e.id === payload.id ? { ...e, paid: payload.paid } : e,
+            e.id === payload.id ? { ...e, paid: payload.paid, payedAt: payload.payedAt } : e,
           )
         }
       })
