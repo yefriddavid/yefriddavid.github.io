@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -111,11 +111,56 @@ const createTaxiIconV2 = (plate, driverName) => {
 }
 
 /**
+ * Custom Fullscreen Control that doesn't rely on buggy plugins
+ */
+const FullscreenControl = ({ isFullScreen, toggle }) => {
+  const map = useMap()
+  
+  useEffect(() => {
+    const Control = L.Control.extend({
+      onAdd: () => {
+        const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom')
+        btn.innerHTML = `
+          <div style="
+            width: 30px; 
+            height: 30px; 
+            background: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 4px;
+            border: 2px solid rgba(0,0,0,0.2);
+            background-clip: padding-box;
+          ">
+            ${isFullScreen ? '⛶' : '⛶'}
+          </div>
+        `
+        btn.title = isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'
+        btn.onclick = (e) => {
+          L.DomEvent.stopPropagation(e)
+          toggle()
+        }
+        return btn
+      }
+    })
+
+    const control = new Control({ position: 'topleft' })
+    map.addControl(control)
+    return () => map.removeControl(control)
+  }, [map, isFullScreen, toggle])
+
+  return null
+}
+
+/**
  * Component to handle map adjustments
  */
 const MapController = ({ positions, isFullScreen }) => {
   const map = useMap()
   
+  // Auto-fit bounds
   useEffect(() => {
     if (positions.length > 0) {
       const bounds = L.latLngBounds(positions.map((p) => [p.lat, p.lng]))
@@ -123,6 +168,7 @@ const MapController = ({ positions, isFullScreen }) => {
     }
   }, [positions, map])
 
+  // Fix tiles when resizing
   useEffect(() => {
     setTimeout(() => {
       map.invalidateSize()
@@ -202,12 +248,26 @@ const MapLocation = () => {
     })
   }, [locations, vehicles, drivers])
 
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen)
-  }
+  const toggleFullScreen = useCallback(() => {
+    setIsFullScreen((prev) => !prev)
+  }, [])
+
+  // Handle ESC key to exit fullscreen state
+  useEffect(() => {
+    const handleEsc = () => {
+      if (!document.fullscreenElement && isFullScreen) {
+        setIsFullScreen(false)
+      }
+    }
+    document.addEventListener('fullscreenchange', handleEsc)
+    return () => document.removeEventListener('fullscreenchange', handleEsc)
+  }, [isFullScreen])
 
   return (
-    <CCard className={`mb-4 ${isFullScreen ? 'border-0' : ''}`} style={isFullScreen ? { zIndex: 10000, position: 'fixed', inset: 0 } : {}}>
+    <CCard 
+      className={`mb-4 ${isFullScreen ? 'border-0' : ''}`} 
+      style={isFullScreen ? { zIndex: 10000, position: 'fixed', inset: 0 } : {}}
+    >
       <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div className="d-flex align-items-center gap-3">
           <strong>Mapa de Ubicación</strong>
@@ -246,12 +306,16 @@ const MapLocation = () => {
         ) : (
           <CRow className="g-0">
             <CCol lg={isFullScreen ? 12 : 9}>
-              <div style={isFullScreen ? { height: 'calc(100vh - 50px)' } : { height: '600px' }}>
+              <div style={{ 
+                height: isFullScreen ? 'calc(100vh - 50px)' : '600px', 
+                borderRadius: isFullScreen ? '0' : '8px', 
+                overflow: 'hidden', 
+                border: isFullScreen ? 'none' : '1px solid #ddd' 
+              }}>
                 <MapContainer 
                   center={DEFAULT_CENTER} 
                   zoom={13} 
                   style={{ height: '100%', width: '100%' }}
-                  zoomControl={!isFullScreen}
                 >
                   <TileLayer
                     attribution='&copy; OpenStreetMap'
@@ -290,6 +354,7 @@ const MapLocation = () => {
                     </Marker>
                   ))}
                   <MapController positions={activeLocations} isFullScreen={isFullScreen} />
+                  <FullscreenControl isFullScreen={isFullScreen} toggle={toggleFullScreen} />
                 </MapContainer>
               </div>
             </CCol>
