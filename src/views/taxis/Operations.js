@@ -57,6 +57,7 @@ const TYPE_COLORS = {
   SOAT: { bg: '#ecfeff', border: '#06b6d4', text: '#155e75', label: 'SOAT' },
   RTM: { bg: '#f7fee7', border: '#65a30d', text: '#365314', label: 'RTM' },
   'Póliza Resp. Civil': { bg: '#fdf2f8', border: '#db2777', text: '#831843', label: 'Póliza RC' },
+  'Tarjeta de Operación': { bg: '#fff8f1', border: '#ea580c', text: '#7c2d12', label: 'Tarj. Op.' },
 }
 
 // ── badge ─────────────────────────────────────────────────────────────────────

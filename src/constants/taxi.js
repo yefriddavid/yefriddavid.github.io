@@ -21,6 +21,7 @@ export const TAXI_EXPENSE_CATEGORIES = [
   'SOAT',
   'RTM',
   'Póliza Resp. Civil',
+  'Tarjeta de Operación',
   'Multa',
   'Otro',
 ]
@@ -39,4 +40,5 @@ export const TAXI_MAINTENANCE_CATEGORIES = [
   'SOAT',
   'RTM',
   'Póliza Resp. Civil',
+  'Tarjeta de Operación',
 ]
