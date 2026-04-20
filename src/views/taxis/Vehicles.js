@@ -17,6 +17,7 @@ import {
   CModalBody,
   CModalFooter,
   CFormInput,
+  CFormCheck,
   CTable,
   CTableHead,
   CTableRow,
@@ -47,7 +48,7 @@ const MONTHS = [
   'Diciembre',
 ]
 
-const EMPTY = { plate: '', brand: '', model: '', year: '' }
+const EMPTY = { plate: '', brand: '', model: '', year: '', active: true }
 
 const emptyRestrictions = () =>
   Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { d1: '', d2: '' }]))
@@ -64,8 +65,10 @@ const currentMonthSummary = (restrictions) => {
 }
 
 const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => {
+  const { t } = useTranslation()
   const [form, setForm] = useState(initial)
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+  const setCheck = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.checked }))
 
   return (
     <StandardForm
@@ -75,7 +78,7 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
       onSave={() => onSave(form)}
       saving={saving}
     >
-      <StandardField label="Placa">
+      <StandardField label={t('taxis.vehicles.fields.plate')}>
         <input
           className={SF.input}
           placeholder="ABC-123"
@@ -83,7 +86,7 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
           onChange={set('plate')}
         />
       </StandardField>
-      <StandardField label="Marca">
+      <StandardField label={t('taxis.vehicles.fields.brand')}>
         <input
           className={SF.input}
           placeholder="Renault"
@@ -91,7 +94,7 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
           onChange={set('brand')}
         />
       </StandardField>
-      <StandardField label="Modelo">
+      <StandardField label={t('taxis.vehicles.fields.model')}>
         <input
           className={SF.input}
           placeholder="Logan"
@@ -99,13 +102,25 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
           onChange={set('model')}
         />
       </StandardField>
-      <StandardField label="Año">
+      <StandardField label={t('taxis.vehicles.fields.year')}>
         <input
           className={SF.input}
           type="number"
           placeholder="2020"
           value={form.year}
           onChange={set('year')}
+        />
+      </StandardField>
+      <StandardField label={t('taxis.vehicles.fields.status')}>
+        <CFormCheck
+          id={`active-${form.id || 'new'}`}
+          checked={form.active !== false}
+          onChange={setCheck('active')}
+          label={
+            form.active !== false
+              ? t('taxis.vehicles.fields.active')
+              : t('taxis.vehicles.fields.inactive')
+          }
         />
       </StandardField>
     </StandardForm>
@@ -292,6 +307,17 @@ const Vehiculos = () => {
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
               <Column dataField="plate" caption={t('taxis.vehicles.fields.plate')} />
+              <Column
+                dataField="active"
+                caption={t('taxis.vehicles.fields.active')}
+                dataType="boolean"
+                width={80}
+                cellRender={({ data }) => (
+                  <CBadge color={data.active !== false ? 'success' : 'danger'}>
+                    {data.active !== false ? 'Sí' : 'No'}
+                  </CBadge>
+                )}
+              />
               <Column dataField="brand" caption={t('taxis.vehicles.fields.brand')} />
               <Column dataField="model" caption={t('taxis.vehicles.fields.model')} />
               <Column
@@ -386,22 +412,34 @@ const Vehiculos = () => {
                     </div>
                   ) : (
                     <DetailPanel columns={2}>
-                      <DetailSection title="Datos del vehículo">
-                        <DetailRow label="Placa" value={data.plate} mono />
-                        <DetailRow label="Marca" value={data.brand} />
-                        <DetailRow label="Modelo" value={data.model} />
-                        <DetailRow label="Año" value={data.year} />
+                      <DetailSection title={t('taxis.drivers.fields.personalData')}>
+                        <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
+                        <DetailRow
+                          label={t('taxis.vehicles.fields.status')}
+                          value={
+                            data.active !== false
+                              ? t('taxis.vehicles.fields.active')
+                              : t('taxis.vehicles.fields.inactive')
+                          }
+                        />
+                        <DetailRow label={t('taxis.vehicles.fields.brand')} value={data.brand} />
+                        <DetailRow label={t('taxis.vehicles.fields.model')} value={data.model} />
+                        <DetailRow label={t('taxis.vehicles.fields.year')} value={data.year} />
                       </DetailSection>
-                      <DetailSection title="Conductores asignados">
+                      <DetailSection title={t('taxis.vehicles.fields.drivers')}>
                         {(() => {
                           const names = driversByPlate(data.plate)
                           return names.length > 0 ? (
                             names.map((name) => (
-                              <DetailRow key={name} label="Conductor" value={name} />
+                              <DetailRow
+                                key={name}
+                                label={t('taxis.settlements.fields.driver')}
+                                value={name}
+                              />
                             ))
                           ) : (
                             <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>
-                              Sin conductores asignados
+                              {t('taxis.settlements.noRecords')}
                             </span>
                           )
                         })()}

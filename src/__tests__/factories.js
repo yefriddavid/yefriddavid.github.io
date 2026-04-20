@@ -24,6 +24,7 @@ export const makeVehicle = (overrides = {}) => ({
   brand: 'Renault',
   model: 'Logan',
   year: 2020,
+  active: true,
   restrictions: {},
   ...overrides,
 })

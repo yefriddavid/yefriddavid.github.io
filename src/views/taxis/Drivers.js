@@ -133,6 +133,7 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
             <option key={v.id} value={v.plate}>
               {v.plate}
               {v.brand ? ` · ${v.brand}` : ''}
+              {v.active === false ? ' (Inactivo)' : ''}
             </option>
           ))}
         </select>
@@ -195,7 +196,7 @@ const Conductores = () => {
     { plate: '', label: '— Ninguno —' },
     ...(vehicles ?? []).map((v) => ({
       plate: v.plate,
-      label: v.plate + (v.brand ? ` · ${v.brand}` : ''),
+      label: `${v.plate}${v.brand ? ` · ${v.brand}` : ''}${v.active === false ? ' (Inactivo)' : ''}`,
     })),
   ]
 

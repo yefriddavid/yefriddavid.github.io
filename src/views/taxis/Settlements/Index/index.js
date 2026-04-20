@@ -272,6 +272,7 @@ const Taxis = () => {
     for (const driver of drivers.filter((d) => d.active !== false && d.defaultVehicle)) {
       const plate = driver.defaultVehicle
       const vehicle = vehiclesMap.get(plate)
+      if (vehicle && vehicle.active === false) continue
       const restr =
         vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
       const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
@@ -345,6 +346,7 @@ const Taxis = () => {
       if (!driver || driver.active === false) return null
       const plateKey = driver.defaultVehicle || rows.find((r) => r.plate)?.plate
       const vehicle = vehiclesMap.get(plateKey)
+      if (vehicle && vehicle.active === false) return 0
       const restr =
         vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
       const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
@@ -405,6 +407,7 @@ const Taxis = () => {
     for (const driver of drivers.filter((d) => d.active !== false && d.defaultVehicle)) {
       const plate = driver.defaultVehicle
       const vehicle = vehiclesMap.get(plate)
+      if (vehicle && vehicle.active === false) continue
       const restr =
         vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
       const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))

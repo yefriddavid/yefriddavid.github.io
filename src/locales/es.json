@@ -74,6 +74,7 @@
     }
   },
   "nav": {
+    "hideMenu": "Ocultar menú",
     "dashboard": "Dashboard",
     "management": "Administración",
     "accounts": "Cuentas",
@@ -143,6 +144,9 @@
         "brand": "Marca",
         "model": "Modelo",
         "year": "Año",
+        "status": "Estado",
+        "active": "Activo",
+        "inactive": "Inactivo",
         "drivers": "Conductores",
         "ppThisMonth": "P&P este mes"
       },

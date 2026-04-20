@@ -35,6 +35,7 @@ const SettlementCreateForm = ({
               {drivers.map((d) => (
                 <option key={d.id} value={d.name}>
                   {d.name}
+                  {d.active === false ? ' (Inactivo)' : ''}
                 </option>
               ))}
             </CFormSelect>
@@ -47,6 +48,7 @@ const SettlementCreateForm = ({
                 <option key={v.id} value={v.plate}>
                   {v.plate}
                   {v.brand ? ` · ${v.brand}` : ''}
+                  {v.active === false ? ' (Inactivo)' : ''}
                 </option>
               ))}
             </CFormSelect>

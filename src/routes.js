@@ -13,6 +13,7 @@ const TaxisHome = React.lazy(() => import('./views/taxis/Home'))
 const Partners = React.lazy(() => import('./views/taxis/Partners'))
 const Distributions = React.lazy(() => import('./views/taxis/Distributions'))
 const Operations = React.lazy(() => import('./views/taxis/Operations'))
+const MapLocation = React.lazy(() => import('./views/taxis/MapLocation'))
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/users/Users'))
@@ -114,6 +115,13 @@ const routes = [
     name: 'Operaciones',
     longName: 'Taxi — Operaciones',
     element: Operations,
+    landingPage: true,
+  },
+  {
+    path: '/taxis/map',
+    name: 'Mapa/Ubicación',
+    longName: 'Taxi — Mapa',
+    element: MapLocation,
     landingPage: true,
   },
   {

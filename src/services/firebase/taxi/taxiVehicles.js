@@ -26,18 +26,20 @@ export const getVehicles = async () => {
         brand: data.brand,
         model: data.model,
         year: data.year,
+        active: data.active !== false,
         restrictions: data.restrictions ?? {},
       }
     })
     .sort((a, b) => (a.plate ?? '').localeCompare(b.plate ?? ''))
 }
 
-export const addVehicle = async ({ plate, brand, model, year }) => {
+export const addVehicle = async ({ plate, brand, model, year, active }) => {
   const ref = await addDoc(collection(db, COL), {
     plate: plate.toUpperCase(),
     brand,
     model,
     year,
+    active: active !== false,
     restrictions: {},
     tenantId: getTenantId(),
     createdAt: serverTimestamp(),
@@ -45,12 +47,13 @@ export const addVehicle = async ({ plate, brand, model, year }) => {
   return ref.id
 }
 
-export const updateVehicle = async (id, { plate, brand, model, year }) => {
+export const updateVehicle = async (id, { plate, brand, model, year, active }) => {
   await updateDoc(doc(db, COL, id), {
     plate: plate.toUpperCase(),
     brand,
     model,
     year,
+    active: active !== false,
   })
 }
 

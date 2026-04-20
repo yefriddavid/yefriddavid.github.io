@@ -74,6 +74,7 @@
     }
   },
   "nav": {
+    "hideMenu": "Hide menu",
     "dashboard": "Dashboard",
     "management": "Management",
     "accounts": "Accounts",
@@ -143,6 +144,9 @@
         "brand": "Brand",
         "model": "Model",
         "year": "Year",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
         "drivers": "Drivers",
         "ppThisMonth": "P&P this month"
       },

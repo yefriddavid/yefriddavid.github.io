@@ -15,6 +15,7 @@ import {
   cilGroup,
   cilHome,
   cilLightbulb,
+  cilLocationPin,
   cilChart,
   cilPeople,
   cilSettings,
@@ -183,6 +184,12 @@ const getNav = (t, role) => {
         name: 'Operaciones',
         to: '/taxis/operations',
         icon: <CIcon icon={cilWarning} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Mapa/Ubicación',
+        to: '/taxis/map',
+        icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
       },
       ...(isManager
         ? [

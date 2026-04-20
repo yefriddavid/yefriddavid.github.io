@@ -12,7 +12,7 @@ import {
   CSidebarToggler,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilAccountLogout } from '@coreui/icons'
+import { cilAccountLogout, cilMenu } from '@coreui/icons'
 
 import { AppSidebarNav } from './AppSidebarNav'
 import BrandName from '../BrandName'
@@ -64,13 +64,21 @@ const AppSidebar = () => {
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
-      <CSidebarFooter className="border-top d-none d-lg-flex" style={{ flexDirection: 'column', gap: 0 }}>
-        <button
-          onClick={handleLogout}
-          className="logout-btn"
-        >
+      <CSidebarFooter
+        className="border-top d-none d-lg-flex"
+        style={{ flexDirection: 'column', gap: 0 }}
+      >
+        <button onClick={handleLogout} className="sidebar-footer-btn">
           <CIcon icon={cilAccountLogout} size="sm" />
-          Cerrar sesión
+          <span>{t('auth.logout')}</span>
+        </button>
+        <button
+          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          className="sidebar-footer-btn"
+          style={{ borderBottom: 'none' }}
+        >
+          <CIcon icon={cilMenu} size="sm" />
+          <span>{t('nav.hideMenu')}</span>
         </button>
         <CSidebarToggler
           onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
