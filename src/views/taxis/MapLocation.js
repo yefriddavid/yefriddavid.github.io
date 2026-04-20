@@ -13,6 +13,7 @@ import {
   CListGroup,
   CListGroupItem,
   CButton,
+  CButtonGroup,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
@@ -23,11 +24,11 @@ import 'leaflet/dist/leaflet.css'
 const DEFAULT_CENTER = [6.2442, -75.5812]
 
 /**
- * Creates a custom DivIcon that looks like a black flag with yellow text
+ * Design 1: Black flag with yellow text
  */
-const createTaxiIcon = (plate) => {
+const createTaxiIconFlat = (plate) => {
   return L.divIcon({
-    className: 'custom-taxi-marker',
+    className: 'custom-taxi-marker-flat',
     html: `
       <div style="
         background-color: #000;
@@ -63,12 +64,58 @@ const createTaxiIcon = (plate) => {
 }
 
 /**
+ * Design 2: Yellow glossy plate with Driver Name
+ */
+const createTaxiIconV2 = (plate, driverName) => {
+  const shortName = driverName ? driverName.split(' ')[0].toUpperCase() : 'S/A'
+  return L.divIcon({
+    className: 'custom-taxi-marker-v2',
+    html: `
+      <div style="
+        background: linear-gradient(180deg, #ffd700 0%, #ffcc00 50%, #e6b800 100%);
+        color: #000;
+        border: 1px solid #b38f00;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-family: 'Arial', sans-serif;
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        position: relative;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 70px;
+      ">
+        <span style="line-height: 1; margin-bottom: 2px;">${plate}</span>
+        <span style="font-size: 7px; align-self: flex-end; font-weight: bold; opacity: 0.8; margin-top: -2px;">${shortName}</span>
+        <div style="
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid #e6b800;
+        "></div>
+      </div>
+    `,
+    iconSize: [80, 30],
+    iconAnchor: [40, 30],
+    popupAnchor: [0, -30],
+  })
+}
+
+/**
  * Component to handle map adjustments
  */
 const MapController = ({ positions, isFullScreen }) => {
   const map = useMap()
   
-  // Auto-fit bounds when positions change
   useEffect(() => {
     if (positions.length > 0) {
       const bounds = L.latLngBounds(positions.map((p) => [p.lat, p.lng]))
@@ -76,7 +123,6 @@ const MapController = ({ positions, isFullScreen }) => {
     }
   }, [positions, map])
 
-  // Invalidate size when entering/exiting fullscreen
   useEffect(() => {
     setTimeout(() => {
       map.invalidateSize()
@@ -92,6 +138,7 @@ const MapLocation = () => {
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
   const [locations, setLocations] = useState({})
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
 
   const fetching = fetchingVehicles || fetchingDrivers
 
@@ -99,6 +146,11 @@ const MapLocation = () => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
     if (!drivers) dispatch(taxiDriverActions.fetchRequest())
   }, [dispatch, vehicles, drivers])
+
+  const handleStyleChange = (style) => {
+    setIconStyle(style)
+    localStorage.setItem('map_icon_style', style)
+  }
 
   // WebSocket Simulation
   useEffect(() => {
@@ -156,15 +208,35 @@ const MapLocation = () => {
 
   return (
     <CCard className={`mb-4 ${isFullScreen ? 'border-0' : ''}`} style={isFullScreen ? { zIndex: 10000, position: 'fixed', inset: 0 } : {}}>
-      <CCardHeader className="d-flex justify-content-between align-items-center">
-        <div>
+      <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div className="d-flex align-items-center gap-3">
           <strong>Mapa de Ubicación</strong>
-          {!isFullScreen && <CBadge color="success" className="ms-2">En vivo</CBadge>}
+          {!isFullScreen && (
+            <CButtonGroup size="sm">
+              <CButton 
+                color="dark" 
+                variant={iconStyle === 'flat' ? undefined : 'outline'}
+                onClick={() => handleStyleChange('flat')}
+              >
+                Plano
+              </CButton>
+              <CButton 
+                color="warning" 
+                variant={iconStyle === 'v2' ? undefined : 'outline'}
+                onClick={() => handleStyleChange('v2')}
+              >
+                Moderno (v2)
+              </CButton>
+            </CButtonGroup>
+          )}
         </div>
-        <CButton color="secondary" variant="outline" size="sm" onClick={toggleFullScreen}>
-          <CIcon icon={isFullScreen ? cilFullscreenExit : cilFullscreen} />
-          {isFullScreen ? ' Salir' : ' Pantalla Completa'}
-        </CButton>
+        <div className="d-flex gap-2">
+          {!isFullScreen && <CBadge color="success" className="d-flex align-items-center">En vivo</CBadge>}
+          <CButton color="secondary" variant="outline" size="sm" onClick={toggleFullScreen}>
+            <CIcon icon={isFullScreen ? cilFullscreenExit : cilFullscreen} />
+            {isFullScreen ? ' Salir' : ' Pantalla Completa'}
+          </CButton>
+        </div>
       </CCardHeader>
       <CCardBody className={isFullScreen ? 'p-0' : ''}>
         {fetching && !vehicles ? (
@@ -189,11 +261,11 @@ const MapLocation = () => {
                     <Marker 
                       key={loc.plate} 
                       position={[loc.lat, loc.lng]}
-                      icon={createTaxiIcon(loc.plate)}
+                      icon={iconStyle === 'v2' ? createTaxiIconV2(loc.plate, loc.driver?.name) : createTaxiIconFlat(loc.plate)}
                     >
                       <Popup>
                         <div style={{ minWidth: '180px' }}>
-                          <h6 className="mb-1" style={{ fontFamily: 'monospace', fontSize: '14px' }}>${loc.plate}</h6>
+                          <h6 className="mb-1" style={{ fontFamily: 'monospace', fontSize: '14px' }}>{loc.plate}</h6>
                           <div className="small text-muted mb-2">
                             {loc.vehicle?.brand} {loc.vehicle?.model}
                           </div>
@@ -209,8 +281,8 @@ const MapLocation = () => {
                               </div>
                             )}
                             <div className="mt-2 pt-2 border-top" style={{ fontSize: '10px' }}>
-                              <strong>Velocidad:</strong> ${Math.round(loc.speed)} km/h<br />
-                              <strong>Reporte:</strong> ${loc.lastUpdate}
+                              <strong>Velocidad:</strong> {Math.round(loc.speed)} km/h<br />
+                              <strong>Reporte:</strong> {loc.lastUpdate}
                             </div>
                           </div>
                         </div>
@@ -228,9 +300,9 @@ const MapLocation = () => {
                   {activeLocations.map((loc) => (
                     <CListGroupItem key={loc.plate} className="px-2 py-3">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold" style={{ fontFamily: 'monospace', fontSize: '14px' }}>${loc.plate}</span>
+                        <span className="fw-bold" style={{ fontFamily: 'monospace', fontSize: '14px' }}>{loc.plate}</span>
                         <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
-                          ${Math.round(loc.speed)} km/h
+                          {Math.round(loc.speed)} km/h
                         </CBadge>
                       </div>
                       <div className="mt-2">
@@ -245,7 +317,7 @@ const MapLocation = () => {
                       </div>
                       <div className="small text-muted mt-2 d-flex justify-content-between" style={{ fontSize: '10px' }}>
                         <span>{loc.vehicle?.brand} {loc.vehicle?.model}</span>
-                        <span>${loc.lastUpdate}</span>
+                        <span>{loc.lastUpdate}</span>
                       </div>
                     </CListGroupItem>
                   ))}
