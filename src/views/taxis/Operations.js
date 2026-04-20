@@ -209,12 +209,41 @@ const Operations = () => {
     return map
   }, [expenses])
 
+  const todayStr = now.toISOString().split('T')[0]
   const daysInMonth = new Date(year, month, 0).getDate()
   const monthStr = `${year}-${pad2(month)}`
   const todayNum = now.getFullYear() === year && now.getMonth() + 1 === month ? now.getDate() : null
 
+  // flat list of upcoming expirations from today — used when month === 0
+  const upcomingEvents = useMemo(() => {
+    if (month !== 0) return []
+    const events = []
+    for (const cat of MAINTENANCE_CATEGORIES) {
+      if (!selected.has(cat)) continue
+      const plateMap = lastByCategory.get(cat)
+      if (!plateMap) continue
+      for (const v of vehicles) {
+        const last = plateMap.get(v.plate)
+        if (!last?.nextDate || last.nextDate < todayStr) continue
+        const daysLeft = Math.ceil(
+          (new Date(last.nextDate) - new Date(todayStr)) / 86_400_000,
+        )
+        events.push({
+          type: cat,
+          vehicle: v,
+          driver: driversByVehicle.get(v.plate),
+          nextDate: last.nextDate,
+          daysLeft,
+          lastExpense: last,
+        })
+      }
+    }
+    return events.sort((a, b) => a.nextDate.localeCompare(b.nextDate))
+  }, [month, selected, vehicles, driversByVehicle, lastByCategory, todayStr])
+
   // unified items per day from all selected types
   const itemsByDay = useMemo(() => {
+    if (month === 0) return new Map()
     const map = new Map()
 
     // pico y placa
@@ -302,24 +331,27 @@ const Operations = () => {
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
           >
+            <option value={0}>Todos</option>
             {monthNames.map((name, i) => (
               <option key={i + 1} value={i + 1}>
                 {name.charAt(0).toUpperCase() + name.slice(1)}
               </option>
             ))}
           </CFormSelect>
-          <CFormSelect
-            size="sm"
-            style={{ width: 90 }}
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          >
-            {availableYears.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </CFormSelect>
+          {month !== 0 && (
+            <CFormSelect
+              size="sm"
+              style={{ width: 90 }}
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+            >
+              {availableYears.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </CFormSelect>
+          )}
         </div>
       </CCardHeader>
 
@@ -331,6 +363,95 @@ const Operations = () => {
         ) : selected.size === 0 ? (
           <div style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}>
             Selecciona al menos un tipo para mostrar.
+          </div>
+        ) : month === 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#1e3a5f', color: '#fff' }}>
+                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Vencimiento</th>
+                  <th style={{ padding: '8px 14px', textAlign: 'center', width: 90 }}>Días</th>
+                  <th style={{ padding: '8px 14px', textAlign: 'left', width: 110 }}>Placa</th>
+                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Conductor</th>
+                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Concepto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcomingEvents.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}
+                    >
+                      Sin vencimientos próximos para los conceptos seleccionados.
+                    </td>
+                  </tr>
+                ) : (
+                  upcomingEvents.map((item, idx) => {
+                    const c =
+                      TYPE_COLORS[item.type] || {
+                        bg: '#f8fafc',
+                        border: '#94a3b8',
+                        text: '#475569',
+                        label: item.type,
+                      }
+                    const urgent = item.daysLeft <= 7
+                    const soon = item.daysLeft <= 30
+                    const daysColor = urgent ? '#dc2626' : soon ? '#d97706' : '#16a34a'
+                    return (
+                      <tr
+                        key={idx}
+                        onClick={() => setActiveItem(item)}
+                        style={{
+                          borderBottom: '1px solid #f0f0f0',
+                          borderLeft: `3px solid ${c.border}`,
+                          background: urgent ? '#fff5f5' : '#fff',
+                          cursor: item.lastExpense ? 'pointer' : 'default',
+                        }}
+                      >
+                        <td style={{ padding: '8px 14px', fontVariantNumeric: 'tabular-nums' }}>
+                          {item.nextDate}
+                        </td>
+                        <td style={{ padding: '8px 14px', textAlign: 'center' }}>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              fontSize: 13,
+                              color: daysColor,
+                            }}
+                          >
+                            {item.daysLeft === 0 ? 'Hoy' : `${item.daysLeft}d`}
+                          </span>
+                        </td>
+                        <td style={{ padding: '8px 14px' }}>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                            {item.vehicle.plate}
+                          </span>
+                        </td>
+                        <td style={{ padding: '8px 14px', color: '#6b7280', fontSize: 12 }}>
+                          {item.driver?.name ?? '—'}
+                        </td>
+                        <td style={{ padding: '8px 14px' }}>
+                          <span
+                            style={{
+                              background: c.bg,
+                              border: `1px solid ${c.border}`,
+                              color: c.text,
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {c.label}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
