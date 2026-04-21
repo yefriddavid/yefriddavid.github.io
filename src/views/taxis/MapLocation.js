@@ -188,6 +188,11 @@ const MapLocation = () => {
   // State to trigger re-renders for updating relative times
   const [refreshTime, setRefreshTime] = useState(0);
 
+  // WebSocket state and refs
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
+  const socketRef = useRef(null);
+  const reconnectTimerIdRef = useRef(null); // Ref to store timer ID
+
   const fetching = fetchingVehicles || fetchingDrivers
 
   useEffect(() => {
@@ -200,60 +205,134 @@ const MapLocation = () => {
     localStorage.setItem('map_icon_style', style)
   }
 
-  // WebSocket Connection for real-time taxi locations
-  useEffect(() => {
-    //const socket = new WebSocket('ws://3.92.69.78:1979/echo_test')
-    const socket = new WebSocket('wss://3.92.69.78:1979/echo_test')
-
-    socket.onopen = () => {
-      console.log('WebSocket connection established')
+  // Helper function to establish WebSocket connection
+  const connectWebSocket = useCallback(() => {
+    // Prevent connecting if already connected or if component is unmounting
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      return;
     }
 
-    socket.onmessage = (event) => {
+    console.log(`Attempting to connect WebSocket, attempt: ${reconnectAttempt + 1}`);
+    // Use wss for secure connections, ws for insecure. Assuming ws is fine for this IP.
+    // If using wss, the server must support it. Using ws based on user's input.
+    const wsUrl = 'ws://3.92.69.78:1979/echo_test'; 
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket connection established');
+      setReconnectAttempt(0); // Reset retry count on successful connection
+    };
+
+    ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data)
+        const data = JSON.parse(event.data);
         if (data.device && data.coords) {
-          const { plate } = data.device
-          const { latitude, longitude } = data.coords
+          const { plate } = data.device;
+          const { latitude, longitude } = data.coords;
           setLocations((prevLocations) => {
-            const updatedLocations = { ...prevLocations }
-            // Ensure the plate exists before updating, or initialize it if new
+            const updatedLocations = { ...prevLocations };
             if (!updatedLocations[plate]) {
               updatedLocations[plate] = {
-                lat: 0, // Default values if new
-                lng: 0,
-                speed: 0, // Assuming speed is not provided by this WS message
-                lastUpdate: new Date(),
-              }
+                lat: 0, lng: 0, speed: 0, lastUpdate: new Date(),
+              };
             }
             updatedLocations[plate] = {
               ...updatedLocations[plate],
               lat: parseFloat(latitude),
               lng: parseFloat(longitude),
-              lastUpdate: new Date(), // Update last seen time
-              // Speed is not provided by this websocket, keeping existing or default
-            }
-            return updatedLocations
-          })
+              lastUpdate: new Date(),
+            };
+            return updatedLocations;
+          });
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error)
+        console.error('Error parsing WebSocket message:', error);
       }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      handleDisconnect(); // Handle errors by attempting to reconnect
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+      handleDisconnect(); // Handle disconnection by attempting to reconnect
+    };
+
+    socketRef.current = ws;
+  }, [reconnectAttempt, setLocations, vehicles]); // 'vehicles' dependency might be needed if initial connection state depends on it
+
+  // Helper function to handle disconnection and initiate reconnection
+  const handleDisconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.close(); // Ensure socket is closed
+      socketRef.current = null;
+    }
+    // Clear any existing retry timer
+    if (reconnectTimerIdRef.current) {
+      clearTimeout(reconnectTimerIdRef.current);
     }
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
+    const MAX_RETRIES = 10; // Max retry attempts
+    const BACKOFF_INITIAL_INTERVAL = 1000; // 1 second
 
-    // Cleanup: Close the WebSocket connection when the component unmounts
+    if (reconnectAttempt < MAX_RETRIES) {
+      const delay = BACKOFF_INITIAL_INTERVAL * Math.pow(2, reconnectAttempt);
+      const jitter = Math.random() * 1000; // Add some jitter to avoid thundering herd
+      const retryDelay = Math.min(delay + jitter, 30000); // Cap retry delay at 30 seconds
+
+      console.log(`Retrying WebSocket connection in ${Math.round(retryDelay / 1000)} seconds... (Attempt ${reconnectAttempt + 1}/${MAX_RETRIES})`);
+
+      reconnectTimerIdRef.current = setTimeout(() => {
+        setReconnectAttempt(prev => prev + 1);
+        connectWebSocket();
+      }, retryDelay);
+    } else {
+      console.warn('Max WebSocket reconnections reached. Not retrying.');
+      // Optionally, notify the user or show a status indicator
+    }
+  }, [reconnectAttempt, connectWebSocket]);
+
+  // Effect for managing WebSocket connection lifecycle
+  useEffect(() => {
+    connectWebSocket(); // Initial connection attempt
+
+    // Cleanup function: close socket and clear timer when component unmounts
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
-        console.log('WebSocket connection closed')
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
       }
-    }
-  }, [vehicles]) // Re-run if vehicles list changes to potentially initialize new plates
+      if (reconnectTimerIdRef.current) {
+        clearTimeout(reconnectTimerIdRef.current);
+      }
+    };
+  }, [connectWebSocket]); // Re-run if connectWebSocket changes (e.g., on reconnectAttempt change)
 
+  // Effect for handling app foreground/background events
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('App focused, checking WebSocket connection...');
+      // If the socket is closed or doesn't exist, attempt to connect
+      if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED || socketRef.current.readyState === WebSocket.CLOSING) {
+        connectWebSocket();
+      }
+    };
+
+    const handleBlur = () => {
+      console.log('App blurred, connection might be suspended by OS...');
+      // OS might terminate the connection, reconnect will be handled by 'focus' event or onclose/onerror
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [connectWebSocket]); // Depend on connectWebSocket to ensure it's up-to-date
 
   const activeLocations = useMemo(() => {
     return Object.entries(locations).map(([plate, pos]) => {
@@ -287,8 +366,7 @@ const MapLocation = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setRefreshTime(prev => prev + 1); // Update state to trigger re-render
-    }, 1000); // Update every 5 seconds
-    //}, 5000); // Update every 5 seconds
+    }, 5000); // Update every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
