@@ -23,6 +23,20 @@
     border-right: 5px solid transparent;
     border-top: 5px solid #000;
   }
+
+  &.source-firebase::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: #00d4ff;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+  }
 }
 
 .custom-taxi-marker-v2 {
@@ -67,5 +81,19 @@
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid #e6b800;
+  }
+
+  &.source-firebase::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: #00d4ff;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 2;
   }
 }

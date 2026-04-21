@@ -16,6 +16,9 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
+import { onSnapshot, collection, query, where, orderBy, limit } from 'firebase/firestore'
+import { db } from 'src/services/firebase/settings'
+import { getTenantId } from 'src/services/tenantContext'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -58,6 +61,54 @@ const MapLocation = () => {
     dispatch(vehicleLocationHistoryActions.fetchRequest())
   }, [dispatch])
 
+  // Real-time listener for Firebase (Source 2)
+  useEffect(() => {
+    const tenantId = getTenantId()
+    if (!tenantId) return
+
+    const q = query(
+      collection(db, 'Taxi_vehicle_location_history'),
+      where('tenantId', '==', tenantId),
+      orderBy('timestamp', 'desc'),
+      limit(20),
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const entry = change.doc.data()
+          if (!entry.vehicleId) return
+
+          const timestamp = entry.timestamp?.toDate?.() || entry.timestamp
+
+          setLocations((prev) => {
+            const current = prev[entry.vehicleId]
+            // Only update if it's a newer record than what we have
+            if (
+              !current ||
+              !current.lastUpdate ||
+              new Date(timestamp) > new Date(current.lastUpdate)
+            ) {
+              return {
+                ...prev,
+                [entry.vehicleId]: {
+                  lat: parseFloat(entry.latitude),
+                  lng: parseFloat(entry.longitude),
+                  speed: 0,
+                  lastUpdate: timestamp,
+                  source: 'firebase',
+                },
+              }
+            }
+            return prev
+          })
+        }
+      })
+    })
+
+    return () => unsubscribe()
+  }, [])
+
   // Initialize locations from history table
   useEffect(() => {
     if (history && history.length > 0) {
@@ -72,6 +123,7 @@ const MapLocation = () => {
               lng: entry.longitude,
               speed: 0,
               lastUpdate: entry.timestamp,
+              source: 'firebase',
             }
           }
         })
@@ -138,6 +190,7 @@ const MapLocation = () => {
                 lat: parseFloat(latitude),
                 lng: parseFloat(longitude),
                 lastUpdate: new Date(),
+                source: 'wss',
               },
             }))
           }
@@ -277,8 +330,8 @@ const MapLocation = () => {
                       position={[loc.lat, loc.lng]}
                       icon={
                         iconStyle === 'v2'
-                          ? createTaxiIconV2(loc.plate, loc.driver?.name)
-                          : createTaxiIconFlat(loc.plate)
+                          ? createTaxiIconV2(loc.plate, loc.driver?.name, loc.source)
+                          : createTaxiIconFlat(loc.plate, loc.source)
                       }
                     >
                       <Popup>
@@ -304,6 +357,8 @@ const MapLocation = () => {
                               <strong>Velocidad:</strong> {Math.round(loc.speed)} km/h
                               <br />
                               <strong>Reporte:</strong> {loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}
+                              <br />
+                              <strong>Fuente:</strong> {loc.source === 'wss' ? 'Antena (WSS)' : 'App (Firebase)'}
                             </div>
                           </div>
                         </div>
@@ -322,7 +377,14 @@ const MapLocation = () => {
                   {activeLocations.map((loc) => (
                     <CListGroupItem key={loc.vehicle?.id || loc.plate} className="px-2 py-3">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold list-item-plate">{loc.plate}</span>
+                        <span className="fw-bold list-item-plate">
+                          {loc.plate}
+                          {loc.source === 'firebase' && (
+                            <span className="ms-2 badge rounded-pill bg-info" style={{ fontSize: '9px', verticalAlign: 'middle' }}>
+                              App
+                            </span>
+                          )}
+                        </span>
                         <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
                           {Math.round(loc.speed)} km/h
                         </CBadge>
