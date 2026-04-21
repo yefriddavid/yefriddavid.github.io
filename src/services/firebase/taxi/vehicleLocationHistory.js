@@ -17,21 +17,31 @@ import { getTenantId } from 'src/services/tenantContext'
 const COL = 'Taxi_vehicle_location_history'
 
 export const getHistory = async (vehicleId) => {
-  let q = query(
-    collection(db, COL),
-    where('tenantId', '==', getTenantId()),
-    orderBy('timestamp', 'desc'),
-    limit(100)
-  )
-  if (vehicleId) {
-    q = query(q, where('vehicleId', '==', vehicleId))
+  try {
+    let q = query(
+      collection(db, COL),
+      where('tenantId', '==', getTenantId()),
+      orderBy('timestamp', 'desc'),
+      limit(100)
+    )
+    if (vehicleId) {
+      q = query(q, where('vehicleId', '==', vehicleId))
+    }
+    const snap = await getDocs(q)
+    const docs = snap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      timestamp: d.data().timestamp?.toDate?.() || d.data().timestamp,
+    }))
+
+    console.log("docs");
+    console.log(docs);
+    return docs
+
+  } catch (error) {
+    console.error('Error fetching vehicle location history:', error)
+    return []
   }
-  const snap = await getDocs(q)
-  return snap.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-    timestamp: d.data().timestamp?.toDate?.() || d.data().timestamp,
-  }))
 }
 
 export const addHistoryEntry = async (data) => {

@@ -6,8 +6,10 @@ export function* fetchHistory({ payload }) {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getHistory, payload?.vehicleId)
+    console.log(`Saga: Historia recuperada (${data.length} registros)`);
     yield put(actions.successRequestFetch(data))
   } catch (e) {
+    console.error('Saga: Error recuperando historia', e);
     yield put(actions.errorRequestFetch(e.message))
   }
 }
@@ -20,7 +22,7 @@ export function* createHistoryEntry({ payload }) {
       actions.successRequestCreate({
         id,
         ...payload,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       }),
     )
   } catch (e) {

@@ -1,0 +1,54 @@
+.map-location-card {
+  &.is-fullscreen {
+    z-index: 10000;
+    position: fixed;
+    inset: 0;
+    border: 0;
+
+    .card-body {
+      padding: 0;
+    }
+  }
+
+  .map-container-wrapper {
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    &.fullscreen {
+      height: calc(100vh - 50px) !important;
+      border: none;
+      border-radius: 0;
+    }
+  }
+
+  .flota-activa-list {
+    max-height: 560px;
+    overflow-y: auto;
+  }
+
+  .popup-content {
+    min-width: 180px;
+
+    .plate-title {
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .report-details {
+      border-top: 1px solid #eee;
+      padding-top: 8px;
+      margin-top: 8px;
+      font-size: 10px;
+    }
+  }
+
+  .list-item-plate {
+    font-family: 'monospace';
+    font-size: 14px;
+  }
+
+  .list-item-details {
+    font-size: 10px;
+  }
+}
