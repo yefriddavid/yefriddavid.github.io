@@ -317,7 +317,7 @@ const MapLocation = () => {
           </div>
         ) : (
           <CRow className="g-0">
-            <CCol lg={isFullScreen ? 12 : 9}>
+            <CCol lg={9}>
               <div className={`map-container-wrapper ${isFullScreen ? 'fullscreen' : ''}`} style={{ height: isFullScreen ? 'auto' : '600px' }}>
                 <MapContainer center={DEFAULT_CENTER} zoom={13} style={{ height: '100%', width: '100%' }}>
                   <TileLayer
@@ -370,46 +370,44 @@ const MapLocation = () => {
                 </MapContainer>
               </div>
             </CCol>
-            {!isFullScreen && (
-              <CCol lg={3} className="ps-lg-3">
-                <h6 className="mb-3 px-2 mt-2 mt-lg-0">Flota Activa ({activeLocations.length})</h6>
-                <CListGroup flush className="flota-activa-list">
-                  {activeLocations.map((loc) => (
-                    <CListGroupItem key={loc.vehicle?.id || loc.plate} className="px-2 py-3">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold list-item-plate">
-                          {loc.plate}
-                          {loc.source === 'firebase' && (
-                            <span className="ms-2 badge rounded-pill bg-info" style={{ fontSize: '9px', verticalAlign: 'middle' }}>
-                              App
-                            </span>
-                          )}
-                        </span>
-                        <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
-                          {Math.round(loc.speed)} km/h
-                        </CBadge>
-                      </div>
-                      <div className="mt-2">
-                        <div style={{ fontSize: '12px', fontWeight: '500' }}>
-                          {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
-                        </div>
-                        {loc.driver?.phone && (
-                          <div className="text-muted" style={{ fontSize: '11px' }}>
-                            📞 {loc.driver.phone}
-                          </div>
+            <CCol lg={3} className={`ps-lg-3 side-panel ${isFullScreen ? 'fullscreen' : ''}`}>
+              <h6 className="mb-3 px-2 mt-2 mt-lg-0">Flota Activa ({activeLocations.length})</h6>
+              <CListGroup flush className="flota-activa-list">
+                {activeLocations.map((loc) => (
+                  <CListGroupItem key={loc.vehicle?.id || loc.plate} className="px-2 py-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="fw-bold list-item-plate">
+                        {loc.plate}
+                        {loc.source === 'firebase' && (
+                          <span className="ms-2 badge rounded-pill bg-info" style={{ fontSize: '9px', verticalAlign: 'middle' }}>
+                            App
+                          </span>
                         )}
+                      </span>
+                      <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
+                        {Math.round(loc.speed)} km/h
+                      </CBadge>
+                    </div>
+                    <div className="mt-2">
+                      <div style={{ fontSize: '12px', fontWeight: '500' }}>
+                        {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
                       </div>
-                      <div className="small text-muted mt-2 d-flex justify-content-between list-item-details">
-                        <span>
-                          {loc.vehicle?.brand} {loc.vehicle?.model}
-                        </span>
-                        <span>{loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}</span>
-                      </div>
-                    </CListGroupItem>
-                  ))}
-                </CListGroup>
-              </CCol>
-            )}
+                      {loc.driver?.phone && (
+                        <div className="text-muted" style={{ fontSize: '11px' }}>
+                          📞 {loc.driver.phone}
+                        </div>
+                      )}
+                    </div>
+                    <div className="small text-muted mt-2 d-flex justify-content-between list-item-details">
+                      <span>
+                        {loc.vehicle?.brand} {loc.vehicle?.model}
+                      </span>
+                      <span>{loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}</span>
+                    </div>
+                  </CListGroupItem>
+                ))}
+              </CListGroup>
+            </CCol>
           </CRow>
         )}
       </CCardBody>
