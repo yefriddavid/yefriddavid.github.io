@@ -287,7 +287,8 @@ const MapLocation = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setRefreshTime(prev => prev + 1); // Update state to trigger re-render
-    }, 5000); // Update every 5 seconds
+    }, 1000); // Update every 5 seconds
+    //}, 5000); // Update every 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
