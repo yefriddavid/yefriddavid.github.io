@@ -198,59 +198,42 @@ const MapLocation = () => {
     localStorage.setItem('map_icon_style', style)
   }
 
-  // WebSocket Connection for real-time taxi locations
+  // WebSocket Simulation
   useEffect(() => {
-    const socket = new WebSocket('ws://3.92.69.78:1979/echo_test')
+    if (!vehicles || vehicles.length === 0) return
+    const initial = {}
+    vehicles.forEach((v) => {
+      initial[v.plate] = {
+        lat: DEFAULT_CENTER[0] + (Math.random() - 0.5) * 0.05,
+        lng: DEFAULT_CENTER[1] + (Math.random() - 0.5) * 0.05,
+        speed: Math.floor(Math.random() * 60),
+        lastUpdate: new Date().toLocaleTimeString(),
+      }
+    })
+    setLocations(initial)
 
-    socket.onopen = () => {
-      console.log('WebSocket connection established')
-    }
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        if (data.device && data.coords) {
-          const { plate } = data.device
-          const { latitude, longitude } = data.coords
-          setLocations((prevLocations) => {
-            const updatedLocations = { ...prevLocations }
-            // Ensure the plate exists before updating, or initialize it if new
-            if (!updatedLocations[plate]) {
-              updatedLocations[plate] = {
-                lat: 0, // Default values if new
-                lng: 0,
-                speed: 0, // Assuming speed is not provided by this WS message
-                lastUpdate: new Date().toLocaleTimeString(),
-              }
+    const interval = setInterval(() => {
+      setLocations((prev) => {
+        const next = { ...prev }
+        const count = Math.floor(Math.random() * 2) + 1
+        const plates = Object.keys(next)
+        for (let i = 0; i < count; i++) {
+          const plate = plates[Math.floor(Math.random() * plates.length)]
+          if (next[plate]) {
+            next[plate] = {
+              ...next[plate],
+              lat: next[plate].lat + (Math.random() - 0.5) * 0.001,
+              lng: next[plate].lng + (Math.random() - 0.5) * 0.001,
+              speed: Math.max(0, Math.min(100, next[plate].speed + (Math.random() - 0.5) * 10)),
+              lastUpdate: new Date().toLocaleTimeString(),
             }
-            updatedLocations[plate] = {
-              ...updatedLocations[plate],
-              lat: parseFloat(latitude),
-              lng: parseFloat(longitude),
-              lastUpdate: new Date().toLocaleTimeString(), // Update last seen time
-              // Speed is not provided by this websocket, keeping existing or default
-            }
-            return updatedLocations
-          })
+          }
         }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error)
-      }
-    }
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-
-    // Cleanup: Close the WebSocket connection when the component unmounts
-    return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
-        console.log('WebSocket connection closed')
-      }
-    }
-  }, [vehicles]) // Re-run if vehicles list changes to potentially initialize new plates
-
+        return next
+      })
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [vehicles])
 
   const activeLocations = useMemo(() => {
     return Object.entries(locations).map(([plate, pos]) => {
