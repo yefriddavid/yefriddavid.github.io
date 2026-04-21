@@ -10,6 +10,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilReload } from '@coreui/icons'
+import './VersionModal.scss'
 
 /* eslint-disable no-undef */
 const LOCAL_HASH = __COMMIT_HASH__
@@ -19,35 +20,16 @@ const LOCAL_VERSION = __APP_VERSION__
 /* eslint-enable no-undef */
 
 const Row = ({ label, value, mono }) => (
-  <div style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 13, alignItems: 'flex-start' }}>
-    <span style={{ color: 'var(--cui-secondary-color)', minWidth: 110, flexShrink: 0 }}>
-      {label}
-    </span>
-    <span
-      style={{
-        fontFamily: mono ? 'monospace' : undefined,
-        fontWeight: 500,
-        wordBreak: 'break-all',
-      }}
-    >
+  <div className="version-row">
+    <span className="version-row__label">{label}</span>
+    <span className={`version-row__value${mono ? ' version-row__value--mono' : ''}`}>
       {value ?? '—'}
     </span>
   </div>
 )
 
 const SectionLabel = ({ children }) => (
-  <div
-    style={{
-      fontSize: 10,
-      fontWeight: 700,
-      color: 'var(--cui-secondary-color)',
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      marginBottom: 8,
-    }}
-  >
-    {children}
-  </div>
+  <div className="version-section-label">{children}</div>
 )
 
 const VersionModal = ({ visible, onClose }) => {
@@ -110,7 +92,7 @@ const VersionModal = ({ visible, onClose }) => {
   return (
     <CModal visible={visible} onClose={onClose} size="sm" alignment="center">
       <CModalHeader>
-        <CModalTitle style={{ fontSize: 15 }}>Versión del software</CModalTitle>
+        <CModalTitle className="version-modal__title">Versión del software</CModalTitle>
       </CModalHeader>
       <CModalBody>
         <SectionLabel>En ejecución (este navegador)</SectionLabel>
@@ -119,28 +101,14 @@ const VersionModal = ({ visible, onClose }) => {
         <Row label="Compilado" value={fmtDate(LOCAL_DATE)} />
         {LOCAL_MESSAGE && <Row label="Mensaje" value={LOCAL_MESSAGE} />}
 
-        <hr style={{ margin: '12px 0' }} />
+        <hr className="version-modal__divider" />
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 8,
-          }}
-        >
+        <div className="version-modal__server-header">
           <SectionLabel>Servidor (último deploy)</SectionLabel>
           <button
+            className="version-modal__refresh-btn"
             onClick={fetchServer}
             disabled={loading}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0 0 8px 0',
-              color: 'var(--cui-primary)',
-              lineHeight: 1,
-            }}
             title="Verificar de nuevo"
           >
             <CIcon icon={cilReload} size="sm" />
@@ -148,24 +116,24 @@ const VersionModal = ({ visible, onClose }) => {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 12 }}>
+          <div className="version-modal__spinner-wrap">
             <CSpinner size="sm" />
           </div>
         ) : fetchError ? (
-          <div style={{ color: '#e03131', fontSize: 13, marginBottom: 8 }}>Error: {fetchError}</div>
+          <div className="version-modal__error">Error: {fetchError}</div>
         ) : server ? (
           <>
             <Row label="Versión" value={server.appVersion} />
             <Row label="Commit" value={server.hash} mono />
             <Row label="Compilado" value={fmtDate(server.buildDate)} />
             {server.commitMessage && <Row label="Mensaje" value={server.commitMessage} />}
-            <div style={{ marginTop: 10 }}>
+            <div className="version-modal__badge-wrap">
               {isOutdated ? (
-                <CBadge color="warning" style={{ fontSize: 12 }}>
+                <CBadge color="warning" className="version-modal__badge">
                   Nueva versión disponible
                 </CBadge>
               ) : (
-                <CBadge color="success" style={{ fontSize: 12 }}>
+                <CBadge color="success" className="version-modal__badge">
                   Al día
                 </CBadge>
               )}
@@ -173,13 +141,13 @@ const VersionModal = ({ visible, onClose }) => {
           </>
         ) : null}
 
-        <hr style={{ margin: '14px 0' }} />
+        <hr className="version-modal__divider version-modal__divider--lg" />
 
         <CButton
           color="primary"
           variant="outline"
           size="sm"
-          style={{ width: '100%' }}
+          className="version-modal__update-btn"
           disabled={updating}
           onClick={handleForceUpdate}
         >
@@ -195,16 +163,7 @@ const VersionModal = ({ visible, onClose }) => {
             </>
           )}
         </CButton>
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--cui-secondary-color)',
-            marginTop: 6,
-            textAlign: 'center',
-          }}
-        >
-          Borra caché del SW y recarga la app
-        </div>
+        <div className="version-modal__update-hint">Borra caché del SW y recarga la app</div>
       </CModalBody>
     </CModal>
   )

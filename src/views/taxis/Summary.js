@@ -41,10 +41,8 @@ const fmt = (n) =>
 const SummaryCard = ({ label, value, color }) => (
   <CCard className="text-center h-100">
     <CCardBody>
-      <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color }}>{fmt(value)}</div>
+      <div className="summary-card__label">{label}</div>
+      <div className="summary-card__value" style={{ color }}>{fmt(value)}</div>
     </CCardBody>
   </CCard>
 )
@@ -142,14 +140,10 @@ const Resumen = () => {
             <CBadge color="secondary">{filtered.length}</CBadge>
           </div>
           <div className="d-flex align-items-center gap-2">
-            <span
-              style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}
-            >
-              Periodo
-            </span>
+            <span className="period-label">Periodo</span>
             <CFormSelect
               size="sm"
-              style={{ width: 120 }}
+              className="period-select-month"
               value={period.month}
               onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
             >
@@ -161,7 +155,7 @@ const Resumen = () => {
             </CFormSelect>
             <CFormSelect
               size="sm"
-              style={{ width: 90 }}
+              className="period-select-year"
               value={period.year}
               onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
             >
@@ -174,7 +168,7 @@ const Resumen = () => {
           </div>
         </CCardHeader>
 
-        <CCardBody style={{ padding: '16px' }}>
+        <CCardBody className="p-3">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <CSpinner color="primary" />
@@ -193,16 +187,7 @@ const Resumen = () => {
                 caption={t('taxis.resumen.columns.type')}
                 width={110}
                 cellRender={({ value }) => (
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: 11,
-                      padding: '2px 8px',
-                      borderRadius: 10,
-                      background: value === 'Liquidación' ? '#dbeafe' : '#fee2e2',
-                      color: value === 'Liquidación' ? '#1e40af' : '#b91c1c',
-                    }}
-                  >
+                  <span className={`row-type-badge${value === 'Liquidación' ? ' row-type-badge--income' : ' row-type-badge--expense'}`}>
                     {value}
                   </span>
                 )}
@@ -217,7 +202,7 @@ const Resumen = () => {
                 caption={t('taxis.resumen.columns.plate')}
                 width={100}
                 cellRender={({ value }) => (
-                  <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{value || '—'}</span>
+                  <span className="master-mono master-amount">{value || '—'}</span>
                 )}
               />
               <Column
@@ -231,11 +216,8 @@ const Resumen = () => {
                 caption={t('taxis.resumen.columns.amount')}
                 width={130}
                 cellRender={({ data }) => (
-                  <span
-                    style={{ fontWeight: 700, color: data._sign === 1 ? '#1e40af' : '#b91c1c' }}
-                  >
-                    {data._sign === 1 ? '+' : '-'}
-                    {fmt(data.amount)}
+                  <span className={`cell-amount${data._sign === 1 ? ' cell-amount--income' : ' cell-amount--expense'}`}>
+                    {data._sign === 1 ? '+' : '-'}{fmt(data.amount)}
                   </span>
                 )}
               />

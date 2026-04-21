@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react'
 import { LANGUAGES } from '../../i18n'
 import moment from 'src/utils/moment'
+import './LanguageSwitcher.scss'
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation()
@@ -17,8 +18,8 @@ const LanguageSwitcher = () => {
   return (
     <CDropdown variant="nav-item" placement="bottom-end">
       <CDropdownToggle caret={false} className="d-flex align-items-center gap-1 px-2">
-        <span style={{ fontSize: 18 }}>{current.flag}</span>
-        <span style={{ fontSize: 12, fontWeight: 600 }}>{current.code.toUpperCase()}</span>
+        <span className="language-switcher__flag">{current.flag}</span>
+        <span className="language-switcher__code">{current.code.toUpperCase()}</span>
       </CDropdownToggle>
       <CDropdownMenu>
         {LANGUAGES.map((lang) => (
@@ -30,7 +31,7 @@ const LanguageSwitcher = () => {
             className="d-flex align-items-center gap-2"
             onClick={() => changeLanguage(lang.code)}
           >
-            <span style={{ fontSize: 16 }}>{lang.flag}</span>
+            <span className="language-switcher__option-flag">{lang.flag}</span>
             <span>{lang.label}</span>
           </CDropdownItem>
         ))}

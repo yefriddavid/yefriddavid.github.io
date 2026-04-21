@@ -16,6 +16,7 @@ import { deleteSession } from '../../services/firebase/security/sessions'
 import { signOut } from '../../services/firebase/auth'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import VersionModal from './VersionModal'
+import './AppHeaderDropdown.scss'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
@@ -34,10 +35,8 @@ const AppHeaderDropdown = () => {
 
   const AVATAR_KEY = 'cached-avatar'
 
-  // Seed from cache so the avatar renders immediately on mount
   const [cachedAvatar, setCachedAvatar] = useState(() => localStorage.getItem(AVATAR_KEY))
 
-  // Keep cache in sync whenever the profile avatar changes
   useEffect(() => {
     if (profile?.avatar) {
       localStorage.setItem(AVATAR_KEY, profile.avatar)
@@ -52,7 +51,7 @@ const AppHeaderDropdown = () => {
     const sessionId = localStorage.getItem('sessionId')
     if (sessionId) deleteSession(sessionId).catch(() => {})
     localStorage.removeItem(AVATAR_KEY)
-    await signOut() // clears Firebase Auth session + localStorage
+    await signOut()
     dispatch(clearProfile())
     navigate('/login')
   }
@@ -62,7 +61,7 @@ const AppHeaderDropdown = () => {
       <VersionModal visible={versionOpen} onClose={() => setVersionOpen(false)} />
       <CDropdown variant="nav-item">
         <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-          <CAvatar src={avatarSrc} size="md" style={{ objectFit: 'cover' }} />
+          <CAvatar src={avatarSrc} size="md" className="header-dropdown__avatar" />
         </CDropdownToggle>
         <CDropdownMenu className="pt-0" placement="bottom-end">
           {displayName && (
@@ -70,7 +69,7 @@ const AppHeaderDropdown = () => {
               <div className="px-3 py-2 border-bottom">
                 <div className="fw-semibold small">{displayName}</div>
                 {profile?.role && (
-                  <div className="text-secondary" style={{ fontSize: 11 }}>
+                  <div className="text-secondary header-dropdown__user-role">
                     {ROLE_LABELS[profile.role] ?? profile.role}
                   </div>
                 )}
@@ -78,27 +77,27 @@ const AppHeaderDropdown = () => {
             </>
           )}
           <CDropdownItem
+            className="header-dropdown__item"
             onClick={() => navigate('/cash_flow/profile')}
-            style={{ cursor: 'pointer' }}
           >
             <CIcon icon={cilUser} className="me-2" />
             Mi perfil
           </CDropdownItem>
-          <CDropdownItem onClick={() => setVersionOpen(true)} style={{ cursor: 'pointer' }}>
+          <CDropdownItem className="header-dropdown__item" onClick={() => setVersionOpen(true)}>
             <CIcon icon={cilCode} className="me-2" />
             Versión
           </CDropdownItem>
           {profile?.role === 'superAdmin' && (
             <CDropdownItem
+              className="header-dropdown__item"
               onClick={() => navigate('/cash_flow/settings')}
-              style={{ cursor: 'pointer' }}
             >
               <CIcon icon={cilSettings} className="me-2" />
               Configuración
             </CDropdownItem>
           )}
           <CDropdownDivider />
-          <CDropdownItem onClick={logout} style={{ cursor: 'pointer' }}>
+          <CDropdownItem className="header-dropdown__item" onClick={logout}>
             <CIcon icon={cilLockLocked} className="me-2" />
             Logout
           </CDropdownItem>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import './Dashboard.scss'
 
 const SHORTCUTS = [
   {
@@ -115,74 +116,24 @@ const greeting = () => {
 
 const ShortcutCard = ({ item }) => {
   const navigate = useNavigate()
-  const [hovered, setHovered] = useState(false)
 
   return (
     <div
+      className="shortcut-card"
       onClick={() => navigate(item.path)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
         background: item.bg,
-        border: `1.5px solid ${hovered ? item.color : item.border}`,
-        borderRadius: 16,
-        padding: '28px 20px 24px',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 12,
-        boxShadow: hovered
-          ? `0 12px 32px ${item.shadow}, 0 2px 8px rgba(0,0,0,0.06)`
-          : `0 2px 8px rgba(0,0,0,0.04)`,
-        transform: hovered ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
-        transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
-        userSelect: 'none',
+        border: `1.5px solid ${item.border}`,
+        '--card-color': item.color,
+        '--card-shadow': item.shadow,
       }}
     >
-      <div
-        style={{
-          fontSize: 42,
-          lineHeight: 1,
-          filter: hovered ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))' : 'none',
-          transition: 'filter 0.2s',
-        }}
-      >
-        {item.icon}
+      <div className="shortcut-card__icon">{item.icon}</div>
+      <div className="shortcut-card__info">
+        <div className="shortcut-card__label" style={{ color: item.color }}>{item.label}</div>
+        <div className="shortcut-card__description">{item.description}</div>
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <div
-          style={{
-            fontWeight: 700,
-            fontSize: 15,
-            color: item.color,
-            marginBottom: 4,
-            letterSpacing: '-0.01em',
-          }}
-        >
-          {item.label}
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: '#64748b',
-            lineHeight: 1.4,
-          }}
-        >
-          {item.description}
-        </div>
-      </div>
-      <div
-        style={{
-          width: 28,
-          height: 2,
-          borderRadius: 2,
-          background: item.color,
-          opacity: hovered ? 1 : 0.3,
-          transition: 'opacity 0.2s, width 0.2s',
-          ...(hovered && { width: 44 }),
-        }}
-      />
+      <div className="shortcut-card__bar" style={{ background: item.color }} />
     </div>
   )
 }
@@ -197,82 +148,24 @@ const Dashboard = () => {
   }, [])
 
   return (
-    <div style={{ padding: '8px 4px 32px' }}>
-      {/* Header */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1e3a5f 0%, #2d5282 100%)',
-          borderRadius: 16,
-          padding: '28px 32px',
-          marginBottom: 28,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 12,
-          boxShadow: '0 4px 24px rgba(30,58,95,0.18)',
-        }}
-      >
+    <div className="dashboard">
+      <div className="dashboard__header">
         <div>
-          <div
-            style={{
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.6)',
-              marginBottom: 4,
-              fontWeight: 500,
-            }}
-          >
-            {greeting()}
-            {username ? `, ${username}` : ''} 👋
+          <div className="dashboard__greeting">
+            {greeting()}{username ? `, ${username}` : ''} 👋
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            Mi Admin
-          </div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 4 }}>
-            Panel de gestión · Accesos rápidos
-          </div>
+          <div className="dashboard__title">Mi Admin</div>
+          <div className="dashboard__subtitle">Panel de gestión · Accesos rápidos</div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 800,
-              color: '#fff',
-              letterSpacing: '-0.03em',
-              lineHeight: 1,
-            }}
-          >
-            {time}
-          </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 6 }}>
-            {fmtDate()}
-          </div>
+        <div className="dashboard__time">
+          <div className="dashboard__clock">{time}</div>
+          <div className="dashboard__date">{fmtDate()}</div>
         </div>
       </div>
 
-      {/* Section label */}
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          color: '#94a3b8',
-          marginBottom: 14,
-          paddingLeft: 2,
-        }}
-      >
-        Accesos directos
-      </div>
+      <div className="dashboard__section-label">Accesos directos</div>
 
-      {/* Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: 14,
-        }}
-      >
+      <div className="dashboard__grid">
         {SHORTCUTS.map((item) => (
           <ShortcutCard key={item.key} item={item} />
         ))}

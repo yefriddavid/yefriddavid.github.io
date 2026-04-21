@@ -4,10 +4,12 @@
 .sidebar {
   [data-app-theme='yellow'] & {
     @include app-theme-sidebar(#000000, #ffc107);
+    .nav-link.active { background-color: #3a4151 !important; }
   }
 
   [data-app-theme='blue'] & {
     @include app-theme-sidebar(#1e3a5f, #10b981);
+    .nav-link.active { background-color: #3a4151 !important; }
   }
 
   @media (max-width: 991.98px) {

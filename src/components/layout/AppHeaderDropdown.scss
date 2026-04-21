@@ -1,0 +1,13 @@
+.header-dropdown {
+  &__avatar {
+    object-fit: cover;
+  }
+
+  &__user-role {
+    font-size: 11px;
+  }
+
+  &__item {
+    cursor: pointer;
+  }
+}

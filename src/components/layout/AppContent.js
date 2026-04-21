@@ -7,6 +7,7 @@ import { onAuthChange } from '../../services/firebase/auth'
 import { validateSession } from '../../services/firebase/security/sessions'
 import routes from '../../routes'
 import useNotifications from '../../hooks/useNotifications'
+import './AppContent.scss'
 
 const AppContent = () => {
   // undefined = Firebase still resolving, null = signed out, object = signed in
@@ -56,16 +57,7 @@ const AppContent = () => {
   // ── Waiting for Firebase to resolve auth state ───────────────────────────────
   if (firebaseUser === undefined) {
     return (
-      <CContainer
-        className="px-2"
-        fluid
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
+      <CContainer className="px-2 app-content-loader" fluid>
         <CSpinner color="primary" />
       </CContainer>
     )

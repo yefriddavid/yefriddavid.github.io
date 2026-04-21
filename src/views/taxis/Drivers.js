@@ -158,16 +158,7 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
         <button
           type="button"
           onClick={toggle('active')}
-          style={{
-            padding: '4px 14px',
-            borderRadius: 6,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            border: 'none',
-            background: form.active !== false ? '#d1fae5' : '#fee2e2',
-            color: form.active !== false ? '#065f46' : '#991b1b',
-          }}
+          className={`master-toggle-btn${form.active !== false ? ' master-toggle-btn--active' : ' master-toggle-btn--inactive'}`}
         >
           {form.active !== false ? '✓ Activo' : '✗ Inactivo'}
         </button>
@@ -255,13 +246,7 @@ const Conductores = () => {
       </CCardHeader>
 
       <CCollapse visible={showCreate}>
-        <div
-          style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid var(--cui-border-color)',
-            maxWidth: 380,
-          }}
-        >
+        <div className="master-form-panel">
           <DriverForm
             initial={EMPTY}
             vehicles={vehicles}
@@ -275,7 +260,7 @@ const Conductores = () => {
 
       <CCardBody>
         {savedMsg && (
-          <CAlert color="success" style={{ fontSize: 13, marginBottom: 12 }}>
+          <CAlert color="success" className="master-alert">
             ✓ {savedMsg}
           </CAlert>
         )}
@@ -295,7 +280,7 @@ const Conductores = () => {
               dataField="idNumber"
               caption={t('taxis.drivers.fields.idNumber')}
               width={130}
-              cellRender={({ value }) => <span style={{ fontFamily: 'monospace' }}>{value}</span>}
+              cellRender={({ value }) => <span className="master-mono">{value}</span>}
             />
             <Column
               dataField="phone"
@@ -310,7 +295,7 @@ const Conductores = () => {
               width={130}
               hidingPriority={2}
               cellRender={({ value }) => (
-                <span style={{ fontWeight: 600 }}>{value ? fmt(value) : '—'}</span>
+                <span className="master-amount">{value ? fmt(value) : '—'}</span>
               )}
             />
             <Column
@@ -320,7 +305,7 @@ const Conductores = () => {
               width={130}
               hidingPriority={3}
               cellRender={({ value }) => (
-                <span style={{ fontWeight: 600 }}>{value ? fmt(value) : '—'}</span>
+                <span className="master-amount">{value ? fmt(value) : '—'}</span>
               )}
             />
             <Column
@@ -329,7 +314,7 @@ const Conductores = () => {
               width={150}
               hidingPriority={4}
               cellRender={({ value }) => (
-                <span style={{ fontFamily: 'monospace' }}>{value || '—'}</span>
+                <span className="master-mono">{value || '—'}</span>
               )}
             >
               <Lookup dataSource={vehicleOptions} valueExpr="plate" displayExpr="label" />
@@ -340,16 +325,7 @@ const Conductores = () => {
               width={100}
               allowSorting={true}
               cellRender={({ data }) => (
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    borderRadius: 4,
-                    padding: '2px 8px',
-                    background: data.active !== false ? '#d1fae5' : '#fee2e2',
-                    color: data.active !== false ? '#065f46' : '#991b1b',
-                  }}
-                >
+                <span className={`master-status-badge${data.active !== false ? ' master-status-badge--active' : ' master-status-badge--inactive'}`}>
                   {data.active !== false ? '✓ Activo' : '✗ Inactivo'}
                 </span>
               )}
@@ -360,33 +336,9 @@ const Conductores = () => {
               allowSorting={false}
               allowResizing={false}
               cellRender={({ data }) => (
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button
-                    onClick={() => handleEdit(data)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--cui-primary)',
-                      cursor: 'pointer',
-                      padding: '2px 6px',
-                    }}
-                    title="Editar"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    onClick={() => handleDelete(data.id)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#e03131',
-                      cursor: 'pointer',
-                      padding: '2px 6px',
-                    }}
-                    title="Eliminar"
-                  >
-                    <CIcon icon={cilTrash} size="sm" />
-                  </button>
+                <div className="master-actions">
+                  <button className="master-btn master-btn--primary" onClick={() => handleEdit(data)} title="Editar">✎</button>
+                  <button className="master-btn master-btn--danger" onClick={() => handleDelete(data.id)} title="Eliminar"><CIcon icon={cilTrash} size="sm" /></button>
                 </div>
               )}
             />
@@ -394,7 +346,7 @@ const Conductores = () => {
               enabled={true}
               render={({ data }) =>
                 editingRow?.id === data.id ? (
-                  <div style={{ padding: '16px 24px', maxWidth: 380 }}>
+                  <div className="master-edit-panel">
                     <DriverForm
                       initial={data}
                       vehicles={vehicles}

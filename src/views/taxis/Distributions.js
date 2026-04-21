@@ -28,6 +28,7 @@ import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import '../movements/payments/Payments.scss'
+import './masters.scss'
 
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', {
@@ -196,12 +197,12 @@ const Distributions = () => {
           <CForm>
             <CRow className="g-3">
               <CCol xs={12}>
-                <div style={{ fontSize: 13, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+                <div className="dist-modal-hint">
                   Monto calculado: <strong>{fmt(payModal?.calculatedAmount)}</strong>
                 </div>
               </CCol>
               <CCol sm={6}>
-                <CFormLabel style={{ fontSize: 12 }}>Monto pagado</CFormLabel>
+                <CFormLabel className="dist-modal-label">Monto pagado</CFormLabel>
                 <CFormInput
                   type="number"
                   value={payModal?.paidAmount ?? ''}
@@ -209,7 +210,7 @@ const Distributions = () => {
                 />
               </CCol>
               <CCol sm={6}>
-                <CFormLabel style={{ fontSize: 12 }}>Fecha de pago</CFormLabel>
+                <CFormLabel className="dist-modal-label">Fecha de pago</CFormLabel>
                 <CFormInput
                   type="date"
                   value={payModal?.paidDate ?? ''}
@@ -234,28 +235,22 @@ const Distributions = () => {
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+              <div className="summary-card__label">
                 Total liquidaciones
               </div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#2f9e44' }}>
-                {fmt(totalIncome)}
-              </div>
+              <div className="summary-card__value summary-card__value--lg cell-amount--positive">{fmt(totalIncome)}</div>
             </CCardBody>
           </CCard>
         </CCol>
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+              <div className="summary-card__label">
                 Total gastos
               </div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#e03131' }}>
-                {fmt(totalExpenses)}
-              </div>
+              <div className="summary-card__value summary-card__value--lg cell-amount--expense">{fmt(totalExpenses)}</div>
               {totalExpensesPending > 0 && (
-                <div style={{ fontSize: 11, color: '#e67700', marginTop: 4, fontWeight: 600 }}>
-                  ⏳ {fmt(totalExpensesPending)} pendiente
-                </div>
+                <div className="summary-card__sub">⏳ {fmt(totalExpensesPending)} pendiente</div>
               )}
             </CCardBody>
           </CCard>
@@ -263,30 +258,20 @@ const Distributions = () => {
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+              <div className="summary-card__label">
                 Neto disponible
               </div>
-              <div
-                style={{ fontSize: 20, fontWeight: 700, color: net >= 0 ? '#1e40af' : '#e03131' }}
-              >
-                {fmt(net)}
-              </div>
+              <div className={`summary-card__value summary-card__value--lg${net >= 0 ? ' cell-amount--blue' : ' cell-amount--expense'}`}>{fmt(net)}</div>
             </CCardBody>
           </CCard>
         </CCol>
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 4 }}>
+              <div className="summary-card__label">
                 {distribution ? 'Pendiente de pago' : `% asignado (${totalPercentage}%)`}
               </div>
-              <div
-                style={{
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: distribution ? '#e67700' : totalPercentage === 100 ? '#2f9e44' : '#e67700',
-                }}
-              >
+              <div className={`summary-card__value summary-card__value--lg${(!distribution && totalPercentage === 100) ? ' cell-amount--positive' : ' cell-amount--pending'}`}>
                 {distribution ? fmt(totalPending) : `${totalPercentage}%`}
               </div>
             </CCardBody>
@@ -305,14 +290,9 @@ const Distributions = () => {
 
           {/* Period selector */}
           <div className="d-flex align-items-center gap-2">
-            <span
-              style={{ fontSize: 12, color: 'var(--cui-secondary-color)', whiteSpace: 'nowrap' }}
-            >
-              Periodo
-            </span>
+            <span className="period-label">Periodo</span>
             <select
-              className="form-select form-select-sm"
-              style={{ width: 130 }}
+              className="form-select form-select-sm period-select-month"
               value={period.month}
               onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
             >
@@ -323,8 +303,7 @@ const Distributions = () => {
               ))}
             </select>
             <select
-              className="form-select form-select-sm"
-              style={{ width: 90 }}
+              className="form-select form-select-sm period-select-year"
               value={period.year}
               onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
             >
@@ -365,29 +344,19 @@ const Distributions = () => {
           </div>
         </CCardHeader>
 
-        <CCardBody style={{ padding: 0 }}>
+        <CCardBody className="p-0">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <CSpinner color="primary" />
             </div>
           ) : partners.length === 0 ? (
-            <div
-              className="text-center py-5"
-              style={{ color: 'var(--cui-secondary-color)', fontSize: 14 }}
-            >
+            <div className="text-center py-5 no-partners-msg">
               No hay socios registrados. Agrega socios primero.
             </div>
           ) : (
             <>
               {!distribution && (
-                <div
-                  style={{
-                    padding: '12px 16px',
-                    background: 'var(--cui-warning-bg-subtle, #fff3cd)',
-                    borderBottom: '1px solid var(--cui-border-color)',
-                    fontSize: 13,
-                  }}
-                >
+                <div className="distribution-preview-banner">
                   Vista previa — presiona <strong>Generar repartición</strong> para guardar.
                 </div>
               )}
@@ -410,14 +379,14 @@ const Distributions = () => {
                   dataField="percentage"
                   caption={t('taxis.distributions.columns.percentage')}
                   width={80}
-                  cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{value}%</span>}
+                  cellRender={({ value }) => <span className="master-amount">{value}%</span>}
                 />
                 <Column
                   dataField="calculatedAmount"
                   caption={t('taxis.distributions.columns.calculatedAmount')}
                   width={160}
                   cellRender={({ value }) => (
-                    <span style={{ fontWeight: 700, color: '#1e40af' }}>{fmt(value)}</span>
+                    <span className="cell-amount cell-amount--blue">{fmt(value)}</span>
                   )}
                 />
                 <Column
@@ -426,9 +395,9 @@ const Distributions = () => {
                   width={150}
                   cellRender={({ value }) =>
                     value != null ? (
-                      <span style={{ fontWeight: 600, color: '#2f9e44' }}>{fmt(value)}</span>
+                      <span className="master-amount cell-amount--positive">{fmt(value)}</span>
                     ) : (
-                      <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
+                      <span className="cell-amount--muted">—</span>
                     )
                   }
                 />
@@ -437,11 +406,7 @@ const Distributions = () => {
                   caption={t('taxis.distributions.columns.paymentDate')}
                   width={120}
                   cellRender={({ value }) =>
-                    value ? (
-                      <span>{value}</span>
-                    ) : (
-                      <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
-                    )
+                    value ? <span>{value}</span> : <span className="cell-amount--muted">—</span>
                   }
                 />
                 <Column
@@ -467,7 +432,7 @@ const Distributions = () => {
                           size="sm"
                           color="primary"
                           variant="outline"
-                          style={{ fontSize: 11 }}
+                          className="fs-xs"
                           onClick={() => openPayModal(data)}
                         >
                           Marcar pagado
@@ -479,13 +444,9 @@ const Distributions = () => {
               </StandardGrid>
 
               {distribution && paymentRows.some((r) => r.paid) && (
-                <div style={{ padding: '8px 24px 16px', textAlign: 'right', fontSize: 13 }}>
-                  <span style={{ color: 'var(--cui-secondary-color)', marginRight: 12 }}>
-                    Total pagado:
-                  </span>
-                  <span style={{ fontWeight: 700, color: '#2f9e44', fontSize: 15 }}>
-                    {fmt(totalPaid)}
-                  </span>
+                <div className="distribution-total">
+                  <span className="distribution-total__label">Total pagado:</span>
+                  <span className="distribution-total__value">{fmt(totalPaid)}</span>
                 </div>
               )}
             </>

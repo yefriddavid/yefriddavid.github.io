@@ -1,17 +1,6 @@
 import React, { useEffect, useRef } from 'react'
+import './MultiSelectDropdown.scss'
 
-/**
- * Reusable multi-select dropdown with checkboxes.
- *
- * Props:
- *   label        - button label (string or fn(size) => string)
- *   options      - array of { value, label }
- *   selected     - Set of selected values
- *   onToggle     - fn(value) called when an option is toggled
- *   onClearAll   - fn() called when "Todos" is clicked
- *   acceptLabel  - text for the accept button (default 'Aceptar')
- *   maxHeight    - dropdown max height (default 260)
- */
 const MultiSelectDropdown = ({
   label,
   options,
@@ -37,67 +26,21 @@ const MultiSelectDropdown = ({
   const isActive = selected.size > 0
 
   return (
-    <div ref={ref} style={{ position: 'relative' }}>
+    <div ref={ref} className="multi-select">
       <button
+        className={`multi-select__toggle${isActive ? ' multi-select__toggle--active' : ''}`}
         onClick={() => setOpen((v) => !v)}
-        style={{
-          fontSize: 12,
-          minWidth: 80,
-          padding: '4px 10px',
-          borderRadius: 6,
-          border: '1px solid var(--cui-secondary)',
-          background: isActive ? '#e8f0fb' : '#fff',
-          color: isActive ? '#1e3a5f' : 'var(--cui-secondary)',
-          cursor: 'pointer',
-          fontWeight: isActive ? 600 : 400,
-        }}
       >
         {buttonLabel} ▾
       </button>
       {open && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            left: 0,
-            zIndex: 1050,
-            background: '#fff',
-            border: '1px solid var(--cui-border-color)',
-            borderRadius: 8,
-            padding: '8px 12px',
-            minWidth: 180,
-            maxHeight,
-            overflowY: 'auto',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-          }}
-        >
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: 13,
-              cursor: 'pointer',
-              paddingBottom: 6,
-              borderBottom: '1px solid var(--cui-border-color)',
-              marginBottom: 6,
-            }}
-          >
+        <div className="multi-select__dropdown" style={{ maxHeight }}>
+          <label className="multi-select__option multi-select__option--all">
             <input type="checkbox" checked={selected.size === 0} onChange={onClearAll} />
             Todos
           </label>
           {options.map((opt) => (
-            <label
-              key={opt.value}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 13,
-                cursor: 'pointer',
-                padding: '3px 0',
-              }}
-            >
+            <label key={opt.value} className="multi-select__option">
               <input
                 type="checkbox"
                 checked={selected.has(opt.value)}
@@ -106,27 +49,8 @@ const MultiSelectDropdown = ({
               {opt.label}
             </label>
           ))}
-          <div
-            style={{
-              paddingTop: 8,
-              marginTop: 6,
-              borderTop: '1px solid var(--cui-border-color)',
-              textAlign: 'right',
-            }}
-          >
-            <button
-              onClick={() => setOpen(false)}
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                padding: '3px 12px',
-                borderRadius: 4,
-                border: '1px solid #1e3a5f',
-                background: '#1e3a5f',
-                color: '#fff',
-                cursor: 'pointer',
-              }}
-            >
+          <div className="multi-select__footer">
+            <button className="multi-select__accept" onClick={() => setOpen(false)}>
               {acceptLabel}
             </button>
           </div>

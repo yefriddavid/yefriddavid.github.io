@@ -1,2 +1,199 @@
-// Estilos compartidos para los maestros de Taxis
-// El grid usa el tema global de StandardGrid.scss
+.master-form-panel {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--cui-border-color);
+  max-width: 380px;
+}
+
+.master-edit-panel {
+  padding: 16px 24px;
+  max-width: 380px;
+}
+
+.master-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.master-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+
+  &--primary {
+    color: var(--cui-primary);
+  }
+
+  &--danger {
+    color: #e03131;
+  }
+
+  &--warning {
+    color: #e67700;
+    font-size: 14px;
+  }
+}
+
+.master-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 8px;
+
+  &--active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  &--inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+.master-toggle-btn {
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+
+  &--active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  &--inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+.master-mono {
+  font-family: monospace;
+}
+
+.master-amount {
+  font-weight: 600;
+}
+
+.master-empty {
+  font-size: 12px;
+  color: var(--cui-secondary-color);
+}
+
+.master-alert {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.driver-badge {
+  margin-right: 4px;
+  font-weight: 400;
+}
+
+.summary-card {
+  &__label {
+    font-size: 12px;
+    color: var(--cui-secondary-color);
+    margin-bottom: 4px;
+  }
+
+  &__value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  &__value--lg {
+    font-size: 20px;
+  }
+
+  &__sub {
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+    color: #e67700;
+  }
+}
+
+.period-label {
+  font-size: 12px;
+  color: var(--cui-secondary-color);
+  white-space: nowrap;
+}
+
+.period-select-month {
+  width: 120px;
+}
+
+.period-select-year {
+  width: 90px;
+}
+
+.row-type-badge {
+  font-weight: 600;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+
+  &--income {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  &--expense {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+.cell-amount {
+  font-weight: 700;
+
+  &--income { color: #1e40af; }
+  &--expense { color: #b91c1c; }
+  &--positive { color: #2f9e44; }
+  &--pending { color: #e67700; }
+  &--blue { color: #1e40af; }
+  &--muted { color: var(--cui-secondary-color); }
+}
+
+.distribution-preview-banner {
+  padding: 12px 16px;
+  background: var(--cui-warning-bg-subtle, #fff3cd);
+  border-bottom: 1px solid var(--cui-border-color);
+  font-size: 13px;
+}
+
+.distribution-total {
+  padding: 8px 24px 16px;
+  text-align: right;
+  font-size: 13px;
+
+  &__label {
+    color: var(--cui-secondary-color);
+    margin-right: 12px;
+  }
+
+  &__value {
+    font-weight: 700;
+    color: #2f9e44;
+    font-size: 15px;
+  }
+}
+
+.dist-modal-hint {
+  font-size: 13px;
+  color: var(--cui-secondary-color);
+  margin-bottom: 4px;
+}
+
+.dist-modal-label {
+  font-size: 12px;
+}
+
+.no-partners-msg {
+  color: var(--cui-secondary-color);
+  font-size: 14px;
+}

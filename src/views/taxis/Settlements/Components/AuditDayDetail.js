@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import { fmt } from './utils'
+import './Settlements.scss'
 
 const SettlementRow = ({ record }) => {
   const dispatch = useDispatch()
@@ -28,16 +29,8 @@ const SettlementRow = ({ record }) => {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '5px 0',
-        borderBottom: '1px solid #e8e8e8',
-      }}
-    >
-      <span style={{ minWidth: 150, fontSize: 12, color: '#374151', fontWeight: 500 }}>
+    <div className="settlement-row">
+      <span className="settlement-row__label">
         {[record.driver, record.plate].filter(Boolean).join(' · ')}
       </span>
 
@@ -48,64 +41,32 @@ const SettlementRow = ({ record }) => {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           onKeyDown={handleKeyDown}
-          onBlur={() => {
-            if (!dirty) setEditing(false)
-          }}
-          style={{
-            width: 110,
-            fontSize: 12,
-            fontWeight: 600,
-            padding: '1px 4px',
-            border: 'none',
-            borderBottom: '2px dotted #94a3b8',
-            outline: 'none',
-            background: 'transparent',
-            color: '#374151',
-          }}
+          onBlur={() => { if (!dirty) setEditing(false) }}
+          className="settlement-row__amount-input"
         />
       ) : (
         <span
+          className="settlement-row__amount-display"
           onClick={() => setEditing(true)}
           title="Click para editar"
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#374151',
-            borderBottom: '2px dotted #94a3b8',
-            cursor: 'text',
-            paddingBottom: 1,
-          }}
         >
           {fmt(Number(amount))}
         </span>
       )}
 
       {dirty && (
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            padding: '2px 10px',
-            borderRadius: 4,
-            border: 'none',
-            background: '#1e3a5f',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
+        <button className="settlement-row__save-btn" onClick={handleSave} disabled={saving}>
           {saving ? '…' : 'Guardar'}
         </button>
       )}
-      {record.comment && <span style={{ fontSize: 11, color: '#6b7280' }}>{record.comment}</span>}
+      {record.comment && <span className="settlement-row__comment">{record.comment}</span>}
     </div>
   )
 }
 
 const AuditDayDetail = ({ day, periodDrivers, getNote, t }) => (
   <tr>
-    <td colSpan={7} style={{ padding: 0, background: 'var(--cui-card-bg, #fff)' }}>
+    <td colSpan={7} className="audit-day-cell">
       <DetailPanel columns={2}>
         <DetailSection title={t('taxis.settlements.audit.colDay')}>
           <DetailRow label={t('taxis.settlements.fields.date')} value={day.dateStr} />
@@ -145,19 +106,9 @@ const AuditDayDetail = ({ day, periodDrivers, getNote, t }) => (
             day.picoPlacaDrivers.map((dr) => {
               const driverObj = periodDrivers.find((pd) => pd.name === dr)
               return (
-                <div
-                  key={dr}
-                  style={{
-                    display: 'flex',
-                    gap: 8,
-                    padding: '5px 0',
-                    borderBottom: '1px solid #e8e8e8',
-                  }}
-                >
-                  <span style={{ minWidth: 150, fontSize: 12, color: '#6b21a8', fontWeight: 500 }}>
-                    🚫 {dr}
-                  </span>
-                  <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#6b21a8' }}>
+                <div key={dr} className="pico-placa-row">
+                  <span className="pico-placa-row__driver">🚫 {dr}</span>
+                  <span className="pico-placa-row__vehicle">
                     {driverObj?.defaultVehicle || ''} · Pico y placa
                   </span>
                 </div>

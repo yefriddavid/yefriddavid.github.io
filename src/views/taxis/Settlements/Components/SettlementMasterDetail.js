@@ -6,6 +6,7 @@ import { cilPencil } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import { fmt } from './utils'
+import './Settlements.scss'
 
 const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editingRowIdRef }) => {
   const { t } = useTranslation()
@@ -25,7 +26,7 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
 
   if (editing) {
     return (
-      <div style={{ width: '50%', padding: 16 }}>
+      <div className="settlement-detail__edit-form">
         <StandardForm
           title={t('taxis.settlements.editSettlement')}
           subtitle={data.date}
@@ -92,7 +93,7 @@ const SettlementMasterDetail = ({ data, drivers, vehicles, onSave, saving, editi
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px 0' }}>
+      <div className="settlement-detail__edit-actions">
         <CButton size="sm" color="primary" variant="outline" onClick={() => setEditing(true)}>
           <CIcon icon={cilPencil} size="sm" /> {t('common.edit')}
         </CButton>

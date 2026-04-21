@@ -9,6 +9,7 @@ import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import '../movements/payments/Payments.scss'
+import './masters.scss'
 
 const EMPTY = { name: '', percentage: '' }
 
@@ -84,9 +85,7 @@ const Partners = () => {
       </CCardHeader>
 
       <CCollapse visible={showForm}>
-        <div
-          style={{ padding: 16, borderBottom: '1px solid var(--cui-border-color)', width: '50%' }}
-        >
+        <div className="master-form-panel" style={{ maxWidth: '50%' }}>
           <StandardForm
             title={editingId ? 'Editar socio' : 'Nuevo socio'}
             subtitle={editingId ? form.name : undefined}
@@ -118,7 +117,7 @@ const Partners = () => {
         </div>
       </CCollapse>
 
-      <CCardBody style={{ padding: 0 }}>
+      <CCardBody className="p-0">
         {loading ? (
           <div className="d-flex justify-content-center py-5">
             <CSpinner color="primary" />
@@ -136,7 +135,7 @@ const Partners = () => {
               caption={t('taxis.partners.fields.percentage')}
               width={150}
               dataType="number"
-              cellRender={({ value }) => <span style={{ fontWeight: 600 }}>{value}%</span>}
+              cellRender={({ value }) => <span className="master-amount">{value}%</span>}
             />
             <Column
               caption=""
@@ -144,33 +143,9 @@ const Partners = () => {
               allowSorting={false}
               allowResizing={false}
               cellRender={({ data }) => (
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button
-                    onClick={() => openEdit(data)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#1e3a5f',
-                      cursor: 'pointer',
-                      padding: '2px 4px',
-                    }}
-                    title="Editar"
-                  >
-                    <CIcon icon={cilPencil} size="sm" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(data.id)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#e03131',
-                      cursor: 'pointer',
-                      padding: '2px 4px',
-                    }}
-                    title="Eliminar"
-                  >
-                    <CIcon icon={cilTrash} size="sm" />
-                  </button>
+                <div className="master-actions">
+                  <button className="master-btn master-btn--primary" onClick={() => openEdit(data)} title="Editar"><CIcon icon={cilPencil} size="sm" /></button>
+                  <button className="master-btn master-btn--danger" onClick={() => handleDelete(data.id)} title="Eliminar"><CIcon icon={cilTrash} size="sm" /></button>
                 </div>
               )}
             />

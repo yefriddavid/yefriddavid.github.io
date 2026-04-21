@@ -1,6 +1,7 @@
 import React from 'react'
 import { CSpinner } from '@coreui/react'
 import { fmt } from './utils'
+import './Audit.scss'
 
 const IssueEntry = ({
   label,
@@ -15,86 +16,32 @@ const IssueEntry = ({
   onQuickSettle,
   t,
 }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <span
-        style={{
-          fontSize: 11,
-          background: resolved ? '#dcfce7' : '#fee2e2',
-          color: resolved ? '#166534' : '#b91c1c',
-          borderRadius: 4,
-          padding: '2px 7px',
-          fontWeight: 600,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-        }}
-      >
+  <div className="issue-entry">
+    <div className="issue-entry__header">
+      <span className={`issue-entry__badge${resolved ? ' issue-entry__badge--resolved' : ' issue-entry__badge--missing'}`}>
         {onQuickSettle && (
-          <button
-            onClick={onQuickSettle}
-            title="Crear liquidación"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              color: '#2f9e44',
-              fontSize: 13,
-              lineHeight: 1,
-              fontWeight: 700,
-            }}
-          >
+          <button className="issue-entry__quick-settle" onClick={onQuickSettle} title="Crear liquidación">
             ✓
           </button>
         )}
         {label}
       </span>
       <button
+        className={`issue-entry__resolve-btn${resolved ? ' issue-entry__resolve-btn--resolved' : ' issue-entry__resolve-btn--pending'}`}
         onClick={onResolveToggle}
         title={resolved ? 'Desmarcar resuelto' : 'Marcar como resuelto'}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '1px 3px',
-          color: resolved ? '#2f9e44' : '#adb5bd',
-          fontSize: 14,
-          lineHeight: 1,
-          fontWeight: 700,
-        }}
       >
         ✓
       </button>
       <button
+        className={`issue-entry__edit-btn${note ? ' issue-entry__edit-btn--has-note' : ' issue-entry__edit-btn--no-note'}`}
         onClick={onEditToggle}
         title={note ? t('taxis.settlements.audit.editNote') : t('taxis.settlements.audit.addNote')}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '1px 3px',
-          color: note ? '#e67700' : '#adb5bd',
-          fontSize: 12,
-          lineHeight: 1,
-        }}
       >
         ✎
       </button>
       {note && (
-        <button
-          onClick={onNoteDelete}
-          title={t('common.remove')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '1px 3px',
-            color: '#e03131',
-            fontSize: 11,
-            lineHeight: 1,
-          }}
-        >
+        <button className="issue-entry__delete-btn" onClick={onNoteDelete} title={t('common.remove')}>
           ×
         </button>
       )}
@@ -104,42 +51,19 @@ const IssueEntry = ({
         autoFocus
         defaultValue={note}
         placeholder={t('taxis.settlements.audit.notePlaceholder')}
+        className="issue-entry__note-input"
         onBlur={(e) => {
-          if (e.target.value === note) {
-            onCancel()
-          } else {
-            onNoteSave(e.target.value)
-          }
+          if (e.target.value === note) onCancel()
+          else onNoteSave(e.target.value)
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') onNoteSave(e.target.value)
           if (e.key === 'Escape') onCancel()
         }}
-        style={{
-          fontSize: 11,
-          padding: '2px 6px',
-          borderRadius: 4,
-          border: '1px solid #fed7aa',
-          outline: 'none',
-          width: 140,
-        }}
       />
     )}
     {!isEditing && note && (
-      <span
-        style={{
-          fontSize: 10,
-          color: '#92400e',
-          background: '#fffbeb',
-          border: '1px solid #fcd34d',
-          borderRadius: 3,
-          padding: '1px 5px',
-          maxWidth: 160,
-          wordBreak: 'break-word',
-        }}
-      >
-        {note}
-      </span>
+      <span className="issue-entry__note-text">{note}</span>
     )}
   </div>
 )
@@ -158,8 +82,8 @@ const AuditMissingCell = ({
   dispatchCreate,
   t,
 }) => (
-  <td style={{ padding: '8px 6px' }}>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+  <td className="audit-cell">
+    <div className="audit-cell__issues">
       {/* Underpaid vehicles */}
       {!day.isFuture &&
         day.underpaidVehicles.map((pl) => {
@@ -230,12 +154,7 @@ const AuditMissingCell = ({
                   day.isSunday || day.isHoliday
                     ? driverObj.defaultAmountSunday || driverObj.defaultAmount || 0
                     : driverObj.defaultAmount || 0
-                dispatchCreate({
-                  driver: dr,
-                  plate: driverObj.defaultVehicle || '',
-                  amount,
-                  date: day.dateStr,
-                })
+                dispatchCreate({ driver: dr, plate: driverObj.defaultVehicle || '', amount, date: day.dateStr })
               }}
               onResolveToggle={(e) => {
                 e.stopPropagation()
@@ -262,30 +181,13 @@ const AuditMissingCell = ({
           ? day.picoPlacaDrivers.filter((dr) => auditDriverFilter.has(dr))
           : day.picoPlacaDrivers
         ).map((dr) => (
-          <div key={dr} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span
-              style={{
-                fontSize: 11,
-                background: '#f3e8ff',
-                color: '#6b21a8',
-                border: '1px solid #d8b4fe',
-                borderRadius: 4,
-                padding: '2px 7px',
-                fontWeight: 600,
-              }}
-            >
-              🚫 {dr.split(' ')[0]}
-            </span>
+          <div key={dr} className="pico-placa-chip">
+            <span className="pico-placa-chip__badge">🚫 {dr.split(' ')[0]}</span>
           </div>
         ))}
 
-      {/* Loading spinner */}
       {loadingDay === day.dateStr && (
-        <CSpinner
-          size="sm"
-          color="primary"
-          style={{ width: 14, height: 14, alignSelf: 'center' }}
-        />
+        <CSpinner size="sm" color="primary" style={{ width: 14, height: 14, alignSelf: 'center' }} />
       )}
     </div>
   </td>

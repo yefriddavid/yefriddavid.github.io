@@ -282,13 +282,7 @@ const Vehiculos = () => {
         </CCardHeader>
 
         <CCollapse visible={showCreate}>
-          <div
-            style={{
-              padding: '20px 24px',
-              borderBottom: '1px solid var(--cui-border-color)',
-              maxWidth: 380,
-            }}
-          >
+          <div className="master-form-panel">
             <VehicleForm
               initial={EMPTY}
               title="Nuevo vehículo"
@@ -332,9 +326,9 @@ const Vehiculos = () => {
                 hidingPriority={2}
                 cellRender={({ data }) => {
                   const names = driversByPlate(data.plate)
-                  if (names.length === 0) return <span style={{ color: '#aaa' }}>—</span>
+                  if (names.length === 0) return <span className="text-body-tertiary">—</span>
                   return names.map((n, i) => (
-                    <CBadge key={i} color="info" style={{ marginRight: 4, fontWeight: 400 }}>
+                    <CBadge key={i} color="info" className="driver-badge">
                       {n}
                     </CBadge>
                   ))
@@ -352,47 +346,10 @@ const Vehiculos = () => {
                 allowSorting={false}
                 allowResizing={false}
                 cellRender={({ data }) => (
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button
-                      onClick={() => openRestrictModal(data)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#e67700',
-                        cursor: 'pointer',
-                        padding: '2px 6px',
-                        fontSize: 14,
-                      }}
-                      title="Pico y placa"
-                    >
-                      📅
-                    </button>
-                    <button
-                      onClick={() => handleEdit(data)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--cui-primary)',
-                        cursor: 'pointer',
-                        padding: '2px 6px',
-                      }}
-                      title="Editar"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      onClick={() => handleDelete(data.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#e03131',
-                        cursor: 'pointer',
-                        padding: '2px 6px',
-                      }}
-                      title="Eliminar"
-                    >
-                      <CIcon icon={cilTrash} size="sm" />
-                    </button>
+                  <div className="master-actions">
+                    <button className="master-btn master-btn--warning" onClick={() => openRestrictModal(data)} title="Pico y placa">📅</button>
+                    <button className="master-btn master-btn--primary" onClick={() => handleEdit(data)} title="Editar">✎</button>
+                    <button className="master-btn master-btn--danger" onClick={() => handleDelete(data.id)} title="Eliminar"><CIcon icon={cilTrash} size="sm" /></button>
                   </div>
                 )}
               />
@@ -400,7 +357,7 @@ const Vehiculos = () => {
                 enabled={true}
                 render={({ data }) =>
                   editingRow?.id === data.id ? (
-                    <div style={{ padding: '16px 24px', maxWidth: 380 }}>
+                    <div className="master-edit-panel">
                       <VehicleForm
                         initial={data}
                         title="Editar vehículo"
@@ -438,7 +395,7 @@ const Vehiculos = () => {
                               />
                             ))
                           ) : (
-                            <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>
+                            <span className="master-empty">
                               {t('taxis.settlements.noRecords')}
                             </span>
                           )
@@ -471,7 +428,7 @@ const Vehiculos = () => {
                 const m = i + 1
                 return (
                   <CTableRow key={m}>
-                    <CTableDataCell style={{ fontWeight: 500 }}>{name}</CTableDataCell>
+                    <CTableDataCell className="fw-medium">{name}</CTableDataCell>
                     <CTableDataCell>
                       <CFormInput
                         size="sm"

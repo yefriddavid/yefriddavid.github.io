@@ -5,6 +5,7 @@ import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
 import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
 import { getDrivers } from 'src/services/firebase/taxi/taxiDrivers'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
+import './Home.scss'
 
 const MONTHS = [
   'Enero',
@@ -37,31 +38,16 @@ const fmtM = (n) => {
   return fmt(n)
 }
 
-// ─── KPI Card ───────────────────────────────────────────────────────────────
 const KpiCard = ({ label, value, sub, accent }) => (
-  <CCard style={{ height: '100%', borderTop: `4px solid ${accent}` }}>
-    <CCardBody style={{ padding: '14px 18px' }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          color: 'var(--cui-secondary-color)',
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
-      {sub && (
-        <div style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginTop: 5 }}>{sub}</div>
-      )}
+  <CCard className="kpi-card" style={{ '--kpi-accent': accent }}>
+    <CCardBody className="kpi-card__body">
+      <div className="kpi-card__label">{label}</div>
+      <div className="kpi-card__value">{value}</div>
+      {sub && <div className="kpi-card__sub">{sub}</div>}
     </CCardBody>
   </CCard>
 )
 
-// ─── Main ────────────────────────────────────────────────────────────────────
 const TaxisHome = () => {
   const now = new Date()
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
@@ -93,7 +79,6 @@ const TaxisHome = () => {
     return years
   }, [settlements, expenses, period.year])
 
-  // ── Period filter ──────────────────────────────────────────────────────────
   const monthStr = `${period.year}-${String(period.month).padStart(2, '0')}`
 
   const monthSettlements = useMemo(
@@ -105,7 +90,6 @@ const TaxisHome = () => {
     [expenses, monthStr],
   )
 
-  // ── KPIs ───────────────────────────────────────────────────────────────────
   const totalSettled = monthSettlements.reduce((s, r) => s + (r.amount || 0), 0)
   const totalExp = monthExpenses.reduce((s, r) => s + (r.amount || 0), 0)
   const totalExpPending = monthExpenses
@@ -120,7 +104,6 @@ const TaxisHome = () => {
   const activeDays = new Set(monthSettlements.map((r) => r.date)).size
   const avgPerDay = activeDays > 0 ? totalSettled / activeDays : 0
 
-  // ── Daily bar data ────────────────────────────────────────────────────────
   const daysInMonth = new Date(period.year, period.month, 0).getDate()
   const dailyLabels = useMemo(
     () => Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -141,7 +124,6 @@ const TaxisHome = () => {
     return dailyLabels.map((d) => map[`${monthStr}-${String(d).padStart(2, '0')}`] || 0)
   }, [monthExpenses, dailyLabels, monthStr])
 
-  // ── By driver ─────────────────────────────────────────────────────────────
   const byDriver = useMemo(() => {
     const map = monthSettlements.reduce((acc, r) => {
       if (!r.driver) return acc
@@ -153,7 +135,6 @@ const TaxisHome = () => {
       .slice(0, 8)
   }, [monthSettlements])
 
-  // ── By expense category ───────────────────────────────────────────────────
   const byCategory = useMemo(() => {
     const map = {}
     monthExpenses.forEach((e) => {
@@ -166,7 +147,6 @@ const TaxisHome = () => {
       .sort((a, b) => b.value - a.value)
   }, [monthExpenses])
 
-  // ── 6-month trend ─────────────────────────────────────────────────────────
   const last6 = useMemo(() => {
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date(period.year, period.month - 1 - (5 - i), 1)
@@ -204,7 +184,6 @@ const TaxisHome = () => {
   }, [settlements, expenses, last6])
   const trendNet = trendSettled.map((v, i) => v - trendExp[i])
 
-  // ── Top vehicles ──────────────────────────────────────────────────────────
   const byVehicle = useMemo(() => {
     const map = monthSettlements.reduce((acc, r) => {
       if (!r.plate) return acc
@@ -217,22 +196,12 @@ const TaxisHome = () => {
   }, [monthSettlements])
 
   const cardHeader = (title) => (
-    <CCardHeader
-      style={{
-        background: '#1e3a5f',
-        color: '#fff',
-        fontSize: 13,
-        fontWeight: 700,
-        padding: '10px 16px',
-      }}
-    >
-      {title}
-    </CCardHeader>
+    <CCardHeader className="home-card-header">{title}</CCardHeader>
   )
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 300 }}>
+      <div className="d-flex justify-content-center align-items-center taxis-home__loader">
         <CSpinner color="primary" />
       </div>
     )
@@ -240,14 +209,11 @@ const TaxisHome = () => {
 
   return (
     <>
-      {/* ── Period selector ── */}
-      <div className="d-flex align-items-center gap-2 mb-4" style={{ flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cui-secondary-color)' }}>
-          Periodo
-        </span>
+      <div className="d-flex align-items-center gap-2 mb-4 taxis-home__period-bar">
+        <span className="taxis-home__period-label">Periodo</span>
         <CFormSelect
           size="sm"
-          style={{ width: 130 }}
+          className="taxis-home__period-select-month"
           value={period.month}
           onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
         >
@@ -259,7 +225,7 @@ const TaxisHome = () => {
         </CFormSelect>
         <CFormSelect
           size="sm"
-          style={{ width: 90 }}
+          className="taxis-home__period-select-year"
           value={period.year}
           onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
         >
@@ -269,12 +235,11 @@ const TaxisHome = () => {
             </option>
           ))}
         </CFormSelect>
-        <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginLeft: 8 }}>
+        <span className="taxis-home__period-summary">
           {drivers.length} conductores · {vehicles.length} vehículos registrados
         </span>
       </div>
 
-      {/* ── KPI Cards ── */}
       <CRow className="g-3 mb-4">
         <CCol sm={6} lg={4} xl={2}>
           <KpiCard
@@ -330,10 +295,9 @@ const TaxisHome = () => {
         </CCol>
       </CRow>
 
-      {/* ── Daily chart + expense doughnut ── */}
       <CRow className="g-3 mb-4">
         <CCol lg={8}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader(`Liquidaciones por día — ${MONTHS[period.month - 1]} ${period.year}`)}
             <CCardBody>
               <CChartBar
@@ -362,10 +326,7 @@ const TaxisHome = () => {
                     x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                     y: {
                       grid: { color: 'rgba(0,0,0,0.06)' },
-                      ticks: {
-                        font: { size: 10 },
-                        callback: (v) => fmtM(v),
-                      },
+                      ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
                     },
                   },
                 }}
@@ -374,13 +335,11 @@ const TaxisHome = () => {
           </CCard>
         </CCol>
         <CCol lg={4}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader('Gastos por categoría')}
             <CCardBody className="d-flex flex-column align-items-center justify-content-center">
               {byCategory.length === 0 ? (
-                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
-                  Sin gastos este periodo
-                </span>
+                <span className="taxis-home__empty">Sin gastos este periodo</span>
               ) : (
                 <>
                   <CChartDoughnut
@@ -404,28 +363,13 @@ const TaxisHome = () => {
                       cutout: '62%',
                     }}
                   />
-                  <div style={{ width: '100%', marginTop: 12 }}>
+                  <div className="category-legend">
                     {byCategory.map((c, i) => (
-                      <div
-                        key={c.label}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          fontSize: 12,
-                          padding: '2px 0',
-                          borderBottom: '1px solid var(--cui-border-color)',
-                        }}
-                      >
+                      <div key={c.label} className="category-legend__row">
                         <span>
                           <span
-                            style={{
-                              display: 'inline-block',
-                              width: 10,
-                              height: 10,
-                              borderRadius: 2,
-                              background: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-                              marginRight: 6,
-                            }}
+                            className="category-legend__dot"
+                            style={{ background: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
                           />
                           {c.label}
                         </span>
@@ -440,10 +384,9 @@ const TaxisHome = () => {
         </CCol>
       </CRow>
 
-      {/* ── 6-month trend + by driver ── */}
       <CRow className="g-3 mb-4">
         <CCol lg={7}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader('Tendencia últimos 6 meses')}
             <CCardBody>
               <CChartLine
@@ -503,13 +446,11 @@ const TaxisHome = () => {
           </CCard>
         </CCol>
         <CCol lg={5}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader('Top conductores del mes')}
             <CCardBody>
               {byDriver.length === 0 ? (
-                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
-                  Sin liquidaciones este periodo
-                </span>
+                <span className="taxis-home__empty">Sin liquidaciones este periodo</span>
               ) : (
                 <CChartBar
                   style={{ maxHeight: 260 }}
@@ -545,14 +486,13 @@ const TaxisHome = () => {
         </CCol>
       </CRow>
 
-      {/* ── By vehicle + driver ranking table ── */}
       <CRow className="g-3">
         <CCol lg={5}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader('Liquidaciones por vehículo')}
             <CCardBody>
               {byVehicle.length === 0 ? (
-                <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>Sin datos</span>
+                <span className="taxis-home__empty">Sin datos</span>
               ) : (
                 <CChartBar
                   style={{ maxHeight: 240 }}
@@ -587,82 +527,20 @@ const TaxisHome = () => {
           </CCard>
         </CCol>
         <CCol lg={7}>
-          <CCard style={{ height: '100%' }}>
+          <CCard className="taxis-home__card">
             {cardHeader('Ranking de conductores')}
-            <CCardBody style={{ padding: 0 }}>
+            <CCardBody className="taxis-home__card-body--flush">
               {byDriver.length === 0 ? (
-                <div style={{ padding: 16, fontSize: 13, color: 'var(--cui-secondary-color)' }}>
-                  Sin datos
-                </div>
+                <div className="taxis-home__empty--padded">Sin datos</div>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <table className="driver-ranking">
                   <thead>
-                    <tr style={{ background: '#f8fafc' }}>
-                      <th
-                        style={{
-                          padding: '8px 16px',
-                          textAlign: 'left',
-                          fontWeight: 700,
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: '#64748b',
-                        }}
-                      >
-                        #
-                      </th>
-                      <th
-                        style={{
-                          padding: '8px 16px',
-                          textAlign: 'left',
-                          fontWeight: 700,
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: '#64748b',
-                        }}
-                      >
-                        Conductor
-                      </th>
-                      <th
-                        style={{
-                          padding: '8px 16px',
-                          textAlign: 'right',
-                          fontWeight: 700,
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: '#64748b',
-                        }}
-                      >
-                        Total
-                      </th>
-                      <th
-                        style={{
-                          padding: '8px 16px',
-                          textAlign: 'right',
-                          fontWeight: 700,
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: '#64748b',
-                        }}
-                      >
-                        Liq.
-                      </th>
-                      <th
-                        style={{
-                          padding: '8px 16px',
-                          textAlign: 'left',
-                          fontWeight: 700,
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: '#64748b',
-                        }}
-                      >
-                        Participación
-                      </th>
+                    <tr className="driver-ranking__head-row">
+                      <th className="driver-ranking__th">#</th>
+                      <th className="driver-ranking__th">Conductor</th>
+                      <th className="driver-ranking__th driver-ranking__th--right">Total</th>
+                      <th className="driver-ranking__th driver-ranking__th--right">Liq.</th>
+                      <th className="driver-ranking__th">Participación</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -670,53 +548,22 @@ const TaxisHome = () => {
                       const count = monthSettlements.filter((r) => r.driver === name).length
                       const pct = totalSettled > 0 ? Math.round((total / totalSettled) * 100) : 0
                       return (
-                        <tr key={name} style={{ borderTop: '1px solid #f1f5f9' }}>
-                          <td
-                            style={{
-                              padding: '9px 16px',
-                              color: i === 0 ? '#1e3a5f' : '#94a3b8',
-                              fontWeight: 700,
-                            }}
-                          >
+                        <tr key={name} className="driver-ranking__row">
+                          <td className={`driver-ranking__rank${i === 0 ? ' driver-ranking__rank--first' : ''}`}>
                             {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
                           </td>
-                          <td style={{ padding: '9px 16px', fontWeight: 600 }}>{name}</td>
-                          <td
-                            style={{
-                              padding: '9px 16px',
-                              textAlign: 'right',
-                              fontWeight: 700,
-                              color: '#1e3a5f',
-                            }}
-                          >
-                            {fmt(total)}
-                          </td>
-                          <td style={{ padding: '9px 16px', textAlign: 'right', color: '#64748b' }}>
-                            {count}
-                          </td>
-                          <td style={{ padding: '9px 16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div
-                                style={{
-                                  flex: 1,
-                                  height: 6,
-                                  background: '#e2e8f0',
-                                  borderRadius: 3,
-                                  overflow: 'hidden',
-                                }}
-                              >
+                          <td className="driver-ranking__name">{name}</td>
+                          <td className="driver-ranking__total">{fmt(total)}</td>
+                          <td className="driver-ranking__count">{count}</td>
+                          <td className="driver-ranking__share">
+                            <div className="driver-ranking__bar-wrap">
+                              <div className="driver-ranking__bar-track">
                                 <div
-                                  style={{
-                                    height: '100%',
-                                    width: `${pct}%`,
-                                    background: '#1e3a5f',
-                                    borderRadius: 3,
-                                  }}
+                                  className="driver-ranking__bar-fill"
+                                  style={{ width: `${pct}%` }}
                                 />
                               </div>
-                              <span style={{ fontSize: 11, color: '#64748b', minWidth: 28 }}>
-                                {pct}%
-                              </span>
+                              <span className="driver-ranking__pct">{pct}%</span>
                             </div>
                           </td>
                         </tr>
