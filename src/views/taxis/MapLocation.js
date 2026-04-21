@@ -115,19 +115,19 @@ const createTaxiIconV2 = (plate, driverName) => {
  */
 const FullscreenControl = ({ isFullScreen, toggle }) => {
   const map = useMap()
-  
+
   useEffect(() => {
     const Control = L.Control.extend({
       onAdd: () => {
         const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom')
         btn.innerHTML = `
           <div style="
-            width: 30px; 
-            height: 30px; 
-            background: white; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            width: 30px;
+            height: 30px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             font-size: 18px;
             border-radius: 4px;
@@ -159,7 +159,7 @@ const FullscreenControl = ({ isFullScreen, toggle }) => {
  */
 const MapController = ({ positions, isFullScreen }) => {
   const map = useMap()
-  
+
   // Auto-fit bounds
   useEffect(() => {
     if (positions.length > 0) {
@@ -185,6 +185,8 @@ const MapLocation = () => {
   const [locations, setLocations] = useState({})
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
+  // State to trigger re-renders for updating relative times
+  const [refreshTime, setRefreshTime] = useState(0);
 
   const fetching = fetchingVehicles || fetchingDrivers
 
@@ -200,7 +202,8 @@ const MapLocation = () => {
 
   // WebSocket Connection for real-time taxi locations
   useEffect(() => {
-    const socket = new WebSocket('ws://3.92.69.78:1979/echo_test')
+    //const socket = new WebSocket('ws://3.92.69.78:1979/echo_test')
+    const socket = new WebSocket('wss://3.92.69.78:1979/echo_test')
 
     socket.onopen = () => {
       console.log('WebSocket connection established')
@@ -220,14 +223,14 @@ const MapLocation = () => {
                 lat: 0, // Default values if new
                 lng: 0,
                 speed: 0, // Assuming speed is not provided by this WS message
-                lastUpdate: new Date().toLocaleTimeString(),
+                lastUpdate: new Date(),
               }
             }
             updatedLocations[plate] = {
               ...updatedLocations[plate],
               lat: parseFloat(latitude),
               lng: parseFloat(longitude),
-              lastUpdate: new Date().toLocaleTimeString(), // Update last seen time
+              lastUpdate: new Date(), // Update last seen time
               // Speed is not provided by this websocket, keeping existing or default
             }
             return updatedLocations
@@ -263,7 +266,7 @@ const MapLocation = () => {
         driver,
       }
     })
-  }, [locations, vehicles, drivers])
+  }, [locations, vehicles, drivers]) // `refreshTime` is not a dependency here, as it's not needed for computing activeLocations
 
   const toggleFullScreen = useCallback(() => {
     setIsFullScreen((prev) => !prev)
@@ -280,9 +283,48 @@ const MapLocation = () => {
     return () => document.removeEventListener('fullscreenchange', handleEsc)
   }, [isFullScreen])
 
+  // Effect to periodically update the relative time display
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRefreshTime(prev => prev + 1); // Update state to trigger re-render
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
+
+  // Helper function to format time differences into relative strings
+  const formatTimeAgo = (date) => {
+    if (!date) return ''
+    const now = new Date()
+    const seconds = Math.floor((now - new Date(date)) / 1000)
+
+    if (seconds === 1) return '1 segundo atras';
+    if (seconds < 60) return Math.floor(seconds) + ' segundos atras';
+
+    const minutes = Math.floor(seconds / 60)
+    if (minutes === 1) return '1 min atras';
+    if (minutes < 60) return minutes + ' mins atras';
+
+    const hours = Math.floor(seconds / 3600)
+    if (hours === 1) return '1 hora atras';
+    if (hours < 24) return hours + ' horas atras';
+
+    const days = Math.floor(seconds / 86400)
+    if (days === 1) return '1 dia atras';
+    if (days < 30) return days + ' dias atras';
+
+    const months = Math.floor(seconds / 2592000)
+    if (months === 1) return '1 mes atras';
+    if (months < 12) return months + ' meses atras';
+
+    const years = Math.floor(seconds / 31536000)
+    if (years === 1) return '1 ano atras';
+    return years + ' anos atras';
+  }
+
   return (
-    <CCard 
-      className={`mb-4 ${isFullScreen ? 'border-0' : ''}`} 
+    <CCard
+      className={`mb-4 ${isFullScreen ? 'border-0' : ''}`}
       style={isFullScreen ? { zIndex: 10000, position: 'fixed', inset: 0 } : {}}
     >
       <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -290,15 +332,15 @@ const MapLocation = () => {
           <strong>Mapa de Ubicación</strong>
           {!isFullScreen && (
             <CButtonGroup size="sm">
-              <CButton 
-                color="dark" 
+              <CButton
+                color="dark"
                 variant={iconStyle === 'flat' ? undefined : 'outline'}
                 onClick={() => handleStyleChange('flat')}
               >
                 Plano
               </CButton>
-              <CButton 
-                color="warning" 
+              <CButton
+                color="warning"
                 variant={iconStyle === 'v2' ? undefined : 'outline'}
                 onClick={() => handleStyleChange('v2')}
               >
@@ -323,15 +365,15 @@ const MapLocation = () => {
         ) : (
           <CRow className="g-0">
             <CCol lg={isFullScreen ? 12 : 9}>
-              <div style={{ 
-                height: isFullScreen ? 'calc(100vh - 50px)' : '600px', 
-                borderRadius: isFullScreen ? '0' : '8px', 
-                overflow: 'hidden', 
-                border: isFullScreen ? 'none' : '1px solid #ddd' 
+              <div style={{
+                height: isFullScreen ? 'calc(100vh - 50px)' : '600px',
+                borderRadius: isFullScreen ? '0' : '8px',
+                overflow: 'hidden',
+                border: isFullScreen ? 'none' : '1px solid #ddd'
               }}>
-                <MapContainer 
-                  center={DEFAULT_CENTER} 
-                  zoom={13} 
+                <MapContainer
+                  center={DEFAULT_CENTER}
+                  zoom={13}
                   style={{ height: '100%', width: '100%' }}
                 >
                   <TileLayer
@@ -339,8 +381,8 @@ const MapLocation = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {activeLocations.map((loc) => (
-                    <Marker 
-                      key={loc.plate} 
+                    <Marker
+                      key={loc.plate}
                       position={[loc.lat, loc.lng]}
                       icon={iconStyle === 'v2' ? createTaxiIconV2(loc.plate, loc.driver?.name) : createTaxiIconFlat(loc.plate)}
                     >
@@ -363,7 +405,7 @@ const MapLocation = () => {
                             )}
                             <div className="mt-2 pt-2 border-top" style={{ fontSize: '10px' }}>
                               <strong>Velocidad:</strong> {Math.round(loc.speed)} km/h<br />
-                              <strong>Reporte:</strong> {loc.lastUpdate}
+                              <strong>Reporte:</strong> {loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}
                             </div>
                           </div>
                         </div>
@@ -399,7 +441,7 @@ const MapLocation = () => {
                       </div>
                       <div className="small text-muted mt-2 d-flex justify-content-between" style={{ fontSize: '10px' }}>
                         <span>{loc.vehicle?.brand} {loc.vehicle?.model}</span>
-                        <span>{loc.lastUpdate}</span>
+                        <span>{loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}</span>
                       </div>
                     </CListGroupItem>
                   ))}
