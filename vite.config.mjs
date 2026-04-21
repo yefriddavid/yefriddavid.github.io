@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
 import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'node:path'
 import autoprefixer from 'autoprefixer'
 import { writeFileSync, readFileSync } from 'node:fs'
@@ -87,6 +88,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(isTest ? { babel: { presets: ['@babel/preset-react'] } } : {}),
+      basicSsl(),
       legacy({ targets: ['defaults', 'not IE 11'] }),
       VitePWA({
         strategies: 'injectManifest',
@@ -146,6 +148,8 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
+      https: true,
+      open: true,
       proxy: {
         // https://vitejs.dev/config/server-options.html
       },

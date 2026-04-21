@@ -19,6 +19,7 @@ import CIcon from '@coreui/icons-react'
 import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
+import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
 import 'leaflet/dist/leaflet.css'
 
 const DEFAULT_CENTER = [6.2442, -75.5812]
@@ -134,7 +135,7 @@ const FullscreenControl = ({ isFullScreen, toggle }) => {
             border: 2px solid rgba(0,0,0,0.2);
             background-clip: padding-box;
           ">
-            ${isFullScreen ? '⛶' : '⛶'}
+            ${isFullScreen ? '✖' : '⛶'}
           </div>
         `
         btn.title = isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'
@@ -182,6 +183,7 @@ const MapLocation = () => {
   const dispatch = useDispatch()
   const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
+  const { data: history } = useSelector((s) => s.vehicleLocationHistory)
   const [locations, setLocations] = useState({})
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
@@ -198,7 +200,30 @@ const MapLocation = () => {
   useEffect(() => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
     if (!drivers) dispatch(taxiDriverActions.fetchRequest())
+    dispatch(vehicleLocationHistoryActions.fetchRequest())
   }, [dispatch, vehicles, drivers])
+
+  // Initialize locations from history table
+  useEffect(() => {
+    if (history && history.length > 0) {
+      setLocations((prev) => {
+        const next = { ...prev }
+        // Process history (which is desc by timestamp)
+        // We only add to locations if the plate doesn't exist yet (to not overwrite live data)
+        history.forEach((entry) => {
+          if (!next[entry.plate]) {
+            next[entry.plate] = {
+              lat: entry.latitude,
+              lng: entry.longitude,
+              speed: 0,
+              lastUpdate: entry.timestamp,
+            }
+          }
+        })
+        return next
+      })
+    }
+  }, [history])
 
   const handleStyleChange = (style) => {
     setIconStyle(style)
@@ -215,7 +240,7 @@ const MapLocation = () => {
     console.log(`Attempting to connect WebSocket, attempt: ${reconnectAttempt + 1}`);
     // Use wss for secure connections, ws for insecure. Assuming ws is fine for this IP.
     // If using wss, the server must support it. Using ws based on user's input.
-    const wsUrl = 'ws://3.92.69.78:1979/echo_test'; 
+    const wsUrl = 'wss://3.92.69.78:1979/echo_test';
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -229,6 +254,21 @@ const MapLocation = () => {
         if (data.device && data.coords) {
           const { plate } = data.device;
           const { latitude, longitude } = data.coords;
+
+          // Save to history
+          const vehicle = vehicles?.find((v) => v.plate === plate);
+          if (vehicle?.id) {
+            dispatch(
+              vehicleLocationHistoryActions.createRequest({
+                vehicleId: vehicle.id,
+                plate,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                createdAt: new Date(),
+              }),
+            );
+          }
+
           setLocations((prevLocations) => {
             const updatedLocations = { ...prevLocations };
             if (!updatedLocations[plate]) {
@@ -351,6 +391,18 @@ const MapLocation = () => {
     setIsFullScreen((prev) => !prev)
   }, [])
 
+  // Handle body overflow to prevent background scrolling
+  useEffect(() => {
+    if (isFullScreen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isFullScreen])
+
   // Handle ESC key to exit fullscreen state
   useEffect(() => {
     const handleEsc = () => {
@@ -409,27 +461,25 @@ const MapLocation = () => {
       <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div className="d-flex align-items-center gap-3">
           <strong>Mapa de Ubicación</strong>
-          {!isFullScreen && (
-            <CButtonGroup size="sm">
-              <CButton
-                color="dark"
-                variant={iconStyle === 'flat' ? undefined : 'outline'}
-                onClick={() => handleStyleChange('flat')}
-              >
-                Plano
-              </CButton>
-              <CButton
-                color="warning"
-                variant={iconStyle === 'v2' ? undefined : 'outline'}
-                onClick={() => handleStyleChange('v2')}
-              >
-                Moderno (v2)
-              </CButton>
-            </CButtonGroup>
-          )}
+          <CButtonGroup size="sm">
+            <CButton
+              color="dark"
+              variant={iconStyle === 'flat' ? undefined : 'outline'}
+              onClick={() => handleStyleChange('flat')}
+            >
+              Plano
+            </CButton>
+            <CButton
+              color="warning"
+              variant={iconStyle === 'v2' ? undefined : 'outline'}
+              onClick={() => handleStyleChange('v2')}
+            >
+              Moderno (v2)
+            </CButton>
+          </CButtonGroup>
         </div>
         <div className="d-flex gap-2">
-          {!isFullScreen && <CBadge color="success" className="d-flex align-items-center">En vivo</CBadge>}
+          <CBadge color="success" className="d-flex align-items-center">En vivo</CBadge>
           <CButton color="secondary" variant="outline" size="sm" onClick={toggleFullScreen}>
             <CIcon icon={isFullScreen ? cilFullscreenExit : cilFullscreen} />
             {isFullScreen ? ' Salir' : ' Pantalla Completa'}
@@ -443,9 +493,9 @@ const MapLocation = () => {
           </div>
         ) : (
           <CRow className="g-0">
-            <CCol lg={isFullScreen ? 12 : 9}>
+            <CCol xs={12} lg={9}>
               <div style={{
-                height: isFullScreen ? 'calc(100vh - 50px)' : '600px',
+                height: isFullScreen ? 'calc(100vh - 60px)' : '600px',
                 borderRadius: isFullScreen ? '0' : '8px',
                 overflow: 'hidden',
                 border: isFullScreen ? 'none' : '1px solid #ddd'
@@ -496,37 +546,35 @@ const MapLocation = () => {
                 </MapContainer>
               </div>
             </CCol>
-            {!isFullScreen && (
-              <CCol lg={3} className="ps-lg-3">
-                <h6 className="mb-3 px-2 mt-2 mt-lg-0">Flota Activa ({activeLocations.length})</h6>
-                <CListGroup flush style={{ maxHeight: '560px', overflowY: 'auto' }}>
-                  {activeLocations.map((loc) => (
-                    <CListGroupItem key={loc.plate} className="px-2 py-3">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold" style={{ fontFamily: 'monospace', fontSize: '14px' }}>{loc.plate}</span>
-                        <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
-                          {Math.round(loc.speed)} km/h
-                        </CBadge>
+            <CCol xs={12} lg={3} className={isFullScreen ? 'bg-white border-start' : 'ps-lg-3'}>
+              <h6 className="mb-3 px-2 mt-2 mt-lg-0 pt-2">Flota Activa ({activeLocations.length})</h6>
+              <CListGroup flush style={{ maxHeight: isFullScreen ? 'calc(100vh - 120px)' : '560px', overflowY: 'auto' }}>
+                {activeLocations.map((loc) => (
+                  <CListGroupItem key={loc.plate} className="px-2 py-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="fw-bold" style={{ fontFamily: 'monospace', fontSize: '14px' }}>{loc.plate}</span>
+                      <CBadge color={loc.speed > 0 ? 'success' : 'secondary'} shape="rounded-pill">
+                        {Math.round(loc.speed)} km/h
+                      </CBadge>
+                    </div>
+                    <div className="mt-2">
+                      <div style={{ fontSize: '12px', fontWeight: '500' }}>
+                        {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
                       </div>
-                      <div className="mt-2">
-                        <div style={{ fontSize: '12px', fontWeight: '500' }}>
-                          {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
+                      {loc.driver?.phone && (
+                        <div className="text-muted" style={{ fontSize: '11px' }}>
+                          📞 {loc.driver.phone}
                         </div>
-                        {loc.driver?.phone && (
-                          <div className="text-muted" style={{ fontSize: '11px' }}>
-                            📞 {loc.driver.phone}
-                          </div>
-                        )}
-                      </div>
-                      <div className="small text-muted mt-2 d-flex justify-content-between" style={{ fontSize: '10px' }}>
-                        <span>{loc.vehicle?.brand} {loc.vehicle?.model}</span>
-                        <span>{loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}</span>
-                      </div>
-                    </CListGroupItem>
-                  ))}
-                </CListGroup>
-              </CCol>
-            )}
+                      )}
+                    </div>
+                    <div className="small text-muted mt-2 d-flex justify-content-between" style={{ fontSize: '10px' }}>
+                      <span>{loc.vehicle?.brand} {loc.vehicle?.model}</span>
+                      <span>{loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}</span>
+                    </div>
+                  </CListGroupItem>
+                ))}
+              </CListGroup>
+            </CCol>
           </CRow>
         )}
       </CCardBody>

@@ -33,7 +33,7 @@
     "cy:comp": "cypress run --component",
     "cy:comp:open": "cypress open --component",
     "cy:run-legacy": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\"",
-    "cy:run": "cypress run --config baseUrl=http://localhost:3000",
+    "cy:run": "cypress run --config baseUrl=https://localhost:3000",
     "cy:run:raw": "cypress run --config baseUrl=http://localhost:3005",
     "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
     "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\""
@@ -95,6 +95,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
