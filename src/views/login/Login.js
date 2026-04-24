@@ -159,7 +159,7 @@ const Login = () => {
       }
 
       dispatch(fetchProfile(username))
-      navigate(landingPage)
+      navigate('/selectApp')
     } catch (e) {
       setForm((prev) => ({
         ...prev,

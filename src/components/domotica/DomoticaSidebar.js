@@ -1,8 +1,7 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-
+import { useTranslation } from 'react-i18next'
 import {
   CCloseButton,
   CSidebar,
@@ -13,25 +12,18 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
-
-import { AppSidebarNav } from './AppSidebarNav'
-import BrandName from '../BrandName'
+import { AppSidebarNav } from '../layout/AppSidebarNav'
 import { signOut } from '../../services/firebase/auth'
-import './AppSidebar.scss'
-
 import { sygnet } from 'src/assets/brand/sygnet'
+import getDomoticaNav from '../../_nav.domotica'
 
-// sidebar nav config
-import getNav from '../../_nav'
-
-const AppSidebar = () => {
+const DomoticaSidebar = () => {
   const dispatch = useDispatch()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const unfoldable = useSelector((state) => state.ui.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
-  const role = useSelector((state) => state.profile.data?.role ?? null)
-  const navigation = getNav(t, role)
+  const navigation = getDomoticaNav()
 
   const handleLogout = async () => {
     await signOut()
@@ -50,11 +42,8 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <h3>
-          <BrandName />
-        </h3>
-        <CSidebarBrand to="/">
-          {/*<CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />*/}
+        <h3>Domótica</h3>
+        <CSidebarBrand to="/domotica/home">
           <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
         </CSidebarBrand>
         <CCloseButton
@@ -92,4 +81,4 @@ const AppSidebar = () => {
   )
 }
 
-export default React.memo(AppSidebar)
+export default React.memo(DomoticaSidebar)

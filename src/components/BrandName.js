@@ -1,10 +1,10 @@
 import React from 'react'
 
-export const APP_NAME = 'TaxiAdmin'
+export const APP_NAME = 'Management'
 
 const BrandName = ({ className, style }) => (
   <div className={className} style={style}>
-    Taxi<span>Admin</span>
+    Manage<span>ment</span>
   </div>
 )
 

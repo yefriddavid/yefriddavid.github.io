@@ -13,6 +13,7 @@ import './i18n'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
+const DomoticaLayout = React.lazy(() => import('./layout/DomoticaLayout'))
 
 // Standalone pages (no app layout)
 // const GenerarContrato = React.lazy(() => import('./views/Contratos_REYDAVID/contratos/GenerarContrato'))
@@ -27,6 +28,7 @@ const Page404 = React.lazy(() => import('./views/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/page500/Page500'))
 const AboutMe = React.lazy(() => import('./views/aboutMe/Index'))
 const HardRefresh = React.lazy(() => import('./views/hard-refresh/HardRefresh'))
+const SelectApp = React.lazy(() => import('./views/selectApp/SelectApp'))
 
 // temporary line
 localStorage.setItem('coreui-free-react-admin-template-theme', 'light')
@@ -129,7 +131,9 @@ const App = () => {
           <Route path="/500" element={<Page500 />} />
           <Route path="/aboutMe" element={<AboutMe />} />
           <Route path="/hard-refresh" element={<HardRefresh />} />
+          <Route path="/selectApp" element={<SelectApp />} />
           <Route path="/contratos/generar" element={<GenerarContrato />} />
+          <Route path="/domotica/*" element={<DomoticaLayout />} />
           <Route path="/*" element={<DefaultLayout />} />
         </Routes>
       </Suspense>

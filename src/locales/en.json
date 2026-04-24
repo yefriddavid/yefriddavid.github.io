@@ -96,7 +96,8 @@
     "partners": "Partners",
     "distributions": "Profit Sharing",
     "users": "Users",
-    "pushSubscribers": "Push Subscribers"
+    "pushSubscribers": "Push Subscribers",
+    "selectApp": "Select App"
   },
   "auth": {
     "login": "Login",

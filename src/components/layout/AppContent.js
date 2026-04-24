@@ -93,7 +93,7 @@ const AppContent = () => {
               canAccess(route) && <Route key={idx} path={route.path} element={<Component />} />
             )
           })}
-          <Route path="/" element={<Navigate to={landingPage} replace />} />
+          <Route path="/" element={<Navigate to="/selectApp" replace />} />
           <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
         </Routes>
       </Suspense>

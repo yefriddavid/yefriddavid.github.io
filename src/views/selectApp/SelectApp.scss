@@ -1,0 +1,294 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+.select-app {
+  display: flex;
+  min-height: 100dvh;
+  font-family: 'Syne', sans-serif;
+
+  // ── Left panel ──────────────────────────────────────────────────────────────
+  &__brand {
+    width: 42%;
+    background: #0c0c0c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+
+    // subtle dot grid texture
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #ffffff08 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    // soft glow behind brand
+    &::after {
+      content: '';
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, #1e3a5f28 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  }
+
+  &__logo-mark {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__logo-icon {
+    width: 52px;
+    height: 52px;
+    border: 1.5px solid #ffffff22;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff08;
+  }
+
+  &__logo-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  &__name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.6rem;
+    color: #f0ede8;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0;
+
+    span {
+      color: #c8921a;
+    }
+  }
+
+  &__tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #ffffff40;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-top: 0.6rem;
+  }
+
+  &__version {
+    position: absolute;
+    bottom: 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: #ffffff20;
+    letter-spacing: 0.15em;
+    z-index: 1;
+  }
+
+  // ── Right panel ─────────────────────────────────────────────────────────────
+  &__apps {
+    flex: 1;
+    background: #f7f6f2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 5rem;
+    gap: 0;
+  }
+
+  &__heading {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    color: #9a9590;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    align-self: center;
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+
+  &__list {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  &__footer {
+    margin-top: 3rem;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__logout-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: #9a9590;
+    text-transform: lowercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      color: #c8921a;
+      text-decoration: underline;
+    }
+  }
+
+  // ── Card ────────────────────────────────────────────────────────────────────
+  &__card {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.4rem 1.6rem;
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    overflow: hidden;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+
+    // left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--app-accent);
+      transform: scaleY(0);
+      transform-origin: center;
+      transition: transform 0.2s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px #00000012;
+      border-color: #d4d0c8;
+
+      &::before {
+        transform: scaleY(1);
+      }
+
+      .select-app__card-arrow {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .select-app__card-icon {
+        background: var(--app-accent);
+        color: #fff;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px #00000010;
+    }
+  }
+
+  &__card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0ede8;
+    color: var(--app-accent);
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  &__card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__card-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1a1a18;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  &__card-desc {
+    font-size: 0.8rem;
+    color: #9a9590;
+    margin: 0.2rem 0 0;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.01em;
+  }
+
+  &__card-arrow {
+    color: var(--app-accent);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    flex-shrink: 0;
+  }
+
+  // ── Loader ──────────────────────────────────────────────────────────────────
+  &__loader {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0c0c0c;
+  }
+
+  // ── Responsive ──────────────────────────────────────────────────────────────
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    &__brand {
+      width: 100%;
+      min-height: 220px;
+      padding: 2.5rem 2rem;
+    }
+
+    &__name {
+      font-size: 2rem;
+    }
+
+    &__apps {
+      padding: 2.5rem 1.5rem;
+    }
+  }
+}

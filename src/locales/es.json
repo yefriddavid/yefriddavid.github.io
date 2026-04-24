@@ -96,7 +96,8 @@
     "partners": "Socios",
     "distributions": "Repartición",
     "users": "Usuarios",
-    "pushSubscribers": "Suscriptores Push"
+    "pushSubscribers": "Suscriptores Push",
+    "selectApp": "Seleccionar Aplicación"
   },
   "auth": {
     "login": "Iniciar sesión",
