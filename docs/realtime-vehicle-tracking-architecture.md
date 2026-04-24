@@ -1,41 +1,132 @@
 # Arquitectura de Ubicación en Tiempo Real
 
-Este documento describe la arquitectura para la gestión de ubicaciones de vehículos en tiempo real, que combina datos de WebSockets (baja latencia) y Firebase (persistencia histórica).
+Este documento describe la arquitectura para la gestión de ubicaciones de vehículos en tiempo real, combinando datos de WebSockets (baja latencia) y Firebase (persistencia y fuente secundaria via app móvil).
+
+---
 
 ## Componentes Principales
 
 ### 1. WebSocketService (`src/services/websocketService.js`)
-Encapsula la lógica de conexión, reconexión automática y suscripción.
-- **Responsabilidad:** Mantener una conexión persistente a la fuente de datos en tiempo real (WSS).
-- **Patrón:** Implementa un patrón Observador donde los componentes se suscriben para recibir actualizaciones.
+Encapsula la conexión, reconexión automática y distribución de mensajes.
+- **Responsabilidad:** Mantener una conexión persistente al servidor WSS y notificar a los suscriptores.
+- **Patrón:** Observador — los componentes se suscriben y reciben cada mensaje de posición.
+- **Reconexión:** Backoff exponencial con jitter, máximo 30 segundos entre intentos. Se reconecta también al recuperar el foco de ventana.
+- **Ciclo de vida:** `subscribe()` inicia la conexión y retorna una función de limpieza. El componente suscriptor **debe llamar a `disconnect()` en el cleanup del `useEffect`** cuando ya no hay suscriptores activos; de lo contrario el socket queda abierto al navegar a otras vistas.
 
 ### 2. Capa de UI (`src/views/taxis/MapLocation/MapLocation.js`)
-Responsable de la visualización y el estado efímero.
-- **Responsabilidad:** Suscribirse al `WebSocketService` para pintar posiciones en el mapa con mínima latencia y gestionar el estado `locations` local.
-- **Integración:** Dispatch de acciones de Redux cuando se requiere persistir una nueva posición en el histórico.
+Responsable de la visualización y de coordinar las fuentes de datos.
+- **Estado efímero:** Lee posiciones actuales del slice `currentPositions` de Redux (no gestiona `locations` localmente).
+- **Sin acceso directo a Firebase:** Toda interacción con Firestore se delega a sagas o a un hook dedicado; el componente no importa `db` ni `onSnapshot`.
+- **Dispatch:** Despacha acciones de Redux al recibir datos del WebSocket.
 
-### 3. Sagas y Servicios (`src/sagas/taxi/vehicleLocationHistorySagas.js`)
-Responsables de la persistencia y recuperación histórica.
-- **Responsabilidad:** Coordinar la interacción asíncrona con Firebase para guardar y consultar el histórico de ubicaciones.
-- **Nota:** Los Sagas no gestionan la conexión directa al WebSocket para evitar problemas de ciclo de vida y recursos en la aplicación.
+### 3. Slice de Posiciones Actuales (`src/reducers/taxi/currentPositionsReducer.js`)
+Slice dedicado exclusivamente al mapa `vehicleId → posición actual`.
+- **Responsabilidad:** Mantener la última posición conocida de cada vehículo, con su fuente (`wss` o `app`) y timestamp.
+- **Separación de concerns:** Completamente independiente del histórico de ubicaciones (CRUD).
+- **Lógica de precedencia (anti-jitter):** Centralizada aquí, aplica la regla: WSS siempre gana; Firebase/app solo actualiza si el dato entrante es más reciente que el existente y la fuente actual no es `wss`.
+
+### 4. Sagas y Servicios (`src/sagas/taxi/vehicleLocationHistorySagas.js`)
+Responsables de la persistencia y del histórico paginado.
+- **Responsabilidad:** Coordinar escrituras a Firebase y consultar el histórico para la tabla de registros.
+- **No gestionan la conexión WebSocket** para evitar problemas de ciclo de vida.
+- **No pueblan el mapa:** La carga de posiciones para el mapa es responsabilidad del `onSnapshot` hook, no de la saga.
+
+### 5. Hook de Posiciones en Tiempo Real (`src/hooks/useVehicleLocationSnapshot.js`)
+Encapsula el listener `onSnapshot` de Firestore para la fuente secundaria (app móvil).
+- **Responsabilidad:** Escuchar en tiempo real los documentos con `source: 'app'` y despachar actualizaciones al slice `currentPositions`.
+- **Filtro crítico:** Solo procesa documentos donde `source !== 'wss'`. Los registros originados en el WebSocket se ignoran deliberadamente para cortar el loop de escritura (`WSS → Firebase write → onSnapshot → re-update`).
+
+---
+
+## Fuentes de Datos y sus Roles
+
+| Fuente | Tipo | Rol |
+|---|---|---|
+| WebSocket (WSS) | Antena GPS | Posición en tiempo real, prioridad absoluta |
+| Firebase `onSnapshot` | App móvil del conductor | Posición en tiempo real, fuente secundaria |
+| Firebase histórico (Saga) | Registros guardados | Tabla de historial paginado, NO el mapa |
+
+La carga inicial del mapa la realiza el `onSnapshot`: al conectarse, el listener recibe los documentos recientes existentes antes de que lleguen nuevas actualizaciones. No se necesita una precarga adicional por Saga para el mapa.
+
+---
 
 ## Flujo de Datos
 
-1.  **Proyección de Inventario:** El componente `MapLocation` recorre el inventario completo de vehículos (`vehicles`) y lo proyecta sobre el estado de ubicaciones actuales (`locations`). Si un vehículo no tiene una ubicación activa, se representa con valores nulos para garantizar que siempre esté presente en la lista de flota.
-2.  **Actualización Instantánea:** El WebSocket recibe nuevas coordenadas -> `WebSocketService` notifica a `MapLocation` -> El componente actualiza el estado `locations` -> La UI refleja el cambio en tiempo real.
-3.  **Persistencia:** `MapLocation` despacha una acción de Redux (`createRequest`) -> `vehicleLocationHistorySagas` intercepta la acción -> El Saga invoca el servicio de Firebase para guardar el registro.
-4.  **Carga Inicial:** Al cargar la vista, el Saga recupera el histórico reciente de Firebase, que puebla `locations` antes de que lleguen las primeras actualizaciones del WebSocket.
+### Fuente primaria — WebSocket
+```
+Antena GPS → WebSocketService → MapLocation
+  → dispatch(currentPositionsActions.updateFromWss(payload))
+    → currentPositionsReducer actualiza el mapa
+  → dispatch(vehicleLocationHistoryActions.createRequest(payload))  [throttled]
+    → Saga escribe en Firebase con source: 'wss'
+```
 
-## Reglas de Precedencia y Sincronización de Datos
+### Fuente secundaria — App móvil
+```
+App conductor → Firebase write (source: 'app')
+  → onSnapshot (filtra source !== 'wss')
+    → dispatch(currentPositionsActions.updateFromApp(payload))
+      → currentPositionsReducer aplica lógica de precedencia
+```
 
-Para garantizar la integridad del mapa y evitar condiciones de carrera, el sistema aplica las siguientes reglas:
+---
 
-1.  **Estado Base (Firebase):** Al cargar la vista, el historial recuperado de Firebase establece la posición inicial.
-2.  **Estado Vivo (WebSocket):** Los datos recibidos por WSS tienen prioridad absoluta sobre los de Firebase.
-3. **Lógica de Precedencia (Anti-Jitter) en Reducer:**
-    - La lógica para decidir si una actualización (Firebase o WSS) es válida se centraliza en `src/reducers/taxi/vehicleLocationHistoryReducer.js`.
-    - El Reducer compara el timestamp entrante con el existente.
-    - Si el vehículo tiene `source: 'wss'` y su `lastUpdate` es menor a 5 segundos, el Reducer descarta cualquier actualización entrante de Firebase para prevenir sobrescritura de datos frescos.
+## Reglas de Precedencia en `currentPositionsReducer`
 
-4.  **Persistencia:** Toda actualización recibida por WSS es despachada inmediatamente a la capa de persistencia (Firebase) vía `createRequest`.
-5.  **Optimización de Rendimiento:** La UI utiliza un `useMemo` proyectado sobre el inventario completo de vehículos para asegurar que toda la flota esté representada, incluso sin datos activos, indexando la información para evitar re-renderizados costosos.
+Para cada actualización entrante de un vehículo:
+
+1. Si `source === 'wss'`: actualizar siempre, sin condición.
+2. Si `source === 'app'`:
+   - Si el vehículo no tiene posición previa: actualizar.
+   - Si la posición existente tiene `source === 'wss'`: descartar.
+   - Si la posición existente tiene `source === 'app'` y el timestamp entrante es más reciente: actualizar.
+
+Esta lógica elimina la dependencia de ventanas de tiempo (el antiguo "5 segundos") reemplazándola por una regla determinista basada en la fuente del dato.
+
+---
+
+## Throttle de Persistencia
+
+Cada mensaje del WebSocket **no genera una escritura en Firebase**. Antes del `dispatch(createRequest)` se aplica un throttle **por vehículo** con una ventana de 30 segundos:
+
+- Si han pasado menos de 30 s desde la última escritura de ese vehículo: se omite.
+- Si han pasado 30 s o más: se persiste.
+
+Esto reduce el volumen de escrituras de O(mensajes/s × vehículos) a O(vehículos / 30s), manteniendo una traza de trayecto útil sin saturar Firestore.
+
+El estado del throttle (último timestamp persistido por vehículo) se gestiona en un `useRef` dentro del componente, ya que es dato efímero de sesión, no de store.
+
+---
+
+## Velocidad
+
+El campo `speed` se calcula en el cliente a partir de la delta de coordenadas y tiempo entre dos mensajes consecutivos del mismo vehículo:
+
+```
+speed = haversineDistance(prevCoords, newCoords) / deltaTime  [km/h]
+```
+
+No se confía en que el servidor WSS envíe este valor. Si el servidor lo provee en el payload, se usa directamente y se omite el cálculo.
+
+---
+
+## Proyección de Flota Completa
+
+El `useMemo` en el componente proyecta el inventario completo de vehículos sobre el estado de `currentPositions`. Los vehículos sin posición conocida se incluyen en la lista lateral con `lat/lng: null` para garantizar visibilidad de toda la flota, diferenciando entre "activo en mapa" y "sin reporte".
+
+---
+
+## Ciclo de Vida y Limpieza
+
+```
+Montar MapLocation
+  → useEffect: taxiWebSocket.subscribe(handler)  → retorna unsubscribe
+  → useEffect: useVehicleLocationSnapshot()      → retorna unsubscribe de onSnapshot
+
+Desmontar MapLocation
+  → cleanup: unsubscribe WSS listener
+  → cleanup: unsubscribe onSnapshot
+  → if (taxiWebSocket.listenerCount === 0) taxiWebSocket.disconnect()
+```
+
+El `WebSocketService` expone `listenerCount` para que el cleanup pueda decidir si cerrar la conexión o solo eliminar el listener (en caso de que otra vista también esté suscrita).

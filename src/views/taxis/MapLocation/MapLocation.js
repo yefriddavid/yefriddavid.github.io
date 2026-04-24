@@ -16,9 +16,6 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
-import { onSnapshot, collection, query, where, orderBy, limit } from 'firebase/firestore'
-import { db } from 'src/services/firebase/settings'
-import { getTenantId } from 'src/services/tenantContext'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -28,21 +25,19 @@ import './MapLocation.scss'
 import { createTaxiIconFlat, createTaxiIconV2 } from './MapIcons'
 import { FullscreenControl, MapController } from './MapControls'
 import { DEFAULT_CENTER, formatTimeAgo } from './utils'
+import { taxiWebSocket } from 'src/services/websocketService'
 
 const MapLocation = () => {
   const dispatch = useDispatch()
   const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
-  const { data: history } = useSelector((s) => s.vehicleLocationHistory)
+  const { data: history, liveLocations } = useSelector((s) => s.vehicleLocationHistory)
   const [locations, setLocations] = useState({}) // Clave: vehicleId
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
   const [refreshTime, setRefreshTime] = useState(0)
 
-  // WebSocket state management with REFS to avoid re-render loops
-  const socketRef = useRef(null)
-  const reconnectTimerIdRef = useRef(null)
-  const reconnectAttemptRef = useRef(0)
+  // WebSocket management with REFS to avoid re-render loops in subscriber
   const vehiclesRef = useRef(vehicles)
 
   // Keep vehicles ref updated for the socket message handler
@@ -61,53 +56,30 @@ const MapLocation = () => {
     dispatch(vehicleLocationHistoryActions.fetchRequest())
   }, [dispatch])
 
-  // Real-time listener for Firebase (Source 2)
+  // Start/stop the Firestore real-time listener via Redux (Source 2)
   useEffect(() => {
-    const tenantId = getTenantId()
-    if (!tenantId) return
+    dispatch(vehicleLocationHistoryActions.startLiveListener())
+    return () => dispatch(vehicleLocationHistoryActions.stopLiveListener())
+  }, [dispatch])
 
-    const q = query(
-      collection(db, 'Taxi_vehicle_location_history'),
-      where('tenantId', '==', tenantId),
-      orderBy('timestamp', 'desc'),
-      limit(20),
-    )
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const entry = change.doc.data()
-          if (!entry.vehicleId) return
-
-          const timestamp = entry.timestamp?.toDate?.() || entry.timestamp
-
-          setLocations((prev) => {
-            const current = prev[entry.vehicleId]
-            // Only update if it's a newer record than what we have
-            if (
-              !current ||
-              !current.lastUpdate ||
-              new Date(timestamp) > new Date(current.lastUpdate)
-            ) {
-              return {
-                ...prev,
-                [entry.vehicleId]: {
-                  lat: parseFloat(entry.latitude),
-                  lng: parseFloat(entry.longitude),
-                  speed: 0,
-                  lastUpdate: timestamp,
-                  source: 'firebase',
-                },
-              }
-            }
-            return prev
-          })
+  // Merge Redux live locations into local state, keeping the freshest source
+  useEffect(() => {
+    if (!liveLocations) return
+    setLocations((prev) => {
+      const next = { ...prev }
+      Object.entries(liveLocations).forEach(([vehicleId, pos]) => {
+        const current = next[vehicleId]
+        if (
+          !current ||
+          !current.lastUpdate ||
+          new Date(pos.lastUpdate) > new Date(current.lastUpdate)
+        ) {
+          next[vehicleId] = pos
         }
       })
+      return next
     })
-
-    return () => unsubscribe()
-  }, [])
+  }, [liveLocations])
 
   // Initialize locations from history table
   useEffect(() => {
@@ -137,111 +109,43 @@ const MapLocation = () => {
     localStorage.setItem('map_icon_style', style)
   }
 
-  // Pure connect function using refs
-  const connect = useCallback(() => {
-    if (
-      socketRef.current &&
-      (socketRef.current.readyState === WebSocket.OPEN ||
-        socketRef.current.readyState === WebSocket.CONNECTING)
-    ) {
-      return
-    }
+  useEffect(() => {
+    const unsubscribe = taxiWebSocket.subscribe((data) => {
+      if (data.device && data.coords) {
+        const { plate } = data.device
+        const { latitude, longitude, speed: rawSpeed } = data.coords
 
-    if (reconnectTimerIdRef.current) {
-      clearTimeout(reconnectTimerIdRef.current)
-      reconnectTimerIdRef.current = null
-    }
+        const vehicle = vehiclesRef.current?.find((v) => v.plate === plate)
+        if (vehicle?.id) {
+          // Save to history
+          dispatch(
+            vehicleLocationHistoryActions.createRequest({
+              vehicleId: vehicle.id,
+              plate,
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+              createdAt: new Date().toISOString(),
+            }),
+          )
 
-    const attempt = reconnectAttemptRef.current + 1
-    console.log(`WebSocket: Connection attempt ${attempt}...`)
-
-    const ws = new WebSocket('wss://3.92.69.78:1979/echo_test')
-
-    ws.onopen = () => {
-      console.log('WebSocket: Connected successfully')
-      reconnectAttemptRef.current = 0
-    }
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        if (data.device && data.coords) {
-          const { plate } = data.device
-          const { latitude, longitude } = data.coords
-
-          const vehicle = vehiclesRef.current?.find((v) => v.plate === plate)
-          if (vehicle?.id) {
-            // Save to history
-            dispatch(
-              vehicleLocationHistoryActions.createRequest({
-                vehicleId: vehicle.id,
-                plate,
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude),
-                createdAt: new Date().toISOString(),
-              }),
-            )
-
-            // Update state using vehicleId as key
-            setLocations((prev) => ({
-              ...prev,
-              [vehicle.id]: {
-                ...prev[vehicle.id],
-                lat: parseFloat(latitude),
-                lng: parseFloat(longitude),
-                lastUpdate: new Date(),
-                source: 'wss',
-              },
-            }))
-          }
+          // Update state using vehicleId as key
+          setLocations((prev) => ({
+            ...prev,
+            [vehicle.id]: {
+              ...prev[vehicle.id],
+              lat: parseFloat(latitude),
+              lng: parseFloat(longitude),
+              speed: parseFloat(rawSpeed || 0),
+              lastUpdate: new Date(),
+              source: 'wss',
+            },
+          }))
         }
-      } catch (error) {
-        console.error('WebSocket: Message error', error)
       }
-    }
+    })
 
-    ws.onclose = (e) => {
-      console.log(`WebSocket: Closed (${e.code})`)
-      socketRef.current = null
-      scheduleReconnect()
-    }
-
-    ws.onerror = (err) => {
-      console.error('WebSocket: Error', err)
-    }
-
-    socketRef.current = ws
+    return () => unsubscribe()
   }, [dispatch])
-
-  const scheduleReconnect = useCallback(() => {
-    if (reconnectTimerIdRef.current) return
-    const attempt = reconnectAttemptRef.current
-    const delay = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 30000)
-    reconnectTimerIdRef.current = setTimeout(() => {
-      reconnectAttemptRef.current += 1
-      reconnectTimerIdRef.current = null
-      connect()
-    }, delay)
-  }, [connect])
-
-  useEffect(() => {
-    connect()
-    return () => {
-      if (socketRef.current) socketRef.current.close()
-      if (reconnectTimerIdRef.current) clearTimeout(reconnectTimerIdRef.current)
-    }
-  }, [connect])
-
-  useEffect(() => {
-    const onFocus = () => {
-      if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
-        reconnectAttemptRef.current = 0
-        connect()
-      }
-    }
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
-  }, [connect])
 
   const activeLocations = useMemo(() => {
     return Object.entries(locations).map(([vehicleId, pos]) => {
