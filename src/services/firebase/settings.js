@@ -58,6 +58,9 @@ export const COL_USERS = 'users'
 export const COL_SESSIONS = 'sessions'
 export const COL_FCM_TOKENS = 'fcm_tokens'
 
+// Domótica
+export const COL_DOMOTICA_SOLAR = 'Domotica_Solar'
+
 // Others
 export const COL_PAGE_VISITS = 'page_visits'
 export const COL_PAYMENT_VAUCHERS = (year) => `paymentVauchers-${year}`
