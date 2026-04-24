@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
@@ -15,7 +15,7 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilContrast, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
+import { cilContrast, cilFullscreen, cilFullscreenExit, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
 
 import { AppBreadcrumb } from '../index'
 import AppHeaderDropdown from './AppHeaderDropdown'
@@ -49,6 +49,22 @@ const AppHeader = () => {
     document.addEventListener('scroll', onScroll)
     return () => document.removeEventListener('scroll', onScroll)
   }, [])
+
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement)
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   const isTest = import.meta.env.MODE === 'development'
 
@@ -234,6 +250,14 @@ const AppHeader = () => {
               </CDropdownItem>
             </CDropdownMenu>
           </CDropdown>
+          <li className="nav-item py-0">
+            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+          </li>
+          <CNavItem>
+            <CNavLink as="button" onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
+              <CIcon icon={isFullscreen ? cilFullscreenExit : cilFullscreen} size="lg" />
+            </CNavLink>
+          </CNavItem>
           <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
