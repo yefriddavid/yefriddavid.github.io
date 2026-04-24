@@ -52,9 +52,17 @@ const DomoticaContent = () => {
         <Routes>
           {domoticaRoutes.map((route, idx) => {
             const Component = route.element
-            return Component && <Route key={idx} path={route.path} element={<Component />} />
+            return (
+              Component && (
+                <Route
+                  key={idx}
+                  path={route.path.replace('/domotica', '')}
+                  element={<Component />}
+                />
+              )
+            )
           })}
-          <Route path="/domotica" element={<Navigate to="/domotica/home" replace />} />
+          <Route path="/" element={<Navigate to="/domotica/home" replace />} />
           <Route path="/*" element={<Navigate to="/domotica/home" replace />} />
         </Routes>
       </Suspense>

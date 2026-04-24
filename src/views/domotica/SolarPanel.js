@@ -9,7 +9,7 @@ import {
   cilCheckCircle,
   cilMinus,
   cilArrowBottom,
-  cilThermometer,
+  cilFire,
 } from '@coreui/icons'
 import { subscribeBatteryStatus } from 'src/services/firebase/domotica/solarBattery'
 import './SolarPanel.scss'
@@ -298,7 +298,7 @@ const SolarPanel = () => {
                 label="Temperatura"
                 value={temperature != null ? temperature.toFixed(1) : null}
                 unit="°C"
-                icon={cilThermometer}
+                icon={cilFire}
                 accent={
                   temperature == null ? '#64748b' : temperature > 45 ? '#ef4444' : '#1971c2'
                 }
