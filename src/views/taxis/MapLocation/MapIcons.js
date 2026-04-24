@@ -2,7 +2,9 @@ import L from 'leaflet'
 import './MapIcons.scss'
 
 const wifiBadge = (source) => {
-  const bg = source === 'wss' ? '#16a34a' : '#6b7280'
+  let bg = '#6b7280'
+  if (source === 'wss') bg = '#16a34a'
+  if (source === 'history') bg = '#f59e0b'
   return `<span class="wifi-badge" style="background:${bg}">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13">
       <circle cx="12" cy="20" r="2" fill="#fff"/>

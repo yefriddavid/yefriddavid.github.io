@@ -51,4 +51,46 @@
   .list-item-details {
     font-size: 10px;
   }
+
+  .vehicle-accordion-header {
+    .accordion-button {
+      padding: 0.75rem 0.5rem;
+      &::after {
+        width: 1rem;
+        height: 1rem;
+        background-size: 1rem;
+      }
+    }
+  }
+
+  .history-list {
+    font-size: 11px;
+    padding: 0;
+    margin-top: 5px;
+
+    .history-item {
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      .history-time {
+        font-weight: 500;
+        color: #212529;
+      }
+
+      .history-coords {
+        color: #6c757d;
+        font-size: 10px;
+      }
+    }
+  }
 }
