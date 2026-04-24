@@ -57,7 +57,7 @@ const TaxisSidebar = () => {
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
       <CSidebarFooter
-        className="border-top d-none d-lg-flex"
+        className="border-top d-flex"
         style={{ flexDirection: 'column', gap: 0 }}
       >
         <button onClick={() => navigate('/selectApp')} className="sidebar-footer-btn">

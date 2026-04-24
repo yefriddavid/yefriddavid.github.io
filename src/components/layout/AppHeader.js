@@ -142,122 +142,107 @@ const AppHeader = () => {
     */}
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
-          {/*<CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilBell} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilList} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilEnvelopeOpen} size="lg" />
-            </CNavLink>
-          </CNavItem>*/}
-        </CHeaderNav>
-        <CHeaderNav>
-          <li className="nav-item py-0">
-            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
-          </li>
-          <CDropdown variant="nav-item" placement="bottom-end">
-            <CDropdownToggle caret={false}>
-              {colorMode === 'dark' ? (
-                <CIcon icon={cilMoon} size="lg" />
-              ) : colorMode === 'auto' ? (
-                <CIcon icon={cilContrast} size="lg" />
-              ) : (
-                <CIcon icon={cilSun} size="lg" />
-              )}
-            </CDropdownToggle>
-            <CDropdownMenu>
-              <CDropdownItem
-                active={colorMode === 'light'}
-                className="d-flex align-items-center"
-                as="button"
-                type="button"
-                onClick={() => setColorMode('light')}
-              >
-                <CIcon className="me-2" icon={cilSun} size="lg" /> Light
-              </CDropdownItem>
-              <CDropdownItem
-                active={colorMode === 'dark'}
-                className="d-flex align-items-center"
-                as="button"
-                type="button"
-                onClick={() => setColorMode('dark')}
-              >
-                <CIcon className="me-2" icon={cilMoon} size="lg" /> Dark
-              </CDropdownItem>
-              <CDropdownItem
-                active={colorMode === 'auto'}
-                className="d-flex align-items-center"
-                as="button"
-                type="button"
-                onClick={() => setColorMode('auto')}
-              >
-                <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
-              </CDropdownItem>
-            </CDropdownMenu>
-          </CDropdown>
-          <li className="nav-item py-0">
-            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
-          </li>
-          <CDropdown variant="nav-item" placement="bottom-end">
-            <CDropdownToggle caret={false} title="Tema">
-              <CIcon icon={cilPaint} size="lg" />
-            </CDropdownToggle>
-            <CDropdownMenu>
-              <CDropdownItem
-                active={appTheme === 'yellow'}
-                className="d-flex align-items-center gap-2"
-                as="button"
-                type="button"
-                onClick={() => dispatch({ type: 'set', appTheme: 'yellow' })}
-              >
-                <span
-                  style={{
-                    display: 'inline-block',
-                    width: 14,
-                    height: 14,
-                    borderRadius: 3,
-                    backgroundColor: '#ffc107',
-                    border: '1px solid #0002',
-                  }}
-                />
-                Cash (Amarillo)
-              </CDropdownItem>
-              <CDropdownItem
-                active={appTheme === 'blue'}
-                className="d-flex align-items-center gap-2"
-                as="button"
-                type="button"
-                onClick={() => dispatch({ type: 'set', appTheme: 'blue' })}
-              >
-                <span
-                  style={{
-                    display: 'inline-block',
-                    width: 14,
-                    height: 14,
-                    borderRadius: 3,
-                    backgroundColor: '#1e3a5f',
-                    border: '1px solid #0002',
-                  }}
-                />
-                Ocean (Azul)
-              </CDropdownItem>
-            </CDropdownMenu>
-          </CDropdown>
-          <li className="nav-item py-0">
-            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
-          </li>
-          <CNavItem>
-            <CNavLink as="button" onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
-              <CIcon icon={isFullscreen ? cilFullscreenExit : cilFullscreen} size="lg" />
-            </CNavLink>
-          </CNavItem>
+          <div className="d-none d-md-flex align-items-center">
+            <li className="nav-item py-0">
+              <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+            </li>
+            <CDropdown variant="nav-item" placement="bottom-end">
+              <CDropdownToggle caret={false}>
+                {colorMode === 'dark' ? (
+                  <CIcon icon={cilMoon} size="lg" />
+                ) : colorMode === 'auto' ? (
+                  <CIcon icon={cilContrast} size="lg" />
+                ) : (
+                  <CIcon icon={cilSun} size="lg" />
+                )}
+              </CDropdownToggle>
+              <CDropdownMenu>
+                <CDropdownItem
+                  active={colorMode === 'light'}
+                  className="d-flex align-items-center"
+                  as="button"
+                  type="button"
+                  onClick={() => setColorMode('light')}
+                >
+                  <CIcon className="me-2" icon={cilSun} size="lg" /> Light
+                </CDropdownItem>
+                <CDropdownItem
+                  active={colorMode === 'dark'}
+                  className="d-flex align-items-center"
+                  as="button"
+                  type="button"
+                  onClick={() => setColorMode('dark')}
+                >
+                  <CIcon className="me-2" icon={cilMoon} size="lg" /> Dark
+                </CDropdownItem>
+                <CDropdownItem
+                  active={colorMode === 'auto'}
+                  className="d-flex align-items-center"
+                  as="button"
+                  type="button"
+                  onClick={() => setColorMode('auto')}
+                >
+                  <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
+                </CDropdownItem>
+              </CDropdownMenu>
+            </CDropdown>
+            <li className="nav-item py-0">
+              <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+            </li>
+            <CDropdown variant="nav-item" placement="bottom-end">
+              <CDropdownToggle caret={false} title="Tema">
+                <CIcon icon={cilPaint} size="lg" />
+              </CDropdownToggle>
+              <CDropdownMenu>
+                <CDropdownItem
+                  active={appTheme === 'yellow'}
+                  className="d-flex align-items-center gap-2"
+                  as="button"
+                  type="button"
+                  onClick={() => dispatch({ type: 'set', appTheme: 'yellow' })}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 14,
+                      height: 14,
+                      borderRadius: 3,
+                      backgroundColor: '#ffc107',
+                      border: '1px solid #0002',
+                    }}
+                  />
+                  Cash (Amarillo)
+                </CDropdownItem>
+                <CDropdownItem
+                  active={appTheme === 'blue'}
+                  className="d-flex align-items-center gap-2"
+                  as="button"
+                  type="button"
+                  onClick={() => dispatch({ type: 'set', appTheme: 'blue' })}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 14,
+                      height: 14,
+                      borderRadius: 3,
+                      backgroundColor: '#1e3a5f',
+                      border: '1px solid #0002',
+                    }}
+                  />
+                  Ocean (Azul)
+                </CDropdownItem>
+              </CDropdownMenu>
+            </CDropdown>
+            <li className="nav-item py-0">
+              <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+            </li>
+            <CNavItem>
+              <CNavLink as="button" onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
+                <CIcon icon={isFullscreen ? cilFullscreenExit : cilFullscreen} size="lg" />
+              </CNavLink>
+            </CNavItem>
+          </div>
           <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
