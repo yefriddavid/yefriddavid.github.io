@@ -19,151 +19,86 @@ import { cilFullscreen, cilFullscreenExit } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
+import * as currentPositionsActions from 'src/actions/taxi/currentPositionsActions'
+import { useVehicleLocationSnapshot } from 'src/hooks/useVehicleLocationSnapshot'
+import { shouldPersist } from 'src/utils/locationThrottle'
+import { haversineKmh } from 'src/utils/geoUtils'
+import { taxiWebSocket } from 'src/services/websocketService'
 import 'leaflet/dist/leaflet.css'
 import './MapLocation.scss'
 
 import { createTaxiIconFlat, createTaxiIconV2 } from './MapIcons'
 import { FullscreenControl, MapController } from './MapControls'
 import { DEFAULT_CENTER, formatTimeAgo } from './utils'
-import { taxiWebSocket } from 'src/services/websocketService'
 
 const MapLocation = () => {
   const dispatch = useDispatch()
   const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
-  const { data: history, liveLocations } = useSelector((s) => s.vehicleLocationHistory)
-  const [locations, setLocations] = useState({}) // Clave: vehicleId
+  const currentPositions = useSelector((s) => s.currentPositions)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
-  const [refreshTime, setRefreshTime] = useState(0)
+  const [, setRefreshTime] = useState(0)
 
-  // WebSocket management with REFS to avoid re-render loops in subscriber
   const vehiclesRef = useRef(vehicles)
+  const prevPositionsRef = useRef(new Map())
+  const fetching = fetchingVehicles || fetchingDrivers
 
-  // Keep vehicles ref updated for the socket message handler
   useEffect(() => {
     vehiclesRef.current = vehicles
   }, [vehicles])
-
-  const fetching = fetchingVehicles || fetchingDrivers
 
   useEffect(() => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
     if (!drivers) dispatch(taxiDriverActions.fetchRequest())
   }, [dispatch, vehicles, drivers])
 
-  useEffect(() => {
-    dispatch(vehicleLocationHistoryActions.fetchRequest())
-  }, [dispatch])
-
-  // Start/stop the Firestore real-time listener via Redux (Source 2)
-  useEffect(() => {
-    dispatch(vehicleLocationHistoryActions.startLiveListener())
-    return () => dispatch(vehicleLocationHistoryActions.stopLiveListener())
-  }, [dispatch])
-
-  // Merge Redux live locations into local state, keeping the freshest source
-  useEffect(() => {
-    if (!liveLocations) return
-    setLocations((prev) => {
-      const next = { ...prev }
-      Object.entries(liveLocations).forEach(([vehicleId, pos]) => {
-        const current = next[vehicleId]
-        if (
-          !current ||
-          !current.lastUpdate ||
-          new Date(pos.lastUpdate) > new Date(current.lastUpdate)
-        ) {
-          next[vehicleId] = pos
-        }
-      })
-      return next
-    })
-  }, [liveLocations])
-
-  // Initialize locations from history table
-  useEffect(() => {
-    if (history && history.length > 0) {
-      console.log('Initializing locations from history:', history.length, 'entries')
-      setLocations((prev) => {
-        const next = { ...prev }
-        // Process history (which is desc by timestamp)
-        history.forEach((entry) => {
-          if (entry.vehicleId && !next[entry.vehicleId]) {
-            next[entry.vehicleId] = {
-              lat: entry.latitude,
-              lng: entry.longitude,
-              speed: 0,
-              lastUpdate: entry.timestamp,
-              source: 'firebase',
-            }
-          }
-        })
-        return next
-      })
-    }
-  }, [history])
-
-  const handleStyleChange = (style) => {
-    setIconStyle(style)
-    localStorage.setItem('map_icon_style', style)
-  }
+  useVehicleLocationSnapshot()
 
   useEffect(() => {
     const unsubscribe = taxiWebSocket.subscribe((data) => {
-      if (data.device && data.coords) {
-        const { plate } = data.device
-        const { latitude, longitude, speed: rawSpeed } = data.coords
+      if (!data.device?.plate || !data.coords) return
+      const { plate } = data.device
+      const lat = parseFloat(data.coords.latitude)
+      const lng = parseFloat(data.coords.longitude)
 
-        const vehicle = vehiclesRef.current?.find((v) => v.plate === plate)
-        if (vehicle?.id) {
-          // Save to history
-          dispatch(
-            vehicleLocationHistoryActions.createRequest({
-              vehicleId: vehicle.id,
-              plate,
-              latitude: parseFloat(latitude),
-              longitude: parseFloat(longitude),
-              createdAt: new Date().toISOString(),
-            }),
-          )
+      const vehicle = vehiclesRef.current?.find((v) => v.plate === plate)
+      if (!vehicle?.id) return
 
-          // Update state using vehicleId as key
-          setLocations((prev) => ({
-            ...prev,
-            [vehicle.id]: {
-              ...prev[vehicle.id],
-              lat: parseFloat(latitude),
-              lng: parseFloat(longitude),
-              speed: parseFloat(rawSpeed || 0),
-              lastUpdate: new Date(),
-              source: 'wss',
-            },
-          }))
-        }
+      const prev = prevPositionsRef.current.get(vehicle.id)
+      const now = Date.now()
+      const speed = prev ? haversineKmh(prev.lat, prev.lng, lat, lng, now - prev.time) : 0
+      prevPositionsRef.current.set(vehicle.id, { lat, lng, time: now })
+
+      dispatch(
+        currentPositionsActions.updateFromWss({
+          vehicleId: vehicle.id,
+          lat,
+          lng,
+          speed,
+          lastUpdate: new Date().toISOString(),
+        }),
+      )
+
+      if (shouldPersist(vehicle.id)) {
+        dispatch(
+          vehicleLocationHistoryActions.createRequest({
+            vehicleId: vehicle.id,
+            plate,
+            latitude: lat,
+            longitude: lng,
+            source: 'wss',
+            createdAt: new Date().toISOString(),
+          }),
+        )
       }
     })
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribe()
+      if (taxiWebSocket.listenerCount === 0) taxiWebSocket.disconnect()
+    }
   }, [dispatch])
-
-  const activeLocations = useMemo(() => {
-    return Object.entries(locations).map(([vehicleId, pos]) => {
-      const vehicle = vehicles?.find((v) => v.id === vehicleId)
-      const plate = vehicle?.plate || 'Unknown'
-      const driver = drivers?.find((d) => d.defaultVehicle === plate && d.active !== false)
-      return {
-        plate,
-        ...pos,
-        vehicle,
-        driver,
-      }
-    })
-  }, [locations, vehicles, drivers])
-
-  const toggleFullScreen = useCallback(() => {
-    setIsFullScreen((prev) => !prev)
-  }, [])
 
   useEffect(() => {
     const handleEsc = () => {
@@ -174,9 +109,36 @@ const MapLocation = () => {
   }, [isFullScreen])
 
   useEffect(() => {
-    const intervalId = setInterval(() => setRefreshTime((prev) => prev + 1), 5000)
-    return () => clearInterval(intervalId)
+    const id = setInterval(() => setRefreshTime((p) => p + 1), 5000)
+    return () => clearInterval(id)
   }, [])
+
+  const handleStyleChange = (style) => {
+    setIconStyle(style)
+    localStorage.setItem('map_icon_style', style)
+  }
+
+  const toggleFullScreen = useCallback(() => setIsFullScreen((p) => !p), [])
+
+  const fleetList = useMemo(() => {
+    if (!vehicles) return []
+    return vehicles.map((vehicle) => {
+      const pos = currentPositions[vehicle.id] ?? null
+      const driver = drivers?.find((d) => d.defaultVehicle === vehicle.plate && d.active !== false)
+      return {
+        plate: vehicle.plate,
+        vehicle,
+        driver,
+        lat: pos?.lat ?? null,
+        lng: pos?.lng ?? null,
+        speed: pos?.speed ?? 0,
+        lastUpdate: pos?.lastUpdate ?? null,
+        source: pos?.source ?? null,
+      }
+    })
+  }, [currentPositions, vehicles, drivers])
+
+  const activeOnMap = useMemo(() => fleetList.filter((loc) => loc.lat !== null), [fleetList])
 
   return (
     <CCard className={`mb-4 map-location-card ${isFullScreen ? 'is-fullscreen' : ''}`}>
@@ -222,13 +184,20 @@ const MapLocation = () => {
         ) : (
           <CRow className="g-0">
             <CCol lg={9}>
-              <div className={`map-container-wrapper ${isFullScreen ? 'fullscreen' : ''}`} style={{ height: isFullScreen ? 'auto' : '600px' }}>
-                <MapContainer center={DEFAULT_CENTER} zoom={13} style={{ height: '100%', width: '100%' }}>
+              <div
+                className={`map-container-wrapper ${isFullScreen ? 'fullscreen' : ''}`}
+                style={{ height: isFullScreen ? 'auto' : '600px' }}
+              >
+                <MapContainer
+                  center={DEFAULT_CENTER}
+                  zoom={13}
+                  style={{ height: '100%', width: '100%' }}
+                >
                   <TileLayer
                     attribution="&copy; OpenStreetMap"
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {activeLocations.map((loc) => (
+                  {activeOnMap.map((loc) => (
                     <Marker
                       key={loc.vehicle?.id || loc.plate}
                       position={[loc.lat, loc.lng]}
@@ -260,31 +229,46 @@ const MapLocation = () => {
                             <div className="report-details">
                               <strong>Velocidad:</strong> {Math.round(loc.speed)} km/h
                               <br />
-                              <strong>Reporte:</strong> {loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}
+                              <strong>Reporte:</strong>{' '}
+                              {loc.lastUpdate ? formatTimeAgo(loc.lastUpdate) : ''}
                               <br />
-                              <strong>Fuente:</strong> {loc.source === 'wss' ? 'Antena (WSS)' : 'App (Firebase)'}
+                              <strong>Fuente:</strong>{' '}
+                              {loc.source === 'wss' ? 'Antena (WSS)' : 'App (Firebase)'}
                             </div>
                           </div>
                         </div>
                       </Popup>
                     </Marker>
                   ))}
-                  <MapController positions={activeLocations} isFullScreen={isFullScreen} />
+                  <MapController positions={activeOnMap} isFullScreen={isFullScreen} />
                   <FullscreenControl isFullScreen={isFullScreen} toggle={toggleFullScreen} />
                 </MapContainer>
               </div>
             </CCol>
             <CCol lg={3} className={`ps-lg-3 side-panel ${isFullScreen ? 'fullscreen' : ''}`}>
-              <h6 className="mb-3 px-2 mt-2 mt-lg-0">Flota Activa ({activeLocations.length})</h6>
+              <h6 className="mb-3 px-2 mt-2 mt-lg-0">
+                Flota ({activeOnMap.length}/{fleetList.length})
+              </h6>
               <CListGroup flush className="flota-activa-list">
-                {activeLocations.map((loc) => (
+                {fleetList.map((loc) => (
                   <CListGroupItem key={loc.vehicle?.id || loc.plate} className="px-2 py-3">
                     <div className="d-flex justify-content-between align-items-center">
                       <span className="fw-bold list-item-plate">
                         {loc.plate}
-                        {loc.source === 'firebase' && (
-                          <span className="ms-2 badge rounded-pill bg-info" style={{ fontSize: '9px', verticalAlign: 'middle' }}>
+                        {loc.source === 'app' && (
+                          <span
+                            className="ms-2 badge rounded-pill bg-info"
+                            style={{ fontSize: '9px', verticalAlign: 'middle' }}
+                          >
                             App
+                          </span>
+                        )}
+                        {!loc.source && (
+                          <span
+                            className="ms-2 badge rounded-pill bg-secondary"
+                            style={{ fontSize: '9px', verticalAlign: 'middle' }}
+                          >
+                            Sin reporte
                           </span>
                         )}
                       </span>
@@ -294,7 +278,11 @@ const MapLocation = () => {
                     </div>
                     <div className="mt-2">
                       <div style={{ fontSize: '12px', fontWeight: '500' }}>
-                        {loc.driver ? loc.driver.name : <span className="text-muted">Sin asignar</span>}
+                        {loc.driver ? (
+                          loc.driver.name
+                        ) : (
+                          <span className="text-muted">Sin asignar</span>
+                        )}
                       </div>
                       {loc.driver?.phone && (
                         <div className="text-muted" style={{ fontSize: '11px' }}>

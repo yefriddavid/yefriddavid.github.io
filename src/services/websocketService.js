@@ -76,6 +76,10 @@ export class WebSocketService {
     }, delay)
   }
 
+  get listenerCount() {
+    return this.listeners.size
+  }
+
   subscribe(callback) {
     this.listeners.add(callback)
     // Auto-connect on first subscription

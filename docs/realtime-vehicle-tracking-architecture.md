@@ -210,3 +210,48 @@ Desmontar MapLocation
 ```
 
 El `WebSocketService` expone `listenerCount` para que el cleanup pueda decidir si cerrar la conexión o solo eliminar el listener (en caso de que otra vista también esté suscrita).
+
+---
+
+## Glosario
+
+### WebSocket / WSS
+Protocolo de comunicación que mantiene una **conexión bidireccional persistente** entre el servidor y el cliente. A diferencia de HTTP (donde el cliente pregunta y el servidor responde), WebSocket permite que el servidor envíe datos al cliente en cualquier momento sin que este los solicite. `WSS` es la variante segura (cifrada con TLS), equivalente a HTTPS pero para WebSockets.
+
+En este sistema, la antena GPS de cada vehículo reporta su posición al servidor WSS, que la reenvía instantáneamente a todos los clientes conectados. Esto hace que la latencia sea de milisegundos, versus los segundos que tomaría hacer polling periódico a Firebase.
+
+---
+
+### Backoff Exponencial
+Estrategia de reintento donde el tiempo de espera entre intentos **crece exponencialmente** en lugar de ser fijo. Si la primera reconexión espera 1 segundo, la segunda espera 2, la tercera 4, la cuarta 8, y así sucesivamente hasta un máximo (30 segundos en este sistema). El **jitter** (ruido aleatorio sumado al delay) evita que múltiples clientes que perdieron conexión al mismo tiempo intenten reconectarse todos a la vez, lo que saturaría el servidor.
+
+Sin backoff, un corte de red haría que todos los clientes bombardeen el servidor con reconexiones simultáneas al volver la señal.
+
+---
+
+### Anti-jitter
+En el contexto de este sistema, "jitter" no se refiere a variación en coordenadas GPS sino a **actualizaciones de datos fuera de orden** que llegan por distintas fuentes. Cuando el WebSocket envía una posición y la persiste en Firebase, el listener `onSnapshot` puede recibir ese mismo dato segundos después y sobrescribir la posición en el mapa con información "más vieja" que la que ya tenemos.
+
+La lógica anti-jitter en `currentPositionsReducer` previene esto mediante reglas de precedencia deterministas: WSS siempre gana, y Firebase solo puede actualizar si su dato es más reciente y la fuente actual no es WSS.
+
+---
+
+### Stale Closure
+Problema de JavaScript donde una función "recuerda" el valor de una variable del momento en que fue creada, en lugar del valor actual. En React, los callbacks dentro de `useEffect` capturan el estado y las props del render en que se crearon — si el estado cambia después, el callback sigue viendo el valor antiguo (stale = rancio/viejo).
+
+En este sistema, el handler del WebSocket se crea una sola vez (el `useEffect` tiene `[]` como dependencias). Si leyera `vehicles` directamente, siempre vería el valor del primer render, incluso si la lista de vehículos se cargó después. El `vehiclesRef` resuelve esto: es un objeto mutable cuyo `.current` se actualiza en cada render, y el handler lee `vehiclesRef.current` en lugar de `vehicles` directamente.
+
+---
+
+### Throttle
+Técnica que limita con qué frecuencia se ejecuta una operación costosa. En este sistema, cada mensaje del WebSocket podría generar una escritura en Firestore — lo que con 10 vehículos reportando cada segundo se traduciría en 10 escrituras/segundo. El throttle por vehículo garantiza que, sin importar cuántos mensajes lleguen, se persiste **como máximo una vez cada 30 segundos por vehículo**. Los mensajes intermedios se usan para actualizar el mapa en tiempo real pero se descartan para efectos de persistencia.
+
+El estado del throttle vive en un `Map` a nivel de módulo (`locationThrottle.js`) para que sobreviva entre montajes y desmontajes del componente.
+
+### `onSnapshot`
+Función de Firestore que abre un **listener en tiempo real** sobre una colección. A diferencia de `getDocs` (consulta única), `onSnapshot` mantiene una conexión abierta y ejecuta el callback en dos momentos:
+
+1. **Al conectarse:** entrega inmediatamente todos los documentos existentes que coinciden con la query (evento `added` por cada uno). Esto reemplaza la necesidad de una carga inicial separada.
+2. **Ante cada cambio:** cuando se agrega, modifica o elimina un documento en Firestore, el callback se dispara con los cambios incrementales.
+
+En este sistema se usa para recibir posiciones reportadas por la app móvil del conductor (`source: 'app'`). Retorna una función `unsubscribe` que debe llamarse al desmontar el componente para cerrar la conexión y evitar memory leaks.
