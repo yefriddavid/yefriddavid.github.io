@@ -113,7 +113,7 @@ Cada mensaje del WebSocket **no genera una escritura en Firebase**. Antes del `d
 
 Esto reduce el volumen de escrituras de O(mensajes/s × vehículos) a O(vehículos / 30s), manteniendo una traza de trayecto útil sin saturar Firestore.
 
-El estado del throttle (último timestamp persistido por vehículo) se gestiona en un `useRef` dentro del componente, ya que es dato efímero de sesión, no de store.
+El estado del throttle (último timestamp persistido por vehículo) se gestiona en un **`Map` a nivel de módulo** dentro de `websocketService.js`, no en un `useRef` del componente. Usar `useRef` provocaría que el throttle se resetee cada vez que el componente se desmonta (al navegar a otra vista), causando una ráfaga de escrituras simultáneas al regresar al mapa. Al vivir fuera del ciclo de vida de React, el throttle sobrevive entre mounts.
 
 ---
 
@@ -132,6 +132,30 @@ No se confía en que el servidor WSS envíe este valor. Si el servidor lo provee
 ## Proyección de Flota Completa
 
 El `useMemo` en el componente proyecta el inventario completo de vehículos sobre el estado de `currentPositions`. Los vehículos sin posición conocida se incluyen en la lista lateral con `lat/lng: null` para garantizar visibilidad de toda la flota, diferenciando entre "activo en mapa" y "sin reporte".
+
+## Antigüedad de Posición (Staleness)
+
+Una posición no actualizada durante más de **N minutos** no indica necesariamente que el vehículo esté detenido — puede significar pérdida de señal. El componente debe calcular `minutesSinceLastUpdate` y aplicar una clase visual al ícono:
+
+- **< 5 min:** normal (verde/gris según fuente)
+- **5–15 min:** advertencia (ícono atenuado)
+- **> 15 min:** sin señal (ícono gris oscuro, tooltip "Sin reporte hace X min")
+
+Los vehículos en estado "sin señal" **no se eliminan del mapa** — siguen mostrando la última posición conocida para no perder el rastro de la flota.
+
+## Filtro de Antigüedad en `onSnapshot`
+
+El `onSnapshot` de Firestore entrega los documentos existentes al suscribirse, incluyendo potencialmente registros de días anteriores. El hook `useVehicleLocationSnapshot` debe ignorar documentos cuyo `timestamp` sea anterior al inicio del día operativo actual (por ejemplo, `00:00` hora local) para evitar que posiciones obsoletas aparezcan en el mapa como si fueran recientes.
+
+```js
+const startOfDay = new Date()
+startOfDay.setHours(0, 0, 0, 0)
+
+// En el query:
+where('timestamp', '>=', Timestamp.fromDate(startOfDay))
+```
+
+Esta restricción no afecta la tabla de historial paginado — esa query la controla la saga con su propio rango de fechas.
 
 ---
 
