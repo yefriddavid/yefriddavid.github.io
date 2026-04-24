@@ -15,15 +15,11 @@ export function useVehicleLocationSnapshot() {
     const tenantId = getTenantId()
     if (!tenantId) return
 
-    const startOfDay = new Date()
-    startOfDay.setHours(0, 0, 0, 0)
-
     const q = query(
       collection(db, COL),
       where('tenantId', '==', tenantId),
-      where('timestamp', '>=', Timestamp.fromDate(startOfDay)),
       orderBy('timestamp', 'desc'),
-      limit(50),
+      limit(20),
     )
 
     const unsubscribe = onSnapshot(

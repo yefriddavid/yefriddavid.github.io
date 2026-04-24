@@ -76,6 +76,31 @@ export const deleteHistoryEntry = async (id) => {
   await deleteDoc(doc(db, COL, id))
 }
 
+export const getLastKnownPosition = async (vehicleId) => {
+  try {
+    const q = query(
+      collection(db, COL),
+      where('tenantId', '==', getTenantId()),
+      where('vehicleId', '==', vehicleId),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    )
+    const snap = await getDocs(q)
+    if (snap.empty) return null
+    const d = snap.docs[0]
+    return {
+      id: d.id,
+      ...d.data(),
+      latitude: d.data().latitude || d.data().lat,
+      longitude: d.data().longitude || d.data().lng,
+      timestamp: d.data().timestamp?.toDate?.()?.toISOString() ?? d.data().timestamp ?? d.data().createdAt,
+    }
+  } catch (error) {
+    console.error('Error fetching last known position:', error)
+    return null
+  }
+}
+
 // Requires Firestore composite index: tenantId + vehicleId + timestamp (ASC)
 export const getHistoryByRange = (vehicleId, startDate, endDate) =>
   firestoreCall(async () => {

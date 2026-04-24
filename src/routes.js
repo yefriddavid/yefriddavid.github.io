@@ -4,17 +4,6 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 // Managment
 const Accounts = React.lazy(() => import('./views/Accounting/Accounts'))
 const AccountsMaster = React.lazy(() => import('./views/Accounting/AccountsMaster'))
-const Settlements = React.lazy(() => import('./views/taxis/Settlements/Index'))
-const Drivers = React.lazy(() => import('./views/taxis/Drivers'))
-const Vehicles = React.lazy(() => import('./views/taxis/Vehicles'))
-const Expenses = React.lazy(() => import('./views/taxis/Expenses'))
-const Summary = React.lazy(() => import('./views/taxis/Summary'))
-const TaxisHome = React.lazy(() => import('./views/taxis/Home'))
-const Partners = React.lazy(() => import('./views/taxis/Partners'))
-const Distributions = React.lazy(() => import('./views/taxis/Distributions'))
-const Operations = React.lazy(() => import('./views/taxis/Operations'))
-const MapLocation = React.lazy(() => import('./views/taxis/MapLocation'))
-const VehicleRoute = React.lazy(() => import('./views/taxis/VehicleRoute'))
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/users/Users'))
@@ -55,95 +44,6 @@ const routes = [
     longName: 'Cuentas',
     tKey: 'nav.accounts',
     element: Accounts,
-    landingPage: true,
-  },
-  {
-    path: '/taxis',
-    name: 'Taxis',
-    tKey: 'nav.taxiManagement',
-    element: TaxisHome,
-  },
-  {
-    path: '/taxis/home',
-    name: 'Home',
-    longName: 'Taxi — Inicio',
-    tKey: 'nav.taxiHome',
-    element: TaxisHome,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/settlements',
-    name: 'Settlements',
-    longName: 'Taxi — Liquidaciones',
-    tKey: 'nav.liquidaciones',
-    element: Settlements,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/drivers',
-    name: 'Drivers',
-    longName: 'Taxi — Conductores',
-    tKey: 'nav.conductores',
-    element: Drivers,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/vehicles',
-    name: 'Vehicles',
-    longName: 'Taxi — Vehículos',
-    tKey: 'nav.vehiculos',
-    element: Vehicles,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/expenses',
-    name: 'Expenses',
-    longName: 'Taxi — Gastos',
-    tKey: 'nav.taxiExpenses',
-    element: Expenses,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/summary',
-    name: 'Summary',
-    longName: 'Taxi — Resumen',
-    tKey: 'nav.taxiResumen',
-    element: Summary,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/operations',
-    name: 'Operaciones',
-    longName: 'Taxi — Operaciones',
-    element: Operations,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/map',
-    name: 'Mapa/Ubicación',
-    longName: 'Taxi — Mapa',
-    element: MapLocation,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/route-history',
-    name: 'Ruta de Vehículo',
-    longName: 'Taxi — Ruta Histórica',
-    element: VehicleRoute,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/partners',
-    name: 'Partners',
-    longName: 'Taxi — Partners',
-    element: Partners,
-    landingPage: true,
-  },
-  {
-    path: '/taxis/profit-sharing',
-    name: 'Distributions',
-    longName: 'Taxi — Distribución',
-    element: Distributions,
     landingPage: true,
   },
   {

@@ -49,14 +49,29 @@ function todayEnd() {
   return d
 }
 
+const LS_KEY = 'taxis_route_history_filters'
+
 const VehicleRoute = () => {
   const dispatch = useDispatch()
   const { data: vehicles } = useSelector((s) => s.taxiVehicle)
   const { data: routePoints, fetching, error } = useSelector((s) => s.vehicleRoute)
 
-  const [vehicleId, setVehicleId] = useState('')
-  const [startDate, setStartDate] = useState(todayStart)
-  const [endDate, setEndDate] = useState(todayEnd)
+  const [vehicleId, setVehicleId] = useState(() => {
+    const saved = localStorage.getItem(LS_KEY)
+    return saved ? JSON.parse(saved).vehicleId : ''
+  })
+  const [startDate, setStartDate] = useState(() => {
+    const saved = localStorage.getItem(LS_KEY)
+    return saved ? new Date(JSON.parse(saved).startDate) : todayStart()
+  })
+  const [endDate, setEndDate] = useState(() => {
+    const saved = localStorage.getItem(LS_KEY)
+    return saved ? new Date(JSON.parse(saved).endDate) : todayEnd()
+  })
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify({ vehicleId, startDate, endDate }))
+  }, [vehicleId, startDate, endDate])
 
   useEffect(() => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
@@ -64,7 +79,13 @@ const VehicleRoute = () => {
 
   const handleSearch = () => {
     if (!vehicleId) return
-    dispatch(vehicleRouteActions.fetchRequest({ vehicleId, startDate, endDate }))
+    dispatch(
+      vehicleRouteActions.fetchRequest({
+        vehicleId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      }),
+    )
   }
 
   const handleClear = () => {

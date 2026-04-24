@@ -28,7 +28,7 @@ import { useVehicleLocationSnapshot } from 'src/hooks/useVehicleLocationSnapshot
 import { shouldPersist } from 'src/utils/locationThrottle'
 import { haversineKmh } from 'src/utils/geoUtils'
 import { taxiWebSocket } from 'src/services/websocketService'
-import { getHistory } from 'src/services/firebase/taxi/vehicleLocationHistory'
+import { getHistory, getLastKnownPosition } from 'src/services/firebase/taxi/vehicleLocationHistory'
 import 'leaflet/dist/leaflet.css'
 import './MapLocation.scss'
 
@@ -62,6 +62,26 @@ const MapLocation = () => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
     if (!drivers) dispatch(taxiDriverActions.fetchRequest())
   }, [dispatch, vehicles, drivers])
+
+  useEffect(() => {
+    if (!vehicles) return
+    // Fetch last known position for vehicles that don't have one in Redux yet
+    vehicles.forEach(async (v) => {
+      if (!currentPositions[v.id]) {
+        const last = await getLastKnownPosition(v.id)
+        if (last) {
+          dispatch(
+            currentPositionsActions.updateFromApp({
+              vehicleId: v.id,
+              lat: parseFloat(last.latitude),
+              lng: parseFloat(last.longitude),
+              lastUpdate: last.timestamp,
+            }),
+          )
+        }
+      }
+    })
+  }, [vehicles, dispatch]) // Only on vehicles load
 
   useVehicleLocationSnapshot()
 
