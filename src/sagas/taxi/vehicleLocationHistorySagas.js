@@ -1,4 +1,4 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/vehicleLocationHistoryActions'
 import * as service from '../../services/firebase/taxi/vehicleLocationHistory'
 
@@ -38,10 +38,21 @@ export function* deleteHistoryEntry({ payload }) {
   }
 }
 
+export function* fetchRecentHistory({ payload }) {
+  const { vehicleId, plate } = payload
+  try {
+    const data = yield call(service.getHistory, vehicleId, plate)
+    yield put(actions.fetchRecentSuccess({ vehicleId, data }))
+  } catch (e) {
+    yield put(actions.fetchRecentError({ vehicleId }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchHistory),
     takeLatest(actions.createRequest, createHistoryEntry),
     takeLatest(actions.deleteRequest, deleteHistoryEntry),
+    takeEvery(actions.fetchRecentRequest, fetchRecentHistory),
   ])
 }

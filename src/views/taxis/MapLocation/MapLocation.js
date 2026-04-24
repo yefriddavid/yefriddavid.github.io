@@ -28,7 +28,6 @@ import { useVehicleLocationSnapshot } from 'src/hooks/useVehicleLocationSnapshot
 import { shouldPersist } from 'src/utils/locationThrottle'
 import { haversineKmh } from 'src/utils/geoUtils'
 import { taxiWebSocket } from 'src/services/websocketService'
-import { getHistory, getLastKnownPosition } from 'src/services/firebase/taxi/vehicleLocationHistory'
 import 'leaflet/dist/leaflet.css'
 import './MapLocation.scss'
 
@@ -41,13 +40,12 @@ const MapLocation = () => {
   const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
   const currentPositions = useSelector((s) => s.currentPositions)
+  const { recentHistories, loadingHistories } = useSelector((s) => s.vehicleLocationHistory)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
   const [, setRefreshTime] = useState(0)
 
-  const [histories, setHistories] = useState({}) // { vehicleId: [pos1, pos2, ...] }
-  const [loadingHistory, setLoadingHistory] = useState({}) // { vehicleId: boolean }
-  const [manualPositions, setManualPositions] = useState({}) // { vehicleId: {lat, lng} }
+  const [manualPositions, setManualPositions] = useState({})
   const [centerOn, setCenterOn] = useState(null)
 
   const vehiclesRef = useRef(vehicles)
@@ -65,23 +63,11 @@ const MapLocation = () => {
 
   useEffect(() => {
     if (!vehicles) return
-    // Fetch last known position for vehicles that don't have one in Redux yet
-    vehicles.forEach(async (v) => {
-      if (!currentPositions[v.id]) {
-        const last = await getLastKnownPosition(v.id)
-        if (last) {
-          dispatch(
-            currentPositionsActions.updateFromApp({
-              vehicleId: v.id,
-              lat: parseFloat(last.latitude),
-              lng: parseFloat(last.longitude),
-              lastUpdate: last.timestamp,
-            }),
-          )
-        }
-      }
-    })
-  }, [vehicles, dispatch]) // Only on vehicles load
+    const missing = vehicles.filter((v) => !currentPositions[v.id])
+    if (missing.length > 0) {
+      dispatch(currentPositionsActions.fetchLastKnownPositions(missing))
+    }
+  }, [vehicles, dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useVehicleLocationSnapshot()
 
@@ -160,18 +146,9 @@ const MapLocation = () => {
 
   const toggleFullScreen = useCallback(() => setIsFullScreen((p) => !p), [])
 
-  const fetchVehicleHistory = async (vehicleId, plate) => {
-    if (histories[vehicleId] || loadingHistory[vehicleId]) return
-    setLoadingHistory((prev) => ({ ...prev, [vehicleId]: true }))
-    try {
-      const data = await getHistory(vehicleId, plate)
-      // data is already limited to 5 in service
-      setHistories((prev) => ({ ...prev, [vehicleId]: data }))
-    } catch (e) {
-      console.error('Error fetching history for vehicle', vehicleId, e)
-    } finally {
-      setLoadingHistory((prev) => ({ ...prev, [vehicleId]: false }))
-    }
+  const fetchVehicleHistory = (vehicleId, plate) => {
+    if (recentHistories[vehicleId] || loadingHistories[vehicleId]) return
+    dispatch(vehicleLocationHistoryActions.fetchRecentRequest({ vehicleId, plate }))
   }
 
   const fleetList = useMemo(() => {
@@ -379,13 +356,13 @@ const MapLocation = () => {
                         <CIcon icon={cilHistory} size="sm" className="me-1" />
                         <span className="small fw-bold">Últimas 5 posiciones</span>
                       </div>
-                      {loadingHistory[loc.vehicle?.id] && (
+                      {loadingHistories[loc.vehicle?.id] && (
                         <div className="text-center py-2">
                           <CSpinner size="sm" color="primary" />
                         </div>
                       )}
                       <div className="history-list">
-                        {histories[loc.vehicle?.id]?.map((h, i) => (
+                        {recentHistories[loc.vehicle?.id]?.map((h, i) => (
                           <div
                             key={h.id || i}
                             className="history-item"
@@ -407,7 +384,7 @@ const MapLocation = () => {
                             </div>
                           </div>
                         ))}
-                        {histories[loc.vehicle?.id]?.length === 0 && (
+                        {recentHistories[loc.vehicle?.id]?.length === 0 && (
                           <div className="small text-muted text-center py-2">Sin historial</div>
                         )}
                         {loc.source === 'history' && (

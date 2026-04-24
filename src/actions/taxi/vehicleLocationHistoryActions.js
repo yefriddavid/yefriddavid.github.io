@@ -1,4 +1,5 @@
 import { createCRUDActions } from 'src/utils/crudFactory'
+import { createAction } from '@reduxjs/toolkit'
 
 export const {
   fetchRequest,
@@ -18,3 +19,8 @@ export const {
   successRequestDelete,
   errorRequestDelete,
 } = createCRUDActions('vehicleLocationHistory')
+
+// Per-vehicle recent history (last 5 positions, used in MapLocation accordion)
+export const fetchRecentRequest = createAction('vehicleLocationHistory/fetchRecentRequest') // { vehicleId, plate }
+export const fetchRecentSuccess = createAction('vehicleLocationHistory/fetchRecentSuccess') // { vehicleId, data }
+export const fetchRecentError = createAction('vehicleLocationHistory/fetchRecentError')    // { vehicleId }
