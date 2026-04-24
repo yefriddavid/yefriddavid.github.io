@@ -108,8 +108,8 @@ export const getHistoryByRange = (vehicleId, startDate, endDate) =>
       collection(db, COL),
       where('tenantId', '==', getTenantId()),
       where('vehicleId', '==', vehicleId),
-      where('timestamp', '>=', Timestamp.fromDate(startDate)),
-      where('timestamp', '<=', Timestamp.fromDate(endDate)),
+      where('timestamp', '>=', Timestamp.fromDate(new Date(startDate))),
+      where('timestamp', '<=', Timestamp.fromDate(new Date(endDate))),
       orderBy('timestamp', 'asc'),
       limit(500),
     )

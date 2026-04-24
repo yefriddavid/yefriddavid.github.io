@@ -17,7 +17,7 @@ import { CNavItem } from '@coreui/react'
 const getTaxisNav = (t) => [
   {
     component: CNavItem,
-    name: t('nav.taxiHome'),
+    name: t('nav.home'),
     to: '/taxis/home',
     icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
   },
