@@ -191,6 +191,12 @@ const getNav = (t, role) => {
         to: '/taxis/map',
         icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
       },
+      {
+        component: CNavItem,
+        name: 'Ruta de Vehículo',
+        to: '/taxis/route-history',
+        icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
+      },
       ...(isManager
         ? [
             {
