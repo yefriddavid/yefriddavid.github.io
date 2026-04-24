@@ -4,6 +4,25 @@ Este documento describe la arquitectura para la gestión de ubicaciones de vehí
 
 ---
 
+## Motivación y Principios de Diseño
+
+### Por qué esta arquitectura
+
+La implementación anterior en `MapLocation.js` importaba `db`, `onSnapshot` y otras utilidades de Firebase directamente en el componente. Esto genera varios problemas:
+
+- **Acoplamiento fuerte:** el componente conoce detalles de infraestructura (Firestore, colecciones, queries) que no le corresponden.
+- **Imposibilidad de testear:** un componente con Firebase embebido no se puede probar en aislamiento sin mockear la capa de infraestructura.
+- **Violación de capas:** la vista mezcla responsabilidades de UI con acceso a datos.
+- **Loop de escritura silencioso:** WSS escribe en Firebase, Firebase notifica al componente, el componente vuelve a actualizar el estado — sin una separación clara, este ciclo es difícil de detectar y controlar.
+
+### Regla fundamental
+
+> **Los componentes de vista (`src/views/`) nunca importan desde `src/services/providers/firebase/` ni acceden directamente a Firestore.**
+
+Todo acceso a Firebase ocurre en sagas, hooks especializados o servicios de la capa de datos. El componente solo despacha acciones y lee del store de Redux.
+
+---
+
 ## Componentes Principales
 
 ### 1. WebSocketService (`src/services/websocketService.js`)
