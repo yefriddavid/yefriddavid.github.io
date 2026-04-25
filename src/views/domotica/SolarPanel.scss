@@ -125,7 +125,7 @@
 
   &__spec-chip {
     display: inline-block;
-    background: var(--cui-tertiary-bg, #f1f5f9);
+    background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
     border-radius: 4px;
     font-size: 11px;
@@ -169,7 +169,7 @@
 
   &__energy-track {
     height: 10px;
-    background: var(--cui-tertiary-bg, #e2e8f0);
+    background: var(--cui-tertiary-bg);
     border-radius: 5px;
     overflow: hidden;
   }
@@ -196,7 +196,7 @@
     gap: 6px;
     font-size: 13px;
     color: var(--cui-secondary-color);
-    background: var(--cui-tertiary-bg, #f8fafc);
+    background: var(--cui-tertiary-bg);
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid var(--cui-border-color);

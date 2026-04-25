@@ -1,6 +1,6 @@
 .header {
-  // Theme specific styles for yellow theme
-  [data-app-theme="yellow"] & {
+  // Theme specific styles for yellow theme (light mode only)
+  html:not([data-coreui-theme="dark"]) [data-app-theme="yellow"] & {
     background-color: #ffffff !important;
     color: unset;
 
