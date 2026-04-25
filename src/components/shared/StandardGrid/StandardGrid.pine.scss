@@ -86,7 +86,7 @@
 
   // ── Data rows ─────────────────────────────────────────────────────
   .dx-data-row > td {
-    padding: 9px 14px;
+    padding: 6px 14px;
     font-size: 13px;
     color: #1e293b;
     border-color: #eef2f7 !important;
@@ -132,6 +132,7 @@
 
   // ── Group rows ─────────────────────────────────────────────────────
   .dx-group-row > td {
+    padding: 6px 14px;
     background: linear-gradient(90deg, #f0f5ff, #f8fafd) !important;
     font-weight: 700;
     font-size: 12px;

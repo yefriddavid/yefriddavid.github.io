@@ -93,6 +93,12 @@ body {
 @mixin app-theme($bg, $accent) {
   $accent-dim: rgba($accent, 0.15);
 
+  // CSS vars consumed by AppModal and other shared components
+  --app-accent:      #{$accent};
+  --app-accent-dim:  #{$accent-dim};
+  // Text on accent-colored backgrounds: black for bright accents (amber), white otherwise
+  --app-accent-text: #{if(lightness($accent) > 60%, #000000, #ffffff)};
+
   // ── Botones primarios ─────────────────────────────────────────────
   .btn-primary,
   .btn.btn-primary {

@@ -10,6 +10,7 @@ import {
   cilX, cilReload, cilBook,
 } from '@coreui/icons'
 import { CSpinner } from '@coreui/react'
+import AppModal from '../../components/shared/AppModal'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
 import './SerialConsole.scss'
 
@@ -288,58 +289,53 @@ const SerialConsole = () => {
     <div className="sc">
 
       {/* ── Dictionary modal ── */}
-      {showDict && (
-        <div className="sc-dict-overlay" onClick={e => e.target === e.currentTarget && setShowDict(false)}>
-          <div className="sc-dict">
-            <div className="sc-dict__header">
-              <span className="sc-dict__title">
-                <CIcon icon={cilBook} size="sm" className="me-2" />
-                Diccionario AT — Skypatrol TT8750+
-              </span>
-              <div className="sc-dict__header-right">
-                {!isConnected && (
-                  <span className="sc-dict__warn">Sin conexión — los comandos se cargarán en la barra de entrada</span>
-                )}
-                <button className="sc-dict__close" onClick={() => setShowDict(false)}>✕</button>
-              </div>
-            </div>
-            <div className="sc-dict__body">
-              <StandardGrid
-                dataSource={SKYPATROL_COMMANDS}
-                keyExpr="id"
-                wordWrapEnabled={false}
-                columnAutoWidth={false}
-                style={{ margin: 0 }}
-              >
-                <SearchPanel visible placeholder="Buscar comando, nombre, descripción…" />
-                <FilterRow visible />
-                <HeaderFilter visible />
-                <GroupPanel visible emptyPanelText="Arrastra Categoría aquí para agrupar" />
-                <Grouping autoExpandAll={false} />
-                <Paging defaultPageSize={15} />
-                <Pager showPageSizeSelector allowedPageSizes={[10, 15, 30, 50]} showInfo />
-
-                <Column dataField="category" caption="Categoría" width={120} cellRender={categoryCell} groupIndex={0} />
-                <Column dataField="command"  caption="Comando"   width={160} cellRender={({ value }) => <code className="sc-code">{value}</code>} />
-                <Column dataField="name"     caption="Nombre"    minWidth={120} />
-                <Column dataField="writeFormat" caption="Write Format" width={200} cellRender={codeCell} />
-                <Column dataField="readFormat"  caption="Read Format"  width={160} cellRender={codeCell} />
-                <Column
-                  caption="Acción"
-                  width={100}
-                  allowSorting={false}
-                  allowFiltering={false}
-                  allowGrouping={false}
-                  cellRender={dictActionsCell}
-                  fixed
-                  fixedPosition="right"
-                />
-                <MasterDetail enabled component={DictDetail} />
-              </StandardGrid>
-            </div>
+      <AppModal
+        visible={showDict}
+        onClose={() => setShowDict(false)}
+        title="Diccionario AT"
+        subtitle="Referencia de comandos Skypatrol — haz clic en Ejecutar para enviar"
+        icon={<CIcon icon={cilBook} />}
+        variant="center"
+        size="xl"
+      >
+        {!isConnected && (
+          <div className="sc-dict__warn-banner">
+            Sin conexión — los comandos se cargarán en la barra de entrada al ejecutar
           </div>
-        </div>
-      )}
+        )}
+        <StandardGrid
+          dataSource={SKYPATROL_COMMANDS}
+          keyExpr="id"
+          wordWrapEnabled={false}
+          style={{ margin: 0 }}
+          height="calc(80vh - 140px)"
+          scrolling={{ showScrollbar: 'onHover', mode: 'standard' }}
+        >
+          <SearchPanel visible placeholder="Buscar comando, nombre, descripción…" />
+          <HeaderFilter visible />
+          <GroupPanel visible emptyPanelText="Arrastra Categoría aquí para agrupar" />
+          <Grouping autoExpandAll={false} />
+          <Paging defaultPageSize={15} />
+          <Pager showPageSizeSelector allowedPageSizes={[10, 15, 30, 50]} showInfo />
+
+          <Column dataField="category" caption="Categoría" width={120} cellRender={categoryCell} groupIndex={0} />
+          <Column dataField="command"  caption="Comando"   width={160} cellRender={({ value }) => <code className="sc-code">{value}</code>} />
+          <Column dataField="name"     caption="Nombre"    minWidth={120} />
+          <Column dataField="writeFormat" caption="Write Format" width={200} cellRender={codeCell} />
+          <Column dataField="readFormat"  caption="Read Format"  width={160} cellRender={codeCell} />
+          <Column
+            caption="Acción"
+            width={100}
+            allowSorting={false}
+            allowFiltering={false}
+            allowGrouping={false}
+            cellRender={dictActionsCell}
+            fixed
+            fixedPosition="right"
+          />
+          <MasterDetail enabled component={DictDetail} />
+        </StandardGrid>
+      </AppModal>
 
       {/* ── Toolbar ── */}
       <div className="sc__toolbar">
