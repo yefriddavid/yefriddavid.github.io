@@ -1,37 +1,39 @@
-import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore'
-import { db, COL_DOMOTICA_SOLAR } from '../settings'
+const BASE_URL = 'https://3.92.69.78:1979'
+const BATTERY_API_URL = `${BASE_URL}/api/battery`
+const BATTERY_READ_URL = `${BASE_URL}/api/battery/read`
+const POLL_INTERVAL_MS = 30_000
 
-const BATTERY_DOC = 'battery'
+const normalise = (data) => ({ ...data, soc: data.percent })
 
-/**
- * Real-time subscription to battery status.
- * The external system writes to Domotica_Solar/battery.
- *
- * Expected document fields:
- *   voltage    {number}  e.g. 12.4  (V)
- *   soc        {number}  0–100      (State of Charge %)
- *   current    {number}  e.g. 4.2   (A, positive = charging, negative = discharging)
- *   power      {number}  e.g. 52.1  (W)
- *   status     {string}  'charging' | 'discharging' | 'full' | 'idle' | 'low'
- *   temperature {number} e.g. 28    (°C, optional)
- *   updatedAt  {Timestamp}
- *
- * @param {(data: object|null) => void} callback
- * @returns {() => void} unsubscribe function
- */
 export const subscribeBatteryStatus = (callback) => {
-  const ref = doc(db, COL_DOMOTICA_SOLAR, BATTERY_DOC)
-  return onSnapshot(ref, (snap) => {
-    callback(snap.exists() ? { id: snap.id, ...snap.data() } : null)
-  })
+  let cancelled = false
+
+  const fetchBattery = async () => {
+    try {
+      const res = await fetch(BATTERY_API_URL)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      if (!cancelled) callback(normalise(data))
+    } catch {
+      // keep last known state on network/parse error
+    }
+  }
+
+  fetchBattery()
+  const id = setInterval(fetchBattery, POLL_INTERVAL_MS)
+
+  return () => {
+    cancelled = true
+    clearInterval(id)
+  }
 }
 
-/**
- * Write a battery status update (for testing or local device integration).
- * @param {object} data
- */
-export const updateBatteryStatus = (data) =>
-  setDoc(doc(db, COL_DOMOTICA_SOLAR, BATTERY_DOC), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  })
+// Triggers an immediate ADC read on the ESP8266 via Node-RED → MQTT,
+// then waits for the ESP to respond and returns the fresh reading.
+export const triggerRead = async () => {
+  await fetch(BATTERY_READ_URL, { method: 'POST' })
+  await new Promise((r) => setTimeout(r, 2500))
+  const res = await fetch(BATTERY_API_URL)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalise(await res.json())
+}

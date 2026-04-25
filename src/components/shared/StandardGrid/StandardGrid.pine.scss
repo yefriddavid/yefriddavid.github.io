@@ -84,6 +84,11 @@
     }
   }
 
+  // ── Rows view — quita el border-top que DevExtreme pone entre header y filas
+  .dx-datagrid-rowsview {
+    border-top: none !important;
+  }
+
   // ── Data rows ─────────────────────────────────────────────────────
   .dx-data-row > td {
     padding: 6px 14px;

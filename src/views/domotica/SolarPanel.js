@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CCard, CCardBody, CRow, CCol, CBadge } from '@coreui/react'
+import { CAlert, CButton, CCard, CCardBody, CRow, CCol, CBadge, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
   cilSun,
@@ -7,17 +7,16 @@ import {
   cilInputPower,
   cilWarning,
   cilCheckCircle,
-  cilMinus,
   cilArrowBottom,
-  cilFire,
+  cilSync,
 } from '@coreui/icons'
-import { subscribeBatteryStatus } from 'src/services/firebase/domotica/solarBattery'
+import { subscribeBatteryStatus, triggerRead } from 'src/services/firebase/domotica/solarBattery'
 import './SolarPanel.scss'
 
 // 12V 100Ah = 1200 Wh
-const BATTERY_CAPACITY_WH = 1200
+const BATTERY_CAPACITY_WH = 1800
 const BATTERY_NOMINAL_V = 12
-const BATTERY_CAPACITY_AH = 100
+const BATTERY_CAPACITY_AH = 150
 
 const getSocColor = (soc) => {
   if (soc == null) return '#64748b'
@@ -36,43 +35,48 @@ const getSocLabel = (soc) => {
 }
 
 const STATUS_CONFIG = {
-  charging: {
-    label: 'Cargando',
+  bulk: {
+    label: 'Cargando (bulk)',
     color: 'success',
     icon: cilBolt,
+  },
+  absorption: {
+    label: 'Absorción',
+    color: 'success',
+    icon: cilBolt,
+  },
+  float: {
+    label: 'Flotación — llena',
+    color: 'success',
+    icon: cilCheckCircle,
   },
   discharging: {
     label: 'Descargando',
     color: 'info',
     icon: cilArrowBottom,
   },
-  full: {
-    label: 'Carga completa',
-    color: 'success',
-    icon: cilCheckCircle,
+  lvd_risk: {
+    label: 'Riesgo de corte (LVD)',
+    color: 'warning',
+    icon: cilWarning,
   },
-  idle: {
-    label: 'Inactivo',
-    color: 'secondary',
-    icon: cilMinus,
-  },
-  low: {
-    label: 'Batería baja',
+  critical: {
+    label: 'Crítico',
     color: 'danger',
     icon: cilWarning,
   },
 }
 
-const BatteryGauge = ({ soc, status, color }) => {
+const BatteryGauge = ({ soc, status, color, solar }) => {
   const fillPct = Math.max(0, Math.min(100, soc ?? 0))
-  const isCharging = status === 'charging'
+  const isCharging = status === 'bulk' || status === 'absorption' || status === 'float'
 
   return (
     <div className="battery-gauge">
       <div className="battery-gauge__terminal" style={{ borderColor: color }} />
       <div className="battery-gauge__body" style={{ borderColor: color }}>
         <div
-          className={`battery-gauge__fill${isCharging ? ' battery-gauge__fill--charging' : ''}`}
+          className={`battery-gauge__fill${isCharging ? ' battery-gauge__fill--charging' : ''}${solar ? ' battery-gauge__fill--estimated' : ''}`}
           style={{ height: `${fillPct}%`, background: color }}
         />
         <div className="battery-gauge__segments">
@@ -82,11 +86,12 @@ const BatteryGauge = ({ soc, status, color }) => {
         </div>
         <div className="battery-gauge__label">
           <span className="battery-gauge__pct" style={{ color }}>
+            {solar && <span className="battery-gauge__estimated-mark">~</span>}
             {soc ?? '--'}
             <span className="battery-gauge__pct-sign">%</span>
           </span>
           <span className="battery-gauge__soc-label" style={{ color }}>
-            {getSocLabel(soc)}
+            {solar ? 'Estimado' : getSocLabel(soc)}
           </span>
         </div>
         {isCharging && (
@@ -141,35 +146,44 @@ const useRelativeTime = (timestamp) => {
 const SolarPanel = () => {
   const [battery, setBattery] = useState(undefined)
   const [online, setOnline] = useState(false)
+  const [readState, setReadState] = useState('idle') // 'idle' | 'loading' | 'done' | 'error'
   const relativeTime = useRelativeTime(battery?.updatedAt)
 
+  const applyData = (data) => {
+    setBattery(data)
+    if (data?.updatedAt) {
+      const date = new Date(data.updatedAt)
+      setOnline(Date.now() - date.getTime() < 5 * 60 * 1000)
+    }
+  }
+
   useEffect(() => {
-    const unsub = subscribeBatteryStatus((data) => {
-      setBattery(data)
-      if (data?.updatedAt) {
-        const date = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
-        setOnline(Date.now() - date.getTime() < 5 * 60 * 1000)
-      }
-    })
-    return unsub
+    return subscribeBatteryStatus(applyData)
   }, [])
+
+  const handleRead = async () => {
+    if (readState === 'loading') return
+    setReadState('loading')
+    try {
+      const data = await triggerRead()
+      applyData(data)
+      setReadState('done')
+    } catch {
+      setReadState('error')
+    } finally {
+      setTimeout(() => setReadState('idle'), 2500)
+    }
+  }
 
   const soc = battery?.soc ?? null
   const voltage = battery?.voltage ?? null
-  const current = battery?.current ?? null
-  const power = battery?.power ?? (voltage != null && current != null ? voltage * current : null)
-  const temperature = battery?.temperature ?? null
+  const solar = battery?.solar ?? null
+  const alert = battery?.alert ?? null
   const status = battery?.status ?? null
   const statusCfg = STATUS_CONFIG[status] ?? null
 
   const energyWh = soc != null ? Math.round((soc / 100) * BATTERY_CAPACITY_WH) : null
   const color = getSocColor(soc)
-
-  const currentSign = current != null && current >= 0 ? '+' : ''
-  const hoursRemaining =
-    current != null && current < 0 && soc != null
-      ? ((soc / 100) * BATTERY_CAPACITY_AH) / Math.abs(current)
-      : null
 
   return (
     <div className="solar-panel">
@@ -183,6 +197,36 @@ const SolarPanel = () => {
           <span className={`online-dot online-dot--${online ? 'on' : 'off'}`} />
           <span className="solar-panel__online-label">{online ? 'En línea' : 'Sin señal'}</span>
           <span className="solar-panel__timestamp">{relativeTime}</span>
+          <CButton
+            size="sm"
+            color="primary"
+            variant="outline"
+            disabled={readState === 'loading'}
+            onClick={handleRead}
+            className={`solar-panel__read-btn${readState === 'error' ? ' solar-panel__read-btn--error' : ''}`}
+          >
+            {readState === 'loading' ? (
+              <>
+                <CSpinner size="sm" className="me-1" />
+                Leyendo…
+              </>
+            ) : readState === 'done' ? (
+              <>
+                <CIcon icon={cilCheckCircle} className="me-1" />
+                Actualizado
+              </>
+            ) : readState === 'error' ? (
+              <>
+                <CIcon icon={cilWarning} className="me-1" />
+                Sin respuesta
+              </>
+            ) : (
+              <>
+                <CIcon icon={cilSync} className="me-1" />
+                Leer ahora
+              </>
+            )}
+          </CButton>
         </div>
       </div>
 
@@ -190,12 +234,35 @@ const SolarPanel = () => {
         <div className="solar-panel__loading">Conectando con el sistema solar…</div>
       ) : (
         <>
+          {/* Alert banner */}
+          {alert && (
+            <CAlert
+              color={alert.type === 'critical' ? 'danger' : 'warning'}
+              className="d-flex align-items-start gap-2 mb-3"
+            >
+              <CIcon icon={cilWarning} className="flex-shrink-0 mt-1" />
+              <div>
+                <strong>Alerta {alert.type}</strong>
+                {' — '}
+                {alert.since
+                  ? `desde ${new Date(alert.since).toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}`
+                  : ''}
+                {(alert.voltage != null || alert.percent != null) && (
+                  <span className="ms-2 text-body-secondary">
+                    ({alert.voltage != null ? `${alert.voltage}V` : ''}
+                    {alert.voltage != null && alert.percent != null ? ' · ' : ''}
+                    {alert.percent != null ? `${alert.percent}%` : ''})
+                  </span>
+                )}
+              </div>
+            </CAlert>
+          )}
           {/* Main card: battery gauge + info */}
           <CRow className="g-3 mb-3">
             <CCol md={4} lg={3}>
               <CCard className="solar-panel__battery-card">
                 <CCardBody className="solar-panel__battery-body">
-                  <BatteryGauge soc={soc} status={status} color={color} />
+                  <BatteryGauge soc={soc} status={status} color={color} solar={solar} />
                 </CCardBody>
               </CCard>
             </CCol>
@@ -221,15 +288,20 @@ const SolarPanel = () => {
                   <div className="solar-panel__specs">
                     <span className="solar-panel__spec-chip">{BATTERY_NOMINAL_V}V</span>
                     <span className="solar-panel__spec-chip">{BATTERY_CAPACITY_AH} Ah</span>
-                    <span className="solar-panel__spec-chip">Plomo-ácido</span>
+                    <span className="solar-panel__spec-chip">Gel ciclo profundo</span>
                   </div>
 
                   {/* Energy bar */}
                   <div className="solar-panel__energy-section">
                     <div className="solar-panel__energy-label">
-                      <span>Energía disponible</span>
-                      <strong style={{ color }}>
-                        {energyWh != null ? `${energyWh} Wh` : '— Wh'}
+                      <span>
+                        Energía disponible
+                        {solar && (
+                          <span className="solar-panel__estimated-tag">estimado</span>
+                        )}
+                      </span>
+                      <strong style={{ color, opacity: solar ? 0.6 : 1 }}>
+                        {energyWh != null ? `${solar ? '~' : ''}${energyWh} Wh` : '— Wh'}
                       </strong>
                     </div>
                     <div className="solar-panel__energy-track">
@@ -244,15 +316,13 @@ const SolarPanel = () => {
                     </div>
                   </div>
 
-                  {/* Time remaining */}
-                  {hoursRemaining != null && (
+                  {/* Solar panels indicator */}
+                  {solar != null && (
                     <div className="solar-panel__time-remaining">
-                      <CIcon icon={cilInputPower} className="solar-panel__time-icon" />
-                      Tiempo estimado restante:{' '}
-                      <strong>
-                        {hoursRemaining >= 1
-                          ? `${hoursRemaining.toFixed(1)} h`
-                          : `${Math.round(hoursRemaining * 60)} min`}
+                      <CIcon icon={cilSun} className="solar-panel__time-icon" />
+                      Panel solar:{' '}
+                      <strong style={{ color: solar ? '#22c55e' : '#64748b' }}>
+                        {solar ? 'Activo' : 'Inactivo'}
                       </strong>
                     </div>
                   )}
@@ -263,7 +333,7 @@ const SolarPanel = () => {
 
           {/* Metric cards */}
           <CRow className="g-3">
-            <CCol xs={6} md={3}>
+            <CCol xs={6} md={4}>
               <MetricCard
                 label="Voltaje"
                 value={voltage != null ? voltage.toFixed(2) : null}
@@ -273,41 +343,26 @@ const SolarPanel = () => {
                 sub={`Nominal: ${BATTERY_NOMINAL_V}V`}
               />
             </CCol>
-            <CCol xs={6} md={3}>
+            <CCol xs={6} md={4}>
               <MetricCard
-                label="Corriente"
-                value={current != null ? `${currentSign}${Math.abs(current).toFixed(1)}` : null}
-                unit="A"
-                icon={cilBolt}
-                accent={current != null && current >= 0 ? '#22c55e' : '#f59e0b'}
-                sub={current != null ? (current >= 0 ? 'Entrada' : 'Salida') : null}
-              />
-            </CCol>
-            <CCol xs={6} md={3}>
-              <MetricCard
-                label="Potencia"
-                value={power != null ? Math.abs(power).toFixed(1) : null}
-                unit="W"
+                label="Panel solar"
+                value={solar == null ? null : solar ? 'Activo' : 'Inactivo'}
                 icon={cilSun}
-                accent="#e67700"
-                sub={power != null ? (power >= 0 ? 'Cargando' : 'Consumiendo') : null}
+                accent={solar ? '#e67700' : '#64748b'}
               />
             </CCol>
-            <CCol xs={6} md={3}>
+            <CCol xs={12} md={4}>
               <MetricCard
-                label="Temperatura"
-                value={temperature != null ? temperature.toFixed(1) : null}
-                unit="°C"
-                icon={cilFire}
+                label="Alerta"
+                value={alert ? alert.type : 'Normal'}
+                icon={alert ? cilWarning : cilCheckCircle}
                 accent={
-                  temperature == null ? '#64748b' : temperature > 45 ? '#ef4444' : '#1971c2'
+                  !alert ? '#22c55e' : alert.type === 'critical' ? '#ef4444' : '#f59e0b'
                 }
                 sub={
-                  temperature != null
-                    ? temperature > 45
-                      ? 'Alta — revisar'
-                      : 'Normal'
-                    : 'No disponible'
+                  alert?.since
+                    ? `Desde ${new Date(alert.since).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`
+                    : null
                 }
               />
             </CCol>
