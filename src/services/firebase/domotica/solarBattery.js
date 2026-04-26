@@ -1,6 +1,7 @@
 const BASE_URL = 'https://3.92.69.78:1979'
 const BATTERY_API_URL = `${BASE_URL}/api/battery`
 const BATTERY_READ_URL = `${BASE_URL}/api/battery/read`
+const CURRENT_API_URL = `${BASE_URL}/api/battery/current`
 const POLL_INTERVAL_MS = 30_000
 
 const normalise = (data) => ({ ...data, soc: data.percent })
@@ -21,6 +22,29 @@ export const subscribeBatteryStatus = (callback) => {
 
   fetchBattery()
   const id = setInterval(fetchBattery, POLL_INTERVAL_MS)
+
+  return () => {
+    cancelled = true
+    clearInterval(id)
+  }
+}
+
+export const subscribeCurrentStatus = (callback) => {
+  let cancelled = false
+
+  const fetchCurrent = async () => {
+    try {
+      const res = await fetch(CURRENT_API_URL)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      if (!cancelled) callback(data)
+    } catch {
+      // keep last known state on network/parse error
+    }
+  }
+
+  fetchCurrent()
+  const id = setInterval(fetchCurrent, POLL_INTERVAL_MS)
 
   return () => {
     cancelled = true

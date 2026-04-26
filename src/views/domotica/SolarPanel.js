@@ -10,7 +10,11 @@ import {
   cilArrowBottom,
   cilSync,
 } from '@coreui/icons'
-import { subscribeBatteryStatus, triggerRead } from 'src/services/firebase/domotica/solarBattery'
+import {
+  subscribeBatteryStatus,
+  subscribeCurrentStatus,
+  triggerRead,
+} from 'src/services/firebase/domotica/solarBattery'
 import './SolarPanel.scss'
 
 // 12V 100Ah = 1200 Wh
@@ -145,6 +149,7 @@ const useRelativeTime = (timestamp) => {
 
 const SolarPanel = () => {
   const [battery, setBattery] = useState(undefined)
+  const [current, setCurrent] = useState(undefined)
   const [online, setOnline] = useState(false)
   const [readState, setReadState] = useState('idle') // 'idle' | 'loading' | 'done' | 'error'
   const relativeTime = useRelativeTime(battery?.updatedAt)
@@ -159,6 +164,10 @@ const SolarPanel = () => {
 
   useEffect(() => {
     return subscribeBatteryStatus(applyData)
+  }, [])
+
+  useEffect(() => {
+    return subscribeCurrentStatus(setCurrent)
   }, [])
 
   const handleRead = async () => {
@@ -184,6 +193,15 @@ const SolarPanel = () => {
 
   const energyWh = soc != null ? Math.round((soc / 100) * BATTERY_CAPACITY_WH) : null
   const color = getSocColor(soc)
+
+  const amps = current?.amps ?? null
+  const watts = current?.watts ?? null
+  const currentAlert = current?.alert ?? null
+
+  const hoursRemaining =
+    amps > 0 && soc > 0
+      ? (soc / 100) * BATTERY_CAPACITY_AH / amps
+      : null
 
   return (
     <div className="solar-panel">
@@ -316,6 +334,24 @@ const SolarPanel = () => {
                     </div>
                   </div>
 
+                  {/* Remaining time */}
+                  {hoursRemaining != null && (
+                    <div className={`solar-panel__autonomy${solar ? ' solar-panel__autonomy--estimated' : ''}`}>
+                      <CIcon icon={cilInputPower} className="solar-panel__time-icon" />
+                      <span>Autonomía restante</span>
+                      <strong>
+                        {hoursRemaining >= 1
+                          ? `${hoursRemaining.toFixed(1)} h`
+                          : `${Math.round(hoursRemaining * 60)} min`}
+                      </strong>
+                      {solar && (
+                        <span className="solar-panel__autonomy-note">
+                          (panel activo — podría ser más)
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Solar panels indicator */}
                   {solar != null && (
                     <div className="solar-panel__time-remaining">
@@ -367,6 +403,57 @@ const SolarPanel = () => {
               />
             </CCol>
           </CRow>
+
+          {/* Consumption cards */}
+          {current !== undefined && (
+            <>
+              {currentAlert && (
+                <CAlert
+                  color={currentAlert.type === 'critical' ? 'danger' : 'warning'}
+                  className="d-flex align-items-start gap-2 mt-3 mb-0"
+                >
+                  <CIcon icon={cilWarning} className="flex-shrink-0 mt-1" />
+                  <div>
+                    <strong>Alerta consumo — {currentAlert.type}</strong>
+                    {currentAlert.since && (
+                      <span className="ms-2 text-body-secondary">
+                        desde{' '}
+                        {new Date(currentAlert.since).toLocaleString('es-CO', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          day: '2-digit',
+                          month: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </CAlert>
+              )}
+              <div className="solar-panel__section-label">Consumo actual</div>
+              <CRow className="g-3">
+                <CCol xs={6}>
+                  <MetricCard
+                    label="Corriente"
+                    value={amps != null ? amps.toFixed(1) : null}
+                    unit="A"
+                    icon={cilBolt}
+                    accent="#7c3aed"
+                    sub="Consumo instantáneo"
+                  />
+                </CCol>
+                <CCol xs={6}>
+                  <MetricCard
+                    label="Potencia"
+                    value={watts != null ? watts.toFixed(0) : null}
+                    unit="W"
+                    icon={cilInputPower}
+                    accent="#0891b2"
+                    sub="Carga activa"
+                  />
+                </CCol>
+              </CRow>
+            </>
+          )}
         </>
       )}
     </div>
