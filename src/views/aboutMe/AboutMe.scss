@@ -348,6 +348,10 @@
   height: 28px;
   object-fit: contain;
   filter: brightness(0.9);
+
+  &[src$=".svg"] {
+    filter: invert(1) brightness(0.85);
+  }
 }
 
 .about__skill-name {

@@ -14,6 +14,10 @@ import MysqlImg from 'src/assets/images/skills/mysql.png'
 import ReduxImg from 'src/assets/images/skills/redux.png'
 import SagaImg from 'src/assets/images/skills/sagas.png'
 import RedisImg from 'src/assets/images/skills/redis.png'
+import MqttImg from 'src/assets/images/skills/mqtt.svg'
+import ArduinoImg from 'src/assets/images/skills/arduino.svg'
+import RaspberryPiImg from 'src/assets/images/skills/raspberrypi.svg'
+import EspHomeImg from 'src/assets/images/skills/esphome.svg'
 
 const SKILLS = {
   Backend: [
@@ -33,6 +37,12 @@ const SKILLS = {
     { name: 'AWS', img: AwsImg },
     { name: 'Docker', img: DockerImg },
     { name: 'Linux', img: LinuxImg },
+  ],
+  IoT: [
+    { name: 'MQTT', img: MqttImg },
+    { name: 'Arduino', img: ArduinoImg },
+    { name: 'Raspberry Pi', img: RaspberryPiImg },
+    { name: 'ESPHome', img: EspHomeImg },
   ],
 }
 
@@ -210,7 +220,7 @@ const AboutMe = () => {
         {[
           { number: '8+', label: 'Años de experiencia' },
           { number: '20+', label: 'Proyectos entregados' },
-          { number: '12', label: 'Tecnologías' },
+          { number: '16', label: 'Tecnologías' },
           { number: '∞', label: 'Ganas de aprender' },
         ].map((s) => (
           <div className="about__stat" key={s.label}>
