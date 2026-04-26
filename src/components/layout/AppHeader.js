@@ -15,7 +15,14 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilContrast, cilFullscreen, cilFullscreenExit, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
+import { cilClock, cilFullscreen, cilFullscreenExit, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
+
+const USER_MODE_KEY = 'app-theme-mode'
+
+const getTimeBasedScheme = () => {
+  const h = new Date().getHours()
+  return h >= 6 && h < 19 ? 'light' : 'dark'
+}
 
 import { AppBreadcrumb } from '../index'
 import AppHeaderDropdown from './AppHeaderDropdown'
@@ -25,7 +32,23 @@ import './AppHeader.scss'
 
 const AppHeader = () => {
   const headerRef = useRef()
-  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const { setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const [userMode, setUserMode] = useState(
+    () => localStorage.getItem(USER_MODE_KEY) || 'auto',
+  )
+
+  useEffect(() => {
+    const apply = () => setColorMode(userMode === 'auto' ? getTimeBasedScheme() : userMode)
+    apply()
+    if (userMode !== 'auto') return
+    const id = setInterval(apply, 60_000)
+    return () => clearInterval(id)
+  }, [userMode])
+
+  const handleMode = (mode) => {
+    localStorage.setItem(USER_MODE_KEY, mode)
+    setUserMode(mode)
+  }
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
@@ -148,41 +171,41 @@ const AppHeader = () => {
             </li>
             <CDropdown variant="nav-item" placement="bottom-end">
               <CDropdownToggle caret={false}>
-                {colorMode === 'dark' ? (
+                {userMode === 'dark' ? (
                   <CIcon icon={cilMoon} size="lg" />
-                ) : colorMode === 'auto' ? (
-                  <CIcon icon={cilContrast} size="lg" />
+                ) : userMode === 'auto' ? (
+                  <CIcon icon={cilClock} size="lg" />
                 ) : (
                   <CIcon icon={cilSun} size="lg" />
                 )}
               </CDropdownToggle>
               <CDropdownMenu>
                 <CDropdownItem
-                  active={colorMode === 'light'}
+                  active={userMode === 'light'}
                   className="d-flex align-items-center"
                   as="button"
                   type="button"
-                  onClick={() => setColorMode('light')}
+                  onClick={() => handleMode('light')}
                 >
                   <CIcon className="me-2" icon={cilSun} size="lg" /> Light
                 </CDropdownItem>
                 <CDropdownItem
-                  active={colorMode === 'dark'}
+                  active={userMode === 'dark'}
                   className="d-flex align-items-center"
                   as="button"
                   type="button"
-                  onClick={() => setColorMode('dark')}
+                  onClick={() => handleMode('dark')}
                 >
                   <CIcon className="me-2" icon={cilMoon} size="lg" /> Dark
                 </CDropdownItem>
                 <CDropdownItem
-                  active={colorMode === 'auto'}
+                  active={userMode === 'auto'}
                   className="d-flex align-items-center"
                   as="button"
                   type="button"
-                  onClick={() => setColorMode('auto')}
+                  onClick={() => handleMode('auto')}
                 >
-                  <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
+                  <CIcon className="me-2" icon={cilClock} size="lg" /> Auto (hora)
                 </CDropdownItem>
               </CDropdownMenu>
             </CDropdown>

@@ -32,9 +32,6 @@ const AboutMe = React.lazy(() => import('./views/aboutMe/Index'))
 const HardRefresh = React.lazy(() => import('./views/hard-refresh/HardRefresh'))
 const SelectApp = React.lazy(() => import('./views/selectApp/SelectApp'))
 
-// temporary line
-localStorage.setItem('coreui-free-react-admin-template-theme', 'light')
-
 import * as accountsMasterActions from './actions/cashflow/accountsMasterActions'
 
 const App = () => {
