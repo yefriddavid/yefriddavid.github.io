@@ -60,6 +60,9 @@ export const COL_FCM_TOKENS = 'fcm_tokens'
 
 // Domótica
 export const COL_DOMOTICA_SOLAR = 'Domotica_Solar'
+export const COL_DOMOTICA_TRANSACTIONS = 'Domotica_transactions'
+export const COL_DOMOTICA_CURRENT = 'Domotica_current'
+export const COL_DOMOTICA_DEVICES = 'Domotica_devices'
 
 // Others
 export const COL_PAGE_VISITS = 'page_visits'

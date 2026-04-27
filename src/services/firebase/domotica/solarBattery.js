@@ -6,6 +6,18 @@ const POLL_INTERVAL_MS = 30_000
 
 const normalise = (data) => ({ ...data, soc: data.percent })
 
+export const fetchBatteryStatus = async () => {
+  const res = await fetch(BATTERY_API_URL)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalise(await res.json())
+}
+
+export const fetchCurrentStatus = async () => {
+  const res = await fetch(CURRENT_API_URL)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return await res.json()
+}
+
 export const subscribeBatteryStatus = (callback) => {
   let cancelled = false
 
@@ -57,7 +69,7 @@ export const subscribeCurrentStatus = (callback) => {
 export const triggerRead = async () => {
   await fetch(BATTERY_READ_URL, { method: 'POST' })
   await new Promise((r) => setTimeout(r, 2500))
-  const res = await fetch(BATTERY_API_URL)
+  const res = await fetch(CURRENT_API_URL)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return normalise(await res.json())
+  return await res.json()
 }

@@ -30,6 +30,9 @@ import accountStatusNote from './cashflow/accountStatusNoteReducer'
 import myProject from './cashflow/myProjectReducer'
 import asset from './cashflow/assetReducer'
 import tenants from './tenantsReducer'
+import domoticaTransaction from './domotica/domoticaTransactionReducer'
+import domoticaCurrent from './domotica/domoticaCurrentReducer'
+import domoticaDevice from './domotica/domoticaDeviceReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -63,6 +66,9 @@ const combinedReducers = combineReducers({
   myProject,
   asset,
   tenants,
+  domoticaTransaction,
+  domoticaCurrent,
+  domoticaDevice,
 })
 
 export default combinedReducers

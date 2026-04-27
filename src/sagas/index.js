@@ -29,6 +29,9 @@ import sagaAccountStatusNotes from './cashflow/accountStatusNoteSagas'
 import sagaMyProjects from './cashflow/myProjectSagas'
 import sagaAssets from './cashflow/assetSagas'
 import sagaTenants from './tenantsSagas'
+import sagaDomoticaTransactions from './domotica/domoticaTransactionSagas'
+import sagaDomoticaCurrent from './domotica/domoticaCurrentSagas'
+import sagaDomoticaDevices from './domotica/domoticaDeviceSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -62,5 +65,8 @@ export default function* rootSagas() {
     sagaMyProjects(),
     sagaAssets(),
     sagaTenants(),
+    sagaDomoticaTransactions(),
+    sagaDomoticaCurrent(),
+    sagaDomoticaDevices(),
   ])
 }
