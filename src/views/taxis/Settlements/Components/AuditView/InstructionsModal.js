@@ -204,23 +204,10 @@ export default function InstructionsModal({ visible, onClose }) {
                   deja en <strong>0 o vacío</strong>.
                 </li>
                 <li>
-                  La auditoría va a marcar los días sin firmar como{' '}
-                  <span
-                    style={{
-                      background: '#fff5f5',
-                      color: '#e03131',
-                      border: '1px solid #fca5a5',
-                      borderRadius: 4,
-                      padding: '1px 6px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ✗ Sin liquidar
-                  </span>{' '}
-                  — eso es normal con este método. Usa las{' '}
-                  <strong>notas de auditoría</strong> para marcarlos como resueltos y dejar
-                  constancia.
+                  Los días sin firma quedan aparentemente sin cubrir — eso es normal con este
+                  método. Escribe una nota en el mismo libro (al pie de la página o junto al
+                  registro) aclarando qué días cubre cada bloque, para que cualquier revisión
+                  posterior pueda verificarlo.
                 </li>
               </ul>
 
@@ -257,9 +244,8 @@ export default function InstructionsModal({ visible, onClose }) {
                 }}
               >
                 <strong>Ojo:</strong> el total de las 5 filas suma $1.470.000, que es exactamente
-                lo que Carlos debía pagar (21 días × $70.000). La auditoría verá{' '}
-                <em>solo 5 registros</em> pero con las notas sabrás que los 21 días están
-                cubiertos.
+                lo que Carlos debía pagar (21 días × $70.000). Con la descripción en cada fila
+                queda claro qué días cubre cada pago y el libro no presenta huecos.
               </div>
             </>
           )}
@@ -281,21 +267,8 @@ export default function InstructionsModal({ visible, onClose }) {
                 </div>
                 <div style={{ fontSize: 13, color: '#166534', lineHeight: 1.6 }}>
                   Cuando el conductor paga <strong>cada día que trabaja</strong>. Es el método más
-                  transparente: cada fila = un día = un pago. La auditoría queda{' '}
-                  <span
-                    style={{
-                      background: '#f0fdf4',
-                      color: '#2f9e44',
-                      border: '1px solid #86efac',
-                      borderRadius: 4,
-                      padding: '1px 6px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ✓ Completo
-                  </span>{' '}
-                  automáticamente sin necesidad de notas adicionales.
+                  transparente y fácil de verificar: cada fila = un día = un pago. No requiere
+                  notas aclaratorias adicionales porque cada día queda registrado individualmente.
                 </div>
               </div>
 
@@ -369,11 +342,10 @@ export default function InstructionsModal({ visible, onClose }) {
                   color: '#166534',
                 }}
               >
-                <strong>Pro tip:</strong> el día 3 con $0 hace que la auditoría lo muestre como{' '}
-                <em>sin liquidar</em>, pero puedes marcarlo como{' '}
-                <strong>resuelto</strong> en las notas. El día 4 quedará{' '}
-                <em>parcial</em> hasta que se abone el saldo. Con este método el libro siempre
-                refleja exactamente la realidad, día por día.
+                <strong>Pro tip:</strong> el día 3 con $0 y la descripción de la causa deja
+                constancia de por qué no hubo pago. El día 4 con pago parcial queda registrado
+                como está — el saldo pendiente se anota en la columna Saldo. Con este método el
+                libro siempre refleja exactamente la realidad, día por día.
               </div>
             </>
           )}
