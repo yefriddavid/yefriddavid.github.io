@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CAlert, CButton, CCard, CCardBody, CRow, CCol, CBadge, CSpinner } from '@coreui/react'
+import { CAlert, CButton, CCard, CCardBody, CRow, CCol, CBadge, CSpinner, CFormSwitch } from '@coreui/react'
 import * as domoticaCurrentActions from 'src/actions/domotica/domoticaCurrentActions'
 import * as domoticaTransactionActions from 'src/actions/domotica/domoticaTransactionActions'
+import * as domoticaCommandActions from 'src/actions/domotica/domoticaCommandActions'
 import CIcon from '@coreui/icons-react'
 import {
   cilSun,
@@ -21,6 +22,7 @@ import {
 import BatteryGauge from './Components/BatteryGauge'
 import MetricCard from './Components/MetricCard'
 import VoltageChart from './Components/VoltageChart'
+import CurrentChart from './Components/CurrentChart'
 import { useRelativeTime } from './hooks/useRelativeTime'
 import {
   BATTERY_CAPACITY_WH,
@@ -32,16 +34,33 @@ import {
 
 import './SolarPanel.scss'
 
+const fmtDateTime = (iso) => {
+  if (!iso) return null
+  return new Date(iso).toLocaleString('es-CO', {
+    day: '2-digit', month: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  })
+}
+
 const SolarPanel = () => {
   const dispatch = useDispatch()
 
   // Consumir datos directamente del Reducer (Redux Store)
   const voltageRecord = useSelector((s) =>
-    s.domoticaCurrent.data?.find((r) => r.device === 'esp8266-battery' && r.type === 'voltaje'),
+    s.domoticaCurrent.data?.find((r) => r.type === 'voltaje'),
+  )
+  const consumptionRecord = useSelector((s) =>
+    s.domoticaCurrent.data?.find((r) => r.amps != null || r.watts != null),
   )
   const batteryState = useSelector((s) => s.domoticaCurrent.battery)
   const current = useSelector((s) => s.domoticaCurrent.consumption)
   const todayStart = new Date().setHours(0, 0, 0, 0)
+  const commands = useSelector((s) => s.domoticaCommand.commands)
+  const updatingIds = useSelector((s) => s.domoticaCommand.updatingIds)
+
+  const voltageRead = commands['voltage_read']?.read ?? false
+  const currentRead = commands['current_read']?.read ?? false
+
   const voltageHistory = useSelector((s) =>
     s.domoticaTransaction.data
       ?.filter(
@@ -54,7 +73,30 @@ const SolarPanel = () => {
       .slice()
       .reverse() ?? null,
   )
+  const currentHistory = useSelector((s) =>
+    s.domoticaTransaction.data
+      ?.filter(
+        (r) =>
+          r.device === 'esp8266-battery' &&
+          r.type === 'corriente' &&
+          r.createdAt &&
+          new Date(r.createdAt).getTime() >= todayStart,
+      )
+      .slice()
+      .reverse() ?? null,
+  )
   const historyFetching = useSelector((s) => s.domoticaTransaction.fetching)
+
+  const lastVoltageAt = useSelector((s) =>
+    s.domoticaTransaction.data?.find(
+      (r) => r.device === 'esp8266-battery' && r.type === 'voltaje' && r.createdAt,
+    )?.createdAt ?? null,
+  )
+  const lastCurrentAt = useSelector((s) =>
+    s.domoticaTransaction.data?.find(
+      (r) => r.device === 'esp8266-battery' && r.type === 'corriente' && r.createdAt,
+    )?.createdAt ?? null,
+  )
 
   // El sensor envía todo en el registro de voltaje (status, solar, soc, etc)
   const battery = batteryState || voltageRecord
@@ -74,8 +116,9 @@ const SolarPanel = () => {
 
   useEffect(() => {
     // Reactivamos la consulta inicial a Firebase (vía Redux/Saga)
-    dispatch(domoticaCurrentActions.fetchRequest({ device: 'esp8266-battery', type: 'voltaje' }))
+    dispatch(domoticaCurrentActions.fetchRequest())
     dispatch(domoticaTransactionActions.fetchRequest())
+    dispatch(domoticaCommandActions.fetchRequest())
 
     /* 
        SE MANTIENE DESHABILITADO EL POLLING AL API EXTERNA (3.92.69.78) 
@@ -122,8 +165,8 @@ const SolarPanel = () => {
   const energyWh = soc != null ? Math.round((soc / 100) * BATTERY_CAPACITY_WH) : null
   const color = getSocColor(soc)
 
-  const amps = current?.amps ?? battery?.amps ?? null
-  const watts = current?.watts ?? battery?.watts ?? null
+  const amps = consumptionRecord?.amps ?? current?.amps ?? battery?.amps ?? null
+  const watts = amps != null && voltage != null ? amps * voltage : null
   const currentAlert = current?.alert ?? battery?.currentAlert ?? null
 
   const hoursRemaining =
@@ -383,11 +426,74 @@ const SolarPanel = () => {
             </>
           )}
 
+          {/* Command switches */}
+          <div className="solar-panel__section-label">Comandos al dispositivo</div>
+          <CCard className="solar-panel__commands-card">
+            <CCardBody className="solar-panel__commands-body">
+              <div className="solar-panel__command-row">
+                <div>
+                  <div className="solar-panel__command-label">Leer voltaje</div>
+                  <div className="solar-panel__command-sub">voltage_read</div>
+                </div>
+                <CFormSwitch
+                  checked={voltageRead}
+                  disabled={!!updatingIds['voltage_read']}
+                  onChange={(e) =>
+                    dispatch(domoticaCommandActions.updateRequest({ id: 'voltage_read', read: e.target.checked }))
+                  }
+                />
+              </div>
+              <div className="solar-panel__command-row">
+                <div>
+                  <div className="solar-panel__command-label">Leer corriente</div>
+                  <div className="solar-panel__command-sub">current_read</div>
+                </div>
+                <CFormSwitch
+                  checked={currentRead}
+                  disabled={!!updatingIds['current_read']}
+                  onChange={(e) =>
+                    dispatch(domoticaCommandActions.updateRequest({ id: 'current_read', read: e.target.checked }))
+                  }
+                />
+              </div>
+            </CCardBody>
+          </CCard>
+
           {/* Voltage history chart */}
-          <div className="solar-panel__section-label">Historial de voltaje — hoy</div>
+          <div className="solar-panel__section-label solar-panel__section-label--row">
+            <span>
+              Historial de voltaje — hoy
+              {lastVoltageAt && (
+                <span className="solar-panel__last-seen">última transmisión: {fmtDateTime(lastVoltageAt)}</span>
+              )}
+            </span>
+            <CButton
+              size="sm"
+              color="primary"
+              variant="outline"
+              disabled={historyFetching}
+              onClick={() => dispatch(domoticaTransactionActions.fetchRequest())}
+            >
+              {historyFetching ? <CSpinner size="sm" /> : <CIcon icon={cilSync} />}
+            </CButton>
+          </div>
           <CCard className="solar-panel__chart-card">
             <CCardBody>
               <VoltageChart data={voltageHistory} loading={historyFetching} />
+            </CCardBody>
+          </CCard>
+
+          <div className="solar-panel__section-label solar-panel__section-label--row">
+            <span>
+              Historial de corriente — hoy
+              {lastCurrentAt && (
+                <span className="solar-panel__last-seen">última transmisión: {fmtDateTime(lastCurrentAt)}</span>
+              )}
+            </span>
+          </div>
+          <CCard className="solar-panel__chart-card">
+            <CCardBody>
+              <CurrentChart data={currentHistory} loading={historyFetching} />
             </CCardBody>
           </CCard>
         </>

@@ -32,6 +32,7 @@ import sagaTenants from './tenantsSagas'
 import sagaDomoticaTransactions from './domotica/domoticaTransactionSagas'
 import sagaDomoticaCurrent from './domotica/domoticaCurrentSagas'
 import sagaDomoticaDevices from './domotica/domoticaDeviceSagas'
+import sagaDomoticaCommands from './domotica/domoticaCommandSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -68,5 +69,6 @@ export default function* rootSagas() {
     sagaDomoticaTransactions(),
     sagaDomoticaCurrent(),
     sagaDomoticaDevices(),
+    sagaDomoticaCommands(),
   ])
 }

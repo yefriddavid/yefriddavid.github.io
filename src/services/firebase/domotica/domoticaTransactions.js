@@ -28,7 +28,7 @@ export const fetchTransactions = async () => {
       date: data.date?.toDate?.()?.toISOString() ?? data.date ?? null,
       notes: data.notes ?? null,
       // sensor fields
-      value: data.voltage ?? data.value ?? null,
+      value: data.voltage ?? data.value ?? data.amps ?? null,
       percent: data.percent ?? data.soc ?? null,
       solar: data.solar ?? null,
       status: data.status ?? null,

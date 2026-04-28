@@ -33,6 +33,7 @@ import tenants from './tenantsReducer'
 import domoticaTransaction from './domotica/domoticaTransactionReducer'
 import domoticaCurrent from './domotica/domoticaCurrentReducer'
 import domoticaDevice from './domotica/domoticaDeviceReducer'
+import domoticaCommand from './domotica/domoticaCommandReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -69,6 +70,7 @@ const combinedReducers = combineReducers({
   domoticaTransaction,
   domoticaCurrent,
   domoticaDevice,
+  domoticaCommand,
 })
 
 export default combinedReducers
