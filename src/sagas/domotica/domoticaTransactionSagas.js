@@ -42,11 +42,31 @@ function* deleteTransaction({ payload }) {
   }
 }
 
+function* fetchVoltageHistory() {
+  try {
+    const data = yield call(service.fetchVoltageHistory)
+    yield put(actions.fetchVoltageSuccess(data))
+  } catch (e) {
+    yield put(actions.fetchVoltageError(e.message))
+  }
+}
+
+function* fetchCurrentHistory() {
+  try {
+    const data = yield call(service.fetchCurrentHistory)
+    yield put(actions.fetchCurrentSuccess(data))
+  } catch (e) {
+    yield put(actions.fetchCurrentError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchTransactions),
     takeLatest(actions.createRequest, createTransaction),
     takeLatest(actions.updateRequest, updateTransaction),
     takeLatest(actions.deleteRequest, deleteTransaction),
+    takeLatest(actions.fetchVoltageRequest, fetchVoltageHistory),
+    takeLatest(actions.fetchCurrentRequest, fetchCurrentHistory),
   ])
 }

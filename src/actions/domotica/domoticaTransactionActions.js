@@ -19,3 +19,11 @@ export const deleteRequest = createAction('request delete domotica transaction')
 export const beginRequestDelete = createAction('begin request delete domotica transaction')
 export const successRequestDelete = createAction('request delete domotica transaction success')
 export const errorRequestDelete = createAction('request delete domotica transaction error')
+
+export const fetchVoltageRequest = createAction('fetch domotica voltage history')
+export const fetchVoltageSuccess = createAction('fetch domotica voltage history success')
+export const fetchVoltageError = createAction('fetch domotica voltage history error')
+
+export const fetchCurrentRequest = createAction('fetch domotica current history')
+export const fetchCurrentSuccess = createAction('fetch domotica current history success')
+export const fetchCurrentError = createAction('fetch domotica current history error')

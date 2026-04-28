@@ -8,6 +8,10 @@ const domoticaTransactionSlice = createSlice({
     error: {},
     fetching: false,
     isError: false,
+    voltageData: null,
+    voltageFetching: false,
+    currentData: null,
+    currentFetching: false,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -70,6 +74,28 @@ const domoticaTransactionSlice = createSlice({
         state.error = payload
         state.fetching = false
         state.isError = true
+      })
+
+      .addCase(actions.fetchVoltageRequest, (state) => {
+        state.voltageFetching = true
+      })
+      .addCase(actions.fetchVoltageSuccess, (state, { payload }) => {
+        state.voltageData = payload
+        state.voltageFetching = false
+      })
+      .addCase(actions.fetchVoltageError, (state) => {
+        state.voltageFetching = false
+      })
+
+      .addCase(actions.fetchCurrentRequest, (state) => {
+        state.currentFetching = true
+      })
+      .addCase(actions.fetchCurrentSuccess, (state, { payload }) => {
+        state.currentData = payload
+        state.currentFetching = false
+      })
+      .addCase(actions.fetchCurrentError, (state) => {
+        state.currentFetching = false
       })
   },
 })

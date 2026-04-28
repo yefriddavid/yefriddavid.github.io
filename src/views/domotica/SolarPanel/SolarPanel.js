@@ -54,49 +54,19 @@ const SolarPanel = () => {
   )
   const batteryState = useSelector((s) => s.domoticaCurrent.battery)
   const current = useSelector((s) => s.domoticaCurrent.consumption)
-  const todayStart = new Date().setHours(0, 0, 0, 0)
   const commands = useSelector((s) => s.domoticaCommand.commands)
   const updatingIds = useSelector((s) => s.domoticaCommand.updatingIds)
 
   const voltageRead = commands['voltage_read']?.read ?? false
   const currentRead = commands['current_read']?.read ?? false
 
-  const voltageHistory = useSelector((s) =>
-    s.domoticaTransaction.data
-      ?.filter(
-        (r) =>
-          r.device === 'esp8266-battery' &&
-          r.type === 'voltaje' &&
-          r.createdAt &&
-          new Date(r.createdAt).getTime() >= todayStart,
-      )
-      .slice()
-      .reverse() ?? null,
-  )
-  const currentHistory = useSelector((s) =>
-    s.domoticaTransaction.data
-      ?.filter(
-        (r) =>
-          r.device === 'esp8266-battery' &&
-          r.type === 'corriente' &&
-          r.createdAt &&
-          new Date(r.createdAt).getTime() >= todayStart,
-      )
-      .slice()
-      .reverse() ?? null,
-  )
-  const historyFetching = useSelector((s) => s.domoticaTransaction.fetching)
+  const voltageHistory = useSelector((s) => s.domoticaTransaction.voltageData)
+  const voltageFetching = useSelector((s) => s.domoticaTransaction.voltageFetching)
+  const currentHistory = useSelector((s) => s.domoticaTransaction.currentData)
+  const currentFetching = useSelector((s) => s.domoticaTransaction.currentFetching)
 
-  const lastVoltageAt = useSelector((s) =>
-    s.domoticaTransaction.data?.find(
-      (r) => r.device === 'esp8266-battery' && r.type === 'voltaje' && r.createdAt,
-    )?.createdAt ?? null,
-  )
-  const lastCurrentAt = useSelector((s) =>
-    s.domoticaTransaction.data?.find(
-      (r) => r.device === 'esp8266-battery' && r.type === 'corriente' && r.createdAt,
-    )?.createdAt ?? null,
-  )
+  const lastVoltageAt = useSelector((s) => s.domoticaTransaction.voltageData?.at(-1)?.createdAt ?? null)
+  const lastCurrentAt = useSelector((s) => s.domoticaTransaction.currentData?.at(-1)?.createdAt ?? null)
 
   // El sensor envía todo en el registro de voltaje (status, solar, soc, etc)
   const battery = batteryState || voltageRecord
@@ -117,7 +87,8 @@ const SolarPanel = () => {
   useEffect(() => {
     // Reactivamos la consulta inicial a Firebase (vía Redux/Saga)
     dispatch(domoticaCurrentActions.fetchRequest())
-    dispatch(domoticaTransactionActions.fetchRequest())
+    dispatch(domoticaTransactionActions.fetchVoltageRequest())
+    dispatch(domoticaTransactionActions.fetchCurrentRequest())
     dispatch(domoticaCommandActions.fetchRequest())
 
     /* 
@@ -471,15 +442,15 @@ const SolarPanel = () => {
               size="sm"
               color="primary"
               variant="outline"
-              disabled={historyFetching}
-              onClick={() => dispatch(domoticaTransactionActions.fetchRequest())}
+              disabled={voltageFetching}
+              onClick={() => dispatch(domoticaTransactionActions.fetchVoltageRequest())}
             >
-              {historyFetching ? <CSpinner size="sm" /> : <CIcon icon={cilSync} />}
+              {voltageFetching ? <CSpinner size="sm" /> : <CIcon icon={cilSync} />}
             </CButton>
           </div>
           <CCard className="solar-panel__chart-card">
             <CCardBody>
-              <VoltageChart data={voltageHistory} loading={historyFetching} />
+              <VoltageChart data={voltageHistory} loading={voltageFetching} />
             </CCardBody>
           </CCard>
 
@@ -490,10 +461,19 @@ const SolarPanel = () => {
                 <span className="solar-panel__last-seen">última transmisión: {fmtDateTime(lastCurrentAt)}</span>
               )}
             </span>
+            <CButton
+              size="sm"
+              color="primary"
+              variant="outline"
+              disabled={currentFetching}
+              onClick={() => dispatch(domoticaTransactionActions.fetchCurrentRequest())}
+            >
+              {currentFetching ? <CSpinner size="sm" /> : <CIcon icon={cilSync} />}
+            </CButton>
           </div>
           <CCard className="solar-panel__chart-card">
             <CCardBody>
-              <CurrentChart data={currentHistory} loading={historyFetching} />
+              <CurrentChart data={currentHistory} loading={currentFetching} />
             </CCardBody>
           </CCard>
         </>

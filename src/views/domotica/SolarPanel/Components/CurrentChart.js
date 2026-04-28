@@ -3,7 +3,7 @@ import { CChartLine } from '@coreui/react-chartjs'
 import { CSpinner } from '@coreui/react'
 
 const CurrentChart = ({ data, loading }) => {
-  if (loading) {
+  if (loading && (!data || data.length === 0)) {
     return (
       <div className="solar-panel__chart-loading">
         <CSpinner size="sm" className="me-2" />
