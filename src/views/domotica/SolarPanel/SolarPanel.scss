@@ -205,6 +205,44 @@
     }
   }
 
+  &__command-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__interval-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__interval-input {
+    width: 90px;
+    padding: 5px 8px;
+    font-size: 13px;
+    color: var(--cui-body-color);
+    background: var(--cui-tertiary-bg);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    outline: none;
+    text-align: right;
+
+    &:focus {
+      border-color: #1971c2;
+      box-shadow: 0 0 0 2px rgba(25, 113, 194, 0.15);
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button { opacity: 1; }
+  }
+
+  &__interval-unit {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cui-secondary-color);
+  }
+
   &__command-label {
     font-size: 14px;
     font-weight: 600;

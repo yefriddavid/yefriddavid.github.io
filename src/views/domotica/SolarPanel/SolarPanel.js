@@ -59,6 +59,20 @@ const SolarPanel = () => {
 
   const voltageRead = commands['voltage_read']?.read ?? false
   const currentRead = commands['current_read']?.read ?? false
+  const voltageInterval = commands['voltage_read']?.interval ?? ''
+  const currentInterval = commands['current_read']?.interval ?? ''
+
+  const [voltageIntervalInput, setVoltageIntervalInput] = useState('')
+  const [currentIntervalInput, setCurrentIntervalInput] = useState('')
+
+  useEffect(() => { setVoltageIntervalInput(voltageInterval !== '' ? String(voltageInterval) : '') }, [voltageInterval])
+  useEffect(() => { setCurrentIntervalInput(currentInterval !== '' ? String(currentInterval) : '') }, [currentInterval])
+
+  const commitInterval = (id, value) => {
+    const num = Number(value)
+    if (value === '' || isNaN(num)) return
+    dispatch(domoticaCommandActions.updateRequest({ id, interval: num }))
+  }
 
   const voltageHistory = useSelector((s) => s.domoticaTransaction.voltageData)
   const voltageFetching = useSelector((s) => s.domoticaTransaction.voltageFetching)
@@ -406,26 +420,56 @@ const SolarPanel = () => {
                   <div className="solar-panel__command-label">Leer voltaje</div>
                   <div className="solar-panel__command-sub">voltage_read</div>
                 </div>
-                <CFormSwitch
-                  checked={voltageRead}
-                  disabled={!!updatingIds['voltage_read']}
-                  onChange={(e) =>
-                    dispatch(domoticaCommandActions.updateRequest({ id: 'voltage_read', read: e.target.checked }))
-                  }
-                />
+                <div className="solar-panel__command-controls">
+                  <div className="solar-panel__interval-wrap">
+                    <input
+                      className="solar-panel__interval-input"
+                      type="number"
+                      min={1}
+                      placeholder="interval"
+                      value={voltageIntervalInput}
+                      onChange={(e) => setVoltageIntervalInput(e.target.value)}
+                      onBlur={(e) => commitInterval('voltage_read', e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && commitInterval('voltage_read', e.target.value)}
+                    />
+                    <span className="solar-panel__interval-unit">ms</span>
+                  </div>
+                  <CFormSwitch
+                    checked={voltageRead}
+                    disabled={!!updatingIds['voltage_read']}
+                    onChange={(e) =>
+                      dispatch(domoticaCommandActions.updateRequest({ id: 'voltage_read', read: e.target.checked }))
+                    }
+                  />
+                </div>
               </div>
               <div className="solar-panel__command-row">
                 <div>
                   <div className="solar-panel__command-label">Leer corriente</div>
                   <div className="solar-panel__command-sub">current_read</div>
                 </div>
-                <CFormSwitch
-                  checked={currentRead}
-                  disabled={!!updatingIds['current_read']}
-                  onChange={(e) =>
-                    dispatch(domoticaCommandActions.updateRequest({ id: 'current_read', read: e.target.checked }))
-                  }
-                />
+                <div className="solar-panel__command-controls">
+                  <div className="solar-panel__interval-wrap">
+                    <input
+                      className="solar-panel__interval-input"
+                      type="number"
+                      min={1}
+                      placeholder="interval"
+                      value={currentIntervalInput}
+                      onChange={(e) => setCurrentIntervalInput(e.target.value)}
+                      onBlur={(e) => commitInterval('current_read', e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && commitInterval('current_read', e.target.value)}
+                    />
+                    <span className="solar-panel__interval-unit">ms</span>
+                  </div>
+                  <CFormSwitch
+                    checked={currentRead}
+                    disabled={!!updatingIds['current_read']}
+                    onChange={(e) =>
+                      dispatch(domoticaCommandActions.updateRequest({ id: 'current_read', read: e.target.checked }))
+                    }
+                  />
+                </div>
               </div>
             </CCardBody>
           </CCard>

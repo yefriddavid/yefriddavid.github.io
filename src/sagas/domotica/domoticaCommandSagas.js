@@ -13,7 +13,8 @@ function* fetchCommands() {
 
 function* updateCommand({ payload }) {
   try {
-    yield call(service.updateCommand, payload.id, payload.read)
+    const { id, ...fields } = payload
+    yield call(service.updateCommand, id, fields)
     yield put(actions.updateSuccess({ id: payload.id }))
     yield put(actions.fetchRequest())
   } catch (e) {

@@ -11,6 +11,6 @@ export const fetchCommands = async () => {
   return result
 }
 
-export const updateCommand = async (id, read) => {
-  await firestoreCall(() => setDoc(doc(db, COL_DOMOTICA_COMMAND, id), { read }, { merge: true }))
+export const updateCommand = async (id, fields) => {
+  await firestoreCall(() => setDoc(doc(db, COL_DOMOTICA_COMMAND, id), fields, { merge: true }))
 }

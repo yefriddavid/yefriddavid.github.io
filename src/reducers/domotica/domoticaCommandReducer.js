@@ -25,20 +25,15 @@ const domoticaCommandSlice = createSlice({
         state.isError = true
       })
       .addCase(actions.updateRequest, (state, { payload }) => {
-        state.updatingIds[payload.id] = true
-        state.commands[payload.id] = {
-          ...(state.commands[payload.id] ?? { id: payload.id }),
-          read: payload.read,
-        }
+        const { id, ...fields } = payload
+        state.updatingIds[id] = true
+        state.commands[id] = { ...(state.commands[id] ?? { id }), ...fields }
       })
       .addCase(actions.updateSuccess, (state, { payload }) => {
         delete state.updatingIds[payload.id]
       })
       .addCase(actions.updateError, (state, { payload }) => {
         delete state.updatingIds[payload.id]
-        if (state.commands[payload.id]) {
-          state.commands[payload.id].read = payload.previous
-        }
       })
   },
 })

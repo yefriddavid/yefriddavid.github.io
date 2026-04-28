@@ -10,6 +10,7 @@ import AuditDayDetail from '../AuditDayDetail'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { runAuditAnalysis } from '../auditAnalysisRules'
 import AnalysisModal from './AnalysisModal'
+import InstructionsModal from './InstructionsModal'
 
 const AUDIT_COL_DEFS = [
   { key: 'weekday', label: 'Día semana' },
@@ -51,6 +52,7 @@ const AuditView = ({
 
   const [loadingDay, setLoadingDay] = useState(null)
   const prevFetchingRef = useRef(false)
+  const [showInstructions, setShowInstructions] = useState(false)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [analysisResult, setAnalysisResult] = useState(null)
   const [analysisLoading, setAnalysisLoading] = useState(false)
@@ -220,6 +222,7 @@ const AuditView = ({
         ...(isFullscreen && { overflowY: 'auto', height: '100vh' }),
       }}
     >
+      <InstructionsModal visible={showInstructions} onClose={() => setShowInstructions(false)} />
       <AnalysisModal
         visible={showAnalysis}
         onClose={() => setShowAnalysis(false)}
@@ -532,6 +535,22 @@ const AuditView = ({
               </div>
             )}
           </div>
+          <button
+            onClick={() => setShowInstructions(true)}
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '4px 12px',
+              borderRadius: 6,
+              border: '1.5px solid #1e3a5f',
+              background: '#eff6ff',
+              color: '#1e3a5f',
+              cursor: 'pointer',
+            }}
+            title="Instrucciones para llenar el libro contable"
+          >
+            📖 Instrucciones
+          </button>
           <button
             onClick={openAnalysis}
             style={{

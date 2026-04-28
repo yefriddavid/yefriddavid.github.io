@@ -21,7 +21,7 @@ const CurrentChart = ({ data, loading }) => {
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
   })
 
-  const values = data.map((r) => r.value)
+  const values = data.map((r) => r.value != null ? parseFloat(r.value.toFixed(2)) : null)
 
   return (
     <CChartLine
@@ -58,7 +58,7 @@ const CurrentChart = ({ data, loading }) => {
             grid: { display: false },
           },
           y: {
-            ticks: { callback: (v) => `${v}A` },
+            ticks: { callback: (v) => `${parseFloat(v.toFixed(2))}A` },
           },
         },
       }}
