@@ -89,8 +89,29 @@ Browser (HashRouter)
 
 **Reglas de Capas:**
 
-*   **Servicios (Infrastructure Layer):** Los archivos en `src/services/` deben ser **puros y agnósticos**. No pueden contener lógica de negocio (como cálculos de rangos de fechas, filtros específicos de UI o transformaciones complejas). Su única responsabilidad es realizar la comunicación con la API o Base de Datos y retornar los datos.
-*   **Sagas/Hooks (Application Layer):** La lógica de negocio, el cálculo de parámetros (ej: rangos temporales como "últimas 24h") y la orquestación deben residir en los Sagas o Hooks personalizados.
+| Capa | Archivos | Responsabilidad |
+|---|---|---|
+| **View** | `src/views/**` | Renderizar UI, despachar acciones, leer el store con `useSelector` |
+| **Actions** | `src/actions/**` | Definir los eventos del sistema (qué pasó) |
+| **Sagas** | `src/sagas/**` | Orquestar efectos asíncronos, calcular parámetros, llamar servicios |
+| **Reducers** | `src/reducers/**` | Actualizar el estado de forma pura y predecible |
+| **Services** | `src/services/**` | Comunicación con Firebase / APIs — puros, sin lógica de negocio |
+
+**Regla estricta — las vistas NO acceden a APIs ni bases de datos directamente:**
+
+Las vistas y componentes (`src/views/**`) **nunca** deben importar servicios, Firebase SDK ni llamar `fetch`/`axios`. Todo acceso a datos pasa obligatoriamente por el flujo Redux:
+
+```
+✅ Correcto
+  Vista → dispatch(action) → Saga → Service → Reducer → useSelector → Vista
+
+❌ Prohibido en src/views/**
+  import { getDocs } from 'firebase/firestore'
+  import { firestoreCall } from 'src/services/...'
+  fetch('https://...')  /  axios.get('...')
+```
+
+La única excepción es `src/services/auth/firebaseAuth.js` usado en `AppContent.js` para el listener de auth (`onAuthStateChanged`), que es infraestructura, no datos de feature.
 
 **Flujo de datos:**
 
@@ -478,6 +499,48 @@ npm run deploy
 App publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
 
 > Verifica la versión desplegada revisando el hash del commit en la consola del navegador: `[app] commit: xxxxxxx`
+
+---
+
+## Tareas pendientes
+
+### 🔴 Migrar vistas que violan la regla Redux
+Varias vistas importan servicios Firebase o llaman axios/fetch directamente, saltándose el flujo Redux obligatorio. Cada una debe migrarse al patrón `actions → saga → reducer`.
+
+| Vista | Violación |
+|---|---|
+| `views/tools/visits/Visits.js` | Firebase SDK directo (`getDocs`, `deleteDoc`, `db`) |
+| `views/taxis/Home.js` | `getSettlements`, `fetchExpenses`, `getDrivers`, `getVehicles` |
+| `views/taxis/Expenses.js` | `updateExpense`, `getVehicles` |
+| `views/taxis/Summary.js` | `getSettlements`, `fetchExpenses` |
+| `views/users/PushSubscribers.js` | `getTokens`, `deleteFcmToken` |
+| `views/users/Users.js` | `sendUserPasswordReset` |
+| `views/settings/tabs/AppVariablesSettings.js` | `appSettings` service directo |
+| `views/settings/tabs/StorageSettings.js` | `fetchCollectionCounts` directo |
+| `views/Accounting/MigrationModal.js` | `fetchAccounts` directo |
+| `views/aboutMe/Index.js` | `trackPageVisit` directo |
+| `views/Accounting/AccountsSimple.js` | `axios.post` directo |
+| `views/movements/payments/Services.js` | 3× `axios.post` directo |
+| `views/reports/payments/Services.js` | 3× `axios.post` directo |
+
+### 🟡 Migrar imágenes de vouchers a Firebase Storage
+Las imágenes de comprobantes se guardan como base64 en documentos Firestore, causando documentos pesados y carga lenta sin CDN. La solución está diseñada e implementada (build verificado), revertida a pedido del usuario para aplicar después.
+
+**Archivos a modificar:**
+- `src/services/providers/firebase/settings.js` — exportar `storage = getStorage(app)`
+- `src/services/providers/firebase/paymentVaucher.js` — subir a Firebase Storage, guardar URL en Firestore
+- `src/views/movements/payments/ItemDetail.js` — cambiar `pdfToBase64` → `pdfToBlob`, pasar blob al servicio
+
+**Nota:** los vouchers existentes con campo `file` (base64) mostrarán "sin voucher" hasta re-subirse. Se puede hacer migración batch.
+
+### 🟡 Migrar HashRouter → BrowserRouter
+Eliminar el `#` de las URLs migrando de `HashRouter` a `BrowserRouter`.
+
+**Pasos:**
+1. Reemplazar `HashRouter` por `BrowserRouter` en `src/index.js` / `src/App.js`
+2. Configurar el servidor para redirigir todas las rutas a `index.html`
+3. Revisar usos de `window.location.hash` o links con `#/` hardcodeados
+4. GitHub Pages requiere truco con `404.html` para soportar BrowserRouter — evaluar si vale la pena dado el hosting actual
 
 ---
 
