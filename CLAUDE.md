@@ -23,7 +23,22 @@ Redux Toolkit + Redux-Saga + redux-act pattern:
 - `src/sagas/` — Async side effects via redux-saga
 - `src/store/store.js` — Store config wiring it all together
 
-Data flows: Component → dispatch action → saga intercepts → API call → reducer update → component re-renders.
+Data flows: Component → dispatch action → saga intercepts → service call → reducer update → component re-renders.
+
+#### RULE: No direct API or database calls from views
+Views and components must **never** import from `src/services/`, `src/services/providers/firebase/`, or call `fetch`/`axios` directly. All async operations (Firestore reads/writes, REST calls) go exclusively through the Redux layer:
+
+```
+view dispatches action → saga calls service → reducer stores result → view reads from selector
+```
+
+- ✅ `dispatch(actions.fetchRequest())` from a component
+- ✅ `useSelector((s) => s.someSlice.data)` from a component
+- ❌ `import { getDocs } from 'firebase/firestore'` in a view
+- ❌ `import { firestoreCall } from 'src/services/...'` in a view
+- ❌ `fetch(...)` or `axios.get(...)` directly inside a component
+
+The only exception is `src/services/auth/firebaseAuth.js` used in `AppContent.js` for the auth state listener, which is infrastructure-level, not feature data.
 
 ### Routing & Auth
 - **HashRouter** — all URLs are hash-based (`#/path`)
