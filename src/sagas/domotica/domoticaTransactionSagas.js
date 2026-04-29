@@ -2,6 +2,13 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaTransactionActions'
 import * as service from '../../services/firebase/domotica/domoticaTransactions'
 
+const getLast24hRange = () => {
+  const endDate = new Date()
+  const startDate = new Date()
+  startDate.setHours(startDate.getHours() - 24)
+  return { startDate, endDate }
+}
+
 function* fetchTransactions() {
   try {
     yield put(actions.beginRequestFetch())
@@ -44,7 +51,8 @@ function* deleteTransaction({ payload }) {
 
 function* fetchVoltageHistory() {
   try {
-    const data = yield call(service.fetchVoltageHistory)
+    const { startDate, endDate } = getLast24hRange()
+    const data = yield call(service.fetchVoltageHistory, { startDate, endDate })
     yield put(actions.fetchVoltageSuccess(data))
   } catch (e) {
     yield put(actions.fetchVoltageError(e.message))
@@ -53,7 +61,8 @@ function* fetchVoltageHistory() {
 
 function* fetchCurrentHistory() {
   try {
-    const data = yield call(service.fetchCurrentHistory)
+    const { startDate, endDate } = getLast24hRange()
+    const data = yield call(service.fetchCurrentHistory, { startDate, endDate })
     yield put(actions.fetchCurrentSuccess(data))
   } catch (e) {
     yield put(actions.fetchCurrentError(e.message))

@@ -87,6 +87,11 @@ Browser (HashRouter)
     └── /404
 ```
 
+**Reglas de Capas:**
+
+*   **Servicios (Infrastructure Layer):** Los archivos en `src/services/` deben ser **puros y agnósticos**. No pueden contener lógica de negocio (como cálculos de rangos de fechas, filtros específicos de UI o transformaciones complejas). Su única responsabilidad es realizar la comunicación con la API o Base de Datos y retornar los datos.
+*   **Sagas/Hooks (Application Layer):** La lógica de negocio, el cálculo de parámetros (ej: rangos temporales como "últimas 24h") y la orquestación deben residir en los Sagas o Hooks personalizados.
+
 **Flujo de datos:**
 
 ```

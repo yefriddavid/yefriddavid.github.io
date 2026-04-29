@@ -13,12 +13,6 @@ import {
   cilCheckCircle,
   cilSync,
 } from '@coreui/icons'
-import {
-  // subscribeBatteryStatus,
-  // subscribeCurrentStatus,
-  triggerRead,
-} from 'src/services/firebase/domotica/solarBattery'
-
 import BatteryGauge from './Components/BatteryGauge'
 import MetricCard from './Components/MetricCard'
 import VoltageChart from './Components/VoltageChart'
@@ -45,15 +39,13 @@ const fmtDateTime = (iso) => {
 const SolarPanel = () => {
   const dispatch = useDispatch()
 
-  // Consumir datos directamente del Reducer (Redux Store)
   const voltageRecord = useSelector((s) =>
     s.domoticaCurrent.data?.find((r) => r.type === 'voltaje'),
   )
   const consumptionRecord = useSelector((s) =>
-    s.domoticaCurrent.data?.find((r) => r.amps != null || r.watts != null),
+    s.domoticaCurrent.data?.find((r) => r.type === 'corriente' || r.amps != null || r.watts != null),
   )
-  const batteryState = useSelector((s) => s.domoticaCurrent.battery)
-  const current = useSelector((s) => s.domoticaCurrent.consumption)
+  const currentFetchingState = useSelector((s) => s.domoticaCurrent.fetching)
   const commands = useSelector((s) => s.domoticaCommand.commands)
   const updatingIds = useSelector((s) => s.domoticaCommand.updatingIds)
 
@@ -82,11 +74,9 @@ const SolarPanel = () => {
   const lastVoltageAt = useSelector((s) => s.domoticaTransaction.voltageData?.at(-1)?.createdAt ?? null)
   const lastCurrentAt = useSelector((s) => s.domoticaTransaction.currentData?.at(-1)?.createdAt ?? null)
 
-  // El sensor envía todo en el registro de voltaje (status, solar, soc, etc)
-  const battery = batteryState || voltageRecord
+  const battery = voltageRecord
 
   const [online, setOnline] = useState(false)
-  const [readState, setReadState] = useState('idle') // 'idle' | 'loading' | 'done' | 'error'
   const relativeTime = useRelativeTime(battery?.updatedAt || battery?.date)
 
   // Efecto para determinar si el sistema está en línea
@@ -99,45 +89,16 @@ const SolarPanel = () => {
   }, [battery])
 
   useEffect(() => {
-    // Reactivamos la consulta inicial a Firebase (vía Redux/Saga)
     dispatch(domoticaCurrentActions.fetchRequest())
     dispatch(domoticaTransactionActions.fetchVoltageRequest())
     dispatch(domoticaTransactionActions.fetchCurrentRequest())
     dispatch(domoticaCommandActions.fetchRequest())
-
-    /* 
-       SE MANTIENE DESHABILITADO EL POLLING AL API EXTERNA (3.92.69.78) 
-       Y LAS SUSCRIPCIONES QUE DEPENDÍAN DE ELLA.
-    */
-    /*
-    const unsubscribeBattery = subscribeBatteryStatus((data) => {
-      dispatch(domoticaCurrentActions.batteryStatusSuccess(data))
-    })
-    const unsubscribeCurrent = subscribeCurrentStatus((data) => {
-      dispatch(domoticaCurrentActions.consumptionStatusSuccess(data))
-    })
-    */
-
-    return () => {
-      /*
-      unsubscribeBattery()
-      unsubscribeCurrent()
-      */
-    }
   }, [dispatch])
 
-  const handleRead = async () => {
-    if (readState === 'loading') return
-    setReadState('loading')
-    try {
-      const data = await triggerRead()
-      dispatch(domoticaCurrentActions.batteryStatusSuccess(data))
-      setReadState('done')
-    } catch {
-      setReadState('error')
-    } finally {
-      setTimeout(() => setReadState('idle'), 2500)
-    }
+  const handleRefresh = () => {
+    dispatch(domoticaCurrentActions.fetchRequest())
+    dispatch(domoticaTransactionActions.fetchVoltageRequest())
+    dispatch(domoticaTransactionActions.fetchCurrentRequest())
   }
 
   const soc = battery?.soc ?? battery?.percent ?? null
@@ -150,9 +111,9 @@ const SolarPanel = () => {
   const energyWh = soc != null ? Math.round((soc / 100) * BATTERY_CAPACITY_WH) : null
   const color = getSocColor(soc)
 
-  const amps = consumptionRecord?.amps ?? current?.amps ?? battery?.amps ?? null
-  const watts = amps != null && voltage != null ? amps * voltage : null
-  const currentAlert = current?.alert ?? battery?.currentAlert ?? null
+  const amps = consumptionRecord?.amps ?? consumptionRecord?.value ?? battery?.amps ?? null
+  const watts = consumptionRecord?.watts ?? (amps != null && voltage != null ? amps * voltage : null)
+  const currentAlert = battery?.currentAlert ?? null
 
   const hoursRemaining =
     amps > 0 && soc > 0
@@ -175,36 +136,26 @@ const SolarPanel = () => {
             size="sm"
             color="primary"
             variant="outline"
-            disabled={readState === 'loading'}
-            onClick={handleRead}
-            className={`solar-panel__read-btn${readState === 'error' ? ' solar-panel__read-btn--error' : ''}`}
+            disabled={currentFetchingState}
+            onClick={handleRefresh}
+            className="solar-panel__read-btn"
           >
-            {readState === 'loading' ? (
+            {currentFetchingState ? (
               <>
                 <CSpinner size="sm" className="me-1" />
-                Leyendo…
-              </>
-            ) : readState === 'done' ? (
-              <>
-                <CIcon icon={cilCheckCircle} className="me-1" />
-                Actualizado
-              </>
-            ) : readState === 'error' ? (
-              <>
-                <CIcon icon={cilWarning} className="me-1" />
-                Sin respuesta
+                Actualizando…
               </>
             ) : (
               <>
                 <CIcon icon={cilSync} className="me-1" />
-                Leer ahora
+                Actualizar
               </>
             )}
           </CButton>
         </div>
       </div>
 
-      {!battery ? (
+      {currentFetchingState && !battery ? (
         <div className="solar-panel__loading">Cargando datos desde el sistema…</div>
       ) : (
         <>
@@ -361,7 +312,7 @@ const SolarPanel = () => {
           </CRow>
 
           {/* Consumption cards */}
-          {(current !== undefined || battery?.amps !== undefined) && (
+          {(amps !== null || watts !== null) && (
             <>
               {currentAlert && (
                 <CAlert
@@ -432,7 +383,7 @@ const SolarPanel = () => {
                       onBlur={(e) => commitInterval('voltage_read', e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && commitInterval('voltage_read', e.target.value)}
                     />
-                    <span className="solar-panel__interval-unit">ms</span>
+                    <span className="solar-panel__interval-unit">mins</span>
                   </div>
                   <CFormSwitch
                     checked={voltageRead}
@@ -460,7 +411,7 @@ const SolarPanel = () => {
                       onBlur={(e) => commitInterval('current_read', e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && commitInterval('current_read', e.target.value)}
                     />
-                    <span className="solar-panel__interval-unit">ms</span>
+                    <span className="solar-panel__interval-unit">mins</span>
                   </div>
                   <CFormSwitch
                     checked={currentRead}

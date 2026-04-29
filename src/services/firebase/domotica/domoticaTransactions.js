@@ -10,12 +10,9 @@ import {
   query,
   orderBy,
   where,
-  Timestamp,
   limit,
   serverTimestamp,
 } from 'firebase/firestore'
-
-const todayStart = () => Timestamp.fromDate(new Date(new Date().setHours(0, 0, 0, 0)))
 
 const mapDoc = (d) => {
   const data = d.data()
@@ -29,7 +26,7 @@ const mapDoc = (d) => {
     unit: data.unit ?? null,
     date: data.date?.toDate?.()?.toISOString() ?? data.date ?? null,
     notes: data.notes ?? null,
-    value: data.voltage ?? data.value ?? data.amps ?? null,
+    value: data.voltage ?? data.value ?? data.amps ?? data.amount ?? null,
     percent: data.percent ?? data.soc ?? null,
     solar: data.solar ?? null,
     status: data.status ?? null,
@@ -37,26 +34,55 @@ const mapDoc = (d) => {
   }
 }
 
-export const fetchVoltageHistory = async () => {
-  const q = query(
-    collection(db, COL_DOMOTICA_TRANSACTIONS),
-    where('createdAt', '>=', todayStart()),
+export const fetchVoltageHistory = async ({ startDate, endDate } = {}) => {
+
+  const constraints = [
+    where('type', '==', 'voltaje'),
     orderBy('createdAt', 'asc'),
     limit(500),
-  )
-  const snap = await firestoreCall(() => getDocs(q))
-  return snap.docs.map(mapDoc).filter((r) => r.type === 'voltaje')
+  ]
+
+  if (startDate) constraints.push(where('createdAt', '>=', startDate))
+  if (endDate) constraints.push(where('createdAt', '<=', endDate))
+
+  const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
+  let data = [];
+  try {
+
+    const snap = await firestoreCall(() => getDocs(q))
+    data = snap.docs.map(mapDoc)
+    return data
+
+  } catch (e) {
+    console.log(e);
+  }
+  return data
 }
 
-export const fetchCurrentHistory = async () => {
-  const q = query(
-    collection(db, COL_DOMOTICA_TRANSACTIONS),
-    where('createdAt', '>=', todayStart()),
+export const fetchCurrentHistory = async ({ startDate, endDate } = {}) => {
+  const constraints = [
+    where('type', '==', 'corriente'),
     orderBy('createdAt', 'asc'),
     limit(500),
-  )
-  const snap = await firestoreCall(() => getDocs(q))
-  return snap.docs.map(mapDoc).filter((r) => r.type === 'corriente')
+  ]
+
+  if (startDate) constraints.push(where('createdAt', '>=', startDate))
+  if (endDate) constraints.push(where('createdAt', '<=', endDate))
+
+  const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
+  //const snap = await firestoreCall(() => getDocs(q))
+  //return snap.docs.map(mapDoc)
+  let data = []
+  try {
+
+    const snap = await firestoreCall(() => getDocs(q))
+    data = snap.docs.map(mapDoc)
+    return data
+
+  } catch (e) {
+    console.log(e);
+  }
+  return data
 }
 
 export const fetchTransactions = async () => {
