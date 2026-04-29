@@ -25,6 +25,7 @@ const VoltageChart = ({ data, loading }) => {
 
   return (
     <CChartLine
+      style={{ height: '180px' }}
       data={{
         labels,
         datasets: [
@@ -43,7 +44,7 @@ const VoltageChart = ({ data, loading }) => {
       }}
       options={{
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
           tooltip: {

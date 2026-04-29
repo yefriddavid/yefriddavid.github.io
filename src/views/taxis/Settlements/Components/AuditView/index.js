@@ -417,7 +417,17 @@ const AuditView = ({
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 6, marginLeft: 'auto', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 6,
+            marginLeft: 'auto',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            marginTop: 4,
+          }}
+        >
           <div ref={colMgrRef} style={{ position: 'relative' }}>
             <button
               onClick={() => {

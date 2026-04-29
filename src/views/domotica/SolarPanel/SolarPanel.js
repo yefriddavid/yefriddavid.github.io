@@ -88,11 +88,19 @@ const SolarPanel = () => {
     }
   }, [battery])
 
+  const POLL_INTERVAL_MS = 60_000
+
   useEffect(() => {
     dispatch(domoticaCurrentActions.fetchRequest())
     dispatch(domoticaTransactionActions.fetchVoltageRequest())
     dispatch(domoticaTransactionActions.fetchCurrentRequest())
     dispatch(domoticaCommandActions.fetchRequest())
+
+    const poll = setInterval(() => {
+      dispatch(domoticaCurrentActions.fetchRequest())
+    }, POLL_INTERVAL_MS)
+
+    return () => clearInterval(poll)
   }, [dispatch])
 
   const handleRefresh = () => {

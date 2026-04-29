@@ -13,13 +13,13 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
   const { summary, findings = [], driverRanking = [], driverPayments = [] } = result ?? {}
 
   return (
-    <CModal visible={visible} onClose={onClose} size="lg">
+    <CModal visible={visible} onClose={onClose} size="lg" fullscreen="sm">
       <CModalHeader style={{ background: '#faf5ff', borderBottom: '1px solid #e9d5ff' }}>
         <CModalTitle style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>
           ✦ Análisis IA — Auditoría del período
         </CModalTitle>
       </CModalHeader>
-      <CModalBody style={{ padding: 20 }}>
+      <CModalBody style={{ padding: '15px 12px' }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: 40 }}>
             <CSpinner style={{ color: '#7c3aed' }} />
@@ -37,9 +37,10 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
           <>
             {/* Summary cards */}
             <div
+              className="analysis-summary-grid"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                 gap: 10,
                 marginBottom: 20,
               }}
@@ -54,14 +55,14 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   key={label}
                   style={{
                     background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #e2e8e0',
                     borderRadius: 8,
                     padding: '10px 14px',
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: 18, fontWeight: 700, color: '#1e3a5f' }}>{value}</div>
-                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{label}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#1e3a5f' }}>{value}</div>
+                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>{label}</div>
                 </div>
               ))}
             </div>
@@ -121,7 +122,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   </div>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 6 }}>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                 {[
                   { color: '#2f9e44', label: `Completo (${summary.fullCount})` },
                   { color: '#f59e0b', label: `Parcial (${summary.partialCount})` },
@@ -137,11 +138,11 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
 
             {/* Best / worst day */}
             {(summary.bestDay || summary.worstDay) && (
-              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
                 {summary.bestDay && (
                   <div
                     style={{
-                      flex: 1,
+                      flex: '1 1 140px',
                       background: '#f0fdf4',
                       border: '1px solid #86efac',
                       borderRadius: 8,
@@ -164,7 +165,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                 {summary.worstDay && (
                   <div
                     style={{
-                      flex: 1,
+                      flex: '1 1 140px',
                       background: '#fff5f5',
                       border: '1px solid #fca5a5',
                       borderRadius: 8,
@@ -174,7 +175,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                     <div
                       style={{ fontSize: 11, color: '#b91c1c', fontWeight: 600, marginBottom: 4 }}
                     >
-                      Día más bajo (con liquidaciones)
+                      Día más bajo
                     </div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: '#b91c1c' }}>
                       {fmt(summary.worstDay.total)}
@@ -222,28 +223,31 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
 
             {/* Driver ranking */}
             {driverRanking.length > 0 && (
-              <div>
+              <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
                   Conductores — días sin liquidar
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {driverRanking.map((dr) => {
                     const pct = summary.pastDays > 0 ? dr.missing / summary.pastDays : 0
                     const barColor = pct > 0.5 ? '#e03131' : pct > 0.25 ? '#f59e0b' : '#94a3b8'
                     return (
-                      <div key={dr.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div key={dr.name} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px' }}>
                         <span
-                          style={{ fontSize: 12, color: '#374151', minWidth: 140, fontWeight: 500 }}
+                          style={{ fontSize: 12, color: '#374151', minWidth: 100, fontWeight: 600, flex: '1 0 100px' }}
                         >
                           {dr.name}
                         </span>
                         <div
                           style={{
-                            flex: 1,
+                            flex: '1 0 150px',
                             background: '#f1f5f9',
                             borderRadius: 4,
                             height: 8,
                             overflow: 'hidden',
+                            order: 3,
+                            width: '100%',
+                            marginTop: 2
                           }}
                         >
                           <div
@@ -259,7 +263,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                           style={{
                             fontSize: 11,
                             color: barColor,
-                            fontWeight: 600,
+                            fontWeight: 700,
                             minWidth: 50,
                             textAlign: 'right',
                           }}
@@ -279,145 +283,147 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
                   Pagos por conductor
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                  <thead>
-                    <tr style={{ background: '#f1f5f9' }}>
-                      {['Conductor', 'Esperado', 'Pagado', 'Saldo'].map((h) => (
-                        <th
-                          key={h}
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 450 }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9' }}>
+                        {['Conductor', 'Esperado', 'Pagado', 'Saldo'].map((h) => (
+                          <th
+                            key={h}
+                            style={{
+                              padding: '8px 10px',
+                              textAlign: h === 'Conductor' ? 'left' : 'right',
+                              fontWeight: 700,
+                              color: '#475569',
+                              borderBottom: '1px solid #e2e8f0',
+                            }}
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {driverPayments
+                        .slice()
+                        .sort((a, b) => b.debt - a.debt)
+                        .map((dp, i) => {
+                          const debtColor =
+                            dp.debt > 0 ? '#b91c1c' : dp.debt < 0 ? '#166534' : '#64748b'
+                          return (
+                            <tr
+                              key={dp.name}
+                              style={{ background: i % 2 === 0 ? '#fff' : '#f8fafc' }}
+                            >
+                              <td
+                                style={{
+                                  padding: '8px 10px',
+                                  fontWeight: 500,
+                                  color: '#1e3a5f',
+                                  borderBottom: '1px solid #f1f5f9',
+                                }}
+                              >
+                                {dp.name}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '8px 10px',
+                                  textAlign: 'right',
+                                  color: '#374151',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {fmt(dp.expected)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '8px 10px',
+                                  textAlign: 'right',
+                                  color: '#374151',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {fmt(dp.paid)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '8px 10px',
+                                  textAlign: 'right',
+                                  fontWeight: 700,
+                                  color: debtColor,
+                                  borderBottom: '1px solid #f1f5f9',
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {dp.debt > 0
+                                  ? `−${fmt(dp.debt)}`
+                                  : dp.debt < 0
+                                    ? `+${fmt(Math.abs(dp.debt))}`
+                                    : '—'}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ background: '#1e3a5f' }}>
+                        <td
                           style={{
-                            padding: '6px 10px',
-                            textAlign: h === 'Conductor' ? 'left' : 'right',
+                            padding: '8px 10px',
                             fontWeight: 700,
-                            color: '#475569',
-                            borderBottom: '1px solid #e2e8f0',
+                            color: '#fff',
+                            fontSize: 11,
+                            textTransform: 'uppercase',
                           }}
                         >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {driverPayments
-                      .slice()
-                      .sort((a, b) => b.debt - a.debt)
-                      .map((dp, i) => {
-                        const debtColor =
-                          dp.debt > 0 ? '#b91c1c' : dp.debt < 0 ? '#166534' : '#64748b'
-                        return (
-                          <tr
-                            key={dp.name}
-                            style={{ background: i % 2 === 0 ? '#fff' : '#f8fafc' }}
-                          >
-                            <td
-                              style={{
-                                padding: '7px 10px',
-                                fontWeight: 500,
-                                color: '#1e3a5f',
-                                borderBottom: '1px solid #f1f5f9',
-                              }}
-                            >
-                              {dp.name}
-                            </td>
-                            <td
-                              style={{
-                                padding: '7px 10px',
-                                textAlign: 'right',
-                                color: '#374151',
-                                borderBottom: '1px solid #f1f5f9',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {fmt(dp.expected)}
-                            </td>
-                            <td
-                              style={{
-                                padding: '7px 10px',
-                                textAlign: 'right',
-                                color: '#374151',
-                                borderBottom: '1px solid #f1f5f9',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {fmt(dp.paid)}
-                            </td>
-                            <td
-                              style={{
-                                padding: '7px 10px',
-                                textAlign: 'right',
-                                fontWeight: 700,
-                                color: debtColor,
-                                borderBottom: '1px solid #f1f5f9',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {dp.debt > 0
-                                ? `−${fmt(dp.debt)}`
-                                : dp.debt < 0
-                                  ? `+${fmt(Math.abs(dp.debt))}`
-                                  : '—'}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                  </tbody>
-                  <tfoot>
-                    <tr style={{ background: '#1e3a5f' }}>
-                      <td
-                        style={{
-                          padding: '7px 10px',
-                          fontWeight: 700,
-                          color: '#fff',
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        Total
-                      </td>
-                      <td
-                        style={{
-                          padding: '7px 10px',
-                          textAlign: 'right',
-                          fontWeight: 700,
-                          color: '#fff',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        {fmt(driverPayments.reduce((s, d) => s + d.expected, 0))}
-                      </td>
-                      <td
-                        style={{
-                          padding: '7px 10px',
-                          textAlign: 'right',
-                          fontWeight: 700,
-                          color: '#fff',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        {fmt(driverPayments.reduce((s, d) => s + d.paid, 0))}
-                      </td>
-                      <td
-                        style={{
-                          padding: '7px 10px',
-                          textAlign: 'right',
-                          fontWeight: 700,
-                          color: '#fca5a5',
-                          fontVariantNumeric: 'tabular-nums',
-                        }}
-                      >
-                        {(() => {
-                          const totalDebt = driverPayments.reduce((s, d) => s + d.debt, 0)
-                          return totalDebt > 0
-                            ? `−${fmt(totalDebt)}`
-                            : totalDebt < 0
-                              ? `+${fmt(Math.abs(totalDebt))}`
-                              : '—'
-                        })()}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+                          Total
+                        </td>
+                        <td
+                          style={{
+                            padding: '8px 10px',
+                            textAlign: 'right',
+                            fontWeight: 700,
+                            color: '#fff',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {fmt(driverPayments.reduce((s, d) => s + d.expected, 0))}
+                        </td>
+                        <td
+                          style={{
+                            padding: '8px 10px',
+                            textAlign: 'right',
+                            fontWeight: 700,
+                            color: '#fff',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {fmt(driverPayments.reduce((s, d) => s + d.paid, 0))}
+                        </td>
+                        <td
+                          style={{
+                            padding: '8px 10px',
+                            textAlign: 'right',
+                            fontWeight: 700,
+                            color: '#fca5a5',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {(() => {
+                            const totalDebt = driverPayments.reduce((s, d) => s + d.debt, 0)
+                            return totalDebt > 0
+                              ? `−${fmt(totalDebt)}`
+                              : totalDebt < 0
+                                ? `+${fmt(Math.abs(totalDebt))}`
+                                : '—'
+                          })()}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             )}
           </>
