@@ -22,6 +22,7 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiAuditNoteActions from 'src/actions/taxi/taxiAuditNoteActions'
 import * as taxiPeriodNoteActions from 'src/actions/taxi/taxiPeriodNoteActions'
+import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
 import { getColombianHolidays, auditNoteId, buildAuditDay } from '../../auditHelpers'
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
@@ -32,6 +33,7 @@ import PeriodSummary from '../Components/PeriodSummary'
 import SettlementCreateForm from '../Components/SettlementCreateForm'
 import AuditView from '../Components/AuditView'
 import PeriodNotes from '../Components/PeriodNotes'
+import PeriodAttachments from '../Components/PeriodAttachments'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { buildAuditExporters } from './auditExport'
 
@@ -138,11 +140,9 @@ const Taxis = () => {
   }, [dispatch])
 
   useEffect(() => {
-    dispatch(
-      taxiPeriodNoteActions.fetchRequest({
-        period: `${period.year}-${String(period.month).padStart(2, '0')}`,
-      }),
-    )
+    const periodStr = `${period.year}-${String(period.month).padStart(2, '0')}`
+    dispatch(taxiPeriodNoteActions.fetchRequest({ period: periodStr }))
+    dispatch(taxiPeriodAttachmentActions.fetchRequest({ period: periodStr }))
   }, [dispatch, period.year, period.month])
 
   useEffect(() => {
@@ -1241,6 +1241,7 @@ const Taxis = () => {
       </CCard>
 
       <PeriodNotes period={period} />
+      <PeriodAttachments period={period} />
     </>
   )
 }

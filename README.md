@@ -350,6 +350,21 @@ Specs en `cypress/e2e/`. Levantan el preview del build en el puerto 3005.
 
 ## Backend y fuentes de datos
 
+### Almacenamiento de archivos e imágenes — NUNCA usar Firebase Storage
+
+> ⛔ **Firebase Storage está prohibido en este proyecto.**
+
+Todas las imágenes y adjuntos se guardan como **strings base64 directamente en documentos Firestore**:
+
+- **Imágenes** → comprimidas a JPEG base64 con `compressImage()` en `src/utils/fileHelpers.js`
+- **PDFs** → todas las páginas se renderizan y concatenan en un único JPEG base64 con `pdfToSingleImage()` en `src/utils/fileHelpers.js`
+- El string resultante se guarda como campo del documento Firestore (ej. `image`, `file`)
+
+```
+❌ Nunca: import { getStorage, uploadBytes, getDownloadURL } from 'firebase/storage'
+✅ Siempre: base64 → campo Firestore via firestoreCall()
+```
+
 ### Firebase Firestore (principal)
 
 Todas las operaciones pasan por `firestoreCall()` en `src/services/providers/firebase/firebaseClient.js`:
@@ -365,13 +380,15 @@ Todas las operaciones pasan por `firestoreCall()` en `src/services/providers/fir
 | `fcmTokens` | Sistema | Tokens FCM para push notifications |
 | `accountsMaster` | Contabilidad | Maestro de cuentas |
 | `transactions` | Contabilidad | Registro de transacciones |
-| `paymentVauchers` | Contabilidad | Comprobantes de pago (imágenes) |
+| `paymentVauchers` | Contabilidad | Comprobantes de pago (imágenes base64) |
 | `taxiDrivers` | Taxis | Conductores |
 | `taxiVehicles` | Taxis | Vehículos |
 | `taxiSettlements` | Taxis | Liquidaciones diarias |
 | `taxiExpenses` | Taxis | Gastos operativos |
 | `taxiPartners` | Taxis | Socios |
 | `taxiDistributions` | Taxis | Distribuciones de utilidades |
+| `CashFlow_taxi_period_notes` | Taxis | Notas de texto por período de liquidaciones |
+| `CashFlow_taxi_period_attachments` | Taxis | Soportes fotográficos por período (base64, descripción) |
 | `contracts` | Contratos | Contratos de arrendamiento |
 | `owners` / `properties` | Contratos | Propietarios y propiedades |
 | `page_visits` | About Me | Registro de visitas |
@@ -408,7 +425,9 @@ store
 │   ├── taxiExpense
 │   ├── taxiPartner
 │   ├── taxiDistribution
-│   └── taxiAuditNote
+│   ├── taxiAuditNote
+│   ├── taxiPeriodNote
+│   └── taxiPeriodAttachment
 │
 └── Contratos/
     ├── contract
@@ -522,16 +541,6 @@ Varias vistas importan servicios Firebase o llaman axios/fetch directamente, sal
 | `views/Accounting/AccountsSimple.js` | `axios.post` directo |
 | `views/movements/payments/Services.js` | 3× `axios.post` directo |
 | `views/reports/payments/Services.js` | 3× `axios.post` directo |
-
-### 🟡 Migrar imágenes de vouchers a Firebase Storage
-Las imágenes de comprobantes se guardan como base64 en documentos Firestore, causando documentos pesados y carga lenta sin CDN. La solución está diseñada e implementada (build verificado), revertida a pedido del usuario para aplicar después.
-
-**Archivos a modificar:**
-- `src/services/providers/firebase/settings.js` — exportar `storage = getStorage(app)`
-- `src/services/providers/firebase/paymentVaucher.js` — subir a Firebase Storage, guardar URL en Firestore
-- `src/views/movements/payments/ItemDetail.js` — cambiar `pdfToBase64` → `pdfToBlob`, pasar blob al servicio
-
-**Nota:** los vouchers existentes con campo `file` (base64) mostrarán "sin voucher" hasta re-subirse. Se puede hacer migración batch.
 
 ### 🟡 Migrar HashRouter → BrowserRouter
 Eliminar el `#` de las URLs migrando de `HashRouter` a `BrowserRouter`.

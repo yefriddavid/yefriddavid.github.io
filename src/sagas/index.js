@@ -10,6 +10,7 @@ import sagaTaxiPartners from './taxi/taxiPartnerSagas'
 import sagaTaxiDistributions from './taxi/taxiDistributionSagas'
 import sagaTaxiAuditNotes from './taxi/taxiAuditNoteSagas'
 import sagaTaxiPeriodNotes from './taxi/taxiPeriodNoteSagas'
+import sagaTaxiPeriodAttachments from './taxi/taxiPeriodAttachmentSagas'
 import sagaVehicleLocationHistory from './taxi/vehicleLocationHistorySagas'
 import sagaVehicleRoute from './taxi/vehicleRouteSagas'
 import sagaCurrentPositions from './taxi/currentPositionsSagas'
@@ -47,6 +48,7 @@ export default function* rootSagas() {
     sagaTaxiDistributions(),
     sagaTaxiAuditNotes(),
     sagaTaxiPeriodNotes(),
+    sagaTaxiPeriodAttachments(),
     sagaVehicleLocationHistory(),
     sagaVehicleRoute(),
     sagaCurrentPositions(),
