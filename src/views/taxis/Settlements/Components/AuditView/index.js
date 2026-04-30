@@ -5,6 +5,7 @@ import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import { fmt } from '../utils'
 import AuditMissingCell from '../AuditMissingCell'
+import AuditNotesCell from '../AuditNotesCell'
 import AuditSettledCell from '../AuditSettledCell'
 import AuditDayDetail from '../AuditDayDetail'
 import useLocaleData from 'src/hooks/useLocaleData'
@@ -21,6 +22,7 @@ const AUDIT_COL_DEFS = [
   { key: 'cumul_ideal', label: 'Acum. ideal' },
   { key: 'settled', label: 'Liquidados' },
   { key: 'missing', label: 'Pendientes' },
+  { key: 'notes', label: 'Notas auditoría' },
 ]
 const AUDIT_COLS_LS_KEY = 'auditColVisibility'
 const AUDIT_COLS_ORDER_LS_KEY = 'auditColOrder'
@@ -36,8 +38,11 @@ const AuditView = ({
   auditVehicles,
   getNote,
   getResolved,
+  getNotesForDay,
   handleResolvedToggle,
   handleNoteSave,
+  handleBookNoteSave,
+  handleBookResolvedToggle,
   isAllResolved,
   auditRowBg,
   auditLeftBorder,
@@ -147,6 +152,7 @@ const AuditView = ({
     cumul_ideal: 'Acum. ideal',
     settled: t('taxis.settlements.audit.colSettled'),
     missing: t('taxis.settlements.audit.colMissing'),
+    notes: 'Notas auditoría',
   }
 
   useEffect(() => {
@@ -979,6 +985,24 @@ const AuditView = ({
                                 t={t}
                               />
                             ) : null
+                          case 'notes':
+                            return visibleCols.notes ? (
+                              <AuditNotesCell
+                                key={key}
+                                day={day}
+                                auditDriverFilter={auditDriverFilter}
+                                periodDrivers={periodDrivers}
+                                getNotesForDay={getNotesForDay}
+                                editingNote={editingNote}
+                                setEditingNote={setEditingNote}
+                                handleResolvedToggle={handleBookResolvedToggle}
+                                handleNoteSave={(date, driver, note) => {
+                                  handleBookNoteSave(date, driver, note)
+                                  setEditingNote(null)
+                                }}
+                                t={t}
+                              />
+                            ) : null
                           default:
                             return null
                         }
@@ -1121,6 +1145,8 @@ const AuditView = ({
                     return visibleCols.settled ? <td key={key} /> : null
                   case 'missing':
                     return visibleCols.missing ? <td key={key} /> : null
+                  case 'notes':
+                    return visibleCols.notes ? <td key={key} /> : null
                   default:
                     return null
                 }

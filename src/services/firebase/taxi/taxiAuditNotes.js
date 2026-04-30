@@ -4,7 +4,10 @@ import { getTenantId } from 'src/services/tenantContext'
 
 const COL = 'CashFlow_taxi_audit_notas'
 
-const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
+const noteId = (date, driver, noteType = '') => {
+  const base = `${date}__${driver.replace(/\s+/g, '_')}`
+  return noteType ? `${noteType}__${base}` : base
+}
 
 export const getNotes = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
@@ -17,16 +20,24 @@ export const getNotes = async () => {
       driver: data.driver ?? null,
       note: data.note ?? null,
       resolved: data.resolved === true,
+      noteType: data.noteType ?? '',
     }
   })
 }
 
-export const upsertNote = async ({ date, driver, note, resolved = false }) => {
-  const id = noteId(date, driver)
-  await setDoc(doc(db, COL, id), { date, driver, note, resolved, tenantId: getTenantId() })
+export const upsertNote = async ({ date, driver, note, resolved = false, noteType = '' }) => {
+  const id = noteId(date, driver, noteType)
+  await setDoc(doc(db, COL, id), {
+    date,
+    driver,
+    note,
+    resolved,
+    noteType,
+    tenantId: getTenantId(),
+  })
   return id
 }
 
-export const deleteNote = async ({ date, driver }) => {
-  await deleteDoc(doc(db, COL, noteId(date, driver)))
+export const deleteNote = async ({ date, driver, noteType = '' }) => {
+  await deleteDoc(doc(db, COL, noteId(date, driver, noteType)))
 }

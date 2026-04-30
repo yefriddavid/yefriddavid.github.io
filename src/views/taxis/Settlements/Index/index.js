@@ -540,6 +540,24 @@ const Taxis = () => {
   const getNote = (date, driver) => auditNotes[auditNoteId(date, driver)]?.note ?? ''
   const getResolved = (date, driver) => auditNotes[auditNoteId(date, driver)]?.resolved || false
 
+  const bookNoteId = (date, driver) => `book__${date}__${driver.replace(/\s+/g, '_')}`
+  const getBookNote = (date, driver) => auditNotes[bookNoteId(date, driver)]?.note ?? ''
+  const getBookResolved = (date, driver) => auditNotes[bookNoteId(date, driver)]?.resolved || false
+
+  const getNotesForDay = useCallback(
+    (date) => {
+      const prefix = `book__${date}__`
+      return Object.entries(auditNotes)
+        .filter(([key]) => key.startsWith(prefix))
+        .map(([, val]) => ({
+          driver: val.driver,
+          note: val.note || '',
+          resolved: val.resolved || false,
+        }))
+    },
+    [auditNotes],
+  )
+
   const handleNoteSave = (date, driver, note) => {
     const resolved = getResolved(date, driver)
     if (note.trim() || resolved) {
@@ -557,6 +575,36 @@ const Taxis = () => {
       dispatch(taxiAuditNoteActions.upsertRequest({ date, driver, note, resolved }))
     } else {
       dispatch(taxiAuditNoteActions.deleteRequest({ date, driver }))
+    }
+  }
+
+  const handleBookNoteSave = (date, driver, note) => {
+    const resolved = getBookResolved(date, driver)
+    if (note.trim() || resolved) {
+      dispatch(
+        taxiAuditNoteActions.upsertRequest({
+          date,
+          driver,
+          note: note.trim(),
+          resolved,
+          noteType: 'book',
+        }),
+      )
+    } else {
+      dispatch(taxiAuditNoteActions.deleteRequest({ date, driver, noteType: 'book' }))
+    }
+  }
+
+  const handleBookResolvedToggle = (date, driver) => {
+    const current = auditNotes[bookNoteId(date, driver)]
+    const note = current?.note || ''
+    const resolved = !(current?.resolved || false)
+    if (note || resolved) {
+      dispatch(
+        taxiAuditNoteActions.upsertRequest({ date, driver, note, resolved, noteType: 'book' }),
+      )
+    } else {
+      dispatch(taxiAuditNoteActions.deleteRequest({ date, driver, noteType: 'book' }))
     }
   }
 
@@ -1177,8 +1225,11 @@ const Taxis = () => {
               auditVehicles={auditVehicles}
               getNote={getNote}
               getResolved={getResolved}
+              getNotesForDay={getNotesForDay}
               handleResolvedToggle={handleResolvedToggle}
               handleNoteSave={handleNoteSave}
+              handleBookNoteSave={handleBookNoteSave}
+              handleBookResolvedToggle={handleBookResolvedToggle}
               isAllResolved={isAllResolved}
               auditRowBg={auditRowBg}
               auditLeftBorder={auditLeftBorder}

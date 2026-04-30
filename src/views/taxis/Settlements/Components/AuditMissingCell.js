@@ -3,7 +3,7 @@ import { CSpinner } from '@coreui/react'
 import { fmt } from './utils'
 import './Audit.scss'
 
-const IssueEntry = ({
+export const IssueEntry = ({
   label,
   note,
   resolved,
@@ -14,11 +14,12 @@ const IssueEntry = ({
   onNoteDelete,
   onCancel,
   onQuickSettle,
+  variant = 'missing',
   t,
 }) => (
   <div className="issue-entry">
     <div className="issue-entry__header">
-      <span className={`issue-entry__badge${resolved ? ' issue-entry__badge--resolved' : ' issue-entry__badge--missing'}`}>
+      <span className={`issue-entry__badge${resolved ? ' issue-entry__badge--resolved' : ` issue-entry__badge--${variant}`}`}>
         {onQuickSettle && (
           <button className="issue-entry__quick-settle" onClick={onQuickSettle} title="Crear liquidación">
             ✓

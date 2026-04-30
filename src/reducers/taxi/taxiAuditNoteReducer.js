@@ -1,7 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 import * as actions from '../../actions/taxi/taxiAuditNoteActions'
 
-const noteId = (date, driver) => `${date}__${driver.replace(/\s+/g, '_')}`
+const noteId = (date, driver, noteType = '') => {
+  const base = `${date}__${driver.replace(/\s+/g, '_')}`
+  return noteType ? `${noteType}__${base}` : base
+}
 
 const taxiAuditNoteSlice = createSlice({
   name: 'taxiAuditNote',
@@ -32,7 +35,7 @@ const taxiAuditNoteSlice = createSlice({
         state.notes[payload.id] = payload
       })
       .addCase(actions.successRequestDelete, (state, { payload }) => {
-        delete state.notes[noteId(payload.date, payload.driver)]
+        delete state.notes[noteId(payload.date, payload.driver, payload.noteType ?? '')]
       })
   },
 })
