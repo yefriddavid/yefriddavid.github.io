@@ -84,7 +84,10 @@ const SolarPanel = () => {
     const timestamp = battery?.updatedAt || battery?.date
     if (timestamp) {
       const date = new Date(timestamp)
-      setOnline(Date.now() - date.getTime() < 5 * 60 * 1000)
+      //setOnline(Date.now() - date.getTime() < 5 * 60 * 1000)
+      // setOnline(Date.now() - date.getTime() < 10 * 60 * 1000)
+      const every = 10 * 60 * 1000 // 10 mins
+      setOnline(Date.now() - date.getTime() < every)
     }
   }, [battery])
 

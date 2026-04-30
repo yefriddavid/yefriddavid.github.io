@@ -19,7 +19,7 @@ import {
   CAccordionBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilFullscreen, cilFullscreenExit, cilHistory } from '@coreui/icons'
+import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -366,6 +366,14 @@ const MapLocation = () => {
                           <div
                             key={h.id || i}
                             className="history-item"
+                          >
+                              <div
+                              className="d-flex justify-content-between">
+                              <a href={`https://www.google.com/maps/search/?api=1&query=${h.latitude},${ h.longitude }`} target="_blank">
+                              <CIcon icon={cilGlobeAlt} />
+                            </a>
+
+                              <span className="history-time"
                             onClick={() => {
                               const pos = { lat: h.latitude, lng: h.longitude }
                               setManualPositions((prev) => ({
@@ -374,9 +382,8 @@ const MapLocation = () => {
                               }))
                               setCenterOn([pos.lat, pos.lng])
                             }}
-                          >
-                            <div className="d-flex justify-content-between">
-                              <span className="history-time">{formatTimeAgo(h.timestamp)}</span>
+
+                            >{formatTimeAgo(h.timestamp)}</span>
                               <span className="history-coords">
                                 {parseFloat(h.latitude).toFixed(4)},{' '}
                                 {parseFloat(h.longitude).toFixed(4)}

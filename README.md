@@ -542,6 +542,12 @@ Eliminar el `#` de las URLs migrando de `HashRouter` a `BrowserRouter`.
 3. Revisar usos de `window.location.hash` o links con `#/` hardcodeados
 4. GitHub Pages requiere truco con `404.html` para soportar BrowserRouter — evaluar si vale la pena dado el hosting actual
 
+### 🔵 Seguimiento Familiar GPS
+Conectar el GPS del celular a un mapa donde va a estar toda mi familia. El cliente será Flutter o la misma app que usa la posición del celular y la reporta a Firebase.
+
+### 🟡 Migración de Monitoreo Eléctrico
+Migrar el read de voltios y corriente que está en Firebase Firestore a Firebase Realtime Database (optimización para datos en tiempo real).
+
 ---
 
 *Desarrollado por [David Rios](https://www.linkedin.com/in/yefriddavid) · [@yefriddavid](https://github.com/yefriddavid)*
