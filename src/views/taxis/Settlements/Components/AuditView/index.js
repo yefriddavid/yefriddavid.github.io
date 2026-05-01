@@ -243,28 +243,28 @@ const AuditView = ({
             label: t('taxis.settlements.audit.statusNone'),
             count: auditDays.filter((d) => d.status === 'none').length,
             color: '#e03131',
-            bg: '#fff5f5',
+            bg: 'rgba(224,49,49,0.1)',
           },
           {
             key: 'partial',
             label: t('taxis.settlements.audit.statusPartial'),
             count: auditDays.filter((d) => d.status === 'partial').length,
             color: '#e67700',
-            bg: '#fffbeb',
+            bg: 'rgba(230,119,0,0.1)',
           },
           {
             key: 'full',
             label: t('taxis.settlements.audit.statusFull'),
             count: auditDays.filter((d) => d.status === 'full').length,
             color: '#2f9e44',
-            bg: '#f0fdf4',
+            bg: 'rgba(47,158,68,0.1)',
           },
           {
             key: 'future',
             label: t('taxis.settlements.audit.statusFuture'),
             count: auditDays.filter((d) => d.status === 'future').length,
             color: '#868e96',
-            bg: '#f8fafc',
+            bg: 'rgba(134,142,150,0.1)',
           },
         ].map(({ key, label, count, color, bg }) => {
           const active = auditStatusFilter.has(key)

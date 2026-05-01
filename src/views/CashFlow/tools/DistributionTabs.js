@@ -23,7 +23,7 @@ export default function DistributionTabs({
         marginBottom: 20,
         overflowX: 'auto',
         overflowY: 'hidden',
-        borderBottom: '2px solid #e9ecef',
+        borderBottom: '2px solid var(--cui-border-color)',
       }}
     >
       {distributions.map((d) => {
@@ -37,10 +37,10 @@ export default function DistributionTabs({
               alignItems: 'center',
               gap: 4,
               padding: isMobile ? '10px 12px' : '8px 14px',
-              borderBottom: isActive ? '2px solid #1e3a5f' : '2px solid transparent',
+              borderBottom: isActive ? '2px solid var(--cui-primary)' : '2px solid transparent',
               marginBottom: -2,
               cursor: 'pointer',
-              background: isActive ? '#f8f9fa' : 'transparent',
+              background: isActive ? 'var(--cui-tertiary-bg)' : 'transparent',
               borderRadius: '6px 6px 0 0',
               flexShrink: 0,
             }}
@@ -59,12 +59,12 @@ export default function DistributionTabs({
                 onClick={(e) => e.stopPropagation()}
                 style={{
                   border: 'none',
-                  borderBottom: '2px solid #1e3a5f',
+                  borderBottom: '2px solid var(--cui-primary)',
                   outline: 'none',
                   background: 'transparent',
                   fontSize: 13,
                   fontWeight: 600,
-                  color: '#1a1a2e',
+                  color: 'var(--cui-body-color)',
                   width: 100,
                   padding: '0 0 1px',
                 }}
@@ -74,7 +74,7 @@ export default function DistributionTabs({
                 style={{
                   fontSize: 13,
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1e3a5f' : '#6c757d',
+                  color: isActive ? 'var(--cui-body-color)' : 'var(--cui-secondary-color)',
                   userSelect: 'none',
                 }}
                 onDoubleClick={(e) => {
@@ -98,7 +98,7 @@ export default function DistributionTabs({
                     background: 'none',
                     border: 'none',
                     cursor: idx === 0 ? 'default' : 'pointer',
-                    color: idx === 0 ? '#dee2e6' : '#6c757d',
+                    color: idx === 0 ? 'var(--cui-tertiary-color)' : 'var(--cui-secondary-color)',
                     fontSize: 13,
                     lineHeight: 1,
                     padding: '0 2px',
@@ -119,7 +119,10 @@ export default function DistributionTabs({
                     background: 'none',
                     border: 'none',
                     cursor: idx === distributions.length - 1 ? 'default' : 'pointer',
-                    color: idx === distributions.length - 1 ? '#dee2e6' : '#6c757d',
+                    color:
+                      idx === distributions.length - 1
+                        ? 'var(--cui-tertiary-color)'
+                        : 'var(--cui-secondary-color)',
                     fontSize: 13,
                     lineHeight: 1,
                     padding: '0 2px',
@@ -139,7 +142,7 @@ export default function DistributionTabs({
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#e03131',
+                    color: 'var(--cui-danger)',
                     fontSize: 16,
                     lineHeight: 1,
                     padding: '0 0 0 2px',
@@ -161,7 +164,7 @@ export default function DistributionTabs({
           border: 'none',
           background: 'transparent',
           cursor: 'pointer',
-          color: '#6c757d',
+          color: 'var(--cui-secondary-color)',
           fontSize: 20,
           lineHeight: 1,
           flexShrink: 0,

@@ -1,5 +1,5 @@
 .stat-card {
-  background: var(--cui-card-bg, #fff);
+  background: var(--cui-body-bg);
   border-radius: 10px;
   border: 1px solid var(--cui-border-color, #dee2e6);
   border-left: 4px solid var(--stat-card-color, #adb5bd);
@@ -52,8 +52,8 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 1.5px solid #adb5bd;
-    color: #adb5bd;
+    border: 1.5px solid var(--cui-tertiary-color);
+    color: var(--cui-tertiary-color);
     font-size: 9px;
     font-weight: 700;
     cursor: help;

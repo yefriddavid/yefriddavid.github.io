@@ -172,7 +172,7 @@ export default function SalaryDistribution() {
           marginBottom: 16,
         }}
       >
-        <h5 style={{ fontWeight: 700, margin: 0, color: '#1a1a2e', fontSize: isMobile ? 16 : 18 }}>
+        <h5 style={{ fontWeight: 700, margin: 0, color: 'var(--cui-body-color)', fontSize: isMobile ? 16 : 18 }}>
           Salary Distribution
         </h5>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -181,12 +181,12 @@ export default function SalaryDistribution() {
             style={{
               padding: '8px 14px',
               borderRadius: 8,
-              border: showSummary ? 'none' : '1px solid #dee2e6',
-              background: showSummary ? '#1e3a5f' : '#fff',
+              border: showSummary ? 'none' : '1px solid var(--cui-border-color)',
+              background: showSummary ? 'var(--cui-primary)' : 'var(--cui-body-bg)',
               cursor: 'pointer',
               fontSize: 13,
               fontWeight: 600,
-              color: showSummary ? '#fff' : '#1e3a5f',
+              color: showSummary ? '#fff' : 'var(--cui-body-color)',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
@@ -202,11 +202,11 @@ export default function SalaryDistribution() {
               padding: '8px 14px',
               borderRadius: 8,
               border: 'none',
-              background: dirty ? '#2f9e44' : '#e9ecef',
+              background: dirty ? '#2f9e44' : 'var(--cui-secondary-bg)',
               cursor: dirty && !saving ? 'pointer' : 'not-allowed',
               fontSize: 13,
               fontWeight: 600,
-              color: dirty ? '#fff' : '#adb5bd',
+              color: dirty ? '#fff' : 'var(--cui-tertiary-color)',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
@@ -222,12 +222,12 @@ export default function SalaryDistribution() {
             style={{
               padding: '8px 14px',
               borderRadius: 8,
-              border: '1px solid #dee2e6',
-              background: '#fff',
+              border: '1px solid var(--cui-border-color)',
+              background: 'var(--cui-body-bg)',
               cursor: importing ? 'not-allowed' : 'pointer',
               fontSize: 13,
               fontWeight: 600,
-              color: importing ? '#adb5bd' : '#1e3a5f',
+              color: importing ? 'var(--cui-tertiary-color)' : 'var(--cui-body-color)',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
@@ -243,11 +243,11 @@ export default function SalaryDistribution() {
               padding: '8px 14px',
               borderRadius: 8,
               border: 'none',
-              background: syncing ? '#e9ecef' : '#1e3a5f',
+              background: syncing ? 'var(--cui-secondary-bg)' : 'var(--cui-primary)',
               cursor: syncing ? 'not-allowed' : 'pointer',
               fontSize: 13,
               fontWeight: 600,
-              color: syncing ? '#adb5bd' : '#fff',
+              color: syncing ? 'var(--cui-tertiary-color)' : '#fff',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
@@ -272,7 +272,7 @@ export default function SalaryDistribution() {
               padding: '8px 14px',
               borderRadius: 8,
               border: 'none',
-              background: '#e03131',
+              background: 'var(--cui-danger)',
               cursor: 'pointer',
               fontSize: 13,
               fontWeight: 600,
