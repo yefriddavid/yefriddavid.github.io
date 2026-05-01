@@ -13,6 +13,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
+import { FinanceIcon } from 'src/components/AppIcons'
 
 import { AppSidebarNav } from './AppSidebarNav'
 import BrandName from '../BrandName'
@@ -50,9 +51,12 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <h3>
-          <BrandName />
-        </h3>
+        <div className="d-flex align-items-center gap-2">
+          <span style={{ color: '#ffc107', flexShrink: 0, display: 'flex' }}><FinanceIcon size={20} /></span>
+          <h3 className="mb-0" style={{ fontSize: '1.2rem' }}>
+            <BrandName />
+          </h3>
+        </div>
         <CSidebarBrand to="/">
           {/*<CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />*/}
           <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />

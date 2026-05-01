@@ -60,7 +60,7 @@ const AppHeaderDropdown = () => {
     <>
       <VersionModal visible={versionOpen} onClose={() => setVersionOpen(false)} />
       <CDropdown variant="nav-item">
-        <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
+        <CDropdownToggle placement="bottom-end" className="py-0 pe-0 header-dropdown__toggle" caret={false}>
           <CAvatar src={avatarSrc} size="md" className="header-dropdown__avatar" />
         </CDropdownToggle>
         <CDropdownMenu className="pt-0" placement="bottom-end">

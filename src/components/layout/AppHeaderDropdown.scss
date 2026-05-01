@@ -1,6 +1,14 @@
 .header-dropdown {
+  &__toggle {
+    display: flex !important;
+    align-items: center;
+  }
+
   &__avatar {
     object-fit: cover;
+    width: 28px !important;
+    height: 28px !important;
+    display: block;
   }
 
   &__user-role {

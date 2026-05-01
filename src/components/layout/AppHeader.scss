@@ -33,10 +33,19 @@
 
   // Layout
   & > .container-fluid {
-    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+    min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+    display: flex;
+    align-items: center;
 
     & + .container-fluid {
-      min-height: 3rem;
+      min-height: 2.5rem;
+      display: flex;
+      align-items: center;
     }
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
   }
 }

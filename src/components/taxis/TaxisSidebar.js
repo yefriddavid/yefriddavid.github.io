@@ -11,7 +11,8 @@ import {
   CSidebarToggler,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilAccountLogout, cilMenu, cilApplications, cilCarAlt } from '@coreui/icons'
+import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
+import { TaxiIcon } from 'src/components/AppIcons'
 import { AppSidebarNav } from '../layout/AppSidebarNav'
 import { signOut } from '../../services/firebase/auth'
 import { sygnet } from 'src/assets/brand/sygnet'
@@ -43,7 +44,7 @@ const TaxisSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <div className="d-flex align-items-center gap-2">
-          <CIcon icon={cilCarAlt} height={20} className="text-warning" />
+          <span style={{ color: '#ffc107', flexShrink: 0, display: 'flex' }}><TaxiIcon size={20} /></span>
           <h3 className="mb-0" style={{ fontSize: '1.2rem' }}>Gestión de Taxis</h3>
         </div>
         <CSidebarBrand to="/taxis/home">

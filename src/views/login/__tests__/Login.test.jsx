@@ -106,7 +106,7 @@ describe('Login form', () => {
     expect(localStorage.getItem('landingPage')).toBe('/dashboard')
     expect(localStorage.getItem('sessionId')).toBe('sid123')
     expect(mockDispatch).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard')
+    expect(mockNavigate).toHaveBeenCalledWith('/selectApp')
   })
 
   it('shows the error message returned by signIn on failure', async () => {
