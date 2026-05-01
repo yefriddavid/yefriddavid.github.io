@@ -5,6 +5,7 @@ import { computeDistribution, useIsMobile, bumpId } from './salaryUtils'
 import DistributionTabs from './DistributionTabs'
 import DistributionEditor from './DistributionEditor'
 import SummaryTable from './SummaryTable'
+import EggPriceChart from './EggPriceChart'
 
 export default function SalaryDistribution() {
   const dispatch = useDispatch()
@@ -289,6 +290,9 @@ export default function SalaryDistribution() {
 
       {/* ── Summary view ── */}
       {showSummary && <SummaryTable distributions={distributions} />}
+
+      {/* ── Egg price chart ── */}
+      <EggPriceChart />
 
       {/* ── Editor view ── */}
       {!showSummary && (
