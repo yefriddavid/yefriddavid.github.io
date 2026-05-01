@@ -3,6 +3,10 @@ import React from 'react'
 const DomoticaHome = React.lazy(() => import('./views/domotica/Home'))
 const SolarPanel = React.lazy(() => import('./views/domotica/SolarPanel/SolarPanel'))
 const Devices = React.lazy(() => import('./views/domotica/Devices/Devices'))
+const SerialConsole = React.lazy(() => import('./views/domotica/SerialConsole/SerialConsole'))
+const CommandDictionary = React.lazy(
+  () => import('./views/domotica/SerialConsole/CommandDictionary'),
+)
 
 const domoticaRoutes = [
   {
@@ -19,6 +23,16 @@ const domoticaRoutes = [
     path: '/domotica/devices',
     name: 'Dispositivos',
     element: Devices,
+  },
+  {
+    path: '/domotica/serial',
+    name: 'Consola Serial',
+    element: SerialConsole,
+  },
+  {
+    path: '/domotica/commands',
+    name: 'Diccionario de Comandos',
+    element: CommandDictionary,
   },
 ]
 

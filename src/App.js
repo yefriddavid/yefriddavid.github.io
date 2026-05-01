@@ -15,7 +15,6 @@ import './i18n'
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const DomoticaLayout = React.lazy(() => import('./layout/DomoticaLayout'))
 const TaxisLayout = React.lazy(() => import('./layout/TaxisLayout'))
-const MyToolsLayout = React.lazy(() => import('./layout/MyToolsLayout'))
 
 // Standalone pages (no app layout)
 // const GenerarContrato = React.lazy(() => import('./views/Contratos_REYDAVID/contratos/GenerarContrato'))
@@ -134,7 +133,6 @@ const App = () => {
           <Route path="/contratos/generar" element={<GenerarContrato />} />
           <Route path="/domotica/*" element={<DomoticaLayout />} />
           <Route path="/taxis/*" element={<TaxisLayout />} />
-          <Route path="/mytools/*" element={<MyToolsLayout />} />
           <Route path="/*" element={<DefaultLayout />} />
         </Routes>
       </Suspense>

@@ -1,6 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilHome, cilLightbulb, cilSun } from '@coreui/icons'
+import { cilHome, cilLightbulb, cilSun, cilTerminal, cilBook } from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
 const getDomoticaNav = () => [
@@ -21,6 +21,18 @@ const getDomoticaNav = () => [
     name: 'Panel Solar',
     to: '/domotica/solar',
     icon: <CIcon icon={cilSun} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Consola Serial',
+    to: '/domotica/serial',
+    icon: <CIcon icon={cilTerminal} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Diccionario AT',
+    to: '/domotica/commands',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
   },
 ]
 

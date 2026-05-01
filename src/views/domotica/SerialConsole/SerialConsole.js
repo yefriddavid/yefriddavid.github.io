@@ -1,16 +1,29 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import {
-  Column, FilterRow, SearchPanel, GroupPanel, Grouping,
-  MasterDetail, Paging, Pager, HeaderFilter,
+  Column,
+  FilterRow,
+  SearchPanel,
+  GroupPanel,
+  Grouping,
+  MasterDetail,
+  Paging,
+  Pager,
+  HeaderFilter,
 } from 'devextreme-react/data-grid'
-import StandardGrid from '../../components/shared/StandardGrid/Index'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import CIcon from '@coreui/icons-react'
 import {
-  cilLink, cilLinkBroken, cilSend, cilTrash, cilPlus,
-  cilX, cilReload, cilBook,
+  cilLink,
+  cilLinkBroken,
+  cilSend,
+  cilTrash,
+  cilPlus,
+  cilX,
+  cilReload,
+  cilBook,
 } from '@coreui/icons'
 import { CSpinner } from '@coreui/react'
-import AppModal from '../../components/shared/AppModal'
+import AppModal from 'src/components/shared/AppModal'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
 import './SerialConsole.scss'
 
@@ -18,21 +31,21 @@ const BAUD_RATES = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400,
 
 const LINE_ENDINGS = [
   { label: 'CR+LF', value: '\r\n' },
-  { label: 'LF',    value: '\n' },
-  { label: 'CR',    value: '\r' },
-  { label: 'None',  value: '' },
+  { label: 'LF', value: '\n' },
+  { label: 'CR', value: '\r' },
+  { label: 'None', value: '' },
 ]
 
 const INITIAL_COMMANDS = [
-  { id: 1, label: 'GPS Status',    command: 'AT$TTGPSTT?' },
-  { id: 2, label: 'GPS Query',     command: 'AT$TTGPSQRY=1F,1' },
-  { id: 3, label: 'Serial Nro',    command: 'AT$TTSRN?' },
-  { id: 4, label: 'ICCID',         command: 'AT$TTICCID?' },
-  { id: 5, label: 'Device ID',     command: 'AT$TTDEVID?' },
-  { id: 6, label: 'Odómetro',      command: 'AT$TTODOM?' },
+  { id: 1, label: 'GPS Status', command: 'AT$TTGPSTT?' },
+  { id: 2, label: 'GPS Query', command: 'AT$TTGPSQRY=1F,1' },
+  { id: 3, label: 'Serial Nro', command: 'AT$TTSRN?' },
+  { id: 4, label: 'ICCID', command: 'AT$TTICCID?' },
+  { id: 5, label: 'Device ID', command: 'AT$TTDEVID?' },
+  { id: 6, label: 'Odómetro', command: 'AT$TTODOM?' },
   { id: 7, label: 'Reportar Pos.', command: 'AT$TTRN' },
-  { id: 8, label: 'Red IP/DNS',    command: 'AT$TTNETIP?' },
-  { id: 9, label: 'Reset',         command: 'AT$RESET' },
+  { id: 8, label: 'Red IP/DNS', command: 'AT$TTNETIP?' },
+  { id: 9, label: 'Reset', command: 'AT$RESET' },
 ]
 
 let nextId = INITIAL_COMMANDS.length + 1
@@ -109,9 +122,11 @@ const SerialConsole = () => {
 
   const addLog = useCallback((type, text) => {
     const time = new Date().toLocaleTimeString('es-CO', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     })
-    setLog(prev => [...prev, { id: Date.now() + Math.random(), type, text, time }])
+    setLog((prev) => [...prev, { id: Date.now() + Math.random(), type, text, time }])
   }, [])
 
   useEffect(() => {
@@ -156,7 +171,10 @@ const SerialConsole = () => {
       try {
         while (true) {
           const { value, done } = await reader.read()
-          if (done) { keepGoing = false; break }
+          if (done) {
+            keepGoing = false
+            break
+          }
           addLog('rx', decoder.decode(value))
         }
       } catch (err) {
@@ -174,7 +192,10 @@ const SerialConsole = () => {
 
   const connect = async () => {
     const port = ports[selectedIndex]
-    if (!port) { addLog('error', 'Selecciona un puerto primero.'); return }
+    if (!port) {
+      addLog('error', 'Selecciona un puerto primero.')
+      return
+    }
     setIsConnecting(true)
     try {
       await port.open({ baudRate })
@@ -203,22 +224,25 @@ const SerialConsole = () => {
     }
   }
 
-  const sendText = useCallback(async (text) => {
-    if (!isConnected || !portRef.current?.writable) {
-      addLog('error', 'No hay conexión activa.')
-      return false
-    }
-    try {
-      const writer = portRef.current.writable.getWriter()
-      await writer.write(new TextEncoder().encode(text + lineEnding))
-      writer.releaseLock()
-      addLog('tx', text)
-      return true
-    } catch (err) {
-      addLog('error', `Error al enviar: ${err.message}`)
-      return false
-    }
-  }, [isConnected, lineEnding, addLog])
+  const sendText = useCallback(
+    async (text) => {
+      if (!isConnected || !portRef.current?.writable) {
+        addLog('error', 'No hay conexión activa.')
+        return false
+      }
+      try {
+        const writer = portRef.current.writable.getWriter()
+        await writer.write(new TextEncoder().encode(text + lineEnding))
+        writer.releaseLock()
+        addLog('tx', text)
+        return true
+      } catch (err) {
+        addLog('error', `Error al enviar: ${err.message}`)
+        return false
+      }
+    },
+    [isConnected, lineEnding, addLog],
+  )
 
   const handleSend = () => {
     if (!input.trim()) return
@@ -228,7 +252,10 @@ const SerialConsole = () => {
 
   const addCmd = () => {
     if (!newLabel.trim() || !newCommand.trim()) return
-    setCommands(prev => [...prev, { id: nextId++, label: newLabel.trim(), command: newCommand.trim() }])
+    setCommands((prev) => [
+      ...prev,
+      { id: nextId++, label: newLabel.trim(), command: newCommand.trim() },
+    ])
     setNewLabel('')
     setNewCommand('')
     setShowAddCmd(false)
@@ -261,7 +288,11 @@ const SerialConsole = () => {
       <button
         className={`sc-dict__exec-btn ${needsParams ? 'sc-dict__exec-btn--params' : ''}`}
         onClick={() => handleDictExecute(data)}
-        title={needsParams ? `Carga en la barra de entrada para completar parámetros:\n${executable}` : `Enviar: ${executable}`}
+        title={
+          needsParams
+            ? `Carga en la barra de entrada para completar parámetros:\n${executable}`
+            : `Enviar: ${executable}`
+        }
       >
         {needsParams ? '✎ Editar' : '▶ Ejecutar'}
       </button>
@@ -269,25 +300,32 @@ const SerialConsole = () => {
   }
 
   const categoryCell = ({ value }) => (
-    <span className={`sc-cat sc-cat--${(value ?? '').toLowerCase().replace(/\s+/g, '-')}`}>{value}</span>
+    <span className={`sc-cat sc-cat--${(value ?? '').toLowerCase().replace(/\s+/g, '-')}`}>
+      {value}
+    </span>
   )
 
-  const codeCell = ({ value }) => value && value !== 'N/A'
-    ? <code className="sc-code">{value}</code>
-    : <span className="sc-na">—</span>
+  const codeCell = ({ value }) =>
+    value && value !== 'N/A' ? (
+      <code className="sc-code">{value}</code>
+    ) : (
+      <span className="sc-na">—</span>
+    )
 
   if (!isSupported) {
     return (
       <div className="sc-unsupported">
         <p className="sc-unsupported__title">Web Serial API no disponible</p>
-        <p>Usa <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong> para acceder al puerto serial.</p>
+        <p>
+          Usa <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong> para acceder al
+          puerto serial.
+        </p>
       </div>
     )
   }
 
   return (
     <div className="sc">
-
       {/* ── Dictionary modal ── */}
       <AppModal
         visible={showDict}
@@ -318,11 +356,27 @@ const SerialConsole = () => {
           <Paging defaultPageSize={15} />
           <Pager showPageSizeSelector allowedPageSizes={[10, 15, 30, 50]} showInfo />
 
-          <Column dataField="category" caption="Categoría" width={120} cellRender={categoryCell} groupIndex={0} />
-          <Column dataField="command"  caption="Comando"   width={160} cellRender={({ value }) => <code className="sc-code">{value}</code>} />
-          <Column dataField="name"     caption="Nombre"    minWidth={120} />
-          <Column dataField="writeFormat" caption="Write Format" width={200} cellRender={codeCell} />
-          <Column dataField="readFormat"  caption="Read Format"  width={160} cellRender={codeCell} />
+          <Column
+            dataField="category"
+            caption="Categoría"
+            width={120}
+            cellRender={categoryCell}
+            groupIndex={0}
+          />
+          <Column
+            dataField="command"
+            caption="Comando"
+            width={160}
+            cellRender={({ value }) => <code className="sc-code">{value}</code>}
+          />
+          <Column dataField="name" caption="Nombre" minWidth={120} />
+          <Column
+            dataField="writeFormat"
+            caption="Write Format"
+            width={200}
+            cellRender={codeCell}
+          />
+          <Column dataField="readFormat" caption="Read Format" width={160} cellRender={codeCell} />
           <Column
             caption="Acción"
             width={100}
@@ -343,18 +397,33 @@ const SerialConsole = () => {
           <select
             className="sc__select"
             value={selectedIndex}
-            onChange={e => setSelectedIndex(Number(e.target.value))}
+            onChange={(e) => setSelectedIndex(Number(e.target.value))}
             disabled={isConnected}
           >
-            {ports.length === 0
-              ? <option value={-1}>Sin puertos disponibles</option>
-              : ports.map((p, i) => <option key={i} value={i}>{portLabel(p, i)}</option>)
-            }
+            {ports.length === 0 ? (
+              <option value={-1}>Sin puertos disponibles</option>
+            ) : (
+              ports.map((p, i) => (
+                <option key={i} value={i}>
+                  {portLabel(p, i)}
+                </option>
+              ))
+            )}
           </select>
-          <button className="sc__btn sc__btn--ghost" onClick={requestPort} disabled={isConnected} title="Agregar puerto">
+          <button
+            className="sc__btn sc__btn--ghost"
+            onClick={requestPort}
+            disabled={isConnected}
+            title="Agregar puerto"
+          >
             <CIcon icon={cilPlus} size="sm" />
           </button>
-          <button className="sc__btn sc__btn--ghost" onClick={loadPorts} disabled={isConnected} title="Refrescar">
+          <button
+            className="sc__btn sc__btn--ghost"
+            onClick={loadPorts}
+            disabled={isConnected}
+            title="Refrescar"
+          >
             <CIcon icon={cilReload} size="sm" />
           </button>
         </div>
@@ -363,17 +432,25 @@ const SerialConsole = () => {
           <select
             className="sc__select sc__select--sm"
             value={baudRate}
-            onChange={e => setBaudRate(Number(e.target.value))}
+            onChange={(e) => setBaudRate(Number(e.target.value))}
             disabled={isConnected}
           >
-            {BAUD_RATES.map(r => <option key={r} value={r}>{r}</option>)}
+            {BAUD_RATES.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
           </select>
           <select
             className="sc__select sc__select--sm"
             value={lineEnding}
-            onChange={e => setLineEnding(e.target.value)}
+            onChange={(e) => setLineEnding(e.target.value)}
           >
-            {LINE_ENDINGS.map(le => <option key={le.label} value={le.value}>{le.label}</option>)}
+            {LINE_ENDINGS.map((le) => (
+              <option key={le.label} value={le.value}>
+                {le.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -381,21 +458,27 @@ const SerialConsole = () => {
           <span className={`sc__badge sc__badge--${isConnected ? 'on' : 'off'}`}>
             {isConnected ? '● Conectado' : '○ Desconectado'}
           </span>
-          {isConnected
-            ? <button className="sc__btn sc__btn--danger" onClick={disconnect}>
-                <CIcon icon={cilLinkBroken} size="sm" /> Desconectar
-              </button>
-            : <button
-                className="sc__btn sc__btn--primary"
-                onClick={connect}
-                disabled={isConnecting || ports.length === 0}
-              >
-                {isConnecting
-                  ? <><CSpinner size="sm" /> Conectando…</>
-                  : <><CIcon icon={cilLink} size="sm" /> Conectar</>
-                }
-              </button>
-          }
+          {isConnected ? (
+            <button className="sc__btn sc__btn--danger" onClick={disconnect}>
+              <CIcon icon={cilLinkBroken} size="sm" /> Desconectar
+            </button>
+          ) : (
+            <button
+              className="sc__btn sc__btn--primary"
+              onClick={connect}
+              disabled={isConnecting || ports.length === 0}
+            >
+              {isConnecting ? (
+                <>
+                  <CSpinner size="sm" /> Conectando…
+                </>
+              ) : (
+                <>
+                  <CIcon icon={cilLink} size="sm" /> Conectar
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -407,7 +490,7 @@ const SerialConsole = () => {
 
         <div className="sc__palette-divider" />
 
-        {commands.map(cmd => (
+        {commands.map((cmd) => (
           <div key={cmd.id} className="sc__cmd">
             <button
               className="sc__cmd-btn"
@@ -417,7 +500,10 @@ const SerialConsole = () => {
             >
               {cmd.label}
             </button>
-            <button className="sc__cmd-remove" onClick={() => setCommands(p => p.filter(c => c.id !== cmd.id))}>
+            <button
+              className="sc__cmd-remove"
+              onClick={() => setCommands((p) => p.filter((c) => c.id !== cmd.id))}
+            >
               <CIcon icon={cilX} size="sm" />
             </button>
           </div>
@@ -425,16 +511,34 @@ const SerialConsole = () => {
 
         {showAddCmd ? (
           <div className="sc__add-cmd">
-            <input className="sc__mini-input" placeholder="Nombre" value={newLabel}
-              onChange={e => setNewLabel(e.target.value)} />
-            <input className="sc__mini-input" placeholder="Comando" value={newCommand}
-              onChange={e => setNewCommand(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addCmd()} />
-            <button className="sc__btn sc__btn--primary sc__btn--xs" onClick={addCmd}>OK</button>
-            <button className="sc__btn sc__btn--ghost sc__btn--xs" onClick={() => setShowAddCmd(false)}>✕</button>
+            <input
+              className="sc__mini-input"
+              placeholder="Nombre"
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+            />
+            <input
+              className="sc__mini-input"
+              placeholder="Comando"
+              value={newCommand}
+              onChange={(e) => setNewCommand(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addCmd()}
+            />
+            <button className="sc__btn sc__btn--primary sc__btn--xs" onClick={addCmd}>
+              OK
+            </button>
+            <button
+              className="sc__btn sc__btn--ghost sc__btn--xs"
+              onClick={() => setShowAddCmd(false)}
+            >
+              ✕
+            </button>
           </div>
         ) : (
-          <button className="sc__btn sc__btn--ghost sc__btn--add" onClick={() => setShowAddCmd(true)}>
+          <button
+            className="sc__btn sc__btn--ghost sc__btn--add"
+            onClick={() => setShowAddCmd(true)}
+          >
             <CIcon icon={cilPlus} size="sm" /> Nuevo
           </button>
         )}
@@ -450,13 +554,21 @@ const SerialConsole = () => {
         </div>
         <div className="sc__log">
           {log.length === 0 && (
-            <span className="sc__log-empty">Conecta un dispositivo y envía un comando para ver la respuesta.</span>
+            <span className="sc__log-empty">
+              Conecta un dispositivo y envía un comando para ver la respuesta.
+            </span>
           )}
-          {log.map(entry => (
+          {log.map((entry) => (
             <div key={entry.id} className={`sc__line sc__line--${entry.type}`}>
               <span className="sc__line-time">{entry.time}</span>
               <span className="sc__line-prefix">
-                {entry.type === 'tx' ? '►' : entry.type === 'rx' ? '◄' : entry.type === 'error' ? '✕' : 'ℹ'}
+                {entry.type === 'tx'
+                  ? '►'
+                  : entry.type === 'rx'
+                    ? '◄'
+                    : entry.type === 'error'
+                      ? '✕'
+                      : 'ℹ'}
               </span>
               <span className="sc__line-text">{entry.text}</span>
             </div>
@@ -470,10 +582,12 @@ const SerialConsole = () => {
         <input
           ref={inputRef}
           className="sc__input"
-          placeholder={isConnected ? 'Escribe un comando…' : 'Conecta el dispositivo para enviar comandos'}
+          placeholder={
+            isConnected ? 'Escribe un comando…' : 'Conecta el dispositivo para enviar comandos'
+          }
           value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           disabled={!isConnected}
         />
         <button
