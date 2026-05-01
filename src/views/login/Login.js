@@ -43,17 +43,15 @@ const IconLock = () => (
 
 const IconCash = () => (
   <svg width="52" height="28" viewBox="0 0 52 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="1" y="1" width="50" height="26" rx="5" fill="#000"/>
-    <rect x="1" y="1" width="50" height="26" rx="5" stroke="#000" strokeWidth="1.5"/>
     <text
-      x="26" y="19"
+      x="26" y="21"
       textAnchor="middle"
-      fontSize="14"
+      fontSize="20"
       fontWeight="900"
       fontFamily="Arial Black, Arial, sans-serif"
-      fill="#ffc107"
-      letterSpacing="3"
-    >TAXI</text>
+      fill="#000"
+      letterSpacing="2"
+    >ADM</text>
   </svg>
 )
 

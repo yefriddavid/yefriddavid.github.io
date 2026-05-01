@@ -116,23 +116,11 @@ $domotica-accent: #52b788;
       inset: 0;
       pointer-events: none;
       background-image:
-        repeating-linear-gradient(
-          -45deg,
-          rgba(255, 193, 7, 0.65) 0px,
-          rgba(255, 193, 7, 0.65) 4px,
-          transparent 4px,
-          transparent 10px
-        ),
-        repeating-linear-gradient(
-          -45deg,
-          rgba(255, 193, 7, 0.65) 0px,
-          rgba(255, 193, 7, 0.65) 4px,
-          transparent 4px,
-          transparent 10px
-        );
-      background-size: 100% 10px, 100% 10px;
+        repeating-conic-gradient(rgba(255, 193, 7, 0.95) 0% 25%, rgba(0, 0, 0, 0.8) 0% 50%),
+        repeating-conic-gradient(rgba(255, 193, 7, 0.95) 0% 25%, rgba(0, 0, 0, 0.8) 0% 50%);
+      background-size: 10px 10px, 10px 10px;
       background-position: 0 0, 0 100%;
-      background-repeat: no-repeat;
+      background-repeat: repeat-x, repeat-x;
     }
   }
 
@@ -172,6 +160,21 @@ $domotica-accent: #52b788;
     &:hover {
       color: $finance-accent;
       background: rgba($finance-accent, 0.07);
+    }
+  }
+
+  .sidebar-header {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='56'%3E%3Ctext x='8' y='26' fill='%235b9bd5' font-size='18' font-family='sans-serif' opacity='0.75' transform='rotate(-20 8 26)'%3E7%3C/text%3E%3Ctext x='32' y='48' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(12 32 48)'%3E%2B%3C/text%3E%3Ctext x='55' y='18' fill='%235b9bd5' font-size='22' font-family='sans-serif' opacity='0.65' transform='rotate(-8 55 18)'%3E3%3C/text%3E%3Ctext x='82' y='44' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.7' transform='rotate(18 82 44)'%3E%C3%B7%3C/text%3E%3Ctext x='105' y='28' fill='%235b9bd5' font-size='19' font-family='sans-serif' opacity='0.75' transform='rotate(-14 105 28)'%3E9%3C/text%3E%3Ctext x='130' y='14' fill='%235b9bd5' font-size='15' font-family='sans-serif' opacity='0.6' transform='rotate(-22 130 14)'%3E%C3%97%3C/text%3E%3Ctext x='152' y='50' fill='%235b9bd5' font-size='17' font-family='sans-serif' opacity='0.7' transform='rotate(10 152 50)'%3E1%3C/text%3E%3Ctext x='172' y='24' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.65'%3E%E2%88%92%3C/text%3E%3Ctext x='192' y='40' fill='%235b9bd5' font-size='20' font-family='sans-serif' opacity='0.7' transform='rotate(16 192 40)'%3E5%3C/text%3E%3Ctext x='218' y='16' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(-18 218 16)'%3E%25%3C/text%3E%3Ctext x='238' y='46' fill='%235b9bd5' font-size='18' font-family='sans-serif' opacity='0.75' transform='rotate(14 238 46)'%3E2%3C/text%3E%3Ctext x='258' y='22' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.65' transform='rotate(-12 258 22)'%3E%24%3C/text%3E%3Ctext x='278' y='44' fill='%235b9bd5' font-size='17' font-family='sans-serif' opacity='0.7' transform='rotate(8 278 44)'%3E8%3C/text%3E%3Ctext x='298' y='18' fill='%235b9bd5' font-size='15' font-family='sans-serif' opacity='0.6' transform='rotate(-16 298 18)'%3E%2B%3C/text%3E%3Ctext x='318' y='38' fill='%235b9bd5' font-size='21' font-family='sans-serif' opacity='0.7' transform='rotate(22 318 38)'%3E4%3C/text%3E%3Ctext x='340' y='12' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(-24 340 12)'%3E%CE%A3%3C/text%3E%3Ctext x='358' y='32' fill='%235b9bd5' font-size='19' font-family='sans-serif' opacity='0.75' transform='rotate(-6 358 32)'%3E6%3C/text%3E%3Ctext x='378' y='50' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.65' transform='rotate(20 378 50)'%3E%C3%B7%3C/text%3E%3Ctext x='392' y='22' fill='%235b9bd5' font-size='17' font-family='sans-serif' opacity='0.7' transform='rotate(-18 392 22)'%3E0%3C/text%3E%3Ctext x='20' y='50' fill='%235b9bd5' font-size='15' font-family='sans-serif' opacity='0.65' transform='rotate(8 20 50)'%3E%2B%3C/text%3E%3Ctext x='45' y='30' fill='%235b9bd5' font-size='12' font-family='sans-serif' opacity='0.6' transform='rotate(-15 45 30)'%3E6%3C/text%3E%3Ctext x='70' y='52' fill='%235b9bd5' font-size='16' font-family='sans-serif' opacity='0.7' transform='rotate(5 70 52)'%3E=%3C/text%3E%3Ctext x='95' y='10' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.6' transform='rotate(-10 95 10)'%3E4%3C/text%3E%3Ctext x='120' y='38' fill='%235b9bd5' font-size='18' font-family='sans-serif' opacity='0.65' transform='rotate(20 120 38)'%3E%C3%97%3C/text%3E%3Ctext x='142' y='20' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(-8 142 20)'%3E8%3C/text%3E%3Ctext x='165' y='50' fill='%235b9bd5' font-size='16' font-family='sans-serif' opacity='0.7' transform='rotate(15 165 50)'%3E%C3%B7%3C/text%3E%3Ctext x='185' y='12' fill='%235b9bd5' font-size='13' font-family='sans-serif' opacity='0.6' transform='rotate(-20 185 12)'%3E2%3C/text%3E%3Ctext x='210' y='38' fill='%235b9bd5' font-size='17' font-family='sans-serif' opacity='0.65' transform='rotate(12 210 38)'%3E%CE%A3%3C/text%3E%3Ctext x='228' y='24' fill='%235b9bd5' font-size='12' font-family='sans-serif' opacity='0.6' transform='rotate(-14 228 24)'%3E0%3C/text%3E%3Ctext x='248' y='50' fill='%235b9bd5' font-size='15' font-family='sans-serif' opacity='0.7' transform='rotate(18 248 50)'%3E%2B%3C/text%3E%3Ctext x='268' y='10' fill='%235b9bd5' font-size='16' font-family='sans-serif' opacity='0.65' transform='rotate(-8 268 10)'%3E5%3C/text%3E%3Ctext x='288' y='30' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(14 288 30)'%3E%E2%88%92%3C/text%3E%3Ctext x='308' y='50' fill='%235b9bd5' font-size='18' font-family='sans-serif' opacity='0.75' transform='rotate(-20 308 50)'%3E7%3C/text%3E%3Ctext x='328' y='24' fill='%235b9bd5' font-size='12' font-family='sans-serif' opacity='0.6' transform='rotate(10 328 24)'%3E%25%3C/text%3E%3Ctext x='348' y='46' fill='%235b9bd5' font-size='16' font-family='sans-serif' opacity='0.7' transform='rotate(-6 348 46)'%3E3%3C/text%3E%3Ctext x='368' y='14' fill='%235b9bd5' font-size='14' font-family='sans-serif' opacity='0.6' transform='rotate(22 368 14)'%3E%24%3C/text%3E%3Ctext x='385' y='38' fill='%235b9bd5' font-size='18' font-family='sans-serif' opacity='0.65' transform='rotate(-12 385 38)'%3E1%3C/text%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
     }
   }
 }
