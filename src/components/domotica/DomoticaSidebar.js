@@ -44,7 +44,7 @@ const DomoticaSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <div className="d-flex align-items-center gap-2">
-          <span style={{ color: '#00b4d8', flexShrink: 0, display: 'flex' }}><DomoticaIcon size={20} /></span>
+          <span style={{ color: '#52b788', flexShrink: 0, display: 'flex' }}><DomoticaIcon size={20} /></span>
           <h3 className="mb-0" style={{ fontSize: '1.2rem' }}>Domótica</h3>
         </div>
         <CSidebarBrand to="/domotica/home">

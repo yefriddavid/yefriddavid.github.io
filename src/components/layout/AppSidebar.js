@@ -52,7 +52,7 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <div className="d-flex align-items-center gap-2">
-          <span style={{ color: '#10b981', flexShrink: 0, display: 'flex' }}><FinanceIcon size={20} /></span>
+          <span style={{ color: '#5b9bd5', flexShrink: 0, display: 'flex' }}><FinanceIcon size={20} /></span>
           <h3 className="mb-0" style={{ fontSize: '1.2rem' }}>
             <BrandName />
           </h3>
