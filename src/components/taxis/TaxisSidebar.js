@@ -33,7 +33,7 @@ const TaxisSidebar = () => {
 
   return (
     <CSidebar
-      className="border-end"
+      className="border-end sidebar--taxis"
       colorScheme="dark"
       position="fixed"
       unfoldable={unfoldable}

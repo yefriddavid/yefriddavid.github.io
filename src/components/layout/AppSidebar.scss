@@ -1,6 +1,11 @@
 @import '../../scss/variables';
 @import '../../scss/custom'; // To get access to app-theme mixin if I want to reuse it, but it might be better to just move the styles.
 
+// ── App accent colors (change here to retheme each sidebar) ──────────
+$taxis-accent:    #ffc107;
+$finance-accent:  #10b981;
+$domotica-accent: #00b4d8;
+
 .sidebar {
   [data-app-theme='yellow'] & {
     @include app-theme-sidebar(#000000, #ffc107);
@@ -11,6 +16,7 @@
     @include app-theme-sidebar(#1e3a5f, #10b981);
     .nav-link.active { background-color: #3a4151 !important; }
   }
+
 
   @media (max-width: 991.98px) {
     position: fixed !important;
@@ -91,6 +97,43 @@
     i,
     svg {
       margin: 0;
+    }
+  }
+}
+
+// App-specific sidebars — must come last to win cascade over data-app-theme rules
+.sidebar.sidebar--taxis {
+  @include app-theme-sidebar(#000000, $taxis-accent);
+  .nav-link.active { background-color: #3a4151 !important; }
+
+  .sidebar-footer-btn {
+    &:hover {
+      color: $taxis-accent;
+      background: rgba($taxis-accent, 0.07);
+    }
+  }
+}
+
+.sidebar.sidebar--finance {
+  @include app-theme-sidebar(#000000, $finance-accent);
+  .nav-link.active { background-color: #3a4151 !important; }
+
+  .sidebar-footer-btn {
+    &:hover {
+      color: $finance-accent;
+      background: rgba($finance-accent, 0.07);
+    }
+  }
+}
+
+.sidebar.sidebar--domotica {
+  @include app-theme-sidebar(#000000, $domotica-accent);
+  .nav-link.active { background-color: #3a4151 !important; }
+
+  .sidebar-footer-btn {
+    &:hover {
+      color: $domotica-accent;
+      background: rgba($domotica-accent, 0.07);
     }
   }
 }

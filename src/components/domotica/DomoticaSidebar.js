@@ -33,7 +33,7 @@ const DomoticaSidebar = () => {
 
   return (
     <CSidebar
-      className="border-end"
+      className="border-end sidebar--domotica"
       colorScheme="dark"
       position="fixed"
       unfoldable={unfoldable}
