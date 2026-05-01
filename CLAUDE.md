@@ -74,6 +74,15 @@ const snap = await firestoreCall(() => getDocs(q))
 - Retries transient errors (`unavailable`, `deadline-exceeded`) with exponential backoff
 - Normalizes all Firebase error codes to Spanish user messages
 
+### File / Image Storage — NEVER use Firebase Storage
+
+**Firebase Storage is forbidden in this project.** All images and file attachments are stored as **base64 strings directly in Firestore documents**.
+
+- Images → compressed to JPEG base64 via `compressImage()` in `src/utils/fileHelpers.js`
+- PDFs → all pages rendered to a single concatenated JPEG base64 via `pdfToSingleImage()` in `src/utils/fileHelpers.js`
+- The resulting base64 string is saved directly as a field in the Firestore document (e.g. `image`, `file`)
+- ❌ Never import or use `firebase/storage`, `getStorage`, `uploadBytes`, `getDownloadURL`, or any Firebase Storage API
+
 ### Backend / API
 Dual backend:
 1. **Google Apps Script** (primary) — POST requests with FormData (`action`, `token`, params). Base URL configured in `src/services/providers/api/utilApi.js`. A fresh Firebase ID token is injected automatically into every request via an axios request interceptor. On 401, the interceptor forces a token refresh and retries once.

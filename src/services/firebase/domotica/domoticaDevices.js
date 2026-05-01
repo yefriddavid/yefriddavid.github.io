@@ -25,6 +25,7 @@ export const fetchDevices = async () => {
       status: data.status ?? null,
       ipAddress: data.ipAddress ?? null,
       notes: data.notes ?? null,
+      internalId: data.internalId ?? null,
     }
   })
 }
@@ -38,6 +39,7 @@ export const createDevice = async (data) => {
       status: data.status || null,
       ipAddress: data.ipAddress || null,
       notes: data.notes || null,
+      internalId: data.internalId || null,
       createdAt: serverTimestamp(),
     }),
   )
@@ -53,6 +55,7 @@ export const updateDevice = async (id, data) => {
       status: data.status || null,
       ipAddress: data.ipAddress || null,
       notes: data.notes || null,
+      internalId: data.internalId || null,
     }),
   )
 }

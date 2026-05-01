@@ -15,8 +15,7 @@ function* updateCommand({ payload }) {
   try {
     const { id, ...fields } = payload
     yield call(service.updateCommand, id, fields)
-    yield put(actions.updateSuccess({ id: payload.id }))
-    yield put(actions.fetchRequest())
+    yield put(actions.updateSuccess({ id }))
   } catch (e) {
     yield put(actions.updateError({ id: payload.id, previous: !payload.read }))
   }

@@ -1,27 +1,30 @@
-import { db, COL_DOMOTICA_COMMAND } from '../settings'
-import { firestoreCall } from '../firebaseClient'
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore'
+import { ref, get, update } from 'firebase/database'
+import { rtdb } from '../settings'
 
-const mapDoc = (d) => {
-  const data = d.data()
-  // Serializar fechas para evitar errores en Redux (non-serializable values)
-  return {
-    ...data,
-    id: d.id,
-    timestamp: data.timestamp?.toDate?.()?.toISOString() ?? data.timestamp ?? null,
-    updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
-  }
+const PATH = 'solar/commands'
+
+// UI key → RTDB node name
+const UI_TO_RTDB = {
+  voltage_read: 'read_voltage',
+  current_read: 'read_current',
 }
 
+const RTDB_TO_UI = Object.fromEntries(Object.entries(UI_TO_RTDB).map(([k, v]) => [v, k]))
+
 export const fetchCommands = async () => {
-  const snap = await firestoreCall(() => getDocs(collection(db, COL_DOMOTICA_COMMAND)))
+  const snap = await get(ref(rtdb, PATH))
+  const data = snap.val() ?? {}
   const result = {}
-  snap.docs.forEach((d) => {
-    result[d.id] = mapDoc(d)
-  })
+  for (const [rtdbKey, uiKey] of Object.entries(RTDB_TO_UI)) {
+    if (data[rtdbKey] != null) {
+      result[uiKey] = { id: uiKey, ...data[rtdbKey] }
+    }
+  }
   return result
 }
 
 export const updateCommand = async (id, fields) => {
-  await firestoreCall(() => setDoc(doc(db, COL_DOMOTICA_COMMAND, id), fields, { merge: true }))
+  const rtdbKey = UI_TO_RTDB[id]
+  if (!rtdbKey) throw new Error(`Unknown command id: ${id}`)
+  await update(ref(rtdb, `${PATH}/${rtdbKey}`), fields)
 }

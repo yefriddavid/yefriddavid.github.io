@@ -34,6 +34,7 @@ import sagaDomoticaTransactions from './domotica/domoticaTransactionSagas'
 import sagaDomoticaCurrent from './domotica/domoticaCurrentSagas'
 import sagaDomoticaDevices from './domotica/domoticaDeviceSagas'
 import sagaDomoticaCommands from './domotica/domoticaCommandSagas'
+import sagaDomoticaSolarBattery from './domotica/domoticaSolarBatterySagas'
 
 export default function* rootSagas() {
   yield all([
@@ -72,5 +73,6 @@ export default function* rootSagas() {
     sagaDomoticaCurrent(),
     sagaDomoticaDevices(),
     sagaDomoticaCommands(),
+    sagaDomoticaSolarBattery(),
   ])
 }
