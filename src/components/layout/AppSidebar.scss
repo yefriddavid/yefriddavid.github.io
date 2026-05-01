@@ -106,11 +106,61 @@ $domotica-accent: #52b788;
   @include app-theme-sidebar(#000000, $taxis-accent);
   .nav-link.active { background-color: #3a4151 !important; }
 
+  .sidebar-header {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        repeating-linear-gradient(
+          -45deg,
+          rgba(255, 193, 7, 0.32) 0px,
+          rgba(255, 193, 7, 0.32) 4px,
+          transparent 4px,
+          transparent 10px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(255, 193, 7, 0.32) 0px,
+          rgba(255, 193, 7, 0.32) 4px,
+          transparent 4px,
+          transparent 10px
+        );
+      background-size: 100% 10px, 100% 10px;
+      background-position: 0 0, 0 100%;
+      background-repeat: no-repeat;
+    }
+  }
+
   .sidebar-footer-btn {
     &:hover {
       color: $taxis-accent;
       background: rgba($taxis-accent, 0.07);
     }
+  }
+
+  .sidebar-header h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem !important;
+    letter-spacing: 0.08em;
+  }
+
+  .nav-link {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+
+  .sidebar-footer-btn {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
   }
 }
 
@@ -130,10 +180,48 @@ $domotica-accent: #52b788;
   @include app-theme-sidebar(#000000, $domotica-accent);
   .nav-link.active { background-color: #3a4151 !important; }
 
+  // Fuentes tech para domotica
+  .sidebar-header h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: 1.55rem !important;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-link {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
+  .sidebar-footer-btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
   .sidebar-footer-btn {
     &:hover {
       color: $domotica-accent;
       background: rgba($domotica-accent, 0.07);
+    }
+  }
+
+  .sidebar-header {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.35;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='56' fill='none'%3E%3Cline x1='0' y1='14' x2='60' y2='14' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='60' y1='14' x2='60' y2='28' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='60' y1='28' x2='110' y2='28' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='110' y1='28' x2='110' y2='48' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='110' y1='48' x2='80' y2='48' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='0' y1='40' x2='40' y2='40' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='40' y1='40' x2='40' y2='56' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='80' y1='48' x2='80' y2='56' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='0' y1='6' x2='30' y2='6' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='30' y1='6' x2='30' y2='20' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='30' y1='20' x2='50' y2='20' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='190' y1='42' x2='256' y2='42' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='190' y1='42' x2='190' y2='20' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='190' y1='20' x2='150' y2='20' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='150' y1='20' x2='150' y2='8' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='150' y1='8' x2='120' y2='8' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='220' y1='10' x2='256' y2='10' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='220' y1='10' x2='220' y2='32' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='220' y1='32' x2='240' y2='32' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='240' y1='32' x2='240' y2='56' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='170' y1='0' x2='170' y2='14' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='170' y1='14' x2='200' y2='14' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='200' y1='14' x2='200' y2='0' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='130' y1='36' x2='130' y2='56' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='130' y1='36' x2='160' y2='36' stroke='%2352b788' stroke-width='1'/%3E%3Cline x1='160' y1='36' x2='160' y2='56' stroke='%2352b788' stroke-width='1'/%3E%3Ccircle cx='60' cy='14' r='2' fill='%2352b788'/%3E%3Ccircle cx='60' cy='28' r='2' fill='%2352b788'/%3E%3Ccircle cx='110' cy='28' r='2' fill='%2352b788'/%3E%3Ccircle cx='110' cy='48' r='2' fill='%2352b788'/%3E%3Ccircle cx='80' cy='48' r='2' fill='%2352b788'/%3E%3Ccircle cx='40' cy='40' r='2' fill='%2352b788'/%3E%3Ccircle cx='30' cy='6' r='2' fill='%2352b788'/%3E%3Ccircle cx='30' cy='20' r='2' fill='%2352b788'/%3E%3Ccircle cx='50' cy='20' r='2' fill='%2352b788'/%3E%3Ccircle cx='190' cy='42' r='2' fill='%2352b788'/%3E%3Ccircle cx='190' cy='20' r='2' fill='%2352b788'/%3E%3Ccircle cx='150' cy='20' r='2' fill='%2352b788'/%3E%3Ccircle cx='150' cy='8' r='2' fill='%2352b788'/%3E%3Ccircle cx='120' cy='8' r='2' fill='%2352b788'/%3E%3Ccircle cx='220' cy='10' r='2' fill='%2352b788'/%3E%3Ccircle cx='220' cy='32' r='2' fill='%2352b788'/%3E%3Ccircle cx='240' cy='32' r='2' fill='%2352b788'/%3E%3Ccircle cx='170' cy='14' r='2' fill='%2352b788'/%3E%3Ccircle cx='200' cy='14' r='2' fill='%2352b788'/%3E%3Ccircle cx='130' cy='36' r='2' fill='%2352b788'/%3E%3Ccircle cx='160' cy='36' r='2' fill='%2352b788'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
     }
   }
 }

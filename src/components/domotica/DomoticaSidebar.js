@@ -12,7 +12,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
-import { DomoticaIcon } from 'src/components/AppIcons'
+import logoDomotica from 'src/assets/images/domotica/logo-domotica.svg'
 import { AppSidebarNav } from '../layout/AppSidebarNav'
 import { signOut } from '../../services/firebase/auth'
 import { sygnet } from 'src/assets/brand/sygnet'
@@ -44,7 +44,7 @@ const DomoticaSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <div className="d-flex align-items-center gap-2">
-          <span style={{ color: '#52b788', flexShrink: 0, display: 'flex' }}><DomoticaIcon size={20} /></span>
+          <img src={logoDomotica} alt="Domótica" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
           <h3 className="mb-0" style={{ fontSize: '1.2rem' }}>Domótica</h3>
         </div>
         <CSidebarBrand to="/domotica/home">
