@@ -27,3 +27,11 @@ export const fetchVoltageError = createAction('fetch domotica voltage history er
 export const fetchCurrentRequest = createAction('fetch domotica current history')
 export const fetchCurrentSuccess = createAction('fetch domotica current history success')
 export const fetchCurrentError = createAction('fetch domotica current history error')
+
+export const cleanupPreviewRequest = createAction('domotica transactions cleanup preview request')
+export const cleanupPreviewSuccess = createAction('domotica transactions cleanup preview success')
+export const cleanupPreviewError = createAction('domotica transactions cleanup preview error')
+
+export const cleanupDeleteRequest = createAction('domotica transactions cleanup delete request')
+export const cleanupDeleteSuccess = createAction('domotica transactions cleanup delete success')
+export const cleanupDeleteError = createAction('domotica transactions cleanup delete error')

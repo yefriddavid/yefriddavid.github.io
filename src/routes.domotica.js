@@ -7,6 +7,7 @@ const SerialConsole = React.lazy(() => import('./views/domotica/SerialConsole/Se
 const CommandDictionary = React.lazy(
   () => import('./views/domotica/SerialConsole/CommandDictionary'),
 )
+const Cleanup = React.lazy(() => import('./views/domotica/Cleanup/Cleanup'))
 
 const domoticaRoutes = [
   {
@@ -33,6 +34,11 @@ const domoticaRoutes = [
     path: '/domotica/commands',
     name: 'Diccionario de Comandos',
     element: CommandDictionary,
+  },
+  {
+    path: '/domotica/cleanup',
+    name: 'Limpieza',
+    element: Cleanup,
   },
 ]
 

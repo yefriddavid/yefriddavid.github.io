@@ -69,6 +69,24 @@ function* fetchCurrentHistory() {
   }
 }
 
+function* cleanupPreview({ payload }) {
+  try {
+    const docs = yield call(service.fetchTransactionsByRange, payload)
+    yield put(actions.cleanupPreviewSuccess(docs))
+  } catch (e) {
+    yield put(actions.cleanupPreviewError(e.message))
+  }
+}
+
+function* cleanupDelete({ payload }) {
+  try {
+    const deleted = yield call(service.deleteTransactionsByRange, payload)
+    yield put(actions.cleanupDeleteSuccess(deleted))
+  } catch (e) {
+    yield put(actions.cleanupDeleteError(e.message))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchTransactions),
@@ -77,5 +95,7 @@ export default function* rootSagas() {
     takeLatest(actions.deleteRequest, deleteTransaction),
     takeLatest(actions.fetchVoltageRequest, fetchVoltageHistory),
     takeLatest(actions.fetchCurrentRequest, fetchCurrentHistory),
+    takeLatest(actions.cleanupPreviewRequest, cleanupPreview),
+    takeLatest(actions.cleanupDeleteRequest, cleanupDelete),
   ])
 }

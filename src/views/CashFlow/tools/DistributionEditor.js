@@ -4,10 +4,11 @@ import { fmt, TYPE_LABELS, TARGET_OPTIONS } from './salaryUtils'
 const inp = {
   padding: '10px 12px',
   borderRadius: 8,
-  border: '1px solid #ced4da',
+  border: '1px solid var(--cui-border-color)',
   fontSize: 15,
   width: '100%',
-  background: '#fff',
+  background: 'var(--cui-body-bg)',
+  color: 'var(--cui-body-color)',
   boxSizing: 'border-box',
   WebkitAppearance: 'none',
 }
@@ -15,11 +16,21 @@ const inp = {
 const lbl = {
   fontSize: 11,
   fontWeight: 600,
-  color: '#6c757d',
+  color: 'var(--cui-secondary-color)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
   marginBottom: 4,
   display: 'block',
+}
+
+const inpSm = {
+  padding: '4px 8px',
+  borderRadius: 6,
+  border: '1px solid var(--cui-border-color)',
+  fontSize: 13,
+  width: '100%',
+  background: 'var(--cui-body-bg)',
+  color: 'var(--cui-body-color)',
 }
 
 function ResultRow({ label, amount, color, note, bg }) {
@@ -30,16 +41,16 @@ function ResultRow({ label, amount, color, note, bg }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '10px 14px',
-        background: bg ?? '#fff',
-        borderBottom: '1px solid #f1f5f9',
+        background: bg ?? 'var(--cui-body-bg)',
+        borderBottom: '1px solid var(--cui-border-color-translucent)',
       }}
     >
-      <span style={{ fontSize: 13, color: '#495057' }}>
+      <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
         {label}
-        {note && <span style={{ marginLeft: 6, fontSize: 11, color: '#adb5bd' }}>{note}</span>}
+        {note && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--cui-tertiary-color)' }}>{note}</span>}
       </span>
       <span
-        style={{ fontSize: 15, fontWeight: 700, color: color ?? '#1a1a2e', whiteSpace: 'nowrap' }}
+        style={{ fontSize: 15, fontWeight: 700, color: color ?? 'var(--cui-body-color)', whiteSpace: 'nowrap' }}
       >
         {amount < 0 ? `−${fmt(Math.abs(amount))}` : fmt(amount)}
       </span>
@@ -71,8 +82,8 @@ function TargetSummary({ distribution, invert, invertTarget, isMobile }) {
   return (
     <div
       style={{
-        background: '#fff',
-        border: '1px solid #e9ecef',
+        background: 'var(--cui-body-bg)',
+        border: '1px solid var(--cui-border-color)',
         borderRadius: 8,
         overflow: 'hidden',
         marginTop: 16,
@@ -99,15 +110,15 @@ function TargetSummary({ distribution, invert, invertTarget, isMobile }) {
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '10px 14px',
-            background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-            borderBottom: idx < entries.length - 1 ? '1px solid #f1f5f9' : 'none',
+            background: idx % 2 === 0 ? 'var(--cui-body-bg)' : 'var(--cui-tertiary-bg)',
+            borderBottom: idx < entries.length - 1 ? '1px solid var(--cui-border-color-translucent)' : 'none',
           }}
         >
           <span
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: key === '__none__' ? '#adb5bd' : '#1a1a2e',
+              color: key === '__none__' ? 'var(--cui-tertiary-color)' : 'var(--cui-body-color)',
             }}
           >
             {key === '__none__' ? 'Sin target' : key}
@@ -116,7 +127,7 @@ function TargetSummary({ distribution, invert, invertTarget, isMobile }) {
             style={{
               fontSize: isMobile ? 14 : 15,
               fontWeight: 700,
-              color: '#1a1a2e',
+              color: 'var(--cui-body-color)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -163,7 +174,7 @@ export default function DistributionEditor({
         }}
       >
         <div
-          style={{ background: '#fff', border: '1px solid #e9ecef', borderRadius: 8, padding: 14 }}
+          style={{ background: 'var(--cui-body-bg)', border: '1px solid var(--cui-border-color)', borderRadius: 8, padding: 14 }}
         >
           <label style={lbl}>Salario</label>
           <input
@@ -185,7 +196,7 @@ export default function DistributionEditor({
           </div>
         </div>
         <div
-          style={{ background: '#fff', border: '1px solid #e9ecef', borderRadius: 8, padding: 14 }}
+          style={{ background: 'var(--cui-body-bg)', border: '1px solid var(--cui-border-color)', borderRadius: 8, padding: 14 }}
         >
           <label style={lbl}>Inversión</label>
           <input
@@ -223,8 +234,8 @@ export default function DistributionEditor({
       {/* ── Row editor ── */}
       <div
         style={{
-          background: '#fff',
-          border: '1px solid #e9ecef',
+          background: 'var(--cui-body-bg)',
+          border: '1px solid var(--cui-border-color)',
           borderRadius: 8,
           marginBottom: 20,
         }}
@@ -232,7 +243,7 @@ export default function DistributionEditor({
         <div
           style={{
             padding: '10px 14px',
-            borderBottom: '1px solid #f1f5f9',
+            borderBottom: '1px solid var(--cui-border-color-translucent)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -244,12 +255,12 @@ export default function DistributionEditor({
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
-              color: '#495057',
+              color: 'var(--cui-secondary-color)',
             }}
           >
             Distribución del resto
           </span>
-          <span style={{ fontSize: 12, color: overflowWarning ? '#e03131' : '#6c757d' }}>
+          <span style={{ fontSize: 12, color: overflowWarning ? 'var(--cui-danger)' : 'var(--cui-secondary-color)' }}>
             {overflowWarning ? `⚠ ${totalPercent}% (supera 100%)` : `${totalPercent}% asignado`}
           </span>
         </div>
@@ -260,10 +271,10 @@ export default function DistributionEditor({
               <div
                 key={row.id}
                 style={{
-                  border: '1px solid #e9ecef',
+                  border: '1px solid var(--cui-border-color)',
                   borderRadius: 8,
                   padding: 12,
-                  background: '#fafbfc',
+                  background: 'var(--cui-tertiary-bg)',
                 }}
               >
                 <div
@@ -278,7 +289,7 @@ export default function DistributionEditor({
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: '#adb5bd',
+                      color: 'var(--cui-tertiary-color)',
                       textTransform: 'uppercase',
                     }}
                   >
@@ -290,7 +301,7 @@ export default function DistributionEditor({
                       border: 'none',
                       background: 'none',
                       cursor: 'pointer',
-                      color: '#e03131',
+                      color: 'var(--cui-danger)',
                       fontSize: 20,
                       lineHeight: 1,
                       padding: '4px 8px',
@@ -343,7 +354,7 @@ export default function DistributionEditor({
                           value={row.value}
                           onChange={(e) => onUpdateRow(row.id, { value: Number(e.target.value) })}
                         />
-                        <span style={{ fontSize: 14, color: '#6c757d', flexShrink: 0 }}>%</span>
+                        <span style={{ fontSize: 14, color: 'var(--cui-secondary-color)', flexShrink: 0 }}>%</span>
                       </div>
                     ) : row.type === 'value' ? (
                       <input
@@ -354,7 +365,7 @@ export default function DistributionEditor({
                         onChange={(e) => onUpdateRow(row.id, { value: Number(e.target.value) })}
                       />
                     ) : (
-                      <div style={{ ...inp, color: '#adb5bd', fontSize: 13 }}>auto</div>
+                      <div style={{ ...inp, color: 'var(--cui-tertiary-color)', fontSize: 13 }}>auto</div>
                     )}
                   </div>
                 </div>
@@ -382,11 +393,11 @@ export default function DistributionEditor({
                 gridTemplateColumns: '24px 1fr 110px 90px 110px 36px',
                 gap: 8,
                 padding: '8px 14px',
-                background: '#f8f9fa',
-                borderBottom: '1px solid #f1f5f9',
+                background: 'var(--cui-secondary-bg)',
+                borderBottom: '1px solid var(--cui-border-color-translucent)',
                 fontSize: 11,
                 fontWeight: 600,
-                color: '#adb5bd',
+                color: 'var(--cui-tertiary-color)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 minWidth: 480,
@@ -416,9 +427,13 @@ export default function DistributionEditor({
                   gap: 8,
                   padding: '8px 14px',
                   alignItems: 'center',
-                  borderBottom: idx < rows.length - 1 ? '1px solid #f8f9fa' : 'none',
+                  borderBottom: idx < rows.length - 1 ? '1px solid var(--cui-border-color-translucent)' : 'none',
                   background:
-                    dragOverRowId === row.id ? '#e8f4fd' : idx % 2 === 0 ? '#fff' : '#fafbfc',
+                    dragOverRowId === row.id
+                      ? 'rgba(var(--cui-primary-rgb), 0.1)'
+                      : idx % 2 === 0
+                        ? 'var(--cui-body-bg)'
+                        : 'var(--cui-tertiary-bg)',
                   minWidth: 480,
                   transition: 'background 0.1s',
                   opacity: dragRowId === row.id ? 0.4 : 1,
@@ -430,7 +445,7 @@ export default function DistributionEditor({
                   onDragEnd={onDragEnd}
                   style={{
                     cursor: 'grab',
-                    color: '#adb5bd',
+                    color: 'var(--cui-tertiary-color)',
                     fontSize: 16,
                     display: 'flex',
                     alignItems: 'center',
@@ -443,29 +458,14 @@ export default function DistributionEditor({
                   ⠿
                 </div>
                 <input
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: 6,
-                    border: '1px solid #ced4da',
-                    fontSize: 13,
-                    width: '100%',
-                    background: '#fff',
-                  }}
+                  style={inpSm}
                   type="text"
                   value={row.name}
                   placeholder="Nombre"
                   onChange={(e) => onUpdateRow(row.id, { name: e.target.value })}
                 />
                 <select
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: 6,
-                    border: '1px solid #ced4da',
-                    fontSize: 13,
-                    width: '100%',
-                    background: '#fff',
-                    cursor: 'pointer',
-                  }}
+                  style={{ ...inpSm, cursor: 'pointer' }}
                   value={row.type}
                   onChange={(e) => onUpdateRow(row.id, { type: e.target.value })}
                 >
@@ -478,50 +478,28 @@ export default function DistributionEditor({
                 {row.type === 'percent' ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <input
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: 6,
-                        border: '1px solid #ced4da',
-                        fontSize: 13,
-                        width: '100%',
-                        background: '#fff',
-                      }}
+                      style={inpSm}
                       type="number"
                       min={0}
                       max={100}
                       value={row.value}
                       onChange={(e) => onUpdateRow(row.id, { value: Number(e.target.value) })}
                     />
-                    <span style={{ fontSize: 13, color: '#6c757d' }}>%</span>
+                    <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>%</span>
                   </div>
                 ) : row.type === 'value' ? (
                   <input
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: 6,
-                      border: '1px solid #ced4da',
-                      fontSize: 13,
-                      width: '100%',
-                      background: '#fff',
-                    }}
+                    style={inpSm}
                     type="number"
                     min={0}
                     value={row.value}
                     onChange={(e) => onUpdateRow(row.id, { value: Number(e.target.value) })}
                   />
                 ) : (
-                  <span style={{ fontSize: 12, color: '#adb5bd', paddingLeft: 8 }}>auto</span>
+                  <span style={{ fontSize: 12, color: 'var(--cui-tertiary-color)', paddingLeft: 8 }}>auto</span>
                 )}
                 <select
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: 6,
-                    border: '1px solid #ced4da',
-                    fontSize: 13,
-                    width: '100%',
-                    background: '#fff',
-                    cursor: 'pointer',
-                  }}
+                  style={{ ...inpSm, cursor: 'pointer' }}
                   value={row.target ?? ''}
                   onChange={(e) => onUpdateRow(row.id, { target: e.target.value })}
                 >
@@ -539,7 +517,7 @@ export default function DistributionEditor({
                       border: 'none',
                       background: 'none',
                       cursor: 'pointer',
-                      color: '#e03131',
+                      color: 'var(--cui-danger)',
                       fontSize: 16,
                       padding: '2px 4px',
                       lineHeight: 1,
@@ -562,10 +540,10 @@ export default function DistributionEditor({
               fontWeight: 600,
               padding: '10px 16px',
               borderRadius: 8,
-              border: '1px dashed #ced4da',
-              background: '#f8f9fa',
+              border: '1px dashed var(--cui-border-color)',
+              background: 'var(--cui-secondary-bg)',
               cursor: 'pointer',
-              color: '#495057',
+              color: 'var(--cui-secondary-color)',
               width: isMobile ? '100%' : 'auto',
               minHeight: 44,
             }}
@@ -578,8 +556,8 @@ export default function DistributionEditor({
       {/* ── Result ── */}
       <div
         style={{
-          background: '#fff',
-          border: '1px solid #e9ecef',
+          background: 'var(--cui-body-bg)',
+          border: '1px solid var(--cui-border-color)',
           borderRadius: 8,
           overflow: 'hidden',
         }}
@@ -598,13 +576,13 @@ export default function DistributionEditor({
           Resultado — {activeConfig.name}
         </div>
 
-        <ResultRow label="Salario" amount={salary} color="#2f9e44" bg="#f0fff4" />
+        <ResultRow label="Salario" amount={salary} color="#2f9e44" bg="rgba(47,158,68,0.08)" />
         <ResultRow
           label="Inversión"
           amount={-invert}
           color="#7c3aed"
           note={`(−${fmt(invert)})`}
-          bg="#faf5ff"
+          bg="rgba(124,58,237,0.08)"
         />
 
         <div
@@ -612,15 +590,16 @@ export default function DistributionEditor({
             display: 'flex',
             justifyContent: 'space-between',
             padding: '10px 14px',
-            background: '#f8f9fa',
+            background: 'var(--cui-secondary-bg)',
             borderTop: '2px solid #1a1a2e',
             borderBottom: '2px solid #1a1a2e',
             fontWeight: 700,
             fontSize: 13,
+            color: 'var(--cui-body-color)',
           }}
         >
           <span>Resto a distribuir</span>
-          <span style={{ color: base < 0 ? '#e03131' : '#1a1a2e' }}>{fmt(base)}</span>
+          <span style={{ color: base < 0 ? 'var(--cui-danger)' : 'var(--cui-body-color)' }}>{fmt(base)}</span>
         </div>
 
         {distribution.map((row, idx) => {
@@ -639,15 +618,15 @@ export default function DistributionEditor({
                 gap: 8,
                 padding: '10px 14px',
                 alignItems: 'center',
-                background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-                borderBottom: idx < distribution.length - 1 ? '1px solid #f1f5f9' : 'none',
+                background: idx % 2 === 0 ? 'var(--cui-body-bg)' : 'var(--cui-tertiary-bg)',
+                borderBottom: idx < distribution.length - 1 ? '1px solid var(--cui-border-color-translucent)' : 'none',
               }}
             >
               <span
-                style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', wordBreak: 'break-word' }}
+                style={{ fontSize: 13, fontWeight: 600, color: 'var(--cui-body-color)', wordBreak: 'break-word' }}
               >
                 {row.name || (
-                  <span style={{ color: '#adb5bd', fontStyle: 'italic' }}>Sin nombre</span>
+                  <span style={{ color: 'var(--cui-tertiary-color)', fontStyle: 'italic' }}>Sin nombre</span>
                 )}
               </span>
               <span
@@ -659,16 +638,16 @@ export default function DistributionEditor({
                   whiteSpace: 'nowrap',
                   background:
                     row.type === 'remainder'
-                      ? '#e9ecef'
+                      ? 'var(--cui-secondary-bg)'
                       : row.type === 'value'
-                        ? '#fff3cd'
-                        : '#e8f4fd',
+                        ? 'rgba(133,100,4,0.15)'
+                        : 'rgba(12,99,228,0.12)',
                   color:
                     row.type === 'remainder'
-                      ? '#6c757d'
+                      ? 'var(--cui-secondary-color)'
                       : row.type === 'value'
                         ? '#856404'
-                        : '#0c63e4',
+                        : 'var(--cui-primary)',
                 }}
               >
                 {badge}
@@ -677,7 +656,7 @@ export default function DistributionEditor({
                 style={{
                   fontSize: isMobile ? 14 : 15,
                   fontWeight: 700,
-                  color: row.amount < 0 ? '#e03131' : '#1a1a2e',
+                  color: row.amount < 0 ? 'var(--cui-danger)' : 'var(--cui-body-color)',
                   minWidth: isMobile ? 80 : 100,
                   textAlign: 'right',
                   whiteSpace: 'nowrap',
@@ -691,7 +670,7 @@ export default function DistributionEditor({
 
         {!hasRemainder && (
           <div
-            style={{ padding: '8px 14px', background: '#fff8e1', fontSize: 12, color: '#e67700' }}
+            style={{ padding: '8px 14px', background: 'rgba(230,119,0,0.1)', fontSize: 12, color: '#e67700' }}
           >
             {'Sin fila de tipo "Restante" — el sobrante no está asignado.'}
           </div>
@@ -705,7 +684,7 @@ export default function DistributionEditor({
         isMobile={isMobile}
       />
 
-      <p style={{ marginTop: 12, fontSize: 11, color: '#adb5bd', textAlign: 'right' }}>
+      <p style={{ marginTop: 12, fontSize: 11, color: 'var(--cui-tertiary-color)', textAlign: 'right' }}>
         Configuración guardada en IndexedDB de este navegador.
       </p>
     </>

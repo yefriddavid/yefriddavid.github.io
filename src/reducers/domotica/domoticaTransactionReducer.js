@@ -12,6 +12,11 @@ const domoticaTransactionSlice = createSlice({
     voltageFetching: false,
     currentData: null,
     currentFetching: false,
+    cleanupPreviewing: false,
+    cleanupPreview: null,
+    cleanupDeleting: false,
+    cleanupDeleted: null,
+    cleanupError: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -96,6 +101,36 @@ const domoticaTransactionSlice = createSlice({
       })
       .addCase(actions.fetchCurrentError, (state) => {
         state.currentFetching = false
+      })
+
+      .addCase(actions.cleanupPreviewRequest, (state) => {
+        state.cleanupPreviewing = true
+        state.cleanupPreview = null
+        state.cleanupError = null
+        state.cleanupDeleted = null
+      })
+      .addCase(actions.cleanupPreviewSuccess, (state, { payload }) => {
+        state.cleanupPreviewing = false
+        state.cleanupPreview = payload
+      })
+      .addCase(actions.cleanupPreviewError, (state, { payload }) => {
+        state.cleanupPreviewing = false
+        state.cleanupError = payload
+      })
+
+      .addCase(actions.cleanupDeleteRequest, (state) => {
+        state.cleanupDeleting = true
+        state.cleanupError = null
+        state.cleanupDeleted = null
+      })
+      .addCase(actions.cleanupDeleteSuccess, (state, { payload }) => {
+        state.cleanupDeleting = false
+        state.cleanupDeleted = payload
+        state.cleanupPreview = null
+      })
+      .addCase(actions.cleanupDeleteError, (state, { payload }) => {
+        state.cleanupDeleting = false
+        state.cleanupError = payload
       })
   },
 })

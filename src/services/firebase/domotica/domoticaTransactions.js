@@ -12,6 +12,8 @@ import {
   where,
   limit,
   serverTimestamp,
+  Timestamp,
+  writeBatch,
 } from 'firebase/firestore'
 
 const mapDoc = (d) => {
@@ -35,36 +37,25 @@ const mapDoc = (d) => {
 }
 
 export const fetchVoltageHistory = async ({ startDate, endDate } = {}) => {
-
-  const constraints = [
-    where('type', '==', 'voltaje'),
-    orderBy('createdAt', 'asc'),
-    limit(500),
-  ]
+  const constraints = [where('type', '==', 'voltaje'), orderBy('createdAt', 'asc'), limit(500)]
 
   if (startDate) constraints.push(where('createdAt', '>=', startDate))
   if (endDate) constraints.push(where('createdAt', '<=', endDate))
 
   const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
-  let data = [];
+  let data = []
   try {
-
     const snap = await firestoreCall(() => getDocs(q))
     data = snap.docs.map(mapDoc)
     return data
-
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
   return data
 }
 
 export const fetchCurrentHistory = async ({ startDate, endDate } = {}) => {
-  const constraints = [
-    where('type', '==', 'corriente'),
-    orderBy('createdAt', 'asc'),
-    limit(500),
-  ]
+  const constraints = [where('type', '==', 'corriente'), orderBy('createdAt', 'asc'), limit(500)]
 
   if (startDate) constraints.push(where('createdAt', '>=', startDate))
   if (endDate) constraints.push(where('createdAt', '<=', endDate))
@@ -74,13 +65,11 @@ export const fetchCurrentHistory = async ({ startDate, endDate } = {}) => {
   //return snap.docs.map(mapDoc)
   let data = []
   try {
-
     const snap = await firestoreCall(() => getDocs(q))
     data = snap.docs.map(mapDoc)
     return data
-
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
   return data
 }
@@ -123,4 +112,43 @@ export const updateTransaction = async (id, data) => {
 
 export const deleteTransaction = async (id) => {
   await firestoreCall(() => deleteDoc(doc(db, COL_DOMOTICA_TRANSACTIONS, id)))
+}
+
+const buildRangeConstraints = ({ from, to, type }) => {
+  const constraints = [
+    where('createdAt', '>=', Timestamp.fromDate(new Date(from))),
+    where('createdAt', '<=', Timestamp.fromDate(new Date(to))),
+  ]
+  if (type) constraints.push(where('type', '==', type))
+  return constraints
+}
+
+export const countTransactionsByRange = async (params) => {
+  const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...buildRangeConstraints(params))
+  const snap = await firestoreCall(() => getDocs(q))
+  return snap.size
+}
+
+export const fetchTransactionsByRange = async (params) => {
+  const q = query(
+    collection(db, COL_DOMOTICA_TRANSACTIONS),
+    ...buildRangeConstraints(params),
+    orderBy('createdAt', 'asc'),
+  )
+  const snap = await firestoreCall(() => getDocs(q))
+  return snap.docs.map(mapDoc)
+}
+
+export const deleteTransactionsByRange = async (params) => {
+  const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...buildRangeConstraints(params))
+  const snap = await firestoreCall(() => getDocs(q))
+  const docs = snap.docs
+
+  for (let i = 0; i < docs.length; i += 500) {
+    const batch = writeBatch(db)
+    docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref))
+    await firestoreCall(() => batch.commit())
+  }
+
+  return docs.length
 }
