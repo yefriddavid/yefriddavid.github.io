@@ -292,7 +292,7 @@ export default function SalaryDistribution() {
       {showSummary && <SummaryTable distributions={distributions} />}
 
       {/* ── Egg price chart ── */}
-      <EggPriceChart />
+      <EggPriceChart distributions={distributions} />
 
       {/* ── Editor view ── */}
       {!showSummary && (
