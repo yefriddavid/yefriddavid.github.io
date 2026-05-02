@@ -29,6 +29,7 @@ import sagaSalaryDistribution from './cashflow/salaryDistributionSagas'
 import sagaAccountStatusNotes from './cashflow/accountStatusNoteSagas'
 import sagaMyProjects from './cashflow/myProjectSagas'
 import sagaAssets from './cashflow/assetSagas'
+import sagaGridTrades from './cashflow/gridTradeSagas'
 import sagaTenants from './tenantsSagas'
 import sagaDomoticaTransactions from './domotica/domoticaTransactionSagas'
 import sagaDomoticaCurrent from './domotica/domoticaCurrentSagas'
@@ -68,6 +69,7 @@ export default function* rootSagas() {
     sagaAccountStatusNotes(),
     sagaMyProjects(),
     sagaAssets(),
+    sagaGridTrades(),
     sagaTenants(),
     sagaDomoticaTransactions(),
     sagaDomoticaCurrent(),

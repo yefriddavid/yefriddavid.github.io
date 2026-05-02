@@ -21,6 +21,7 @@ const Reports = React.lazy(() => import('./views/reports/Reports'))
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
 const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
+const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
@@ -113,6 +114,13 @@ const routes = [
     name: 'Assets',
     longName: 'Activos',
     element: Assets,
+    landingPage: true,
+  },
+  {
+    path: '/finance/trade/grid',
+    name: 'Grid Trade',
+    longName: 'Grid Trading',
+    element: GridTrade,
     landingPage: true,
   },
   {

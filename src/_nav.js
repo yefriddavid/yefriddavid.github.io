@@ -123,6 +123,12 @@ const getNav = (t, role) => {
           to: '/finance/eggs',
           icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
         },
+        {
+          component: CNavItem,
+          name: 'Grid Trading',
+          to: '/finance/trade/grid',
+          icon: <CIcon icon={cilBarChart} customClassName="nav-icon" />,
+        },
       ],
     })
   }
