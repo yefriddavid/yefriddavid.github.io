@@ -78,7 +78,7 @@ const AppHeaderDropdown = () => {
           )}
           <CDropdownItem
             className="header-dropdown__item"
-            onClick={() => navigate('/cash_flow/profile')}
+            onClick={() => navigate('/finance/profile')}
           >
             <CIcon icon={cilUser} className="me-2" />
             Mi perfil
@@ -90,7 +90,7 @@ const AppHeaderDropdown = () => {
           {profile?.role === 'superAdmin' && (
             <CDropdownItem
               className="header-dropdown__item"
-              onClick={() => navigate('/cash_flow/settings')}
+              onClick={() => navigate('/finance/settings')}
             >
               <CIcon icon={cilSettings} className="me-2" />
               Configuración

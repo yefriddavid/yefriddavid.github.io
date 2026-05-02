@@ -96,7 +96,7 @@ export async function signIn(username, password) {
     username: firestoreUser.username,
     name: firestoreUser.name,
     role: firestoreUser.role,
-    landingPage: firestoreUser.landingPage || '/cash_flow/dashboard',
+    landingPage: firestoreUser.landingPage || '/finance/dashboard',
     sessionId,
     token,
   }

@@ -9,6 +9,7 @@ import AuditNotesCell from '../AuditNotesCell'
 import AuditSettledCell from '../AuditSettledCell'
 import AuditDayDetail from '../AuditDayDetail'
 import useLocaleData from 'src/hooks/useLocaleData'
+import { useStickyAuditHeader } from 'src/hooks/useStickyAuditHeader'
 import { runAuditAnalysis } from '../auditAnalysisRules'
 import AnalysisModal from './AnalysisModal'
 import InstructionsModal from './InstructionsModal'
@@ -109,6 +110,17 @@ const AuditView = ({
   const colMgrRef = useRef(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const containerRef = useRef(null)
+  const theadRef = useRef(null)
+  const scrollDivRef = useRef(null)
+  const stickyScrollDivRef = useRef(null)
+  const [stickyData] = useStickyAuditHeader(theadRef, scrollDivRef)
+
+
+  const handleTableScroll = (e) => {
+    if (stickyScrollDivRef.current) {
+      stickyScrollDivRef.current.scrollLeft = e.target.scrollLeft
+    }
+  }
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement)
@@ -225,7 +237,7 @@ const AuditView = ({
       style={{
         padding: 16,
         background: isFullscreen ? '#fff' : undefined,
-        ...(isFullscreen && { overflowY: 'auto', height: '100vh' }),
+        ...(isFullscreen && { minHeight: '100vh' }),
       }}
     >
       <InstructionsModal visible={showInstructions} onClose={() => setShowInstructions(false)} />
@@ -631,10 +643,43 @@ const AuditView = ({
         </div>
       </div>
 
+      {/* Sticky header — fixed position so escapes any overflow/scroll container */}
+      {stickyData.show && stickyData.colWidths.length > 0 && (
+        <div
+          data-testid="audit-sticky-header"
+          style={{
+            position: 'fixed',
+            top: 'calc(3rem + 1px)',
+            left: stickyData.left,
+            right: 0,
+            zIndex: 1000,
+            background: '#1e3a5f',
+            overflow: 'hidden',
+          }}
+        >
+          <div ref={stickyScrollDivRef} style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 13, tableLayout: 'fixed', width: stickyData.colWidths.reduce((a, b) => a + b, 0) }}>
+              <thead>
+                <tr style={{ background: '#1e3a5f' }}>
+                  <th style={{ width: stickyData.colWidths[0], padding: '9px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: 0, background: '#1e3a5f', zIndex: 3 }}>
+                    {t('taxis.settlements.audit.colDay')}
+                  </th>
+                  {colOrder.map((key, i) => (
+                    <th key={key} style={{ width: stickyData.colWidths[i + 1], padding: '9px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', borderRight: '1px solid rgba(255,255,255,0.1)', ...(key === 'weekday' && { position: 'sticky', left: stickyData.colWidths[0], background: '#1e3a5f', zIndex: 3, boxShadow: '2px 0 4px rgba(0,0,0,0.15)' }), ...col(key) }}>
+                      {colLabels[key]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Audit table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div ref={scrollDivRef} style={{ overflowX: 'auto' }} onScroll={handleTableScroll}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead>
+          <thead ref={theadRef}>
             <tr style={{ background: '#1e3a5f' }}>
               <th
                 style={{
@@ -647,6 +692,12 @@ const AuditView = ({
                   color: 'rgba(255,255,255,0.9)',
                   whiteSpace: 'nowrap',
                   borderRight: '1px solid rgba(255,255,255,0.1)',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 3,
+                  background: '#1e3a5f',
+                  width: 60,
+                  minWidth: 60,
                 }}
               >
                 {t('taxis.settlements.audit.colDay')}
@@ -664,6 +715,13 @@ const AuditView = ({
                     color: 'rgba(255,255,255,0.9)',
                     whiteSpace: 'nowrap',
                     borderRight: '1px solid rgba(255,255,255,0.1)',
+                    ...(key === 'weekday' && {
+                      position: 'sticky',
+                      left: 60,
+                      zIndex: 3,
+                      background: '#1e3a5f',
+                      boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
+                    }),
                     ...col(key),
                   }}
                 >
@@ -725,6 +783,12 @@ const AuditView = ({
                           fontVariantNumeric: 'tabular-nums',
                           color: day.isFuture ? '#adb5bd' : '#1e3a5f',
                           whiteSpace: 'nowrap',
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 1,
+                          background: 'inherit',
+                          width: 60,
+                          minWidth: 60,
                         }}
                       >
                         {String(day.d).padStart(2, '0')}
@@ -774,6 +838,11 @@ const AuditView = ({
                                         ? '#adb5bd'
                                         : '#64748b',
                                   fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
+                                  position: 'sticky',
+                                  left: 60,
+                                  zIndex: 1,
+                                  background: 'inherit',
+                                  boxShadow: '2px 0 4px rgba(0,0,0,0.08)',
                                   ...col('weekday'),
                                 }}
                               >

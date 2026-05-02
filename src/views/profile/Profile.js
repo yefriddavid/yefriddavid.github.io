@@ -48,7 +48,7 @@ const Profile = () => {
     setForm({
       name: profile.name ?? '',
       email: profile.email ?? '',
-      landingPage: profile.landingPage ?? '/cash_flow/dashboard',
+      landingPage: profile.landingPage ?? '/finance/dashboard',
     })
     setEditing(true)
   }
@@ -60,7 +60,7 @@ const Profile = () => {
 
   const saveEdit = () => {
     dispatch(authActions.updateProfile({ username: profile.username, ...form }))
-    localStorage.setItem('landingPage', form.landingPage || '/cash_flow/dashboard')
+    localStorage.setItem('landingPage', form.landingPage || '/finance/dashboard')
     setEditing(false)
     setForm(null)
   }

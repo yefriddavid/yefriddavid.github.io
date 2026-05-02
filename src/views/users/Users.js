@@ -43,7 +43,7 @@ const EMPTY = {
   active: true,
   password: '',
   confirmPassword: '',
-  landingPage: '/cash_flow/dashboard',
+  landingPage: '/finance/dashboard',
 }
 
 const RoleBadge = ({ role }) => (
@@ -122,7 +122,7 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
       <StandardField label="Página de inicio">
         <select
           className={SF.select}
-          value={form.landingPage ?? '/cash_flow/dashboard'}
+          value={form.landingPage ?? '/finance/dashboard'}
           onChange={set('landingPage')}
         >
           {LANDING_PAGES.map((p) => (

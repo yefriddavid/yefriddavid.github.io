@@ -36,7 +36,7 @@ const getNav = (t, role) => {
   items.push({
     component: CNavItem,
     name: t('nav.dashboard'),
-    to: '/cash_flow/dashboard',
+    to: '/finance/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   })
 
@@ -50,31 +50,31 @@ const getNav = (t, role) => {
         /*{
           component: CNavItem,
           name: t('nav.accounts'),
-          to: '/cash_flow/management/accounts',
+          to: '/finance/management/accounts',
           icon: <CIcon icon={cilList} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.payments'),
-          to: '/cash_flow/management/payments',
+          to: '/finance/management/payments',
           icon: <CIcon icon={cilCreditCard} customClassName="nav-icon" />,
         },*/
         {
           component: CNavItem,
           name: 'Transacciones',
-          to: '/cash_flow/management/transactions',
+          to: '/finance/management/transactions',
           icon: <CIcon icon={cilSwapHorizontal} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Maestro de Cuentas',
-          to: '/cash_flow/management/accounts-master',
+          to: '/finance/management/accounts-master',
           icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Estado de Cuentas',
-          to: '/cash_flow/management/account-status',
+          to: '/finance/management/account-status',
           icon: <CIcon icon={cilCheck} customClassName="nav-icon" />,
         },
       ],
@@ -90,37 +90,37 @@ const getNav = (t, role) => {
         {
           component: CNavItem,
           name: t('nav.increaseDecrease'),
-          to: '/cash_flow/tools/adjustments',
+          to: '/finance/tools/adjustments',
           icon: <CIcon icon={cilBalanceScale} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: t('nav.visits'),
-          to: '/cash_flow/tools/visits',
+          to: '/finance/tools/visits',
           icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Salary Distribution',
-          to: '/cash_flow/tools/salary-distribution',
+          to: '/finance/tools/salary-distribution',
           icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'My Projects',
-          to: '/cash_flow/projects',
+          to: '/finance/projects',
           icon: <CIcon icon={cilLightbulb} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Assets',
-          to: '/cash_flow/assets',
+          to: '/finance/assets',
           icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Eggs',
-          to: '/cash_flow/eggs',
+          to: '/finance/eggs',
           icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
         },
       ],
@@ -154,7 +154,7 @@ const getNav = (t, role) => {
       {
         component: CNavItem,
         name: t('nav.visits'),
-        to: '/cash_flow/tools/visits',
+        to: '/finance/tools/visits',
         icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
       },
       ...(isSuperAdmin
@@ -162,13 +162,13 @@ const getNav = (t, role) => {
             {
               component: CNavItem,
               name: t('nav.users'),
-              to: '/cash_flow/management/users',
+              to: '/finance/management/users',
               icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
               name: t('nav.pushSubscribers'),
-              to: '/cash_flow/management/push-subscribers',
+              to: '/finance/management/push-subscribers',
               icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
             },
             {

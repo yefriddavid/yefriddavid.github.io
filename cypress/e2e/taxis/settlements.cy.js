@@ -301,6 +301,51 @@ describe('Liquidaciones — responsive', () => {
   })
 })
 
+// ── 10. Sticky header en auditoría ───────────────────────────────────────────
+
+describe('Liquidaciones — sticky header en vista de auditoría', () => {
+  beforeEach(() => {
+    setup()
+    cy.switchViewMode('audit')
+    cy.get('table tbody tr').should('have.length.gte', 1)
+  })
+
+  it('no muestra sticky header antes de hacer scroll', () => {
+    cy.get('[data-testid="audit-sticky-header"]').should('not.exist')
+  })
+
+  it('muestra el sticky header al hacer scroll hasta la mitad de la tabla y lo oculta al volver arriba', () => {
+    // Confirm sticky header is absent at the start
+    cy.get('[data-testid="audit-sticky-header"]').should('not.exist')
+
+    // Scroll down so thead moves past the 49px app header threshold
+    cy.scrollTo(0, 600, { duration: 200 })
+
+    // Give the rAF loop time to detect the change and React to re-render
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(300)
+
+    // Sticky header must be visible and contain column titles
+    cy.get('[data-testid="audit-sticky-header"]').should('be.visible')
+    cy.get('[data-testid="audit-sticky-header"]').within(() => {
+      cy.contains('th', 'Día').should('exist')
+      cy.contains('th', 'Día semana').should('exist')
+    })
+
+    cy.screenshot('settlements/14-audit-sticky-header-visible')
+
+    // Scroll back to top — sticky header must disappear
+    cy.scrollTo(0, 0, { duration: 200 })
+
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(300)
+
+    cy.get('[data-testid="audit-sticky-header"]').should('not.exist')
+
+    cy.screenshot('settlements/15-audit-sticky-header-hidden')
+  })
+})
+
 // ── 9. Persistencia de preferencias ──────────────────────────────────────────
 
 describe('Liquidaciones — persistencia en localStorage', () => {

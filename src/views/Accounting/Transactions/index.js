@@ -346,7 +346,7 @@ export default function Transactions() {
               ) : applicableMasters.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 40, color: '#6c757d', fontSize: 13 }}>
                   No hay cuentas maestras configuradas para este mes.{' '}
-                  <a href="/cash_flow/management/accounts-master" style={{ color: '#1e3a5f' }}>
+                  <a href="/finance/management/accounts-master" style={{ color: '#1e3a5f' }}>
                     Configurar maestro →
                   </a>
                 </div>

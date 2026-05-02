@@ -28,7 +28,7 @@ const APPS = [
     id: 'finance',
     name: 'Finance',
     description: 'flujo de caja · cuentas · reportes',
-    path: '/cash_flow/dashboard',
+    path: '/finance/dashboard',
     accent: '#1e3a5f',
     icon: FinanceIcon,
   },

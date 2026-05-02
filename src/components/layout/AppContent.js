@@ -16,7 +16,7 @@ const AppContent = () => {
   const landingPage =
     useSelector((s) => s.profile.data?.landingPage) ||
     localStorage.getItem('landingPage') ||
-    '/cash_flow/dashboard'
+    '/finance/dashboard'
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -94,7 +94,9 @@ const AppContent = () => {
             )
           })}
           <Route path="/" element={<Navigate to="/selectApp" replace />} />
+          <Route path="/finance" element={<Navigate to={landingPage} replace />} />
           <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
+          <Route path="/cash_flow/*" element={<Navigate to={landingPage} replace />} />
         </Routes>
       </Suspense>
     </CContainer>
