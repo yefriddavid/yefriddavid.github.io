@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useStickyAuditHeader } from '../useStickyAuditHeader'
 
-const APP_HEADER_H = 3 * 16 + 1 // 49px
+const HEADER_BOTTOM = 68 // simulates nav bar (49px) + breadcrumb row (~19px)
 
 function makeTh(width) {
   return { getBoundingClientRect: () => ({ width }) }
@@ -34,10 +34,19 @@ describe('useStickyAuditHeader', () => {
       return rafCallbacks.length
     })
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
+
+    // Mock the .header element so getHeaderBottom() returns a known value
+    vi.spyOn(document, 'querySelector').mockImplementation((selector) => {
+      if (selector === '.header') {
+        return { getBoundingClientRect: () => ({ bottom: HEADER_BOTTOM }) }
+      }
+      return null
+    })
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
   const flushRaf = () => {
@@ -54,13 +63,22 @@ describe('useStickyAuditHeader', () => {
     expect(result.current[0].show).toBe(false)
   })
 
-  it('shows sticky header when thead bottom scrolls at or below app header height', () => {
-    const { theadRef, scrollDivRef } = makeRefs({ theadBottom: APP_HEADER_H, scrollLeft: 256 })
+  it('shows sticky header when thead bottom scrolls at or below real header bottom', () => {
+    const { theadRef, scrollDivRef } = makeRefs({ theadBottom: HEADER_BOTTOM, scrollLeft: 256 })
     const { result } = renderHook(() => useStickyAuditHeader(theadRef, scrollDivRef))
 
     flushRaf()
 
     expect(result.current[0].show).toBe(true)
+  })
+
+  it('captures top position from the measured header bottom', () => {
+    const { theadRef, scrollDivRef } = makeRefs({ theadBottom: 20, scrollLeft: 256 })
+    const { result } = renderHook(() => useStickyAuditHeader(theadRef, scrollDivRef))
+
+    flushRaf()
+
+    expect(result.current[0].top).toBe(HEADER_BOTTOM)
   })
 
   it('captures left position from scrollDivRef', () => {
@@ -87,7 +105,6 @@ describe('useStickyAuditHeader', () => {
     const theadRef = { current: null }
     const scrollDivRef = { current: { getBoundingClientRect: () => ({ left: 256 }) } }
 
-    // Start scrolled past header
     theadRef.current = {
       getBoundingClientRect: () => ({ bottom: 20 }),
       querySelectorAll: () => ths,
@@ -97,7 +114,6 @@ describe('useStickyAuditHeader', () => {
     flushRaf()
     expect(result.current[0].show).toBe(true)
 
-    // Scroll back up — thead visible again
     theadRef.current = {
       getBoundingClientRect: () => ({ bottom: 300 }),
       querySelectorAll: () => ths,
@@ -106,8 +122,8 @@ describe('useStickyAuditHeader', () => {
     expect(result.current[0].show).toBe(false)
   })
 
-  it('does not show when thead bottom is above the threshold (bottom > APP_HEADER_H)', () => {
-    const { theadRef, scrollDivRef } = makeRefs({ theadBottom: APP_HEADER_H + 1, scrollLeft: 256 })
+  it('does not show when thead bottom is above the threshold (bottom > headerBottom)', () => {
+    const { theadRef, scrollDivRef } = makeRefs({ theadBottom: HEADER_BOTTOM + 1, scrollLeft: 256 })
     const { result } = renderHook(() => useStickyAuditHeader(theadRef, scrollDivRef))
 
     flushRaf()

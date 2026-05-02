@@ -649,7 +649,7 @@ const AuditView = ({
           data-testid="audit-sticky-header"
           style={{
             position: 'fixed',
-            top: 'calc(3rem + 1px)',
+            top: stickyData.top,
             left: stickyData.left,
             right: 0,
             zIndex: 1000,
