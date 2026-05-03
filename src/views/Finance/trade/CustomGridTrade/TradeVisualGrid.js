@@ -14,11 +14,9 @@ import {
 } from '@coreui/react'
 import * as actions from 'src/actions/finance/customGridTradeActions'
 
-const VISIBLE_LEVELS = 15
-const LEVEL_H = 60
+const BASE_LEVEL_H = 60
 const W = 1200
 const AXIS_X = 15
-const H = VISIBLE_LEVELS * LEVEL_H + 200
 
 export default function TradeVisualGrid({ transactions = [] }) {
   const dispatch = useDispatch()
@@ -28,6 +26,8 @@ export default function TradeVisualGrid({ transactions = [] }) {
   const [gridStep, setGridStep] = useState(1000)
   // viewTopPrice: the price shown at the top of the visible window
   const [viewTopPrice, setViewTopPrice] = useState(78000 + 7 * 1000)
+  const [visibleLevels, setVisibleLevels] = useState(15)
+  const [textScale, setTextScale] = useState(1)
   const [panEnabled, setPanEnabled] = useState(true)
   const [detailModal, setDetailModal] = useState(null)
   const [editForm, setEditForm] = useState(null)
@@ -40,9 +40,12 @@ export default function TradeVisualGrid({ transactions = [] }) {
   const dragStartViewTop = useRef(0)
 
   const step = Math.max(1, gridStep)
+  const LEVEL_H = Math.round(BASE_LEVEL_H * textScale)
+  const H = visibleLevels * LEVEL_H + 200
 
   const fmt = (p) => `$${(p / 1000).toFixed(2)}K`
   const fmtVal = (v) => `${v >= 0 ? '+' : ''}$${Math.abs(v).toFixed(2)}`
+  const fs = (base) => base * textScale
 
   const toY = (p) => 100 + ((viewTopPrice - p) / step) * LEVEL_H
 
@@ -50,15 +53,15 @@ export default function TradeVisualGrid({ transactions = [] }) {
   const levels = useMemo(() => {
     const topGridLevel = selectedPrice + Math.ceil((viewTopPrice - selectedPrice) / step) * step
     const result = []
-    for (let i = 0; i < VISIBLE_LEVELS + 3; i++) {
+    for (let i = 0; i < visibleLevels + 3; i++) {
       const price = topGridLevel - i * step
       const y = 100 + ((viewTopPrice - price) / step) * LEVEL_H
       if (y >= -60 && y <= H + 60) result.push(price)
     }
     return result
-  }, [selectedPrice, viewTopPrice, step])
+  }, [selectedPrice, viewTopPrice, step, visibleLevels, H, LEVEL_H])
 
-  const viewBottomPrice = viewTopPrice - (VISIBLE_LEVELS + 1) * step
+  const viewBottomPrice = viewTopPrice - (visibleLevels + 1) * step
   const visibleTransactions = transactions.filter(
     (t) => t.price >= viewBottomPrice && t.price <= viewTopPrice + step,
   )
@@ -125,16 +128,21 @@ export default function TradeVisualGrid({ transactions = [] }) {
         <div
           style={{
             display: 'flex',
+            flexWrap: 'wrap',
             width: '100%',
-            maxWidth: '800px',
-            gap: '20px',
-            alignItems: 'center',
+            gap: '12px',
             justifyContent: 'center',
           }}
         >
-          <CInputGroup style={{ maxWidth: '300px' }}>
+          <CInputGroup style={{ flex: '1 1 180px', minWidth: 0 }}>
             <CInputGroupText
-              style={{ background: '#00ffff', color: '#000', fontWeight: 'bold', border: 'none' }}
+              style={{
+                background: '#00ffff',
+                color: '#000',
+                fontWeight: 'bold',
+                border: 'none',
+                whiteSpace: 'nowrap',
+              }}
             >
               PRECIO ACTUAL
             </CInputGroupText>
@@ -147,12 +155,19 @@ export default function TradeVisualGrid({ transactions = [] }) {
                 color: '#00ffff',
                 border: '2px solid #00ffff',
                 fontWeight: 'bold',
+                minWidth: 0,
               }}
             />
           </CInputGroup>
-          <CInputGroup style={{ maxWidth: '250px' }}>
+          <CInputGroup style={{ flex: '1 1 150px', minWidth: 0 }}>
             <CInputGroupText
-              style={{ background: '#fbbf24', color: '#000', fontWeight: 'bold', border: 'none' }}
+              style={{
+                background: '#fbbf24',
+                color: '#000',
+                fontWeight: 'bold',
+                border: 'none',
+                whiteSpace: 'nowrap',
+              }}
             >
               % PRÉSTAMO
             </CInputGroupText>
@@ -166,12 +181,19 @@ export default function TradeVisualGrid({ transactions = [] }) {
                 color: '#fbbf24',
                 border: '2px solid #fbbf24',
                 fontWeight: 'bold',
+                minWidth: 0,
               }}
             />
           </CInputGroup>
-          <CInputGroup style={{ maxWidth: '280px' }}>
+          <CInputGroup style={{ flex: '1 1 180px', minWidth: 0 }}>
             <CInputGroupText
-              style={{ background: '#a78bfa', color: '#000', fontWeight: 'bold', border: 'none' }}
+              style={{
+                background: '#a78bfa',
+                color: '#000',
+                fontWeight: 'bold',
+                border: 'none',
+                whiteSpace: 'nowrap',
+              }}
             >
               PASO GRID
             </CInputGroupText>
@@ -201,6 +223,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                 border: '2px solid #a78bfa',
                 fontWeight: 'bold',
                 textAlign: 'center',
+                minWidth: 0,
               }}
             />
             <CInputGroupText
@@ -225,14 +248,94 @@ export default function TradeVisualGrid({ transactions = [] }) {
       <div style={{ position: 'relative' }}>
         <div
           style={{
-            position: 'absolute',
-            bottom: 16,
-            right: 16,
-            zIndex: 10,
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1030,
             display: 'flex',
             gap: 8,
           }}
         >
+          <button
+            onClick={() => setTextScale((v) => Math.max(0.5, +(v - 0.25).toFixed(2)))}
+            title="Texto más pequeño"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid #e2e8f0',
+              background: '#0d1117',
+              color: '#e2e8f0',
+              fontSize: 13,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            A−
+          </button>
+          <button
+            onClick={() => setTextScale((v) => Math.min(3, +(v + 0.25).toFixed(2)))}
+            title="Texto más grande"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid #e2e8f0',
+              background: '#0d1117',
+              color: '#e2e8f0',
+              fontSize: 13,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            A+
+          </button>
+          <button
+            onClick={() => setVisibleLevels((v) => Math.min(30, v + 3))}
+            title="Zoom out"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid #8b949e',
+              background: '#0d1117',
+              color: '#8b949e',
+              fontSize: 20,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            −
+          </button>
+          <button
+            onClick={() => setVisibleLevels((v) => Math.max(5, v - 3))}
+            title="Zoom in"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid #8b949e',
+              background: '#0d1117',
+              color: '#8b949e',
+              fontSize: 20,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            +
+          </button>
           <button
             onClick={() => setPanEnabled((v) => !v)}
             title={panEnabled ? 'Bloquear navegación' : 'Activar navegación'}
@@ -299,10 +402,10 @@ export default function TradeVisualGrid({ transactions = [] }) {
             }}
           >
             <line x1={AXIS_X} y1={20} x2={AXIS_X} y2={H - 20} stroke="#3b82f6" strokeWidth={5} />
-            <text x={AXIS_X + 25} y={50} fill="#f87171" fontSize={12} fontWeight="900">
+            <text x={AXIS_X + 25} y={50} fill="#f87171" fontSize={fs(12)} fontWeight="900">
               ZONA DE VENTA
             </text>
-            <text x={AXIS_X + 25} y={H - 35} fill="#4ade80" fontSize={12} fontWeight="900">
+            <text x={AXIS_X + 25} y={H - 35} fill="#4ade80" fontSize={fs(12)} fontWeight="900">
               ZONA DE COMPRA
             </text>
 
@@ -331,32 +434,33 @@ export default function TradeVisualGrid({ transactions = [] }) {
                     x={AXIS_X + 45}
                     y={y - 8}
                     fill={color}
-                    fontSize={isSelected ? 16 : 14}
+                    fontSize={fs(isSelected ? 16 : 14)}
                     fontWeight={isTransaction ? '900' : '700'}
                     fontFamily="monospace"
                   >
                     {fmt(price)}
                   </text>
                   {!isSelected && (
-                    <g transform={`translate(${W - 60}, ${y + 15})`}>
+                    <g transform={`translate(${W - 10}, ${y})`}>
                       <text
                         fill="#60a5fa"
-                        fontSize={10}
+                        fontSize={fs(9)}
                         fontWeight="700"
                         fontFamily="monospace"
                         textAnchor="end"
+                        dy={-4}
                       >
-                        ↑ 1.{(15 + (i % 10)).toFixed(2)}%
+                        ↑ {(1.15 + (i % 10) * 0.01).toFixed(2)}%
                       </text>
                       <text
-                        x={-65}
                         fill="#4ade80"
-                        fontSize={10}
+                        fontSize={fs(9)}
                         fontWeight="700"
                         fontFamily="monospace"
                         textAnchor="end"
+                        dy={fs(11)}
                       >
-                        ↓ 1.{14 + (i % 10).toFixed(2)}%
+                        ↓ {(1.14 + (i % 10) * 0.01).toFixed(2)}%
                       </text>
                     </g>
                   )}
@@ -390,7 +494,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                   y={currentPriceY + 5}
                   textAnchor="middle"
                   fill="#000"
-                  fontSize={11}
+                  fontSize={fs(11)}
                   fontWeight="bold"
                   fontFamily="monospace"
                 >
@@ -444,7 +548,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={25}
                       textAnchor="end"
                       fill={color}
-                      fontSize={13}
+                      fontSize={fs(13)}
                       fontWeight="900"
                       fontFamily="monospace"
                     >
@@ -465,7 +569,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={15}
                       textAnchor="middle"
                       fill="#e2e8f0"
-                      fontSize={9}
+                      fontSize={fs(9)}
                       fontWeight="bold"
                       fontFamily="monospace"
                     >
@@ -476,7 +580,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={32}
                       textAnchor="middle"
                       fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
-                      fontSize={11}
+                      fontSize={fs(11)}
                       fontWeight="900"
                       fontFamily="monospace"
                     >
@@ -488,7 +592,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={48}
                       textAnchor="middle"
                       fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
-                      fontSize={12}
+                      fontSize={fs(12)}
                       fontWeight="bold"
                       fontFamily="monospace"
                     >
@@ -499,7 +603,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={62}
                       textAnchor="middle"
                       fill="#8b949e"
-                      fontSize={9}
+                      fontSize={fs(9)}
                       fontFamily="monospace"
                     >
                       {fmtVal(-loanCost)} ({daysElapsed}d)
@@ -532,7 +636,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
                       y={y + 4}
                       textAnchor="middle"
                       fill={color}
-                      fontSize={14}
+                      fontSize={fs(14)}
                       fontWeight="bold"
                     >
                       i
