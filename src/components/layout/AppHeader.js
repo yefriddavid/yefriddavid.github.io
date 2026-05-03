@@ -15,7 +15,15 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilClock, cilFullscreen, cilFullscreenExit, cilMenu, cilMoon, cilPaint, cilSun } from '@coreui/icons'
+import {
+  cilClock,
+  cilFullscreen,
+  cilFullscreenExit,
+  cilMenu,
+  cilMoon,
+  cilPaint,
+  cilSun,
+} from '@coreui/icons'
 
 const USER_MODE_KEY = 'app-theme-mode'
 
@@ -33,9 +41,7 @@ import './AppHeader.scss'
 const AppHeader = () => {
   const headerRef = useRef()
   const { setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-  const [userMode, setUserMode] = useState(
-    () => localStorage.getItem(USER_MODE_KEY) || 'auto',
-  )
+  const [userMode, setUserMode] = useState(() => localStorage.getItem(USER_MODE_KEY) || 'auto')
 
   useEffect(() => {
     const apply = () => setColorMode(userMode === 'auto' ? getTimeBasedScheme() : userMode)
@@ -53,6 +59,7 @@ const AppHeader = () => {
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   const appTheme = useSelector((state) => state.ui.appTheme)
+  const hideHeader = () => dispatch({ type: 'set', headerShow: false })
   const hasUpdate = useVersionCheck()
 
   useEffect(() => {
@@ -76,9 +83,19 @@ const AppHeader = () => {
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement)
 
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement)
+    const onFsChange = () => {
+      const active = !!document.fullscreenElement
+      setIsFullscreen(active)
+      localStorage.setItem('fullscreen', active)
+    }
     document.addEventListener('fullscreenchange', onFsChange)
     return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
+
+  useEffect(() => {
+    if (localStorage.getItem('fullscreen') === 'true' && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    }
   }, [])
 
   const toggleFullscreen = () => {
@@ -261,11 +278,23 @@ const AppHeader = () => {
               <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
             </li>
             <CNavItem>
-              <CNavLink as="button" onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
+              <CNavLink
+                as="button"
+                onClick={toggleFullscreen}
+                title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+              >
                 <CIcon icon={isFullscreen ? cilFullscreenExit : cilFullscreen} size="lg" />
               </CNavLink>
             </CNavItem>
           </div>
+          <li className="nav-item py-0">
+            <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+          </li>
+          <CNavItem>
+            <CNavLink as="button" onClick={hideHeader} title="Ocultar cabecera">
+              <CIcon icon={cilFullscreenExit} size="lg" style={{ transform: 'rotate(90deg)' }} />
+            </CNavLink>
+          </CNavItem>
           <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
