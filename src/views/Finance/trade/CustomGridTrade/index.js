@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import { CNav, CNavItem, CNavLink, CTabContent, CTabPane, CFormCheck } from '@coreui/react'
@@ -16,6 +16,14 @@ export default function CustomGridTrade() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = TABS[searchParams.get(TAB_PARAM)] ?? 1
   const setActiveTab = (tab) => setSearchParams({ [TAB_PARAM]: TAB_KEYS[tab] }, { replace: true })
+
+  const [loanRate, setLoanRate] = useState(
+    () => Number(localStorage.getItem('cgt.loanRate')) || 3.5,
+  )
+  const handleLoanRateChange = (rate) => {
+    setLoanRate(rate)
+    localStorage.setItem('cgt.loanRate', rate)
+  }
 
   const handleStorageToggle = (e) => {
     dispatch(actions.setStorage(e.target.checked))
@@ -69,11 +77,15 @@ export default function CustomGridTrade() {
       <CTabContent>
         <CTabPane visible={activeTab === 1}>
           <div style={{ padding: '24px 0', background: '#0d1117', borderRadius: 16, marginTop: 16 }}>
-            <TradeVisualGrid transactions={trades} />
+            <TradeVisualGrid
+              transactions={trades}
+              loanRate={loanRate}
+              onLoanRateChange={handleLoanRateChange}
+            />
           </div>
         </CTabPane>
         <CTabPane visible={activeTab === 2}>
-          <TradesTab trades={trades} saving={saving} />
+          <TradesTab trades={trades} saving={saving} loanRate={loanRate} />
         </CTabPane>
       </CTabContent>
     </div>

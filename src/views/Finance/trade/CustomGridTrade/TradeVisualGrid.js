@@ -18,11 +18,12 @@ const BASE_LEVEL_H = 60
 const W = 1200
 const AXIS_X = 15
 
-export default function TradeVisualGrid({ transactions = [] }) {
+export default function TradeVisualGrid({ transactions = [], loanRate = 3.5, onLoanRateChange }) {
   const dispatch = useDispatch()
   const [selectedPrice, setSelectedPrice] = useState(78000)
-  const [currentPrice, setCurrentPrice] = useState(77500)
-  const [loanRate, setLoanRate] = useState(3.5)
+  const [currentPrice, setCurrentPrice] = useState(
+    () => Number(localStorage.getItem('cgt.currentPrice')) || 77500,
+  )
   const [gridStep, setGridStep] = useState(1000)
   // viewTopPrice: the price shown at the top of the visible window
   const [viewTopPrice, setViewTopPrice] = useState(
@@ -225,7 +226,11 @@ export default function TradeVisualGrid({ transactions = [] }) {
             <CFormInput
               type="number"
               value={currentPrice}
-              onChange={(e) => setCurrentPrice(Number(e.target.value))}
+              onChange={(e) => {
+                const v = Number(e.target.value)
+                setCurrentPrice(v)
+                localStorage.setItem('cgt.currentPrice', v)
+              }}
               style={{
                 background: '#0d1117',
                 color: '#00ffff',
@@ -251,7 +256,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
               type="number"
               step="0.1"
               value={loanRate}
-              onChange={(e) => setLoanRate(Number(e.target.value))}
+              onChange={(e) => onLoanRateChange?.(Number(e.target.value))}
               style={{
                 background: '#0d1117',
                 color: '#fbbf24',

@@ -70,7 +70,7 @@ const FILTER_FIELDS = [
   { key: 'notes', label: 'Notas' },
 ]
 
-export default function TradesTab({ trades, saving }) {
+export default function TradesTab({ trades, saving, loanRate = 3.5 }) {
   const dispatch = useDispatch()
   const useIndexedDB = useSelector((s) => s.customGridTrade.useIndexedDB)
   const [form, setForm] = useState(null)
@@ -371,17 +371,38 @@ export default function TradesTab({ trades, saving }) {
                 <span>{t.quantity} unid · {t.fecha}</span>
                 <span style={{ color: '#4dabf7', fontWeight: 700 }}>${(t.price * t.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              {(t.sellPrice || t.sellDate) && (
-                <div style={{ fontSize: 12, color: '#51cf66', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {t.sellPrice && <span style={{ fontWeight: 700 }}>Venta: {fmtK(t.sellPrice)}</span>}
-                  {t.sellDate && <span>{t.sellDate}</span>}
-                  {t.sellPrice && (
-                    <span style={{ color: (t.sellPrice - t.price) >= 0 ? '#51cf66' : '#ff6b6b', fontWeight: 700 }}>
-                      {(t.sellPrice - t.price) >= 0 ? '+' : ''}{fmtK(t.sellPrice - t.price)}
-                    </span>
-                  )}
-                </div>
-              )}
+              {(t.sellPrice != null || t.sellDate) && (() => {
+                const fmtUSD = (v) => `$${Math.abs(v).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                const invested = t.price * t.quantity
+                const pnl = t.sellPrice != null ? t.sellPrice - invested : null
+                const loanCost = (t.fecha && t.sellDate)
+                  ? invested * (loanRate / 100 / 365) * Math.ceil(Math.abs(new Date(t.sellDate) - new Date(t.fecha)) / 86400000)
+                  : null
+                const netProfit = pnl != null && loanCost != null ? pnl - loanCost : null
+                return (
+                  <div style={{ fontSize: 12, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: '#51cf66' }}>
+                      {t.sellPrice != null && <span style={{ fontWeight: 700 }}>Venta: {fmtUSD(t.sellPrice)}</span>}
+                      {t.sellDate && <span style={{ color: '#868e96' }}>{t.sellDate}</span>}
+                      {pnl != null && (
+                        <span style={{ color: pnl >= 0 ? '#51cf66' : '#ff6b6b', fontWeight: 700 }}>
+                          P&L bruto: {pnl >= 0 ? '+' : '-'}{fmtUSD(pnl)}
+                        </span>
+                      )}
+                    </div>
+                    {loanCost != null && (
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ color: '#f59e0b' }}>Interés loan: -{fmtUSD(loanCost)}</span>
+                        {netProfit != null && (
+                          <span style={{ color: netProfit >= 0 ? '#4ade80' : '#f87171', fontWeight: 800 }}>
+                            Neto: {netProfit >= 0 ? '+' : '-'}{fmtUSD(netProfit)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
               {t.notes && (
                 <div style={{ fontSize: 11, color: '#adb5bd', fontStyle: 'italic', marginTop: 2 }}>
                   {t.notes}
@@ -697,7 +718,7 @@ export default function TradesTab({ trades, saving }) {
 
         <div style={row2}>
           <div>
-            <label style={labelStyle}>PRECIO DE VENTA</label>
+            <label style={labelStyle}>VALOR TOTAL VENTA</label>
             <input
               style={inputStyle}
               type="number"
@@ -706,7 +727,7 @@ export default function TradesTab({ trades, saving }) {
               step="any"
               value={form?.sellPrice ?? ''}
               onChange={set('sellPrice')}
-              placeholder="opcional"
+              placeholder="ej. 1008.77"
             />
           </div>
           <div>
