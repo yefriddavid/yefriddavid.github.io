@@ -1,8 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import * as actions from 'src/actions/finance/customGridTradeActions'
+import AppModal from 'src/components/shared/AppModal'
 
 const today = () => new Date().toISOString().slice(0, 10)
+
+const JSON_PLACEHOLDER = `[
+  {
+    "price": 78000,
+    "quantity": 0.5,
+    "fecha": "2024-01-15",
+    "notes": "opcional"
+  }
+]`
+
+function tryAutoFix(raw) {
+  return raw
+    .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":') // quote unquoted keys
+    .replace(/,\s*([}\]])/g, '$1') // remove trailing commas
+}
+
+function parseImport(raw) {
+  const parsed = JSON.parse(raw)
+  if (!Array.isArray(parsed)) throw new Error('Se espera un array JSON')
+  return parsed.map((item, i) => {
+    if (!item.price) throw new Error(`Item ${i + 1}: falta "price"`)
+    if (!item.quantity) throw new Error(`Item ${i + 1}: falta "quantity"`)
+    if (!item.fecha) throw new Error(`Item ${i + 1}: falta "fecha"`)
+    return {
+      price: Number(item.price),
+      quantity: Number(item.quantity),
+      fecha: item.fecha,
+      notes: item.notes?.trim() ?? '',
+      createdAt: item.createdAt ?? new Date().toISOString(),
+    }
+  })
+}
 
 const emptyForm = () => ({ price: '', quantity: '', fecha: today(), notes: '' })
 
@@ -30,7 +63,48 @@ const row2 = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginB
 
 export default function TradesTab({ trades, saving }) {
   const dispatch = useDispatch()
-  const [form, setForm] = useState(null) // null = closed, object = open (new or edit)
+  const [form, setForm] = useState(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [jsonText, setJsonText] = useState('')
+  const [helpOpen, setHelpOpen] = useState(false)
+  const textareaRef = useRef(null)
+  const lineNumsRef = useRef(null)
+  const lineCount = Math.max(1, jsonText.split('\n').length)
+
+  const importResult = useMemo(() => {
+    if (!jsonText.trim()) return { valid: null, error: null }
+    const toParse = (() => {
+      try { JSON.parse(jsonText); return jsonText } catch { return tryAutoFix(jsonText) }
+    })()
+    try {
+      return { valid: parseImport(toParse), error: null }
+    } catch (e) {
+      return { valid: null, error: e.message }
+    }
+  }, [jsonText])
+
+  const handleFormat = () => {
+    const toParse = (() => {
+      try { JSON.parse(jsonText); return jsonText } catch { return tryAutoFix(jsonText) }
+    })()
+    try {
+      setJsonText(JSON.stringify(JSON.parse(toParse), null, 2))
+    } catch {
+      // leave as-is if still unparseable
+    }
+  }
+
+  const handleImport = () => {
+    if (!importResult.valid?.length) return
+    dispatch(actions.bulkImportRequest(importResult.valid))
+    setImportOpen(false)
+    setJsonText('')
+  }
+
+  const openImport = () => {
+    setJsonText('')
+    setImportOpen(true)
+  }
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
@@ -69,6 +143,12 @@ export default function TradesTab({ trades, saving }) {
   const fmtK = (p) => `$${(p / 1000).toFixed(2)}K`
   const btnDisabled = saving || !form?.price || !form?.quantity || !form?.fecha
 
+  const importConfirmLabel = saving
+    ? 'Importando…'
+    : importResult.valid
+      ? `Importar ${importResult.valid.length} trade${importResult.valid.length !== 1 ? 's' : ''}`
+      : 'Importar'
+
   return (
     <div style={{ padding: '24px 0' }}>
       {/* Header */}
@@ -83,24 +163,42 @@ export default function TradesTab({ trades, saving }) {
         <div style={{ fontSize: 15, fontWeight: 700, color: '#0d1117' }}>
           {trades.length} trade{trades.length !== 1 ? 's' : ''}
         </div>
-        <button
-          onClick={openNew}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            border: 'none',
-            background: '#0d1117',
-            color: '#fff',
-            fontSize: 20,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          +
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={openImport}
+            style={{
+              height: 36,
+              padding: '0 14px',
+              borderRadius: 8,
+              border: '1px solid #dee2e6',
+              background: '#fff',
+              color: '#495057',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Importar JSON
+          </button>
+          <button
+            onClick={openNew}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              border: 'none',
+              background: '#0d1117',
+              color: '#fff',
+              fontSize: 20,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {/* List */}
@@ -191,130 +289,243 @@ export default function TradesTab({ trades, saving }) {
         ))
       )}
 
-      {/* Form sheet overlay */}
-      {form && (
+      {/* JSON Import modal */}
+      <AppModal
+        visible={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Importar JSON"
+        size="lg"
+        onConfirm={handleImport}
+        confirmLabel={importConfirmLabel}
+        confirmDisabled={!importResult.valid?.length || saving}
+        confirmLoading={saving}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          {/* Collapsible help */}
+          <div style={{ flex: 1 }}>
+            <button
+              onClick={() => setHelpOpen((v) => !v)}
+              style={{
+                border: 'none',
+                background: 'none',
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#868e96',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <span style={{ fontSize: 10, transition: 'transform 150ms', display: 'inline-block', transform: helpOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+              Ejemplo de item
+            </button>
+            {helpOpen && (
+              <div
+                style={{
+                  marginTop: 8,
+                  background: '#161b22',
+                  border: '1px solid #2d333b',
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                  fontFamily: 'Menlo, Monaco, Consolas, monospace',
+                  fontSize: 12,
+                  lineHeight: 1.7,
+                  color: '#e6edf3',
+                }}
+              >
+                <div><span style={{ color: '#79c0ff' }}>{`{`}</span></div>
+                <div style={{ paddingLeft: 16 }}>
+                  <span style={{ color: '#ff7b72' }}>"price"</span>
+                  <span style={{ color: '#e6edf3' }}>: </span>
+                  <span style={{ color: '#79c0ff' }}>118161.20</span>
+                  <span style={{ color: '#6e7681' }}>,{'  '}// requerido — precio de entrada</span>
+                </div>
+                <div style={{ paddingLeft: 16 }}>
+                  <span style={{ color: '#ff7b72' }}>"quantity"</span>
+                  <span style={{ color: '#e6edf3' }}>: </span>
+                  <span style={{ color: '#79c0ff' }}>0.00846</span>
+                  <span style={{ color: '#6e7681' }}>,{'  '}// requerido — cantidad</span>
+                </div>
+                <div style={{ paddingLeft: 16 }}>
+                  <span style={{ color: '#ff7b72' }}>"fecha"</span>
+                  <span style={{ color: '#e6edf3' }}>: </span>
+                  <span style={{ color: '#a5d6ff' }}>"2025-08-15"</span>
+                  <span style={{ color: '#6e7681' }}>,{'  '}// requerido — YYYY-MM-DD</span>
+                </div>
+                <div style={{ paddingLeft: 16 }}>
+                  <span style={{ color: '#ff7b72' }}>"notes"</span>
+                  <span style={{ color: '#e6edf3' }}>: </span>
+                  <span style={{ color: '#a5d6ff' }}>"observación"</span>
+                  <span style={{ color: '#6e7681' }}>{'  '}// opcional</span>
+                </div>
+                <div><span style={{ color: '#79c0ff' }}>{`}`}</span></div>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleFormat}
+            style={{
+              border: 'none',
+              background: 'none',
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#4dabf7',
+              cursor: 'pointer',
+              padding: 0,
+              letterSpacing: '0.03em',
+              flexShrink: 0,
+              marginLeft: 12,
+            }}
+          >
+            Formatear
+          </button>
+        </div>
+
+        {/* Code editor */}
         <div
-          onClick={close}
           style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 1050,
+            background: '#0d1117',
+            borderRadius: 10,
+            marginBottom: 10,
+            border: importResult.error
+              ? '1.5px solid #ff6b6b'
+              : importResult.valid
+                ? '1.5px solid #51cf66'
+                : '1.5px solid #2d333b',
             display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            ref={lineNumsRef}
             style={{
-              width: '100%',
-              maxWidth: 480,
-              background: '#fff',
-              borderRadius: '20px 20px 0 0',
-              padding: '18px 20px 36px',
-              maxHeight: '90dvh',
-              overflowY: 'auto',
-              boxSizing: 'border-box',
+              overflowY: 'hidden',
+              paddingTop: 12,
+              paddingBottom: 12,
+              paddingLeft: 10,
+              paddingRight: 8,
+              fontFamily: 'Menlo, Monaco, Consolas, monospace',
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: '#484f58',
+              textAlign: 'right',
+              userSelect: 'none',
+              minWidth: 32,
+              borderRight: '1px solid #21262d',
+              flexShrink: 0,
             }}
           >
-            <div
-              style={{
-                width: 40,
-                height: 4,
-                borderRadius: 2,
-                background: '#dee2e6',
-                margin: '0 auto 18px',
-              }}
+            {Array.from({ length: lineCount }, (_, i) => (
+              <div key={i}>{i + 1}</div>
+            ))}
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={jsonText}
+            onChange={(e) => setJsonText(e.target.value)}
+            onScroll={() => {
+              if (lineNumsRef.current)
+                lineNumsRef.current.scrollTop = textareaRef.current.scrollTop
+            }}
+            placeholder={JSON_PLACEHOLDER}
+            rows={14}
+            spellCheck={false}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              resize: 'vertical',
+              fontFamily: 'Menlo, Monaco, Consolas, monospace',
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: '#e6edf3',
+              padding: '12px 14px',
+              boxSizing: 'border-box',
+              caretColor: '#4dabf7',
+            }}
+          />
+        </div>
+
+        {/* Status line */}
+        <div style={{ minHeight: 18, fontSize: 13 }}>
+          {importResult.error && (
+            <span style={{ color: '#ff6b6b', fontFamily: 'Menlo, Monaco, Consolas, monospace' }}>
+              ✕ {importResult.error}
+            </span>
+          )}
+          {importResult.valid && (
+            <span style={{ color: '#51cf66', fontWeight: 700 }}>
+              ✓ {importResult.valid.length} trade{importResult.valid.length !== 1 ? 's' : ''}{' '}
+              válido{importResult.valid.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+      </AppModal>
+
+      {/* Trade form modal */}
+      <AppModal
+        visible={form !== null}
+        onClose={close}
+        title={form?.id ? 'Editar trade' : 'Nuevo trade'}
+        size="sm"
+        onConfirm={handleSave}
+        confirmLabel={saving ? 'Guardando…' : form?.id ? 'Guardar cambios' : 'Crear trade'}
+        confirmDisabled={btnDisabled}
+        confirmLoading={saving}
+      >
+        <div style={row2}>
+          <div>
+            <label style={labelStyle}>PRECIO DE ENTRADA *</label>
+            <input
+              style={inputStyle}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={form?.price ?? ''}
+              onChange={set('price')}
+              placeholder="78000"
             />
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0d1117', marginBottom: 20 }}>
-              {form.id ? 'Editar trade' : 'Nuevo trade'}
-            </div>
-
-            <div style={row2}>
-              <div>
-                <label style={labelStyle}>PRECIO DE ENTRADA *</label>
-                <input
-                  style={inputStyle}
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="any"
-                  value={form.price}
-                  onChange={set('price')}
-                  placeholder="78000"
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>CANTIDAD *</label>
-                <input
-                  style={inputStyle}
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="any"
-                  value={form.quantity}
-                  onChange={set('quantity')}
-                  placeholder="0.5"
-                />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>FECHA DE ENTRADA *</label>
-              <input style={inputStyle} type="date" value={form.fecha} onChange={set('fecha')} />
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>NOTAS</label>
-              <textarea
-                style={{ ...inputStyle, resize: 'none', fontFamily: 'inherit' }}
-                rows={2}
-                value={form.notes}
-                onChange={set('notes')}
-                placeholder="Observaciones…"
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={close}
-                style={{
-                  minHeight: 48,
-                  padding: '13px 16px',
-                  borderRadius: 12,
-                  border: '1px solid #dee2e6',
-                  background: '#fff',
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: '#868e96',
-                  cursor: 'pointer',
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={btnDisabled}
-                style={{
-                  flex: 2,
-                  minHeight: 48,
-                  padding: '13px',
-                  borderRadius: 12,
-                  border: 'none',
-                  background: btnDisabled ? '#e9ecef' : '#0d1117',
-                  color: btnDisabled ? '#adb5bd' : '#fff',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: btnDisabled ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {saving ? 'Guardando…' : form.id ? 'Guardar cambios' : 'Crear trade'}
-              </button>
-            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>CANTIDAD *</label>
+            <input
+              style={inputStyle}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={form?.quantity ?? ''}
+              onChange={set('quantity')}
+              placeholder="0.5"
+            />
           </div>
         </div>
-      )}
+
+        <div style={{ marginBottom: 18 }}>
+          <label style={labelStyle}>FECHA DE ENTRADA *</label>
+          <input
+            style={inputStyle}
+            type="date"
+            value={form?.fecha ?? ''}
+            onChange={set('fecha')}
+          />
+        </div>
+
+        <div style={{ marginBottom: 8 }}>
+          <label style={labelStyle}>NOTAS</label>
+          <textarea
+            style={{ ...inputStyle, resize: 'none', fontFamily: 'inherit' }}
+            rows={2}
+            value={form?.notes ?? ''}
+            onChange={set('notes')}
+            placeholder="Observaciones…"
+          />
+        </div>
+      </AppModal>
     </div>
   )
 }

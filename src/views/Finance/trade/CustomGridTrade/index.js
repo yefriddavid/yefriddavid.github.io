@@ -1,14 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CNav, CNavItem, CNavLink, CTabContent, CTabPane } from '@coreui/react'
+import { useSearchParams } from 'react-router-dom'
+import { CNav, CNavItem, CNavLink, CTabContent, CTabPane, CFormCheck } from '@coreui/react'
 import * as actions from 'src/actions/finance/customGridTradeActions'
 import TradeVisualGrid from './TradeVisualGrid'
 import TradesTab from './TradesTab'
 
+const TAB_PARAM = 'tab'
+const TABS = { grids: 1, trades: 2 }
+const TAB_KEYS = { 1: 'grids', 2: 'trades' }
+
 export default function CustomGridTrade() {
   const dispatch = useDispatch()
-  const { trades, loading, saving } = useSelector((s) => s.customGridTrade)
-  const [activeTab, setActiveTab] = useState(1)
+  const { trades, loading, saving, useIndexedDB } = useSelector((s) => s.customGridTrade)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const activeTab = TABS[searchParams.get(TAB_PARAM)] ?? 1
+  const setActiveTab = (tab) => setSearchParams({ [TAB_PARAM]: TAB_KEYS[tab] }, { replace: true })
+
+  const handleStorageToggle = (e) => {
+    dispatch(actions.setStorage(e.target.checked))
+    dispatch(actions.loadRequest())
+  }
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -32,6 +45,13 @@ export default function CustomGridTrade() {
             {loading && ' · cargando…'}
           </div>
         </div>
+        <CFormCheck
+          id="storage-toggle"
+          label={useIndexedDB ? 'IndexedDB' : 'Firebase'}
+          checked={useIndexedDB}
+          onChange={handleStorageToggle}
+          title="Fuente de datos: IndexedDB (local) o Firebase (nube)"
+        />
       </div>
 
       <CNav variant="tabs">

@@ -1,10 +1,14 @@
-import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
+import { put, call, all, takeLatest, takeEvery, select } from 'redux-saga/effects'
 import * as actions from '../../actions/finance/customGridTradeActions'
 import * as fb from '../../services/firebase/finance/customGridTrades'
+import * as idb from '../../services/indexeddb/finance/customGridTrades'
+
+const svc = (useIndexedDB) => (useIndexedDB ? idb : fb)
 
 function* loadTrades() {
   try {
-    const trades = yield call(fb.fetchAll)
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    const trades = yield call(svc(useIndexedDB).fetchAll)
     yield put(actions.loadSuccess(trades))
   } catch (e) {
     yield put(actions.loadError(e.message))
@@ -13,7 +17,8 @@ function* loadTrades() {
 
 function* saveTrade({ payload }) {
   try {
-    const id = yield call(fb.saveTrade, payload)
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    const id = yield call(svc(useIndexedDB).saveTrade, payload)
     yield put(actions.saveSuccess({ ...payload, id }))
   } catch (e) {
     yield put(actions.saveError(e.message))
@@ -22,10 +27,24 @@ function* saveTrade({ payload }) {
 
 function* deleteTrade({ payload }) {
   try {
-    yield call(fb.deleteTrade, payload.id)
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    yield call(svc(useIndexedDB).deleteTrade, payload.id)
     yield put(actions.deleteSuccess({ id: payload.id }))
   } catch (e) {
     yield put(actions.deleteError(e.message))
+  }
+}
+
+function* bulkImport({ payload }) {
+  try {
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    for (const trade of payload) {
+      yield call(svc(useIndexedDB).saveTrade, trade)
+    }
+    const trades = yield call(svc(useIndexedDB).fetchAll)
+    yield put(actions.bulkImportSuccess(trades))
+  } catch (e) {
+    yield put(actions.bulkImportError(e.message))
   }
 }
 
@@ -34,5 +53,6 @@ export default function* sagaCustomGridTrades() {
     takeLatest(actions.loadRequest, loadTrades),
     takeEvery(actions.saveRequest, saveTrade),
     takeLatest(actions.deleteRequest, deleteTrade),
+    takeLatest(actions.bulkImportRequest, bulkImport),
   ])
 }

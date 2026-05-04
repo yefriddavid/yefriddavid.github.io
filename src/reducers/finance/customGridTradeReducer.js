@@ -8,6 +8,7 @@ const customGridTradeSlice = createSlice({
     loading: false,
     saving: false,
     error: null,
+    useIndexedDB: localStorage.getItem('customGridTrade.storage') === 'indexeddb',
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -44,6 +45,21 @@ const customGridTradeSlice = createSlice({
         state.saving = false
       })
       .addCase(actions.deleteError, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
+      .addCase(actions.setStorage, (state, { payload }) => {
+        state.useIndexedDB = payload
+        localStorage.setItem('customGridTrade.storage', payload ? 'indexeddb' : 'firebase')
+      })
+      .addCase(actions.bulkImportRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.bulkImportSuccess, (state, { payload }) => {
+        state.trades = payload
+        state.saving = false
+      })
+      .addCase(actions.bulkImportError, (state, { payload }) => {
         state.error = payload
         state.saving = false
       })
