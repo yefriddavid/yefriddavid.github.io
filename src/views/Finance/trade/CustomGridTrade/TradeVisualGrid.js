@@ -51,6 +51,19 @@ export default function TradeVisualGrid({ transactions = [], loanRate = 3.5, onL
   }, [viewTopPrice])
 
   useEffect(() => {
+    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+      .then((r) => r.json())
+      .then((data) => {
+        const price = Math.round(Number(data.price))
+        if (price > 0) {
+          setCurrentPrice(price)
+          localStorage.setItem('cgt.currentPrice', price)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
     setHiddenTrades(new Set(transactions.filter((t) => t.hidden).map((t) => t.price)))
   }, [transactions])
 
