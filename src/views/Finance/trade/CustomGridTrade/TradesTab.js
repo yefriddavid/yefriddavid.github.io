@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/finance/customGridTradeActions'
 import AppModal from 'src/components/shared/AppModal'
 
@@ -37,7 +37,7 @@ function parseImport(raw) {
   })
 }
 
-const emptyForm = () => ({ price: '', quantity: '', fecha: today(), notes: '' })
+const emptyForm = () => ({ price: '', quantity: '', fecha: today(), notes: '', sellPrice: '', sellDate: '' })
 
 const inputStyle = {
   width: '100%',
@@ -63,13 +63,16 @@ const row2 = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginB
 
 const FILTER_FIELDS = [
   { key: 'quantity', label: 'Cantidad' },
-  { key: 'price', label: 'Precio' },
-  { key: 'fecha', label: 'Fecha' },
+  { key: 'price', label: 'Precio entrada' },
+  { key: 'fecha', label: 'Fecha entrada' },
+  { key: 'sellPrice', label: 'Precio venta' },
+  { key: 'sellDate', label: 'Fecha venta' },
   { key: 'notes', label: 'Notas' },
 ]
 
-export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) {
+export default function TradesTab({ trades, saving }) {
   const dispatch = useDispatch()
+  const useIndexedDB = useSelector((s) => s.customGridTrade.useIndexedDB)
   const [form, setForm] = useState(null)
   const [importOpen, setImportOpen] = useState(false)
   const [jsonText, setJsonText] = useState('')
@@ -125,19 +128,25 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
       quantity: trade.quantity,
       fecha: trade.fecha ?? today(),
       notes: trade.notes ?? '',
+      sellPrice: trade.sellPrice ?? '',
+      sellDate: trade.sellDate ?? '',
     })
   const close = () => setForm(null)
 
   const handleSave = () => {
     if (!form.price || !form.quantity || !form.fecha) return
+    const original = form.id ? (trades.find((t) => t.id === form.id) ?? {}) : {}
     dispatch(
       actions.saveRequest({
+        ...original,
         id: form.id ?? null,
         price: Number(form.price),
         quantity: Number(form.quantity),
         fecha: form.fecha,
-        notes: form.notes.trim(),
-        createdAt: form.id ? undefined : new Date().toISOString(),
+        notes: (form.notes ?? '').trim(),
+        sellPrice: form.sellPrice !== '' && form.sellPrice != null ? Number(form.sellPrice) : null,
+        sellDate: form.sellDate || null,
+        createdAt: form.id ? original.createdAt : new Date().toISOString(),
       }),
     )
     close()
@@ -151,6 +160,18 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
 
   const fmtK = (p) => `$${(p / 1000).toFixed(2)}K`
   const btnDisabled = saving || !form?.price || !form?.quantity || !form?.fecha
+
+  const syncLabel = useIndexedDB ? 'IDB → Firebase' : 'Firebase → IDB'
+
+  const handleSync = () => {
+    if (!window.confirm(`¿Copiar todos los trades de ${useIndexedDB ? 'IndexedDB a Firebase' : 'Firebase a IndexedDB'}?`)) return
+    dispatch(actions.syncRequest())
+  }
+
+  const handleDeleteAll = () => {
+    if (!window.confirm(`¿Eliminar TODOS los trades de ${useIndexedDB ? 'IndexedDB' : 'Firebase'}? Esta acción no se puede deshacer.`)) return
+    dispatch(actions.deleteAllRequest())
+  }
 
   const importConfirmLabel = saving
     ? 'Importando…'
@@ -173,6 +194,52 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
           {trades.length} trade{trades.length !== 1 ? 's' : ''}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleSync}
+            disabled={saving}
+            title={`Copiar trades de ${useIndexedDB ? 'IndexedDB a Firebase' : 'Firebase a IndexedDB'}`}
+            style={{
+              height: 36,
+              padding: '0 14px',
+              borderRadius: 8,
+              border: '1px solid #4dabf7',
+              background: '#fff',
+              color: '#4dabf7',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M1 8a7 7 0 0 1 13.5-2.7M15 8a7 7 0 0 1-13.5 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+              <path d="M12 2.5l2.5 2.8-2.5 2.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M4 8.5l-2.5 2.8 2.5 2.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {saving ? 'Sincronizando…' : syncLabel}
+          </button>
+          <button
+            onClick={handleDeleteAll}
+            disabled={saving || trades.length === 0}
+            title="Eliminar todos los trades"
+            style={{
+              height: 36,
+              padding: '0 14px',
+              borderRadius: 8,
+              border: '1px solid #ff6b6b',
+              background: '#fff',
+              color: '#e03131',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: saving || trades.length === 0 ? 'not-allowed' : 'pointer',
+              opacity: saving || trades.length === 0 ? 0.5 : 1,
+            }}
+          >
+            Eliminar todos
+          </button>
           <button
             onClick={openImport}
             style={{
@@ -294,7 +361,7 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 10,
-              opacity: hiddenTrades?.has(t.price) ? 0.45 : 1,
+              opacity: t.hidden ? 0.45 : 1,
               transition: 'opacity 150ms',
             }}
           >
@@ -304,6 +371,17 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
                 <span>{t.quantity} unid · {t.fecha}</span>
                 <span style={{ color: '#4dabf7', fontWeight: 700 }}>${(t.price * t.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
+              {(t.sellPrice || t.sellDate) && (
+                <div style={{ fontSize: 12, color: '#51cf66', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {t.sellPrice && <span style={{ fontWeight: 700 }}>Venta: {fmtK(t.sellPrice)}</span>}
+                  {t.sellDate && <span>{t.sellDate}</span>}
+                  {t.sellPrice && (
+                    <span style={{ color: (t.sellPrice - t.price) >= 0 ? '#51cf66' : '#ff6b6b', fontWeight: 700 }}>
+                      {(t.sellPrice - t.price) >= 0 ? '+' : ''}{fmtK(t.sellPrice - t.price)}
+                    </span>
+                  )}
+                </div>
+              )}
               {t.notes && (
                 <div style={{ fontSize: 11, color: '#adb5bd', fontStyle: 'italic', marginTop: 2 }}>
                   {t.notes}
@@ -312,15 +390,15 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button
-                onClick={() => toggleHide(t.price)}
-                title={hiddenTrades?.has(t.price) ? 'Mostrar en grid' : 'Ocultar en grid'}
+                onClick={() => dispatch(actions.saveRequest({ ...t, hidden: !t.hidden }))}
+                title={t.hidden ? 'Mostrar en grid' : 'Ocultar en grid'}
                 style={{
                   width: 36,
                   height: 36,
                   borderRadius: 8,
-                  border: `2px solid ${hiddenTrades?.has(t.price) ? '#4b5563' : '#a78bfa'}`,
-                  background: hiddenTrades?.has(t.price) ? '#f8f9fa' : '#f3eeff',
-                  color: hiddenTrades?.has(t.price) ? '#4b5563' : '#a78bfa',
+                  border: `2px solid ${t.hidden ? '#4b5563' : '#a78bfa'}`,
+                  background: t.hidden ? '#f8f9fa' : '#f3eeff',
+                  color: t.hidden ? '#4b5563' : '#a78bfa',
                   fontSize: 16,
                   cursor: 'pointer',
                   display: 'flex',
@@ -329,7 +407,7 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
                   flexShrink: 0,
                 }}
               >
-                {hiddenTrades?.has(t.price) ? (
+                {t.hidden ? (
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M2 8s2.5-5 6-5 6 5 6 5-2.5 5-6 5-6-5-6-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
                     <line x1="3" y1="13" x2="13" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -614,12 +692,32 @@ export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) 
 
         <div style={{ marginBottom: 18 }}>
           <label style={labelStyle}>FECHA DE ENTRADA *</label>
-          <input
-            style={inputStyle}
-            type="date"
-            value={form?.fecha ?? ''}
-            onChange={set('fecha')}
-          />
+          <input style={inputStyle} type="date" value={form?.fecha ?? ''} onChange={set('fecha')} />
+        </div>
+
+        <div style={row2}>
+          <div>
+            <label style={labelStyle}>PRECIO DE VENTA</label>
+            <input
+              style={inputStyle}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={form?.sellPrice ?? ''}
+              onChange={set('sellPrice')}
+              placeholder="opcional"
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>FECHA DE VENTA</label>
+            <input
+              style={inputStyle}
+              type="date"
+              value={form?.sellDate ?? ''}
+              onChange={set('sellDate')}
+            />
+          </div>
         </div>
 
         <div style={{ marginBottom: 8 }}>

@@ -24,6 +24,9 @@ export const fetchAll = async () => {
       quantity: data.quantity ?? 0,
       fecha: data.fecha ?? null,
       notes: data.notes ?? '',
+      hidden: data.hidden ?? false,
+      sellPrice: data.sellPrice ?? null,
+      sellDate: data.sellDate ?? null,
       createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
       updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
     }
@@ -47,4 +50,10 @@ export const saveTrade = async (trade) => {
 
 export const deleteTrade = async (id) => {
   await deleteDoc(doc(collection(db, COL), id))
+}
+
+export const deleteAll = async () => {
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+  const snap = await getDocs(q)
+  await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)))
 }

@@ -45,3 +45,12 @@ export const deleteTrade = async (id) => {
     req.onerror = (e) => reject(e.target.error)
   })
 }
+
+export const deleteAll = async () => {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(STORE, 'readwrite').objectStore(STORE).clear()
+    req.onsuccess = () => resolve()
+    req.onerror = (e) => reject(e.target.error)
+  })
+}

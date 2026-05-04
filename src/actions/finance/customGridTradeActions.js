@@ -18,3 +18,13 @@ export const setStorage = createAction('set custom grid trade storage')
 export const bulkImportRequest = createAction('bulk import custom grid trades')
 export const bulkImportSuccess = createAction('bulk import custom grid trades success')
 export const bulkImportError = createAction('bulk import custom grid trades error')
+
+// Sync current storage → the other
+export const syncRequest = createAction('sync custom grid trades')
+export const syncSuccess = createAction('sync custom grid trades success')
+export const syncError = createAction('sync custom grid trades error')
+
+// Delete all trades from current storage
+export const deleteAllRequest = createAction('delete all custom grid trades')
+export const deleteAllSuccess = createAction('delete all custom grid trades success')
+export const deleteAllError = createAction('delete all custom grid trades error')

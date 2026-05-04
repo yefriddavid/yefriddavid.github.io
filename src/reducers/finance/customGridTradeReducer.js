@@ -63,6 +63,27 @@ const customGridTradeSlice = createSlice({
         state.error = payload
         state.saving = false
       })
+      .addCase(actions.syncRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.syncSuccess, (state) => {
+        state.saving = false
+      })
+      .addCase(actions.syncError, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
+      .addCase(actions.deleteAllRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.deleteAllSuccess, (state) => {
+        state.trades = []
+        state.saving = false
+      })
+      .addCase(actions.deleteAllError, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
   },
 })
 

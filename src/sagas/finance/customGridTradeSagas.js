@@ -48,11 +48,38 @@ function* bulkImport({ payload }) {
   }
 }
 
+function* syncTrades() {
+  try {
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    const source = svc(useIndexedDB)
+    const dest = svc(!useIndexedDB)
+    const trades = yield call(source.fetchAll)
+    for (const trade of trades) {
+      yield call(dest.saveTrade, trade)
+    }
+    yield put(actions.syncSuccess())
+  } catch (e) {
+    yield put(actions.syncError(e.message))
+  }
+}
+
+function* deleteAllTrades() {
+  try {
+    const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
+    yield call(svc(useIndexedDB).deleteAll)
+    yield put(actions.deleteAllSuccess())
+  } catch (e) {
+    yield put(actions.deleteAllError(e.message))
+  }
+}
+
 export default function* sagaCustomGridTrades() {
   yield all([
     takeLatest(actions.loadRequest, loadTrades),
     takeEvery(actions.saveRequest, saveTrade),
     takeLatest(actions.deleteRequest, deleteTrade),
     takeLatest(actions.bulkImportRequest, bulkImport),
+    takeLatest(actions.syncRequest, syncTrades),
+    takeLatest(actions.deleteAllRequest, deleteAllTrades),
   ])
 }

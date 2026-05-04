@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import { CNav, CNavItem, CNavLink, CTabContent, CTabPane, CFormCheck } from '@coreui/react'
@@ -16,14 +16,6 @@ export default function CustomGridTrade() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = TABS[searchParams.get(TAB_PARAM)] ?? 1
   const setActiveTab = (tab) => setSearchParams({ [TAB_PARAM]: TAB_KEYS[tab] }, { replace: true })
-
-  const [hiddenTrades, setHiddenTrades] = useState(new Set())
-  const toggleHide = (price) =>
-    setHiddenTrades((prev) => {
-      const s = new Set(prev)
-      s.has(price) ? s.delete(price) : s.add(price)
-      return s
-    })
 
   const handleStorageToggle = (e) => {
     dispatch(actions.setStorage(e.target.checked))
@@ -77,21 +69,11 @@ export default function CustomGridTrade() {
       <CTabContent>
         <CTabPane visible={activeTab === 1}>
           <div style={{ padding: '24px 0', background: '#0d1117', borderRadius: 16, marginTop: 16 }}>
-            <TradeVisualGrid
-              transactions={trades}
-              hiddenTrades={hiddenTrades}
-              toggleHide={toggleHide}
-              setHiddenTrades={setHiddenTrades}
-            />
+            <TradeVisualGrid transactions={trades} />
           </div>
         </CTabPane>
         <CTabPane visible={activeTab === 2}>
-          <TradesTab
-            trades={trades}
-            saving={saving}
-            hiddenTrades={hiddenTrades}
-            toggleHide={toggleHide}
-          />
+          <TradesTab trades={trades} saving={saving} />
         </CTabPane>
       </CTabContent>
     </div>

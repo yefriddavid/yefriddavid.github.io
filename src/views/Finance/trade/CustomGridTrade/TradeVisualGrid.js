@@ -18,7 +18,7 @@ const BASE_LEVEL_H = 60
 const W = 1200
 const AXIS_X = 15
 
-export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggleHide, setHiddenTrades }) {
+export default function TradeVisualGrid({ transactions = [] }) {
   const dispatch = useDispatch()
   const [selectedPrice, setSelectedPrice] = useState(78000)
   const [currentPrice, setCurrentPrice] = useState(77500)
@@ -32,6 +32,10 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
   const [textScale, setTextScale] = useState(1)
   const [panEnabled, setPanEnabled] = useState(true)
   const [snakeLayout, setSnakeLayout] = useState(true)
+  const [hiddenTrades, setHiddenTrades] = useState(
+    () => new Set(transactions.filter((t) => t.hidden).map((t) => t.price)),
+  )
+  const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   const [priceFilter, setPriceFilter] = useState(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterInput, setFilterInput] = useState('')
@@ -44,6 +48,20 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
   useEffect(() => {
     sessionStorage.setItem('cgt.viewTopPrice', viewTopPrice)
   }, [viewTopPrice])
+
+  useEffect(() => {
+    setHiddenTrades(new Set(transactions.filter((t) => t.hidden).map((t) => t.price)))
+  }, [transactions])
+
+  const toggleHide = (trade) => {
+    const nowHidden = !hiddenTrades.has(trade.price)
+    setHiddenTrades((prev) => {
+      const s = new Set(prev)
+      nowHidden ? s.add(trade.price) : s.delete(trade.price)
+      return s
+    })
+    dispatch(actions.saveRequest({ ...trade, hidden: nowHidden }))
+  }
 
   const outerRef = useRef(null)
 
@@ -100,13 +118,14 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
   const sortedTransactions = useMemo(
     () =>
       [...visibleTransactions]
+        .filter((t) => showHiddenOnly ? hiddenTrades.has(t.price) : !hiddenTrades.has(t.price))
         .filter((t) => priceFilter === null || t.price * t.quantity > priceFilter)
         .sort((a, b) => {
         if (a.price === frontPrice) return 1
         if (b.price === frontPrice) return -1
         return 0
       }),
-    [visibleTransactions, frontPrice, priceFilter],
+    [visibleTransactions, frontPrice, priceFilter, hiddenTrades, showHiddenOnly],
   )
 
   const totals = useMemo(() => {
@@ -508,11 +527,9 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
           </button>
           <button
             onClick={() => {
-              if (hiddenTrades.size > 0) {
-                setHiddenTrades(new Set())
-              } else {
-                setHiddenTrades(new Set(transactions.map((t) => t.price)))
-              }
+              const nowHidden = hiddenTrades.size === 0
+              setHiddenTrades(nowHidden ? new Set(transactions.map((t) => t.price)) : new Set())
+              transactions.forEach((t) => dispatch(actions.saveRequest({ ...t, hidden: nowHidden })))
             }}
             title={hiddenTrades.size > 0 ? 'Mostrar todos' : 'Ocultar todos'}
             style={{
@@ -534,6 +551,28 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
               {hiddenTrades.size === 0 && (
                 <polyline points="5,10 8,14 15,6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
               )}
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowHiddenOnly((v) => !v)}
+            title={showHiddenOnly ? 'Volver a trades visibles' : 'Ver solo trades ocultos'}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: `2px solid ${showHiddenOnly ? '#fb923c' : '#4b5563'}`,
+              background: '#0d1117',
+              color: showHiddenOnly ? '#fb923c' : '#4b5563',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: showHiddenOnly ? '0 0 8px #fb923c55' : 'none',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8s2.5-5 6-5 6 5 6 5-2.5 5-6 5-6-5-6-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <line x1="3" y1="13" x2="13" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
           <button
@@ -751,15 +790,12 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
               const col = snakeColMap.get(t.price) ?? 0
               const boxX = snakeLayout ? SNAKE_X[col] : W / 2 - 80
               const boxCenterX = boxX + 80
-              const isHidden = hiddenTrades.has(t.price)
-              const CBX = W - 105 // between info button (W-160) and percentage text (~W-65)
+              const CBX = W - 105
 
               return (
                 <g key={`tx-${t.price}`}>
-                  {/* Everything below is hidden when isHidden */}
-                  {!isHidden && (
-                    <>
-                      {!isOnGridLevel && (
+                  <>
+                    {!isOnGridLevel && (
                         <line x1={0} y1={y} x2={W} y2={y} stroke={color} strokeWidth={2.5} />
                       )}
                       <g onClick={() => setSelectedPrice(t.price)} style={{ cursor: 'pointer' }}>
@@ -893,37 +929,22 @@ export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggl
                           i
                         </text>
                       </g>
-                    </>
-                  )}
+                  </>
 
-                  {/* Visibility toggle — rendered last so always on top of lines */}
+                  {/* Visibility toggle */}
                   <g
-                    onClick={(e) => { e.stopPropagation(); toggleHide(t.price) }}
+                    onClick={(e) => { e.stopPropagation(); toggleHide(t) }}
                     style={{ cursor: 'pointer' }}
                   >
-                    <circle
-                      cx={CBX}
-                      cy={y}
-                      r={11}
-                      fill="#161b22"
-                      stroke={isHidden ? '#4b5563' : color}
-                      strokeWidth={1.5}
+                    <circle cx={CBX} cy={y} r={11} fill="#161b22" stroke={color} strokeWidth={1.5} />
+                    <polyline
+                      points={`${CBX - 5},${y} ${CBX - 1},${y + 4} ${CBX + 6},${y - 5}`}
+                      stroke={color}
+                      strokeWidth={2}
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
-                    {isHidden ? (
-                      <>
-                        <line x1={CBX - 5} y1={y - 5} x2={CBX + 5} y2={y + 5} stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
-                        <line x1={CBX + 5} y1={y - 5} x2={CBX - 5} y2={y + 5} stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
-                      </>
-                    ) : (
-                      <polyline
-                        points={`${CBX - 5},${y} ${CBX - 1},${y + 4} ${CBX + 6},${y - 5}`}
-                        stroke={color}
-                        strokeWidth={2}
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    )}
                   </g>
                 </g>
               )
