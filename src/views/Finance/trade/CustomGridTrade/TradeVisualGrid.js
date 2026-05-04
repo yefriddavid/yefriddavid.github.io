@@ -25,13 +25,28 @@ export default function TradeVisualGrid({ transactions = [] }) {
   const [loanRate, setLoanRate] = useState(3.5)
   const [gridStep, setGridStep] = useState(1000)
   // viewTopPrice: the price shown at the top of the visible window
-  const [viewTopPrice, setViewTopPrice] = useState(78000 + 7 * 1000)
+  const [viewTopPrice, setViewTopPrice] = useState(
+    () => Number(sessionStorage.getItem('cgt.viewTopPrice')) || 78000 + 7 * 1000,
+  )
   const [visibleLevels, setVisibleLevels] = useState(15)
   const [textScale, setTextScale] = useState(1)
   const [panEnabled, setPanEnabled] = useState(true)
+  const [snakeLayout, setSnakeLayout] = useState(true)
+  const [hiddenTrades, setHiddenTrades] = useState(new Set())
+
+  const toggleHide = (price) =>
+    setHiddenTrades((prev) => {
+      const s = new Set(prev)
+      s.has(price) ? s.delete(price) : s.add(price)
+      return s
+    })
   const [detailModal, setDetailModal] = useState(null)
   const [editForm, setEditForm] = useState(null)
   const [frontPrice, setFrontPrice] = useState(null)
+
+  useEffect(() => {
+    sessionStorage.setItem('cgt.viewTopPrice', viewTopPrice)
+  }, [viewTopPrice])
 
   const containerRef = useRef(null)
   const isPointerDown = useRef(false)
@@ -78,6 +93,16 @@ export default function TradeVisualGrid({ transactions = [] }) {
       }),
     [visibleTransactions, frontPrice],
   )
+
+  // Assign snake column (0 = left, 1 = right) per price, stable top-to-bottom order
+  const snakeColMap = useMemo(() => {
+    const sorted = [...visibleTransactions].sort((a, b) => b.price - a.price)
+    const map = new Map()
+    sorted.forEach((t, i) => map.set(t.price, i % 2))
+    return map
+  }, [visibleTransactions])
+
+  const SNAKE_X = [210, 590] // left-col and right-col box origins (box width = 160)
 
   const onPointerDown = (e) => {
     if (!panEnabled) return
@@ -337,6 +362,64 @@ export default function TradeVisualGrid({ transactions = [] }) {
             +
           </button>
           <button
+            onClick={() => {
+              if (hiddenTrades.size > 0) {
+                setHiddenTrades(new Set())
+              } else {
+                setHiddenTrades(new Set(transactions.map((t) => t.price)))
+              }
+            }}
+            title={hiddenTrades.size > 0 ? 'Mostrar todos' : 'Ocultar todos'}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: `2px solid ${hiddenTrades.size > 0 ? '#4b5563' : '#a78bfa'}`,
+              background: '#0d1117',
+              color: hiddenTrades.size > 0 ? '#4b5563' : '#a78bfa',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: hiddenTrades.size === 0 ? '0 0 8px #a78bfa55' : 'none',
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="2" />
+              {hiddenTrades.size === 0 && (
+                <polyline points="5,10 8,14 15,6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              )}
+            </svg>
+          </button>
+          <button
+            onClick={() => setSnakeLayout((v) => !v)}
+            title={snakeLayout ? 'Modo vertical' : 'Modo culebrita'}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: `2px solid ${snakeLayout ? '#f59e0b' : '#8b949e'}`,
+              background: '#0d1117',
+              color: snakeLayout ? '#f59e0b' : '#8b949e',
+              fontSize: 14,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: snakeLayout ? '0 0 8px #f59e0b55' : 'none',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <polyline
+                points="2,16 6,6 10,16 14,6 18,16"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
             onClick={() => setPanEnabled((v) => !v)}
             title={panEnabled ? 'Bloquear navegación' : 'Activar navegación'}
             style={{
@@ -520,127 +603,182 @@ export default function TradeVisualGrid({ transactions = [] }) {
               const pnlNet = pnlGross - loanCost
               const isOnGridLevel = levels.includes(t.price)
 
+              const col = snakeColMap.get(t.price) ?? 0
+              const boxX = snakeLayout ? SNAKE_X[col] : W / 2 - 80
+              const boxCenterX = boxX + 80
+              const isHidden = hiddenTrades.has(t.price)
+              const CBX = W - 105 // between info button (W-160) and percentage text (~W-65)
+
               return (
                 <g key={`tx-${t.price}`}>
-                  {!isOnGridLevel && (
-                    <line x1={0} y1={y} x2={W} y2={y} stroke={color} strokeWidth={2.5} />
+                  {/* Everything below is hidden when isHidden */}
+                  {!isHidden && (
+                    <>
+                      {!isOnGridLevel && (
+                        <line x1={0} y1={y} x2={W} y2={y} stroke={color} strokeWidth={2.5} />
+                      )}
+                      <g onClick={() => setSelectedPrice(t.price)} style={{ cursor: 'pointer' }}>
+                        <circle
+                          cx={AXIS_X + 20}
+                          cy={y}
+                          r={10}
+                          fill="#0d1117"
+                          stroke={color}
+                          strokeWidth={isSelected ? 3.5 : 2.5}
+                        />
+                        <circle cx={AXIS_X + 20} cy={y} r={isSelected ? 4.5 : 2.5} fill={color} />
+                      </g>
+
+                      {/* Leader line: circle → box (snake mode only) */}
+                      {snakeLayout && (
+                        <line
+                          x1={AXIS_X + 30}
+                          y1={y}
+                          x2={boxCenterX}
+                          y2={y}
+                          stroke={color}
+                          strokeWidth={1}
+                          strokeDasharray="4,3"
+                          opacity={0.4}
+                        />
+                      )}
+
+                      {/* P&L box */}
+                      <g
+                        transform={`translate(${boxX}, ${y - 42})`}
+                        onMouseDown={() => setFrontPrice(t.price)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <rect
+                          width={160}
+                          height={84}
+                          rx={12}
+                          fill="#161b22"
+                          stroke={pnlNet >= 0 ? '#4ade80' : '#f87171'}
+                          strokeWidth={t.price === frontPrice ? 3 : 1.5}
+                          strokeDasharray="4,2"
+                          fillOpacity={0.95}
+                        />
+                        <text
+                          x={80}
+                          y={14}
+                          textAnchor="middle"
+                          fill="#fbbf24"
+                          fontSize={fs(9)}
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          INV: ${parseFloat((t.price * t.quantity).toFixed(2))}
+                        </text>
+                        <text
+                          x={80}
+                          y={27}
+                          textAnchor="middle"
+                          fill="#e2e8f0"
+                          fontSize={fs(9)}
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          BRUTO: {fmtVal(pnlGross)} ({pnlGrossPct.toFixed(2)}%)
+                        </text>
+                        <text
+                          x={80}
+                          y={43}
+                          textAnchor="middle"
+                          fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
+                          fontSize={fs(11)}
+                          fontWeight="900"
+                          fontFamily="monospace"
+                        >
+                          NETO: {pnlNet >= 0 ? '+' : ''}
+                          {((pnlNet / (t.price * t.quantity)) * 100).toFixed(2)}%
+                        </text>
+                        <text
+                          x={80}
+                          y={58}
+                          textAnchor="middle"
+                          fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
+                          fontSize={fs(12)}
+                          fontWeight="bold"
+                          fontFamily="monospace"
+                        >
+                          {fmtVal(pnlNet)}
+                        </text>
+                        <text
+                          x={80}
+                          y={74}
+                          textAnchor="middle"
+                          fill="#8b949e"
+                          fontSize={fs(9)}
+                          fontFamily="monospace"
+                        >
+                          {fmtVal(-loanCost)} ({daysElapsed}d)
+                        </text>
+                      </g>
+
+                      {/* Info button */}
+                      <g
+                        onClick={() => {
+                          setDetailModal(t)
+                          setEditForm({
+                            price: t.price,
+                            quantity: t.quantity,
+                            fecha: t.fecha,
+                            notes: t.notes ?? '',
+                          })
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <circle
+                          cx={W - 160}
+                          cy={y}
+                          r={12}
+                          fill="#161b22"
+                          stroke={color}
+                          strokeWidth={1}
+                        />
+                        <text
+                          x={W - 160}
+                          y={y + 4}
+                          textAnchor="middle"
+                          fill={color}
+                          fontSize={fs(14)}
+                          fontWeight="bold"
+                        >
+                          i
+                        </text>
+                      </g>
+                    </>
                   )}
-                  <g onClick={() => setSelectedPrice(t.price)} style={{ cursor: 'pointer' }}>
-                    <circle
-                      cx={AXIS_X + 20}
-                      cy={y}
-                      r={10}
-                      fill="#0d1117"
-                      stroke={color}
-                      strokeWidth={isSelected ? 3.5 : 2.5}
-                    />
-                    <circle cx={AXIS_X + 20} cy={y} r={isSelected ? 4.5 : 2.5} fill={color} />
-                  </g>
 
-                  {/* P&L box */}
+                  {/* Visibility toggle — rendered last so always on top of lines */}
                   <g
-                    transform={`translate(${W / 2 - 80}, ${y - 35})`}
-                    onMouseDown={() => setFrontPrice(t.price)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <text
-                      x={-8}
-                      y={25}
-                      textAnchor="end"
-                      fill={color}
-                      fontSize={fs(13)}
-                      fontWeight="900"
-                      fontFamily="monospace"
-                    >
-                      {fmt(t.price)}
-                    </text>
-                    <rect
-                      width={160}
-                      height={70}
-                      rx={12}
-                      fill="#161b22"
-                      stroke={pnlNet >= 0 ? '#4ade80' : '#f87171'}
-                      strokeWidth={t.price === frontPrice ? 3 : 1.5}
-                      strokeDasharray="4,2"
-                      fillOpacity={0.95}
-                    />
-                    <text
-                      x={80}
-                      y={15}
-                      textAnchor="middle"
-                      fill="#e2e8f0"
-                      fontSize={fs(9)}
-                      fontWeight="bold"
-                      fontFamily="monospace"
-                    >
-                      BRUTO: {fmtVal(pnlGross)} ({pnlGrossPct.toFixed(2)}%)
-                    </text>
-                    <text
-                      x={80}
-                      y={32}
-                      textAnchor="middle"
-                      fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
-                      fontSize={fs(11)}
-                      fontWeight="900"
-                      fontFamily="monospace"
-                    >
-                      NETO: {pnlNet >= 0 ? '+' : ''}
-                      {((pnlNet / (t.price * t.quantity)) * 100).toFixed(2)}%
-                    </text>
-                    <text
-                      x={80}
-                      y={48}
-                      textAnchor="middle"
-                      fill={pnlNet >= 0 ? '#4ade80' : '#f87171'}
-                      fontSize={fs(12)}
-                      fontWeight="bold"
-                      fontFamily="monospace"
-                    >
-                      {fmtVal(pnlNet)}
-                    </text>
-                    <text
-                      x={80}
-                      y={62}
-                      textAnchor="middle"
-                      fill="#8b949e"
-                      fontSize={fs(9)}
-                      fontFamily="monospace"
-                    >
-                      {fmtVal(-loanCost)} ({daysElapsed}d)
-                    </text>
-                  </g>
-
-                  {/* Info button */}
-                  <g
-                    onClick={() => {
-                      setDetailModal(t)
-                      setEditForm({
-                        price: t.price,
-                        quantity: t.quantity,
-                        fecha: t.fecha,
-                        notes: t.notes ?? '',
-                      })
-                    }}
+                    onClick={(e) => { e.stopPropagation(); toggleHide(t.price) }}
                     style={{ cursor: 'pointer' }}
                   >
                     <circle
-                      cx={W - 160}
+                      cx={CBX}
                       cy={y}
-                      r={12}
+                      r={11}
                       fill="#161b22"
-                      stroke={color}
-                      strokeWidth={1}
+                      stroke={isHidden ? '#4b5563' : color}
+                      strokeWidth={1.5}
                     />
-                    <text
-                      x={W - 160}
-                      y={y + 4}
-                      textAnchor="middle"
-                      fill={color}
-                      fontSize={fs(14)}
-                      fontWeight="bold"
-                    >
-                      i
-                    </text>
+                    {isHidden ? (
+                      <>
+                        <line x1={CBX - 5} y1={y - 5} x2={CBX + 5} y2={y + 5} stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
+                        <line x1={CBX + 5} y1={y - 5} x2={CBX - 5} y2={y + 5} stroke="#4b5563" strokeWidth={2} strokeLinecap="round" />
+                      </>
+                    ) : (
+                      <polyline
+                        points={`${CBX - 5},${y} ${CBX - 1},${y + 4} ${CBX + 6},${y - 5}`}
+                        stroke={color}
+                        strokeWidth={2}
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
                   </g>
                 </g>
               )
