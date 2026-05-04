@@ -18,7 +18,7 @@ const BASE_LEVEL_H = 60
 const W = 1200
 const AXIS_X = 15
 
-export default function TradeVisualGrid({ transactions = [] }) {
+export default function TradeVisualGrid({ transactions = [], hiddenTrades, toggleHide, setHiddenTrades }) {
   const dispatch = useDispatch()
   const [selectedPrice, setSelectedPrice] = useState(78000)
   const [currentPrice, setCurrentPrice] = useState(77500)
@@ -32,21 +32,34 @@ export default function TradeVisualGrid({ transactions = [] }) {
   const [textScale, setTextScale] = useState(1)
   const [panEnabled, setPanEnabled] = useState(true)
   const [snakeLayout, setSnakeLayout] = useState(true)
-  const [hiddenTrades, setHiddenTrades] = useState(new Set())
+  const [priceFilter, setPriceFilter] = useState(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterInput, setFilterInput] = useState('')
 
-  const toggleHide = (price) =>
-    setHiddenTrades((prev) => {
-      const s = new Set(prev)
-      s.has(price) ? s.delete(price) : s.add(price)
-      return s
-    })
   const [detailModal, setDetailModal] = useState(null)
   const [editForm, setEditForm] = useState(null)
   const [frontPrice, setFrontPrice] = useState(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     sessionStorage.setItem('cgt.viewTopPrice', viewTopPrice)
   }, [viewTopPrice])
+
+  const outerRef = useRef(null)
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      outerRef.current?.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   const containerRef = useRef(null)
   const isPointerDown = useRef(false)
@@ -86,13 +99,32 @@ export default function TradeVisualGrid({ transactions = [] }) {
 
   const sortedTransactions = useMemo(
     () =>
-      [...visibleTransactions].sort((a, b) => {
+      [...visibleTransactions]
+        .filter((t) => priceFilter === null || t.price * t.quantity > priceFilter)
+        .sort((a, b) => {
         if (a.price === frontPrice) return 1
         if (b.price === frontPrice) return -1
         return 0
       }),
-    [visibleTransactions, frontPrice],
+    [visibleTransactions, frontPrice, priceFilter],
   )
+
+  const totals = useMemo(() => {
+    const now = new Date()
+    let loanSum = 0
+    let grossSum = 0
+    transactions
+      .filter((t) => !hiddenTrades.has(t.price))
+      .forEach((t) => {
+        const days = Math.ceil(Math.abs(now - new Date(t.fecha)) / (1000 * 60 * 60 * 24))
+        loanSum += t.price * t.quantity * (loanRate / 100 / 365) * days
+        grossSum += (currentPrice - t.price) * t.quantity
+      })
+    const investedSum = transactions
+      .filter((t) => !hiddenTrades.has(t.price))
+      .reduce((acc, t) => acc + t.price * t.quantity, 0)
+    return { loanSum, grossSum, total: loanSum + Math.abs(grossSum), investedSum }
+  }, [transactions, currentPrice, loanRate, hiddenTrades])
 
   // Assign snake column (0 = left, 1 = right) per price, stable top-to-bottom order
   const snakeColMap = useMemo(() => {
@@ -136,7 +168,7 @@ export default function TradeVisualGrid({ transactions = [] }) {
   }
 
   return (
-    <div style={{ width: '100%', padding: '0 10px' }}>
+    <div ref={outerRef} style={{ width: '100%', padding: '0 10px' }}>
       {/* Controls */}
       <div
         style={{
@@ -269,6 +301,54 @@ export default function TradeVisualGrid({ transactions = [] }) {
         </div>
       </div>
 
+      {/* Summary bar */}
+      <div style={{ display: 'flex', gap: 10, padding: '10px 0 14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        {[
+          {
+            label: 'TOTAL INVERTIDO',
+            value: totals.investedSum,
+            color: '#60a5fa',
+            alwaysPositive: true,
+          },
+          {
+            label: 'INTERESES PAGADOS',
+            value: totals.loanSum,
+            color: '#fbbf24',
+            alwaysPositive: true,
+          },
+          {
+            label: 'PÉRDIDA NO REALIZADA',
+            value: totals.grossSum,
+            color: totals.grossSum >= 0 ? '#4ade80' : '#f87171',
+          },
+          {
+            label: 'TOTAL (INTERESES + PÉRDIDA)',
+            value: totals.total,
+            color: totals.total >= 0 ? '#4ade80' : '#f87171',
+            alwaysPositive: true,
+          },
+        ].map(({ label, value, color, alwaysPositive }) => (
+          <div
+            key={label}
+            style={{
+              background: '#161b22',
+              border: `1px solid ${color}33`,
+              borderRadius: 10,
+              padding: '8px 20px',
+              textAlign: 'center',
+              minWidth: 180,
+            }}
+          >
+            <div style={{ fontSize: 9, color: '#8b949e', fontWeight: 700, letterSpacing: '0.07em', marginBottom: 4 }}>
+              {label}
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, color, fontFamily: 'monospace', letterSpacing: '-0.01em' }}>
+              {!alwaysPositive && value >= 0 ? '+' : ''}{alwaysPositive ? '' : value < 0 ? '-' : ''}${Math.abs(value).toFixed(2)}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Draggable SVG grid */}
       <div style={{ position: 'relative' }}>
         <div
@@ -360,6 +440,71 @@ export default function TradeVisualGrid({ transactions = [] }) {
             }}
           >
             +
+          </button>
+          <button
+            onClick={() => {
+              setFilterInput(priceFilter !== null ? String(priceFilter) : '')
+              setFilterOpen(true)
+            }}
+            title={priceFilter !== null ? `Filtrando > $${fmt(priceFilter)} — click para cambiar` : 'Filtrar por precio mínimo'}
+            style={{
+              height: 40,
+              padding: '0 12px',
+              borderRadius: 20,
+              border: `2px solid ${priceFilter !== null ? '#f59e0b' : '#8b949e'}`,
+              background: '#0d1117',
+              color: priceFilter !== null ? '#f59e0b' : '#8b949e',
+              fontSize: 12,
+              fontWeight: 700,
+              fontFamily: 'monospace',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: priceFilter !== null ? '0 0 8px #f59e0b55' : 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {priceFilter !== null ? (
+              <>
+                <span>&gt;</span>
+                <span>{fmt(priceFilter)}</span>
+                <span
+                  onClick={(e) => { e.stopPropagation(); setPriceFilter(null) }}
+                  style={{ marginLeft: 2, opacity: 0.7, fontSize: 13 }}
+                >×</span>
+              </>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 3h14M3 8h10M6 13h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            )}
+          </button>
+          {/* pipe separator */}
+          <div style={{ width: 1, height: 24, background: '#3b4452', alignSelf: 'center' }} />
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid #8b949e',
+              background: '#0d1117',
+              color: '#8b949e',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              {isFullscreen ? (
+                <path d="M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              ) : (
+                <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              )}
+            </svg>
           </button>
           <button
             onClick={() => {
@@ -786,6 +931,99 @@ export default function TradeVisualGrid({ transactions = [] }) {
           </svg>
         </div>
       </div>
+
+      {/* Price filter — inline overlay (no portal, works in fullscreen) */}
+      {filterOpen && (
+        <div
+          onClick={() => setFilterOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '24px 24px 20px',
+              width: 360,
+              boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0d1117', marginBottom: 8 }}>
+              Filtrar por inversión
+            </div>
+            <div style={{ fontSize: 13, color: '#868e96', marginBottom: 16 }}>
+              Mostrar solo trades con valor invertido{' '}
+              (precio × cantidad) <strong>mayor a</strong>:
+            </div>
+            <div style={{ display: 'flex', marginBottom: 20 }}>
+              <span style={{
+                padding: '9px 12px',
+                background: '#f8f9fa',
+                border: '1px solid #dee2e6',
+                borderRight: 'none',
+                borderRadius: '8px 0 0 8px',
+                fontWeight: 700,
+                fontSize: 14,
+                color: '#495057',
+              }}>$</span>
+              <input
+                type="number"
+                step="any"
+                autoFocus
+                value={filterInput}
+                onChange={(e) => setFilterInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && filterInput) {
+                    setPriceFilter(Number(filterInput))
+                    setFilterOpen(false)
+                  }
+                  if (e.key === 'Escape') setFilterOpen(false)
+                }}
+                placeholder="ej. 500"
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '0 8px 8px 0',
+                  fontSize: 15,
+                  outline: 'none',
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              {priceFilter !== null && (
+                <button
+                  onClick={() => { setPriceFilter(null); setFilterOpen(false) }}
+                  style={{ marginRight: 'auto', border: 'none', background: 'none', color: '#e03131', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '8px 4px' }}
+                >
+                  Quitar filtro
+                </button>
+              )}
+              <button
+                onClick={() => setFilterOpen(false)}
+                style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid #dee2e6', background: '#fff', fontSize: 14, fontWeight: 600, color: '#868e96', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={!filterInput}
+                onClick={() => { setPriceFilter(Number(filterInput)); setFilterOpen(false) }}
+                style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: filterInput ? '#0d1117' : '#e9ecef', color: filterInput ? '#fff' : '#adb5bd', fontSize: 14, fontWeight: 700, cursor: filterInput ? 'pointer' : 'not-allowed' }}
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detail / edit modal */}
       <CModal

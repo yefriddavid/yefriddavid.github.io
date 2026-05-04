@@ -61,12 +61,21 @@ const labelStyle = {
 }
 const row2 = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }
 
-export default function TradesTab({ trades, saving }) {
+const FILTER_FIELDS = [
+  { key: 'quantity', label: 'Cantidad' },
+  { key: 'price', label: 'Precio' },
+  { key: 'fecha', label: 'Fecha' },
+  { key: 'notes', label: 'Notas' },
+]
+
+export default function TradesTab({ trades, saving, hiddenTrades, toggleHide }) {
   const dispatch = useDispatch()
   const [form, setForm] = useState(null)
   const [importOpen, setImportOpen] = useState(false)
   const [jsonText, setJsonText] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
+  const [filterField, setFilterField] = useState('quantity')
+  const [filterValue, setFilterValue] = useState('')
   const textareaRef = useRef(null)
   const lineNumsRef = useRef(null)
   const lineCount = Math.max(1, jsonText.split('\n').length)
@@ -201,13 +210,78 @@ export default function TradesTab({ trades, saving }) {
         </div>
       </div>
 
+      {/* Filter bar */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderRadius: 8, overflow: 'hidden', border: '1px solid #dee2e6' }}>
+        <select
+          value={filterField}
+          onChange={(e) => { setFilterField(e.target.value); setFilterValue('') }}
+          style={{
+            height: 36,
+            padding: '0 10px',
+            border: 'none',
+            borderRight: '1px solid #dee2e6',
+            background: '#f8f9fa',
+            color: '#495057',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            outline: 'none',
+            flexShrink: 0,
+          }}
+        >
+          {FILTER_FIELDS.map((f) => (
+            <option key={f.key} value={f.key}>{f.label}</option>
+          ))}
+        </select>
+        <input
+          type={filterField === 'fecha' ? 'date' : 'text'}
+          value={filterValue}
+          onChange={(e) => setFilterValue(e.target.value)}
+          placeholder={`Buscar por ${FILTER_FIELDS.find((f) => f.key === filterField)?.label.toLowerCase()}…`}
+          style={{
+            flex: 1,
+            height: 36,
+            padding: '0 12px',
+            border: 'none',
+            outline: 'none',
+            fontSize: 13,
+            color: '#0d1117',
+            background: '#fff',
+          }}
+        />
+        {filterValue && (
+          <button
+            onClick={() => setFilterValue('')}
+            style={{
+              height: 36,
+              padding: '0 10px',
+              border: 'none',
+              background: '#fff',
+              color: '#adb5bd',
+              fontSize: 16,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       {/* List */}
       {trades.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', color: '#adb5bd', fontSize: 14 }}>
           Sin trades. Presiona + para agregar el primero.
         </div>
       ) : (
-        trades.map((t) => (
+        [...trades]
+          .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+          .filter((t) => {
+            if (!filterValue.trim()) return true
+            const val = String(t[filterField] ?? '').toLowerCase()
+            return val.includes(filterValue.trim().toLowerCase())
+          })
+          .map((t) => (
           <div
             key={t.id}
             style={{
@@ -220,12 +294,15 @@ export default function TradesTab({ trades, saving }) {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 10,
+              opacity: hiddenTrades?.has(t.price) ? 0.45 : 1,
+              transition: 'opacity 150ms',
             }}
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: '#0d1117' }}>{fmtK(t.price)}</div>
-              <div style={{ fontSize: 12, color: '#868e96', marginTop: 2 }}>
-                {t.quantity} unid · {t.fecha}
+              <div style={{ fontSize: 12, color: '#868e96', marginTop: 2, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <span>{t.quantity} unid · {t.fecha}</span>
+                <span style={{ color: '#4dabf7', fontWeight: 700 }}>${(t.price * t.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               {t.notes && (
                 <div style={{ fontSize: 11, color: '#adb5bd', fontStyle: 'italic', marginTop: 2 }}>
@@ -233,7 +310,37 @@ export default function TradesTab({ trades, saving }) {
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                onClick={() => toggleHide(t.price)}
+                title={hiddenTrades?.has(t.price) ? 'Mostrar en grid' : 'Ocultar en grid'}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  border: `2px solid ${hiddenTrades?.has(t.price) ? '#4b5563' : '#a78bfa'}`,
+                  background: hiddenTrades?.has(t.price) ? '#f8f9fa' : '#f3eeff',
+                  color: hiddenTrades?.has(t.price) ? '#4b5563' : '#a78bfa',
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                {hiddenTrades?.has(t.price) ? (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8s2.5-5 6-5 6 5 6 5-2.5 5-6 5-6-5-6-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                    <line x1="3" y1="13" x2="13" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8s2.5-5 6-5 6 5 6 5-2.5 5-6 5-6-5-6-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                  </svg>
+                )}
+              </button>
               <button
                 onClick={() => openEdit(t)}
                 style={{
