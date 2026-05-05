@@ -1,0 +1,1 @@
+const a=["Administración","Combustible","Mantenimiento","Préstamos","Repuestos","Lavado","Cambio Aceite","Cambio de Correa Dentada","SOAT","RTM","Póliza Resp. Civil","Tarjeta de Operación","Multa","Otro"],e=["Cambio Aceite","Cambio de Correa Dentada","Mantenimiento","Lavado","Repuestos","SOAT","RTM","Póliza Resp. Civil","Tarjeta de Operación"];export{a as T,e as a};

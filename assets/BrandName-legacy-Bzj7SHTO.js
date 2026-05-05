@@ -1,0 +1,1 @@
+System.register(["./index-legacy-CT5yHhGV.js"],function(s,e){"use strict";var t;return{setters:[s=>{t=s.j}],execute:function(){s("A","CashFlow"),s("B",({className:s,style:e})=>t.jsxs("div",{className:s,style:e,children:["Cash",t.jsx("span",{children:"Flow"})]}))}}});
