@@ -15,6 +15,7 @@ export default function GridTrade() {
   const [expanded, setExpanded] = useState(null) // mobile inline expand
   const [selected, setSelected] = useState(null) // desktop right-panel selection
   const [showInfo, setShowInfo] = useState(false)
+  const [leftCollapsed, setLeftCollapsed] = useState(false)
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -75,6 +76,26 @@ export default function GridTrade() {
 
   const headerBtns = (
     <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+      <button
+        onClick={() => setLeftCollapsed((v) => !v)}
+        title={leftCollapsed ? 'Mostrar panel' : 'Ocultar panel'}
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: '50%',
+          border: 'none',
+          background: '#e03131',
+          color: '#fff',
+          fontSize: 14,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          touchAction: 'manipulation',
+        }}
+      >
+        {leftCollapsed ? '▶' : '◀'}
+      </button>
       <button
         onClick={() => setShowInfo(true)}
         style={{
@@ -185,7 +206,7 @@ export default function GridTrade() {
         }}
       >
         {/* Left: card list */}
-        <div style={{ width: 400, flexShrink: 0 }}>
+        <div style={{ width: leftCollapsed ? 'auto' : 400, flexShrink: 0 }}>
           <div
             style={{
               display: 'flex',
@@ -194,17 +215,19 @@ export default function GridTrade() {
               padding: '18px 0 14px',
             }}
           >
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#0d1117' }}>Grid Trading</div>
-              <div style={{ fontSize: 13, color: '#868e96', marginTop: 2 }}>
-                {trades.length} estrategia{trades.length !== 1 ? 's' : ''}
-                {activeCount > 0 && ` · ${activeCount} activa${activeCount !== 1 ? 's' : ''}`}
+            {!leftCollapsed && (
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#0d1117' }}>Grid Trading</div>
+                <div style={{ fontSize: 13, color: '#868e96', marginTop: 2 }}>
+                  {trades.length} estrategia{trades.length !== 1 ? 's' : ''}
+                  {activeCount > 0 && ` · ${activeCount} activa${activeCount !== 1 ? 's' : ''}`}
+                </div>
               </div>
-            </div>
+            )}
             {headerBtns}
           </div>
-          {summaryBanner}
-          {loading
+          {!leftCollapsed && summaryBanner}
+          {!leftCollapsed && (loading
             ? spinner
             : trades.length === 0
               ? emptyState
@@ -221,7 +244,7 @@ export default function GridTrade() {
                     expanded={false}
                     onToggle={() => {}}
                   />
-                ))}
+                )))}
         </div>
 
         {/* Right: chart detail panel */}
