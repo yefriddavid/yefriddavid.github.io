@@ -383,41 +383,16 @@ export default function GridChart({
               <circle cx={axisX} cy={centerY} r={7} fill="#0d1117" stroke="#fbbf24" strokeWidth={1.5} />
               <circle cx={axisX} cy={centerY} r={2.5} fill="#fbbf24" />
               {initialInvestment > 0 && (
-                <g>
-                  <rect
-                    x={axisX + 12}
-                    y={centerY + 4}
-                    width={74}
-                    height={22}
-                    rx={5}
-                    fill="#052e16"
-                    stroke="#4ade80"
-                    strokeWidth={1}
-                    opacity={0.92}
-                  />
-                  <text
-                    x={axisX + 49}
-                    y={centerY + 13}
-                    fill="#86efac"
-                    fontSize={5.5}
-                    fontFamily="'Courier New', monospace"
-                    fontWeight="700"
-                    textAnchor="middle"
-                  >
-                    INV. INICIAL (÷2)
-                  </text>
-                  <text
-                    x={axisX + 49}
-                    y={centerY + 22}
-                    fill="#4ade80"
-                    fontSize={7}
-                    fontFamily="'Courier New', monospace"
-                    fontWeight="800"
-                    textAnchor="middle"
-                  >
-                    {fmtInv(initialInvestment)}
-                  </text>
-                </g>
+                <text
+                  x={lineEndX + 5}
+                  y={centerY + 3}
+                  fill="#6b7280"
+                  fontSize={10}
+                  fontFamily="'Courier New', monospace"
+                  fontWeight="700"
+                >
+                  {fmtInv(initialInvestment)}
+                </text>
               )}
             </g>
           )
