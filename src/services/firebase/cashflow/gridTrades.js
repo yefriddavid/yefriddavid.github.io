@@ -30,6 +30,7 @@ export const fetchAll = async () => {
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
       notes: data.notes ?? '',
+      items: data.items ?? [],
       createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
       updatedAt: data.updatedAt?.toDate?.()?.toISOString() ?? data.updatedAt ?? null,
     }

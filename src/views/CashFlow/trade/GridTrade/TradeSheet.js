@@ -48,6 +48,7 @@ export default function TradeSheet({ initial, saving, onSave, onClose }) {
       loanRate: Number(form.loanRate) || 0,
       loanStartDate: form.loanStartDate || null,
       notes: form.notes.trim(),
+      items: initial?.items ?? [],
       createdAt: initial?.createdAt ?? new Date().toISOString(),
     })
   }

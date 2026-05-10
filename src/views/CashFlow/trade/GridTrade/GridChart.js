@@ -8,6 +8,7 @@ export default function GridChart({
   investment = 0,
   compact = false,
   gridType = 'long',
+  items = [],
 }) {
   const [showIncrement, setShowIncrement] = useState(true)
   const [showDecrement, setShowDecrement] = useState(true)
@@ -463,6 +464,31 @@ export default function GridChart({
             </text>
           </g>
         )}
+
+        {/* Trade items — dots on the axis */}
+        {items.map((item, i) => {
+          const iv = Number(item.value)
+          if (!iv || iv < priceMin || iv > priceMax) return null
+          const iy = toY(iv)
+          const isBuy = item.type === 'buy'
+          const dotColor = isBuy ? '#4ade80' : '#f87171'
+          return (
+            <g key={i}>
+              <circle cx={axisX} cy={iy} r={4} fill={dotColor} opacity={0.9} />
+              <circle cx={axisX} cy={iy} r={1.5} fill="#0d1117" />
+              <text
+                x={axisX + 7}
+                y={iy + 3}
+                fill={dotColor}
+                fontSize={5.5}
+                fontFamily="'Courier New', monospace"
+                fontWeight="700"
+              >
+                {fmt(iv)}
+              </text>
+            </g>
+          )
+        })}
       </svg>
     </div>
   )
