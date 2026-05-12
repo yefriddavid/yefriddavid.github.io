@@ -85,11 +85,39 @@
       .history-time {
         font-weight: 500;
         color: #212529;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+
+        .history-datetime {
+          font-size: 10px;
+          font-weight: 400;
+          color: #6c757d;
+        }
+      }
+
+      .history-pin-icon {
+        cursor: pointer;
+        color: #5856d6;
+
+        &:hover {
+          color: #3d3bab;
+        }
       }
 
       .history-coords {
         color: #6c757d;
         font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1px;
+
+        .history-city {
+          font-size: 10px;
+          font-weight: 500;
+          color: #495057;
+        }
       }
     }
   }

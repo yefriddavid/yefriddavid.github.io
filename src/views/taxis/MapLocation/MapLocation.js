@@ -19,13 +19,14 @@ import {
   CAccordionBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt } from '@coreui/icons'
+import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
 import * as currentPositionsActions from 'src/actions/taxi/currentPositionsActions'
 import { useVehicleLocationSnapshot } from 'src/hooks/useVehicleLocationSnapshot'
 import { shouldPersist } from 'src/utils/locationThrottle'
+import { reverseGeocode, geoKey } from 'src/utils/reverseGeocode'
 import { haversineKmh } from 'src/utils/geoUtils'
 import { taxiWebSocket } from 'src/services/websocketService'
 import 'leaflet/dist/leaflet.css'
@@ -47,6 +48,8 @@ const MapLocation = () => {
 
   const [manualPositions, setManualPositions] = useState({})
   const [centerOn, setCenterOn] = useState(null)
+  const [geoNames, setGeoNames] = useState({})
+  const geocodingRequested = useRef(new Set())
 
   const vehiclesRef = useRef(vehicles)
   const prevPositionsRef = useRef(new Map())
@@ -145,6 +148,34 @@ const MapLocation = () => {
   }
 
   const toggleFullScreen = useCallback(() => setIsFullScreen((p) => !p), [])
+
+  useEffect(() => {
+    const newCoords = Object.values(recentHistories)
+      .flat()
+      .map((h) => ({ lat: h.latitude, lng: h.longitude }))
+      .filter(({ lat, lng }) => {
+        const key = geoKey(lat, lng)
+        if (geocodingRequested.current.has(key)) return false
+        geocodingRequested.current.add(key)
+        return true
+      })
+
+    if (newCoords.length === 0) return
+
+    let cancelled = false
+    ;(async () => {
+      for (const { lat, lng } of newCoords) {
+        if (cancelled) break
+        const name = await reverseGeocode(lat, lng)
+        setGeoNames((prev) => ({ ...prev, [geoKey(lat, lng)]: name }))
+        await new Promise((r) => setTimeout(r, 250))
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [recentHistories])
 
   const fetchVehicleHistory = (vehicleId, plate) => {
     if (recentHistories[vehicleId] || loadingHistories[vehicleId]) return
@@ -367,24 +398,48 @@ const MapLocation = () => {
                             key={h.id || i}
                             className="history-item"
                           >
-                              <div
-                              className="d-flex justify-content-between">
-                              <a href={`https://www.google.com/maps/search/?api=1&query=${h.latitude},${ h.longitude }`} target="_blank">
-                              <CIcon icon={cilGlobeAlt} />
-                            </a>
-
-                              <span className="history-time"
-                            onClick={() => {
-                              const pos = { lat: h.latitude, lng: h.longitude }
-                              setManualPositions((prev) => ({
-                                ...prev,
-                                [loc.vehicle.id]: pos,
-                              }))
-                              setCenterOn([pos.lat, pos.lng])
-                            }}
-
-                            >{formatTimeAgo(h.timestamp)}</span>
+                              <div className="d-flex justify-content-between align-items-center">
+                              <div className="d-flex gap-2 align-items-center">
+                                <a
+                                  href={`https://www.google.com/maps/search/?api=1&query=${h.latitude},${h.longitude}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  <CIcon icon={cilGlobeAlt} />
+                                </a>
+                                <CIcon
+                                  icon={cilLocationPin}
+                                  className="history-pin-icon"
+                                  onClick={() => {
+                                    const pos = { lat: h.latitude, lng: h.longitude }
+                                    setManualPositions((prev) => ({
+                                      ...prev,
+                                      [loc.vehicle.id]: pos,
+                                    }))
+                                    setCenterOn([pos.lat, pos.lng])
+                                  }}
+                                />
+                              </div>
+                              <span className="history-time">
+                                {formatTimeAgo(h.timestamp)}
+                                {h.timestamp && (
+                                  <span className="history-datetime">
+                                    {new Date(h.timestamp).toLocaleString('es-CO', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: false,
+                                    })}
+                                  </span>
+                                )}
+                              </span>
                               <span className="history-coords">
+                                {geoNames[geoKey(h.latitude, h.longitude)] && (
+                                  <span className="history-city">
+                                    {geoNames[geoKey(h.latitude, h.longitude)]}
+                                  </span>
+                                )}
                                 {parseFloat(h.latitude).toFixed(4)},{' '}
                                 {parseFloat(h.longitude).toFixed(4)}
                               </span>
