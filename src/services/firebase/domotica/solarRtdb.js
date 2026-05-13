@@ -1,6 +1,6 @@
 import { ref, onValue } from 'firebase/database'
 import { eventChannel } from 'redux-saga'
-import { rtdb } from '../settings'
+import { rtdbDomotica as rtdb } from '../settings'
 
 export const createSolarBatteryChannel = () =>
   eventChannel((emit) => {

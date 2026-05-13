@@ -1,5 +1,5 @@
 import { ref, get, update } from 'firebase/database'
-import { rtdb } from '../settings'
+import { rtdbDomotica as rtdb } from '../settings'
 
 const PATH = 'solar/commands'
 

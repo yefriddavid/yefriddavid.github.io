@@ -1,5 +1,5 @@
-import { db, COL_DOMOTICA_TRANSACTIONS } from '../settings'
-import { firestoreCall } from '../firebaseClient'
+import { dbDomotica as db, COL_DOMOTICA_TRANSACTIONS } from '../settings'
+import { domoticaCall as firestoreCall } from '../firebaseClient'
 import {
   collection,
   addDoc,

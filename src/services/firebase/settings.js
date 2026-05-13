@@ -14,11 +14,25 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
+const domoticaConfig = {
+  apiKey: import.meta.env.VITE_DOMOTICA_API_KEY,
+  authDomain: import.meta.env.VITE_DOMOTICA_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DOMOTICA_DATABASE_URL,
+  projectId: import.meta.env.VITE_DOMOTICA_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_DOMOTICA_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_DOMOTICA_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_DOMOTICA_APP_ID,
+}
+
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
 export const messaging = getMessaging(app)
 export const rtdb = getDatabase(app)
+
+const domoticaApp = initializeApp(domoticaConfig, 'domotica')
+export const dbDomotica = getFirestore(domoticaApp)
+export const rtdbDomotica = getDatabase(domoticaApp)
 
 // Exported for REST API calls
 export const FIREBASE_API_KEY = firebaseConfig.apiKey

@@ -106,3 +106,31 @@ export async function firestoreCall(operation, { retries = 1 } = {}) {
 
   throw normalizeError(lastErr)
 }
+
+/**
+ * Wrapper for Domotica project calls — no auth token injection, no logout on
+ * permission errors (the Domotica project uses open rules, not Firebase Auth).
+ * @param {() => Promise<any>} operation
+ * @param {{ retries?: number }} options
+ * @returns {Promise<any>}
+ */
+export async function domoticaCall(operation, { retries = 1 } = {}) {
+  let lastErr
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await operation()
+    } catch (err) {
+      lastErr = err
+
+      if (isRetryable(err) && attempt < retries) {
+        await sleep(400 * 2 ** attempt)
+        continue
+      }
+
+      break
+    }
+  }
+
+  throw normalizeError(lastErr)
+}
