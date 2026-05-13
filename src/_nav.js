@@ -132,25 +132,7 @@ const getNav = (t, role) => {
       ],
     })
   }
-  items.push({
-    component: CNavGroup,
-    name: 'Domótica',
-    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Panel Solar',
-        to: '/domotica/solar',
-        icon: <CIcon icon={cilLightbulb} customClassName="nav-icon" />,
-      },
-      {
-        component: CNavItem,
-        name: 'Dispositivos',
-        to: '/domotica/devices',
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-      },
-    ],
-  })
+
 
   items.push({
     component: CNavItem,
