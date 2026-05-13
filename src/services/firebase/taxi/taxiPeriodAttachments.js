@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_TAXI_PERIOD_ATTACHMENTS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_taxi_period_attachments'
 
 export const fetchPeriodAttachments = async (period) => {
   const q = query(

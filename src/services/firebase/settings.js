@@ -50,14 +50,15 @@ export const COL_CASHFLOW_SALARY_DISTRIBUTION = 'CashFlow_salary_distribution'
 export const COL_CASHFLOW_ACCOUNT_STATUS_NOTES = 'CashFlow_account_status_period_notes'
 
 // Taxi
-export const COL_TAXI_SETTLEMENTS = 'CashFlow_taxi_liquidaciones'
-export const COL_TAXI_DRIVERS = 'CashFlow_taxi_conductores'
-export const COL_TAXI_VEHICLES = 'CashFlow_taxi_vehiculos'
-export const COL_TAXI_EXPENSES = 'CashFlow_taxi_gastos'
-export const COL_TAXI_PARTNERS = 'CashFlow_taxi_partners'
-export const COL_TAXI_DISTRIBUTIONS = 'CashFlow_taxi_distributions'
-export const COL_TAXI_PERIOD_NOTES = 'CashFlow_taxi_period_notes'
-export const COL_TAXI_AUDIT_NOTES = 'CashFlow_taxi_audit_notas'
+export const COL_TAXI_SETTLEMENTS = 'Taxi_liquidaciones'
+export const COL_TAXI_DRIVERS = 'Taxi_conductores'
+export const COL_TAXI_VEHICLES = 'Taxi_vehiculos'
+export const COL_TAXI_EXPENSES = 'Taxi_gastos'
+export const COL_TAXI_PARTNERS = 'Taxi_partners'
+export const COL_TAXI_DISTRIBUTIONS = 'Taxi_distributions'
+export const COL_TAXI_PERIOD_NOTES = 'Taxi_period_notes'
+export const COL_TAXI_AUDIT_NOTES = 'Taxi_audit_notas'
+export const COL_TAXI_PERIOD_ATTACHMENTS = 'Taxi_period_attachments'
 
 // Contratos
 export const COL_CONTRATOS = 'Contratos_Contratos'
