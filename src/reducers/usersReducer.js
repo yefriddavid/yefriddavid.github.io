@@ -23,5 +23,10 @@ export default createCRUDReducer('users', actions, {
           )
         }
       })
+      .addCase(actions.deleteAllSessionsSuccess, (s, { payload: { username } }) => {
+        if (s.sessions[username]) {
+          s.sessions[username].data = []
+        }
+      })
   },
 }).reducer

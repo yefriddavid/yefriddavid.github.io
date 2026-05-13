@@ -61,6 +61,15 @@ function* deleteSessionSaga({ payload: { username, sessionId } }) {
   }
 }
 
+function* deleteAllSessionsSaga({ payload: username }) {
+  try {
+    yield call(sessionService.deleteAllSessionsByUser, username)
+    yield put(actions.deleteAllSessionsSuccess({ username }))
+  } catch (e) {
+    yield put(actions.deleteAllSessionsError({ username, error: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchUsers),
@@ -69,5 +78,6 @@ export default function* rootSagas() {
     takeLatest(actions.deleteRequest, deleteUser),
     takeLatest(actions.fetchSessionsRequest, fetchSessions),
     takeLatest(actions.deleteSessionRequest, deleteSessionSaga),
+    takeLatest(actions.deleteAllSessionsRequest, deleteAllSessionsSaga),
   ])
 }

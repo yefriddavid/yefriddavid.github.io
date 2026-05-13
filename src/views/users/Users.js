@@ -198,6 +198,11 @@ const SessionsDetail = React.memo(({ data: user }) => {
     dispatch(usersActions.deleteSessionRequest({ username: user.username, sessionId }))
   }
 
+  const handleDeleteAll = () => {
+    if (!window.confirm(`¿Cerrar todas las sesiones de "${user.username}"?`)) return
+    dispatch(usersActions.deleteAllSessionsRequest(user.username))
+  }
+
   if (fetching) {
     return (
       <div style={{ padding: 12 }}>
@@ -212,8 +217,13 @@ const SessionsDetail = React.memo(({ data: user }) => {
 
   return (
     <div style={{ padding: '12px 16px' }}>
-      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: '#1e3a5f' }}>
-        Sesiones activas ({sessions.length})
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: '#1e3a5f' }}>
+          Sesiones activas ({sessions.length})
+        </div>
+        <CButton size="sm" color="danger" variant="outline" onClick={handleDeleteAll}>
+          Matar todas
+        </CButton>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>

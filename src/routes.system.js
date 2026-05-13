@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Users = React.lazy(() => import('./views/system/Users'))
+const Users = React.lazy(() => import('./views/users/Users'))
 const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
 const Tenants = React.lazy(() => import('./views/admin/Tenants'))
 const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))

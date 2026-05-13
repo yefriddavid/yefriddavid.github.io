@@ -6,6 +6,7 @@ import {
   getDoc,
   setDoc,
   deleteDoc,
+  writeBatch,
   query,
   where,
   serverTimestamp,
@@ -38,4 +39,12 @@ export const getSessionsByUser = async (username) => {
 
 export const deleteSession = async (sessionId) => {
   await deleteDoc(doc(db, COL, sessionId))
+}
+
+export const deleteAllSessionsByUser = async (username) => {
+  const q = query(collection(db, COL), where('username', '==', username))
+  const snap = await getDocs(q)
+  const batch = writeBatch(db)
+  snap.docs.forEach((d) => batch.delete(d.ref))
+  await batch.commit()
 }
