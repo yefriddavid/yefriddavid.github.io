@@ -85,7 +85,7 @@ const SHORTCUTS = [
     key: 'visits',
     label: 'Visitas',
     description: 'Gestión de relaciones y CRM',
-    path: '/finance/tools/visits',
+    path: '/system/visits',
     icon: '👥',
     color: '#c92a2a',
     bg: 'linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%)',

@@ -36,6 +36,22 @@ export const TaxiIcon = ({ size = 22 }) => (
   </svg>
 )
 
+export const SystemIcon = ({ size = 22 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3L4 7v5c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V7L12 3z" />
+    <circle cx="12" cy="12" r="2.5" />
+  </svg>
+)
+
 export const DomoticaIcon = ({ size = 22 }) => (
   <svg
     width={size}

@@ -7,11 +7,7 @@ const AccountsMaster = React.lazy(() => import('./views/Accounting/AccountsMaste
 
 // Users & Profile
 const Users = React.lazy(() => import('./views/users/Users'))
-const Tenants = React.lazy(() => import('./views/admin/Tenants'))
-const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))
 const Profile = React.lazy(() => import('./views/profile/Profile'))
-const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
-
 // Movements
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Transactions = React.lazy(() => import('./views/Accounting/Transactions'))
@@ -28,7 +24,6 @@ const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGri
 const IncreaseDecrease = React.lazy(
   () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
-const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
 const SalaryDistribution = React.lazy(() => import('./views/CashFlow/tools/SalaryDistribution'))
 
 const routes = [
@@ -86,21 +81,7 @@ const routes = [
     landingPage: true,
   },
   { path: '/finance/management/users', name: 'Users', element: Users, roles: ['superAdmin'] },
-  {
-    path: '/admin/tenants',
-    name: 'Tenants',
-    longName: 'Admin — Tenants',
-    element: Tenants,
-    roles: ['superAdmin'],
-  },
-  {
-    path: '/finance/management/push-subscribers',
-    name: 'Push Subscribers',
-    element: PushSubscribers,
-    roles: ['superAdmin'],
-  },
   { path: '/finance/profile', name: 'Profile', element: Profile },
-  { path: '/finance/settings', name: 'Settings', element: AppSettings, roles: ['superAdmin'] },
 
   { path: '/finance/eggs', name: 'Eggs', longName: 'Eggs', element: Eggs, landingPage: true },
   {
@@ -137,14 +118,6 @@ const routes = [
     longName: 'Herramientas — Ajustes',
     tKey: 'nav.increaseDecrease',
     element: IncreaseDecrease,
-    landingPage: true,
-  },
-  {
-    path: '/finance/tools/visits',
-    name: 'Visits',
-    longName: 'Herramientas — Visitas',
-    tKey: 'nav.visits',
-    element: Visits,
     landingPage: true,
   },
   {

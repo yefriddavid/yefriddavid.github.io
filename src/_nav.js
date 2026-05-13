@@ -95,12 +95,6 @@ const getNav = (t, role) => {
         },
         {
           component: CNavItem,
-          name: t('nav.visits'),
-          to: '/finance/tools/visits',
-          icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
           name: 'Salary Distribution',
           to: '/finance/tools/salary-distribution',
           icon: <CIcon icon={cilCash} customClassName="nav-icon" />,
@@ -155,42 +149,6 @@ const getNav = (t, role) => {
         to: '/domotica/devices',
         icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
       },
-    ],
-  })
-
-  items.push({
-    component: CNavGroup,
-    name: 'Sistema',
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: t('nav.visits'),
-        to: '/finance/tools/visits',
-        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
-      },
-      ...(isSuperAdmin
-        ? [
-            {
-              component: CNavItem,
-              name: t('nav.users'),
-              to: '/finance/management/users',
-              icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-            },
-            {
-              component: CNavItem,
-              name: t('nav.pushSubscribers'),
-              to: '/finance/management/push-subscribers',
-              icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
-            },
-            {
-              component: CNavItem,
-              name: 'Tenants',
-              to: '/admin/tenants',
-              icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-            },
-          ]
-        : []),
     ],
   })
 
