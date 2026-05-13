@@ -185,6 +185,40 @@ const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
 const fieldError = (err) =>
   err ? <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>{err.message}</span> : null
 
+const fmtInput = (n) =>
+  n != null && n !== '' && Number(n) > 0
+    ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(Number(n))
+    : ''
+
+const CurrencyInput = ({ value, onChange, placeholder, className }) => {
+  const [focused, setFocused] = useState(false)
+  const [raw, setRaw] = useState(value != null ? String(value) : '')
+
+  useEffect(() => {
+    if (!focused) setRaw(value != null && value !== '' ? String(value) : '')
+  }, [value, focused])
+
+  return (
+    <input
+      className={className}
+      type="text"
+      inputMode="numeric"
+      placeholder={placeholder}
+      value={focused ? raw : fmtInput(raw)}
+      onChange={(e) => {
+        const digits = e.target.value.replace(/[^\d]/g, '')
+        setRaw(digits)
+        onChange(digits ? Number(digits) : '')
+      }}
+      onFocus={(e) => {
+        setFocused(true)
+        e.target.select()
+      }}
+      onBlur={() => setFocused(false)}
+    />
+  )
+}
+
 const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
   const {
     register,
@@ -258,13 +292,17 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
         </StandardField>
         <StandardField label="Valor">
           <input
-            className={SF.input}
-            type="number"
-            placeholder="0"
+            type="hidden"
             {...register('amount', {
               required: 'El valor es obligatorio',
               min: { value: 1, message: 'El valor debe ser mayor a 0' },
             })}
+          />
+          <CurrencyInput
+            className={SF.input}
+            value={watch('amount')}
+            onChange={(val) => setValue('amount', val, { shouldValidate: true })}
+            placeholder="0"
           />
           {fieldError(errors.amount)}
         </StandardField>
