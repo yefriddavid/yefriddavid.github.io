@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail, Summary, TotalItem } from 'devextreme-react/data-grid'
@@ -181,12 +182,25 @@ const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
   )
 }
 
+const fieldError = (err) =>
+  err ? <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>{err.message}</span> : null
+
 const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
-  const [form, setForm] = useState(initial)
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
+
   const [processingFile, setProcessingFile] = useState(false)
   const [fileError, setFileError] = useState('')
   const fileRef = useRef()
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
+
+  const receipt = watch('receipt')
+  const receiptName = watch('receiptName')
+  const category = watch('category')
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0]
@@ -195,7 +209,8 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
     setProcessingFile(true)
     try {
       const data = await processAttachmentFile(file)
-      setForm((p) => ({ ...p, receipt: data, receiptName: file.name }))
+      setValue('receipt', data)
+      setValue('receiptName', file.name)
     } catch (err) {
       setFileError(`Error procesando archivo: ${err.message}`)
     } finally {
@@ -208,7 +223,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
     <StandardForm
       title={title}
       subtitle={subtitle}
-      onSave={() => onSave(form)}
+      onSave={handleSubmit(onSave)}
       onCancel={onCancel}
       saving={saving}
     >
@@ -216,71 +231,76 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
         <input
           className={SF.input}
           placeholder="Ej. Tanque de gasolina"
-          value={form.description}
-          onChange={set('description')}
+          {...register('description', { required: 'La descripción es obligatoria' })}
         />
+        {fieldError(errors.description)}
       </StandardField>
-      <StandardField label="Categoría">
-        <select className={SF.select} value={form.category} onChange={set('category')}>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </StandardField>
-      <StandardField label="Vehículo">
-        <select className={SF.select} value={form.plate} onChange={set('plate')}>
-          <option value="">— Ninguno —</option>
-          {vehicles.map((v) => (
-            <option key={v.id} value={v.plate}>
-              {v.plate}
-              {v.brand ? ` · ${v.brand}` : ''}
-            </option>
-          ))}
-        </select>
-      </StandardField>
-      <StandardField label="Valor">
-        <input
-          className={SF.input}
-          type="number"
-          placeholder="0"
-          value={form.amount}
-          onChange={set('amount')}
-        />
-      </StandardField>
-      <StandardField label="Fecha">
-        <input className={SF.input} type="date" value={form.date} onChange={set('date')} />
-      </StandardField>
-      {MAINTENANCE_CATS.includes(form.category) && (
-        <StandardField label="Próximo servicio">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+        <StandardField label="Categoría">
+          <select className={SF.select} {...register('category', { required: true })}>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+        <StandardField label="Vehículo">
+          <select className={SF.select} {...register('plate')}>
+            <option value="">— Ninguno —</option>
+            {vehicles.map((v) => (
+              <option key={v.id} value={v.plate}>
+                {v.plate}
+                {v.brand ? ` · ${v.brand}` : ''}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+        <StandardField label="Valor">
+          <input
+            className={SF.input}
+            type="number"
+            placeholder="0"
+            {...register('amount', {
+              required: 'El valor es obligatorio',
+              min: { value: 1, message: 'El valor debe ser mayor a 0' },
+            })}
+          />
+          {fieldError(errors.amount)}
+        </StandardField>
+        <StandardField label="Fecha">
           <input
             className={SF.input}
             type="date"
-            value={form.nextDate || ''}
-            onChange={set('nextDate')}
+            {...register('date', { required: 'La fecha es obligatoria' })}
           />
+          {fieldError(errors.date)}
         </StandardField>
-      )}
-      <StandardField label="Fecha de pago">
-        <input
-          className={SF.input}
-          type="date"
-          value={form.payedAt || ''}
-          onChange={set('payedAt')}
-        />
-      </StandardField>
+        {MAINTENANCE_CATS.includes(category) ? (
+          <>
+            <StandardField label="Próximo servicio">
+              <input className={SF.input} type="date" {...register('nextDate')} />
+            </StandardField>
+            <StandardField label="Fecha de pago">
+              <input className={SF.input} type="date" {...register('payedAt')} />
+            </StandardField>
+          </>
+        ) : (
+          <StandardField label="Fecha de pago">
+            <input className={SF.input} type="date" {...register('payedAt')} />
+          </StandardField>
+        )}
+      </div>
       <StandardField label="Comentario">
         <textarea
           className={SF.textarea}
           placeholder="Observaciones..."
-          value={form.comment}
-          onChange={set('comment')}
           rows={2}
+          {...register('comment')}
         />
       </StandardField>
 
-      {/* Receipt attachment */}
+      {/* Receipt attachment — handled via setValue since it's async/non-native */}
       <input
         ref={fileRef}
         type="file"
@@ -289,7 +309,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
         onChange={handleFile}
       />
       <StandardField label="Comprobante">
-        {!form.receipt && !processingFile && (
+        {!receipt && !processingFile && (
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
@@ -320,10 +340,10 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
         {fileError && (
           <div style={{ fontSize: 12, color: '#e03131', marginTop: 4 }}>{fileError}</div>
         )}
-        {form.receipt && (
+        {receipt && (
           <div style={{ position: 'relative' }}>
             <img
-              src={form.receipt}
+              src={receipt}
               alt="comprobante"
               style={{ width: '100%', borderRadius: 8, border: '1px solid #dee2e6', display: 'block' }}
             />
@@ -346,7 +366,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
               </button>
               <button
                 type="button"
-                onClick={() => setForm((p) => ({ ...p, receipt: null, receiptName: '' }))}
+                onClick={() => { setValue('receipt', null); setValue('receiptName', '') }}
                 style={{
                   padding: '3px 8px',
                   borderRadius: 5,
@@ -361,8 +381,8 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
                 Quitar
               </button>
             </div>
-            {form.receiptName && (
-              <div style={{ fontSize: 11, color: '#6c757d', marginTop: 3 }}>{form.receiptName}</div>
+            {receiptName && (
+              <div style={{ fontSize: 11, color: '#6c757d', marginTop: 3 }}>{receiptName}</div>
             )}
           </div>
         )}
@@ -375,7 +395,7 @@ const Gastos = () => {
   const { t } = useTranslation()
   const { monthLabels: MONTHS } = useLocaleData()
   const dispatch = useDispatch()
-  const { data: expenses, fetching } = useSelector((s) => s.taxiExpense)
+  const { data: expenses, fetching, isError, error } = useSelector((s) => s.taxiExpense)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
   const gridRef = useRef()
 
@@ -404,7 +424,6 @@ const Gastos = () => {
   }, [editingRow])
 
   const handleCreate = (form) => {
-    if (!form.description || !form.amount || !form.date) return
     dispatch(taxiExpenseActions.createRequest(form))
     setShowCreate(false)
   }
@@ -553,6 +572,22 @@ const Gastos = () => {
         </CCol>
       </CRow>
 
+      {isError && (
+        <div
+          style={{
+            padding: '10px 14px',
+            marginBottom: 12,
+            borderRadius: 8,
+            background: '#fff5f5',
+            border: '1px solid #fca5a5',
+            color: '#b91c1c',
+            fontSize: 13,
+          }}
+        >
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
       {/* Grid */}
       <CCard>
         <CCardHeader style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -657,7 +692,7 @@ const Gastos = () => {
             style={{
               padding: '20px 24px',
               borderBottom: '1px solid var(--cui-border-color)',
-              maxWidth: 380,
+              maxWidth: 580,
             }}
           >
             <ExpenseForm
@@ -857,7 +892,7 @@ const Gastos = () => {
                 enabled={true}
                 render={({ data }) =>
                   editingRow?.id === data.id ? (
-                    <div style={{ padding: '16px 24px', maxWidth: 380 }}>
+                    <div style={{ padding: '16px 24px', maxWidth: 580 }}>
                       <ExpenseForm
                         initial={data}
                         vehicles={vehicles}

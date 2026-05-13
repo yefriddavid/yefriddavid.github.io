@@ -16,10 +16,12 @@ export function* createExpense({ payload }) {
   try {
     yield put(taxiExpenseActions.beginRequestCreate())
     const id = yield call(expenseService.createExpense, payload)
+    console.log('[taxiExpense] create success, id:', id)
     yield put(
       taxiExpenseActions.successRequestCreate({ id, ...payload, amount: Number(payload.amount) }),
     )
   } catch (e) {
+    console.error('[taxiExpense] create error:', e)
     yield put(taxiExpenseActions.errorRequestCreate(e.message))
   }
 }

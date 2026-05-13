@@ -167,6 +167,7 @@ export default defineConfig(({ mode }) => {
         'firebase/auth': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-auth.js'),
         'firebase/firestore': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-firestore.js'),
         'firebase/messaging': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-messaging.js'),
+        'firebase/database': path.resolve(__dirname, 'src/__tests__/__mocks__/firebase-database.js'),
       },
     },
   }

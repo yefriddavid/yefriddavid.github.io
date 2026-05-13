@@ -28,6 +28,7 @@ export default defineConfig({
       'firebase/auth':      path.resolve(import.meta.dirname, 'src/__tests__/__mocks__/firebase-auth.js'),
       'firebase/firestore': path.resolve(import.meta.dirname, 'src/__tests__/__mocks__/firebase-firestore.js'),
       'firebase/messaging': path.resolve(import.meta.dirname, 'src/__tests__/__mocks__/firebase-messaging.js'),
+      'firebase/database':  path.resolve(import.meta.dirname, 'src/__tests__/__mocks__/firebase-database.js'),
       '@coreui/react':      path.resolve(import.meta.dirname, 'src/__tests__/__mocks__/coreui-react.js'),
     },
   },

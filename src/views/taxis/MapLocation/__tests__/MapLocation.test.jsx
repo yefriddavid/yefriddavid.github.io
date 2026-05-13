@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import combinedReducers from 'src/reducers/combineReducers'
 import MapLocation from '../MapLocation'
-import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
+import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 
 vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
@@ -30,7 +30,13 @@ vi.mock('src/services/websocketService', () => ({
 }))
 
 vi.mock('@coreui/icons-react', () => ({ default: () => <span /> }))
-vi.mock('@coreui/icons', () => ({ cilFullscreen: 'fs', cilFullscreenExit: 'fse' }))
+vi.mock('@coreui/icons', () => ({
+  cilFullscreen: 'fs',
+  cilFullscreenExit: 'fse',
+  cilHistory: 'hist',
+  cilGlobeAlt: 'globe',
+  cilLocationPin: 'pin',
+}))
 vi.mock('@coreui/react', () => ({
   CCard: ({ children, className }) => <div className={className}>{children}</div>,
   CCardHeader: ({ children }) => <div>{children}</div>,
@@ -43,12 +49,24 @@ vi.mock('@coreui/react', () => ({
   CListGroupItem: ({ children }) => <li>{children}</li>,
   CButton: ({ children, onClick }) => <button onClick={onClick}>{children}</button>,
   CButtonGroup: ({ children }) => <div>{children}</div>,
+  CAccordion: ({ children }) => <div>{children}</div>,
+  CAccordionItem: ({ children }) => <div>{children}</div>,
+  CAccordionHeader: ({ children }) => <div>{children}</div>,
+  CAccordionBody: ({ children }) => <div>{children}</div>,
 }))
 
 const baseState = {
   taxiVehicle: { data: [], fetching: false, isError: false, error: {} },
   taxiDriver: { data: [], fetching: false, isError: false, error: {} },
-  vehicleLocationHistory: { data: [], fetching: false, liveLocations: {}, isError: false, error: {} },
+  vehicleLocationHistory: {
+    data: [],
+    fetching: false,
+    liveLocations: {},
+    recentHistories: {},
+    loadingHistories: {},
+    isError: false,
+    error: {},
+  },
 }
 
 const renderWithStore = (overrides = {}) => {
@@ -82,8 +100,15 @@ describe('MapLocation', () => {
     expect(screen.getByTestId('spinner')).toBeTruthy()
   })
 
-  it('dispatches startLiveListener on mount', () => {
-    const store = configureStore({ reducer: combinedReducers, preloadedState: baseState })
+  it('dispatches fetchRequest for vehicles on mount when data is null', () => {
+    const store = configureStore({
+      reducer: combinedReducers,
+      preloadedState: {
+        ...baseState,
+        taxiVehicle: { data: null, fetching: false, isError: false, error: {} },
+        taxiDriver: { data: null, fetching: false, isError: false, error: {} },
+      },
+    })
     const dispatchSpy = vi.spyOn(store, 'dispatch')
     render(
       <Provider store={store}>
@@ -91,23 +116,33 @@ describe('MapLocation', () => {
       </Provider>,
     )
     const types = dispatchSpy.mock.calls.map((c) => c[0]?.type)
-    expect(types).toContain(vehicleLocationHistoryActions.startLiveListener.type)
+    expect(types).toContain(taxiVehicleActions.fetchRequest.type)
   })
 
-  it('dispatches stopLiveListener on unmount', () => {
-    const store = configureStore({ reducer: combinedReducers, preloadedState: baseState })
-    const dispatchSpy = vi.spyOn(store, 'dispatch')
-    const { unmount } = render(
-      <Provider store={store}>
+  it('dispatches fetchLastKnownPositions on mount when vehicles are loaded', () => {
+    const storeWithVehicles = configureStore({
+      reducer: combinedReducers,
+      preloadedState: {
+        ...baseState,
+        taxiVehicle: {
+          data: [{ id: 'v1', plate: 'TSK086' }],
+          fetching: false,
+          isError: false,
+          error: {},
+        },
+      },
+    })
+    const dispatchSpy = vi.spyOn(storeWithVehicles, 'dispatch')
+    render(
+      <Provider store={storeWithVehicles}>
         <MapLocation />
       </Provider>,
     )
-    unmount()
     const types = dispatchSpy.mock.calls.map((c) => c[0]?.type)
-    expect(types).toContain(vehicleLocationHistoryActions.stopLiveListener.type)
+    expect(types).toContain('currentPositions/fetchLastKnownPositions')
   })
 
-  it('renders a marker for each live location', () => {
+  it('renders a marker for each vehicle with a known position', () => {
     renderWithStore({
       taxiVehicle: {
         data: [{ id: 'v1', plate: 'TSK086', brand: 'Chevrolet', model: 'Beat' }],
@@ -116,20 +151,14 @@ describe('MapLocation', () => {
         error: {},
       },
       taxiDriver: { data: [], fetching: false, isError: false, error: {} },
-      vehicleLocationHistory: {
-        data: [],
-        fetching: false,
-        isError: false,
-        error: {},
-        liveLocations: {
-          v1: { lat: 4.7, lng: -74.0, lastUpdate: new Date().toISOString(), source: 'firebase' },
-        },
+      currentPositions: {
+        v1: { lat: 4.7, lng: -74.0, speed: 0, lastUpdate: new Date().toISOString(), source: 'app' },
       },
     })
     expect(screen.getAllByTestId('marker').length).toBe(1)
   })
 
-  it('shows active fleet count', () => {
+  it('shows fleet count with active vehicles', () => {
     renderWithStore({
       taxiVehicle: {
         data: [
@@ -141,17 +170,11 @@ describe('MapLocation', () => {
         error: {},
       },
       taxiDriver: { data: [], fetching: false, isError: false, error: {} },
-      vehicleLocationHistory: {
-        data: [],
-        fetching: false,
-        isError: false,
-        error: {},
-        liveLocations: {
-          v1: { lat: 4.7, lng: -74.0, lastUpdate: new Date().toISOString(), source: 'wss' },
-          v2: { lat: 4.8, lng: -74.1, lastUpdate: new Date().toISOString(), source: 'firebase' },
-        },
+      currentPositions: {
+        v1: { lat: 4.7, lng: -74.0, speed: 0, lastUpdate: new Date().toISOString(), source: 'wss' },
+        v2: { lat: 4.8, lng: -74.1, speed: 0, lastUpdate: new Date().toISOString(), source: 'app' },
       },
     })
-    expect(screen.getByText('Flota Activa (2)')).toBeTruthy()
+    expect(screen.getByText('Flota (2/2)')).toBeTruthy()
   })
 })
