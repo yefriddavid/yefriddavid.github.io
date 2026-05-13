@@ -10,7 +10,18 @@ function* watchBatteryChannel() {
       if (error) {
         yield put(actions.fetchError(error))
       } else {
-        yield put(actions.dataReceived(data))
+        const v = data?.voltaje ?? {}
+        const normalized = {
+          voltage: v.value ?? null,
+          percent: v.percent ?? null,
+          solar: v.solar ?? null,
+          status: v.status ?? null,
+          updatedAt: v.createdAt ?? null,
+          alert: v.alert ?? null,
+          current: data?.current?.value ?? null,
+          currentAlert: data?.current?.alert ?? null,
+        }
+        yield put(actions.dataReceived(normalized))
       }
     }
   } finally {
