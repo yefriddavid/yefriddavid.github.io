@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import { useColorModes } from '@coreui/react'
+
+const THEME_KEY = 'coreui-free-react-admin-template-theme'
 
 const PREFS = [
   {
@@ -15,6 +18,8 @@ const PREFS = [
 ]
 
 export default function DisplayPreferences() {
+  const { colorMode, setColorMode } = useColorModes(THEME_KEY)
+
   const [values, setValues] = useState(() =>
     Object.fromEntries(
       PREFS.map((p) => [p.key, localStorage.getItem(p.key) ?? p.defaultValue]),
@@ -26,6 +31,27 @@ export default function DisplayPreferences() {
     setValues((prev) => ({ ...prev, [key]: value }))
     window.dispatchEvent(new CustomEvent('displayPrefChanged', { detail: { key, value } }))
   }
+
+  const themeOptions = [
+    { value: 'light', label: 'Claro' },
+    { value: 'dark', label: 'Oscuro' },
+  ]
+
+  const allPrefs = [
+    {
+      key: '__theme__',
+      label: 'Tema de la interfaz',
+      description: 'Cambia entre modo claro y oscuro en toda la aplicación',
+      options: themeOptions,
+      currentValue: colorMode === 'dark' ? 'dark' : 'light',
+      onChange: (val) => setColorMode(val),
+    },
+    ...PREFS.map((p) => ({
+      ...p,
+      currentValue: values[p.key],
+      onChange: (val) => handleChange(p.key, val),
+    })),
+  ]
 
   return (
     <div style={{ maxWidth: 640 }}>
@@ -52,7 +78,7 @@ export default function DisplayPreferences() {
           <span>Valor</span>
         </div>
 
-        {PREFS.map((pref, idx) => (
+        {allPrefs.map((pref, idx) => (
           <div
             key={pref.key}
             style={{
@@ -62,7 +88,7 @@ export default function DisplayPreferences() {
               alignItems: 'center',
               gap: 16,
               background: idx % 2 === 0 ? '#fff' : '#fafbfc',
-              borderBottom: idx < PREFS.length - 1 ? '1px solid #f1f5f9' : 'none',
+              borderBottom: idx < allPrefs.length - 1 ? '1px solid #f1f5f9' : 'none',
             }}
           >
             <div>
@@ -74,14 +100,14 @@ export default function DisplayPreferences() {
               {pref.options.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => handleChange(pref.key, opt.value)}
+                  onClick={() => pref.onChange(opt.value)}
                   style={{
                     padding: '5px 14px',
                     borderRadius: 6,
                     border: '1px solid',
-                    borderColor: values[pref.key] === opt.value ? '#1e3a5f' : '#dee2e6',
-                    background: values[pref.key] === opt.value ? '#1e3a5f' : '#fff',
-                    color: values[pref.key] === opt.value ? '#fff' : '#6c757d',
+                    borderColor: pref.currentValue === opt.value ? '#1e3a5f' : '#dee2e6',
+                    background: pref.currentValue === opt.value ? '#1e3a5f' : '#fff',
+                    color: pref.currentValue === opt.value ? '#fff' : '#6c757d',
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: 'pointer',
