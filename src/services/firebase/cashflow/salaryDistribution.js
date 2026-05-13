@@ -1,8 +1,7 @@
-import { db } from '../settings'
+import { db, COL_CASHFLOW_SALARY_DISTRIBUTION as COL } from '../settings'
 import { collection, doc, setDoc, getDocs, serverTimestamp, query, where } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_salary_distribution'
 
 export const syncAllToFirebase = async (distributions) => {
   for (let i = 0; i < distributions.length; i++) {

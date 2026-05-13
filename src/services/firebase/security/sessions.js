@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_SESSIONS as COL } from '../settings'
 import {
   collection,
   doc,
@@ -11,7 +11,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 
-const COL = 'sessions'
 
 export const createSession = async (sessionId, username, token) => {
   await setDoc(doc(db, COL, sessionId), {

@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_TAXI_EXPENSES as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -13,7 +13,6 @@ import {
 import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_taxi_gastos'
 
 export const fetchExpenses = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))

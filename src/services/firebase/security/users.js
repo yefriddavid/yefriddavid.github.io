@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_USERS as COL } from '../settings'
 import {
   collection,
   doc,
@@ -12,7 +12,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 
-const COL = 'users'
 
 // SHA-256 via Web Crypto API (available in all modern browsers)
 export const hashPassword = async (plainText) => {

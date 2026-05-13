@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CASHFLOW_EGGS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_eggs'
 
 export const fetchEggs = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))

@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_FINANCE_CUSTOM_GRID_TRADES as COL } from '../settings'
 import {
   collection,
   doc,
@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'Finance_Custom_Grid_Trades'
 
 export const fetchAll = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))

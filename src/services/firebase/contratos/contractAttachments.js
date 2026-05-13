@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CONTRATOS_ATTACHMENTS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'Contratos_contract_attachments'
 
 export const getAttachments = async (contractId) => {
   const q = query(

@@ -1,8 +1,7 @@
-import { db } from '../settings'
+import { db, COL_TAXI_AUDIT_NOTES as COL } from '../settings'
 import { collection, getDocs, setDoc, deleteDoc, doc, query, where } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_taxi_audit_notas'
 
 const noteId = (date, driver, noteType = '') => {
   const base = `${date}__${driver.replace(/\s+/g, '_')}`

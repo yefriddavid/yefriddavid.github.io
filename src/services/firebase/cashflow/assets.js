@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CASHFLOW_ASSETS as COL } from '../settings'
 import {
   addDoc,
   collection,
@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_assets'
 
 export const syncAssetToFirebase = async (asset) => {
   const { id, ...data } = asset

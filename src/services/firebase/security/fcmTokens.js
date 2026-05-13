@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_FCM_TOKENS as COL } from '../settings'
 import {
   collection,
   doc,
@@ -10,7 +10,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 
-const COL = 'fcm_tokens'
 
 export const getTokens = async () => {
   const q = query(collection(db, COL), orderBy('createdAt', 'desc'))

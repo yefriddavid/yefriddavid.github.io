@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_TENANTS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 
-const COL = 'Admin_Tenants'
 
 export const getTenants = async () => {
   const q = query(collection(db, COL), orderBy('name', 'asc'))

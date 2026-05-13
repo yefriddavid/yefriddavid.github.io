@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CASHFLOW_TRANSACTIONS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_Transactions'
 
 export { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
 

@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_TAXI_VEHICLE_LOCATION_HISTORY as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -15,7 +15,6 @@ import {
 import { getTenantId } from 'src/services/tenantContext'
 import { firestoreCall } from 'src/services/firebase/firebaseClient'
 
-const COL = 'Taxi_vehicle_location_history'
 
 const mapHistoryDoc = (d) => {
   const data = d.data()

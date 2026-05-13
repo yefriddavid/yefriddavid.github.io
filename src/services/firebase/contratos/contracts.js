@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CONTRATOS as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -13,7 +13,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'Contratos_Contratos'
 
 export const getContracts = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))

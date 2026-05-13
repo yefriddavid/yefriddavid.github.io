@@ -1,4 +1,4 @@
-import { db } from '../settings'
+import { db, COL_CASHFLOW_MY_PROJECTS as COL } from '../settings'
 import {
   collection,
   doc,
@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 
-const COL = 'CashFlow_my_projects'
 
 export const syncProjectToFirebase = async (project) => {
   const { id, ...data } = project
