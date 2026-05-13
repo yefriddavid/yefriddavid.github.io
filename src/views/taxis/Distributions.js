@@ -74,19 +74,18 @@ const Distributions = () => {
   useEffect(() => {
     dispatch(taxiDistributionActions.fetchRequest())
     dispatch(taxiPartnerActions.fetchRequest())
-    dispatch(taxiSettlementActions.fetchRequest())
-    dispatch(taxiExpenseActions.fetchRequest())
-  }, [dispatch])
+    dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))
+    dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
+  }, [dispatch, period.month, period.year])
 
   const periodStr = `${period.year}-${String(period.month).padStart(2, '0')}`
 
   const distribution = distributions.find((d) => d.period === periodStr) ?? null
 
   const totalIncome = (settlementsData ?? [])
-    .filter((r) => r.date?.startsWith(periodStr))
     .reduce((acc, r) => acc + (r.amount || 0), 0)
 
-  const periodExpenses = (expensesData ?? []).filter((r) => r.date?.startsWith(periodStr))
+  const periodExpenses = expensesData ?? []
   const totalExpenses = periodExpenses.reduce((acc, r) => acc + (r.amount || 0), 0)
   const totalExpensesPaid = periodExpenses
     .filter((r) => r.paid)

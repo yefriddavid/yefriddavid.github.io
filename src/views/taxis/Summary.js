@@ -55,7 +55,7 @@ const Resumen = () => {
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
   useEffect(() => {
-    Promise.all([getSettlements(), fetchExpenses()])
+    Promise.all([getSettlements(period), fetchExpenses(period)])
       .then(([settlements, expenses]) => {
         const merged = [
           ...settlements.map((s) => ({
@@ -84,7 +84,7 @@ const Resumen = () => {
         setRows(merged)
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [period.month, period.year])
 
   const availableYears = useMemo(() => {
     const years = [...new Set(rows.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
@@ -94,13 +94,7 @@ const Resumen = () => {
     return years
   }, [rows, period.year])
 
-  const filtered = rows
-    .filter((r) => {
-      if (!r.date) return false
-      const [y, m] = r.date.split('-').map(Number)
-      return y === period.year && m === period.month
-    })
-    .sort((a, b) => a.date.localeCompare(b.date))
+  const filtered = rows.slice().sort((a, b) => a.date.localeCompare(b.date))
 
   const totalIncome = filtered
     .filter((r) => r._sign === 1)

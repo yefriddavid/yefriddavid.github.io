@@ -7,6 +7,11 @@ import {
   CRow,
   CCol,
   CFormSelect,
+  CNav,
+  CNavItem,
+  CNavLink,
+  CTabContent,
+  CTabPane,
 } from '@coreui/react'
 import { CChartBar, CChartDoughnut, CChartLine } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
@@ -117,6 +122,7 @@ const DriverAvatar = ({ name, rank }) => (
 const TaxisHome = () => {
   const now = new Date()
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [settlements, setSettlements] = useState([])
   const [expenses, setExpenses] = useState([])
   const [drivers, setDrivers] = useState([])
@@ -302,7 +308,7 @@ const TaxisHome = () => {
 
   return (
     <>
-      <div className="d-flex align-items-center gap-2 mb-4 taxis-home__period-bar">
+      <div className="d-flex align-items-center gap-2 mb-3 taxis-home__period-bar">
         <span className="taxis-home__period-label">Periodo</span>
         <CFormSelect
           size="sm"
@@ -341,378 +347,412 @@ const TaxisHome = () => {
         </div>
       </div>
 
-      <CRow className="g-3 mb-4">
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Total liquidado"
-            value={fmtM(totalSettled)}
-            sub={`${monthSettlements.length} liquidaciones`}
-            accent="#1e3a5f"
-            icon={cilCash}
-            delta={pctChange(totalSettled, prevTotalSettled)}
-          />
-        </CCol>
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Total gastos"
-            value={fmtM(totalExp)}
-            sub={
-              totalExpPending > 0
-                ? `⏳ ${fmtM(totalExpPending)} pendiente`
-                : `${monthExpenses.length} registros`
-            }
-            accent="#e03131"
-            icon={cilBurn}
-            delta={pctChange(totalExp, prevTotalExp)}
-            deltaInvert
-          />
-        </CCol>
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Balance neto"
-            value={fmtM(netBalance)}
-            sub={netBalance >= 0 ? 'Positivo ✓' : 'Negativo ✗'}
-            accent={netBalance >= 0 ? '#2f9e44' : '#e03131'}
-            icon={cilChartLine}
-            delta={pctChange(netBalance, prevNetBalance)}
-          />
-        </CCol>
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Promedio por día"
-            value={fmtM(avgPerDay)}
-            sub={`${activeDays} días con actividad`}
-            accent="#1971c2"
-            icon={cilCalendar}
-            delta={pctChange(avgPerDay, prevAvgPerDay)}
-          />
-        </CCol>
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Conductores activos"
-            value={activeDrivers}
-            sub={`de ${drivers.length} registrados`}
-            accent="#ae3ec9"
-            icon={cilPeople}
-          />
-        </CCol>
-        <CCol sm={6} lg={4} xl={2}>
-          <KpiCard
-            label="Vehículos activos"
-            value={activeVehicles}
-            sub={`de ${vehicles.length} registrados`}
-            accent="#e67700"
-            icon={cilCarAlt}
-          />
-        </CCol>
-      </CRow>
+      <CNav variant="tabs" className="mb-4">
+        <CNavItem>
+          <CNavLink
+            active={activeTab === 'dashboard'}
+            onClick={() => setActiveTab('dashboard')}
+            style={{ cursor: 'pointer' }}
+          >
+            Dashboard
+          </CNavLink>
+        </CNavItem>
+        <CNavItem>
+          <CNavLink
+            active={activeTab === 'tendencias'}
+            onClick={() => setActiveTab('tendencias')}
+            style={{ cursor: 'pointer' }}
+          >
+            Tendencias
+          </CNavLink>
+        </CNavItem>
+      </CNav>
 
-      <CRow className="g-3 mb-4">
-        <CCol lg={8}>
-          <CCard className="taxis-home__card">
-            {cardHeader(
-              `Liquidaciones por día — ${MONTHS[period.month - 1]} ${period.year}`,
-              cilBarChart,
-            )}
-            <CCardBody>
-              <CChartBar
-                style={{ maxHeight: 280 }}
-                data={{
-                  labels: dailyLabels,
-                  datasets: [
-                    {
-                      label: 'Liquidaciones',
-                      backgroundColor: 'rgba(30,58,95,0.75)',
-                      data: dailySettled,
-                      borderRadius: 4,
-                      order: 1,
-                    },
-                    {
-                      label: 'Gastos',
-                      backgroundColor: 'rgba(224,49,49,0.65)',
-                      data: dailyExpenses,
-                      borderRadius: 4,
-                      order: 1,
-                    },
-                    {
-                      type: 'line',
-                      label: 'Promedio',
-                      data: Array(daysInMonth).fill(avgPerDay),
-                      borderColor: 'rgba(25,113,194,0.6)',
-                      borderWidth: 1.5,
-                      borderDash: [6, 4],
-                      pointRadius: 0,
-                      fill: false,
-                      tension: 0,
-                      order: 0,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                      labels: { font: { size: 11 } },
-                    },
-                  },
-                  scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                    y: {
-                      grid: { color: 'rgba(0,0,0,0.06)' },
-                      ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
-                    },
-                  },
-                }}
+      <CTabContent>
+        <CTabPane visible={activeTab === 'dashboard'}>
+          <CRow className="g-3 mb-4">
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Total liquidado"
+                value={fmtM(totalSettled)}
+                sub={`${monthSettlements.length} liquidaciones`}
+                accent="#1e3a5f"
+                icon={cilCash}
+                delta={pctChange(totalSettled, prevTotalSettled)}
               />
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol lg={4}>
-          <CCard className="taxis-home__card">
-            {cardHeader('Gastos por categoría', cilChartPie)}
-            <CCardBody className="d-flex flex-column align-items-center justify-content-center">
-              {byCategory.length === 0 ? (
-                <span className="taxis-home__empty">Sin gastos este periodo</span>
-              ) : (
-                <>
-                  <CChartDoughnut
-                    style={{ maxHeight: 200 }}
+            </CCol>
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Total gastos"
+                value={fmtM(totalExp)}
+                sub={
+                  totalExpPending > 0
+                    ? `⏳ ${fmtM(totalExpPending)} pendiente`
+                    : `${monthExpenses.length} registros`
+                }
+                accent="#e03131"
+                icon={cilBurn}
+                delta={pctChange(totalExp, prevTotalExp)}
+                deltaInvert
+              />
+            </CCol>
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Balance neto"
+                value={fmtM(netBalance)}
+                sub={netBalance >= 0 ? 'Positivo ✓' : 'Negativo ✗'}
+                accent={netBalance >= 0 ? '#2f9e44' : '#e03131'}
+                icon={cilChartLine}
+                delta={pctChange(netBalance, prevNetBalance)}
+              />
+            </CCol>
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Promedio por día"
+                value={fmtM(avgPerDay)}
+                sub={`${activeDays} días con actividad`}
+                accent="#1971c2"
+                icon={cilCalendar}
+                delta={pctChange(avgPerDay, prevAvgPerDay)}
+              />
+            </CCol>
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Conductores activos"
+                value={activeDrivers}
+                sub={`de ${drivers.length} registrados`}
+                accent="#ae3ec9"
+                icon={cilPeople}
+              />
+            </CCol>
+            <CCol sm={6} lg={4} xl={2}>
+              <KpiCard
+                label="Vehículos activos"
+                value={activeVehicles}
+                sub={`de ${vehicles.length} registrados`}
+                accent="#e67700"
+                icon={cilCarAlt}
+              />
+            </CCol>
+          </CRow>
+
+          <CRow className="g-3 mb-4">
+            <CCol lg={8}>
+              <CCard className="taxis-home__card">
+                {cardHeader(
+                  `Liquidaciones por día — ${MONTHS[period.month - 1]} ${period.year}`,
+                  cilBarChart,
+                )}
+                <CCardBody>
+                  <CChartBar
+                    style={{ maxHeight: 280 }}
                     data={{
-                      labels: byCategory.map((c) => c.label),
+                      labels: dailyLabels,
                       datasets: [
                         {
-                          data: byCategory.map((c) => c.value),
-                          backgroundColor: CATEGORY_COLORS,
-                          borderWidth: 2,
+                          label: 'Liquidaciones',
+                          backgroundColor: 'rgba(30,58,95,0.75)',
+                          data: dailySettled,
+                          borderRadius: 4,
+                          order: 1,
+                        },
+                        {
+                          label: 'Gastos',
+                          backgroundColor: 'rgba(224,49,49,0.65)',
+                          data: dailyExpenses,
+                          borderRadius: 4,
+                          order: 1,
+                        },
+                        {
+                          type: 'line',
+                          label: 'Promedio',
+                          data: Array(daysInMonth).fill(avgPerDay),
+                          borderColor: 'rgba(25,113,194,0.6)',
+                          borderWidth: 1.5,
+                          borderDash: [6, 4],
+                          pointRadius: 0,
+                          fill: false,
+                          tension: 0,
+                          order: 0,
                         },
                       ],
                     }}
                     options={{
                       responsive: true,
                       plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 8 } },
-                        tooltip: { callbacks: { label: (ctx) => ` ${fmt(ctx.raw)}` } },
+                        legend: {
+                          position: 'top',
+                          labels: { font: { size: 11 } },
+                        },
                       },
-                      cutout: '62%',
+                      scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: {
+                          grid: { color: 'rgba(0,0,0,0.06)' },
+                          ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                        },
+                      },
                     }}
                   />
-                  <div className="category-legend">
-                    {byCategory.map((c, i) => (
-                      <div key={c.label} className="category-legend__row">
-                        <span>
-                          <span
-                            className="category-legend__dot"
-                            style={{ background: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
-                          />
-                          {c.label}
-                        </span>
-                        <strong>{fmt(c.value)}</strong>
+                </CCardBody>
+              </CCard>
+            </CCol>
+            <CCol lg={4}>
+              <CCard className="taxis-home__card">
+                {cardHeader('Gastos por categoría', cilChartPie)}
+                <CCardBody className="d-flex flex-column align-items-center justify-content-center">
+                  {byCategory.length === 0 ? (
+                    <span className="taxis-home__empty">Sin gastos este periodo</span>
+                  ) : (
+                    <>
+                      <CChartDoughnut
+                        style={{ maxHeight: 200 }}
+                        data={{
+                          labels: byCategory.map((c) => c.label),
+                          datasets: [
+                            {
+                              data: byCategory.map((c) => c.value),
+                              backgroundColor: CATEGORY_COLORS,
+                              borderWidth: 2,
+                            },
+                          ],
+                        }}
+                        options={{
+                          responsive: true,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: { font: { size: 11 }, padding: 8 },
+                            },
+                            tooltip: { callbacks: { label: (ctx) => ` ${fmt(ctx.raw)}` } },
+                          },
+                          cutout: '62%',
+                        }}
+                      />
+                      <div className="category-legend">
+                        {byCategory.map((c, i) => (
+                          <div key={c.label} className="category-legend__row">
+                            <span>
+                              <span
+                                className="category-legend__dot"
+                                style={{ background: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
+                              />
+                              {c.label}
+                            </span>
+                            <strong>{fmt(c.value)}</strong>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                    </>
+                  )}
+                </CCardBody>
+              </CCard>
+            </CCol>
+          </CRow>
 
-      <CRow className="g-3 mb-4">
-        <CCol lg={7}>
-          <CCard className="taxis-home__card">
-            {cardHeader('Tendencia últimos 6 meses', cilChartLine)}
-            <CCardBody>
-              <CChartLine
-                style={{ maxHeight: 260 }}
-                data={{
-                  labels: last6.map((m) => m.label),
-                  datasets: [
-                    {
-                      label: 'Liquidaciones',
-                      data: trendSettled,
-                      borderColor: '#1e3a5f',
-                      backgroundColor: 'rgba(30,58,95,0.08)',
-                      borderWidth: 2.5,
-                      pointBackgroundColor: '#1e3a5f',
-                      pointRadius: 5,
-                      fill: true,
-                      tension: 0.35,
-                    },
-                    {
-                      label: 'Gastos',
-                      data: trendExp,
-                      borderColor: '#e03131',
-                      backgroundColor: 'rgba(224,49,49,0.06)',
-                      borderWidth: 2,
-                      pointBackgroundColor: '#e03131',
-                      pointRadius: 4,
-                      fill: true,
-                      tension: 0.35,
-                    },
-                    {
-                      label: 'Neto',
-                      data: trendNet,
-                      borderColor: '#2f9e44',
-                      backgroundColor: 'transparent',
-                      borderWidth: 2,
-                      borderDash: [6, 3],
-                      pointBackgroundColor: '#2f9e44',
-                      pointRadius: 4,
-                      fill: false,
-                      tension: 0.35,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
-                  scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: {
-                      grid: { color: 'rgba(0,0,0,0.06)' },
-                      ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
-                    },
-                  },
-                }}
-              />
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol lg={5}>
-          <CCard className="taxis-home__card">
-            {cardHeader('Top conductores del mes', cilStar)}
-            <CCardBody>
-              {byDriver.length === 0 ? (
-                <span className="taxis-home__empty">Sin liquidaciones este periodo</span>
-              ) : (
-                <CChartBar
-                  style={{ maxHeight: 260 }}
-                  data={{
-                    labels: byDriver.map(([name]) => name.split(' ')[0]),
-                    datasets: [
-                      {
-                        label: 'Total',
-                        data: byDriver.map(([, v]) => v),
-                        backgroundColor: byDriver.map((_, i) =>
-                          i === 0 ? '#1e3a5f' : `rgba(30,58,95,${0.7 - i * 0.07})`,
-                        ),
-                        borderRadius: 5,
-                      },
-                    ],
-                  }}
-                  options={{
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                      x: {
-                        grid: { color: 'rgba(0,0,0,0.06)' },
-                        ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
-                      },
-                      y: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    },
-                  }}
-                />
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+          <CRow className="g-3 mb-4">
+            <CCol lg={5}>
+              <CCard className="taxis-home__card">
+                {cardHeader('Top conductores del mes', cilStar)}
+                <CCardBody>
+                  {byDriver.length === 0 ? (
+                    <span className="taxis-home__empty">Sin liquidaciones este periodo</span>
+                  ) : (
+                    <CChartBar
+                      style={{ maxHeight: 260 }}
+                      data={{
+                        labels: byDriver.map(([name]) => name.split(' ')[0]),
+                        datasets: [
+                          {
+                            label: 'Total',
+                            data: byDriver.map(([, v]) => v),
+                            backgroundColor: byDriver.map((_, i) =>
+                              i === 0 ? '#1e3a5f' : `rgba(30,58,95,${0.7 - i * 0.07})`,
+                            ),
+                            borderRadius: 5,
+                          },
+                        ],
+                      }}
+                      options={{
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                          x: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                          },
+                          y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                        },
+                      }}
+                    />
+                  )}
+                </CCardBody>
+              </CCard>
+            </CCol>
+            <CCol lg={7}>
+              <CCard className="taxis-home__card">
+                {cardHeader('Liquidaciones por vehículo', cilCarAlt)}
+                <CCardBody>
+                  {byVehicle.length === 0 ? (
+                    <span className="taxis-home__empty">Sin datos</span>
+                  ) : (
+                    <CChartBar
+                      style={{ maxHeight: 240 }}
+                      data={{
+                        labels: byVehicle.map(([plate]) => plate),
+                        datasets: [
+                          {
+                            label: 'Total',
+                            data: byVehicle.map(([, v]) => v),
+                            backgroundColor: 'rgba(230, 119, 0, 0.75)',
+                            borderRadius: 5,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                          x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11, family: 'monospace' } },
+                          },
+                          y: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                </CCardBody>
+              </CCard>
+            </CCol>
+          </CRow>
 
-      <CRow className="g-3">
-        <CCol lg={5}>
-          <CCard className="taxis-home__card">
-            {cardHeader('Liquidaciones por vehículo', cilCarAlt)}
-            <CCardBody>
-              {byVehicle.length === 0 ? (
-                <span className="taxis-home__empty">Sin datos</span>
-              ) : (
-                <CChartBar
-                  style={{ maxHeight: 240 }}
-                  data={{
-                    labels: byVehicle.map(([plate]) => plate),
-                    datasets: [
-                      {
-                        label: 'Total',
-                        data: byVehicle.map(([, v]) => v),
-                        backgroundColor: 'rgba(230, 119, 0, 0.75)',
-                        borderRadius: 5,
-                      },
-                    ],
-                  }}
-                  options={{
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                      x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 11, family: 'monospace' } },
-                      },
-                      y: {
-                        grid: { color: 'rgba(0,0,0,0.06)' },
-                        ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
-                      },
-                    },
-                  }}
-                />
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol lg={7}>
-          <CCard className="taxis-home__card">
-            {cardHeader('Ranking de conductores', cilPeople)}
-            <CCardBody className="taxis-home__card-body--flush">
-              {byDriver.length === 0 ? (
-                <div className="taxis-home__empty--padded">Sin datos</div>
-              ) : (
-                <table className="driver-ranking">
-                  <thead>
-                    <tr className="driver-ranking__head-row">
-                      <th className="driver-ranking__th">#</th>
-                      <th className="driver-ranking__th">Conductor</th>
-                      <th className="driver-ranking__th driver-ranking__th--right">Total</th>
-                      <th className="driver-ranking__th driver-ranking__th--right">Liq.</th>
-                      <th className="driver-ranking__th">Participación</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {byDriver.map(([name, total], i) => {
-                      const count = monthSettlements.filter((r) => r.driver === name).length
-                      const pct = totalSettled > 0 ? Math.round((total / totalSettled) * 100) : 0
-                      return (
-                        <tr key={name} className="driver-ranking__row">
-                          <td className="driver-ranking__rank">
-                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                          </td>
-                          <td className="driver-ranking__name-cell">
-                            <DriverAvatar name={name} rank={i} />
-                            <span className="driver-ranking__name">{name}</span>
-                          </td>
-                          <td className="driver-ranking__total">{fmt(total)}</td>
-                          <td className="driver-ranking__count">{count}</td>
-                          <td className="driver-ranking__share">
-                            <div className="driver-ranking__bar-wrap">
-                              <div className="driver-ranking__bar-track">
-                                <div
-                                  className="driver-ranking__bar-fill"
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                              <span className="driver-ranking__pct">{pct}%</span>
-                            </div>
-                          </td>
+          <CRow className="g-3">
+            <CCol lg={12}>
+              <CCard className="taxis-home__card">
+                {cardHeader('Ranking de conductores', cilPeople)}
+                <CCardBody className="taxis-home__card-body--flush">
+                  {byDriver.length === 0 ? (
+                    <div className="taxis-home__empty--padded">Sin datos</div>
+                  ) : (
+                    <table className="driver-ranking">
+                      <thead>
+                        <tr className="driver-ranking__head-row">
+                          <th className="driver-ranking__th">#</th>
+                          <th className="driver-ranking__th">Conductor</th>
+                          <th className="driver-ranking__th driver-ranking__th--right">Total</th>
+                          <th className="driver-ranking__th driver-ranking__th--right">Liq.</th>
+                          <th className="driver-ranking__th">Participación</th>
                         </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                      </thead>
+                      <tbody>
+                        {byDriver.map(([name, total], i) => {
+                          const count = monthSettlements.filter((r) => r.driver === name).length
+                          const pct =
+                            totalSettled > 0 ? Math.round((total / totalSettled) * 100) : 0
+                          return (
+                            <tr key={name} className="driver-ranking__row">
+                              <td className="driver-ranking__rank">
+                                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                              </td>
+                              <td className="driver-ranking__name-cell">
+                                <DriverAvatar name={name} rank={i} />
+                                <span className="driver-ranking__name">{name}</span>
+                              </td>
+                              <td className="driver-ranking__total">{fmt(total)}</td>
+                              <td className="driver-ranking__count">{count}</td>
+                              <td className="driver-ranking__share">
+                                <div className="driver-ranking__bar-wrap">
+                                  <div className="driver-ranking__bar-track">
+                                    <div
+                                      className="driver-ranking__bar-fill"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                  <span className="driver-ranking__pct">{pct}%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </CCardBody>
+              </CCard>
+            </CCol>
+          </CRow>
+        </CTabPane>
+
+        <CTabPane visible={activeTab === 'tendencias'}>
+          <CRow className="g-3">
+            <CCol lg={12}>
+              <CCard className="taxis-home__card">
+                {cardHeader('Tendencia últimos 6 meses', cilChartLine)}
+                <CCardBody>
+                  <CChartLine
+                    style={{ maxHeight: 340 }}
+                    data={{
+                      labels: last6.map((m) => m.label),
+                      datasets: [
+                        {
+                          label: 'Liquidaciones',
+                          data: trendSettled,
+                          borderColor: '#1e3a5f',
+                          backgroundColor: 'rgba(30,58,95,0.08)',
+                          borderWidth: 2.5,
+                          pointBackgroundColor: '#1e3a5f',
+                          pointRadius: 5,
+                          fill: true,
+                          tension: 0.35,
+                        },
+                        {
+                          label: 'Gastos',
+                          data: trendExp,
+                          borderColor: '#e03131',
+                          backgroundColor: 'rgba(224,49,49,0.06)',
+                          borderWidth: 2,
+                          pointBackgroundColor: '#e03131',
+                          pointRadius: 4,
+                          fill: true,
+                          tension: 0.35,
+                        },
+                        {
+                          label: 'Neto',
+                          data: trendNet,
+                          borderColor: '#2f9e44',
+                          backgroundColor: 'transparent',
+                          borderWidth: 2,
+                          borderDash: [6, 3],
+                          pointBackgroundColor: '#2f9e44',
+                          pointRadius: 4,
+                          fill: false,
+                          tension: 0.35,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: { legend: { position: 'top', labels: { font: { size: 12 } } } },
+                      scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+                        y: {
+                          grid: { color: 'rgba(0,0,0,0.06)' },
+                          ticks: { font: { size: 11 }, callback: (v) => fmtM(v) },
+                        },
+                      },
+                    }}
+                  />
+                </CCardBody>
+              </CCard>
+            </CCol>
+          </CRow>
+        </CTabPane>
+      </CTabContent>
     </>
   )
 }
