@@ -124,7 +124,9 @@ const TaxisHome = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([getSettlements(), fetchExpenses(), getDrivers(), getVehicles()]).then(
+    const now = new Date()
+    const period = { month: now.getMonth() + 1, year: now.getFullYear() }
+    Promise.all([getSettlements(period), fetchExpenses(period), getDrivers(), getVehicles()]).then(
       ([s, e, d, v]) => {
         setSettlements(s)
         setExpenses(e)

@@ -833,7 +833,7 @@ const Taxis = () => {
             size="sm"
             color="secondary"
             variant="outline"
-            onClick={() => dispatch(taxiSettlementActions.fetchRequest())}
+            onClick={() => dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))}
             title={t('common.refresh')}
           >
             <CIcon icon={cilReload} size="sm" />
