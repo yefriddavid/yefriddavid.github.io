@@ -11,11 +11,19 @@ import {
   where,
 } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
+import { taxiCall } from '../firebaseClient'
 
-
-export const getSettlements = async () => {
-  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+export const getSettlements = async ({ month, year }) => {
+  const pad = (n) => String(n).padStart(2, '0')
+  const from = `${year}-${pad(month)}-01`
+  const to = `${year}-${pad(month)}-${pad(new Date(year, month, 0).getDate())}`
+  const q = query(
+    collection(db, COL),
+    where('tenantId', '==', getTenantId()),
+    where('date', '>=', from),
+    where('date', '<=', to),
+  )
+  const snap = await taxiCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()

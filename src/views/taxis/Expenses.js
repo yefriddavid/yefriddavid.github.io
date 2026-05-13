@@ -450,10 +450,10 @@ const Gastos = () => {
   const [receiptViewer, setReceiptViewer] = useState(null)
 
   useEffect(() => {
-    dispatch(taxiExpenseActions.fetchRequest())
+    dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiDriverActions.fetchRequest())
     getVehicles().then(setVehicles)
-  }, [dispatch])
+  }, [dispatch, period.month, period.year])
 
   useEffect(() => {
     if (editingRow) {
@@ -473,7 +473,7 @@ const Gastos = () => {
   const handleEditSave = (form) => {
     updateExpense(editingRow.id, { ...editingRow, ...form, amount: Number(form.amount) }).then(
       () => {
-        dispatch(taxiExpenseActions.fetchRequest())
+        dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
       },
     )
     gridRef.current?.instance()?.collapseRow(editingRow.id)
@@ -520,10 +520,6 @@ const Gastos = () => {
   }, [records, period.year])
 
   const filtered = records.filter((r) => {
-    if (!r.date) return false
-    const [y, m] = r.date.split('-').map(Number)
-    if (y !== period.year) return false
-    if (period.month !== 0 && m !== period.month) return false
     if (categoryFilter.length > 0 && !categoryFilter.includes(r.category)) return false
     if (plateFilter && r.plate !== plateFilter) return false
     if (paidFilter === 'paid' && !r.paid) return false

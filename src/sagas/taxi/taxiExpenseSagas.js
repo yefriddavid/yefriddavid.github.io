@@ -2,10 +2,10 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as taxiExpenseActions from '../../actions/taxi/taxiExpenseActions'
 import * as expenseService from '../../services/firebase/taxi/taxiExpenses'
 
-export function* fetchExpenses() {
+export function* fetchExpenses(action) {
   try {
     yield put(taxiExpenseActions.beginRequestFetch())
-    const data = yield call(expenseService.fetchExpenses)
+    const data = yield call(expenseService.fetchExpenses, action?.payload)
     yield put(taxiExpenseActions.successRequestFetch(data))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestFetch(e.message))

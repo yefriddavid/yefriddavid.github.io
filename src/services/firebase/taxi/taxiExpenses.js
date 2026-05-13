@@ -14,8 +14,16 @@ import { taxiCall as firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
-export const fetchExpenses = async () => {
-  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+export const fetchExpenses = async (period) => {
+  const constraints = [where('tenantId', '==', getTenantId())]
+  if (period?.year && period?.month !== undefined) {
+    const { month, year } = period
+    const pad = (n) => String(n).padStart(2, '0')
+    const from = month === 0 ? `${year}-01-01` : `${year}-${pad(month)}-01`
+    const to = month === 0 ? `${year}-12-31` : `${year}-${pad(month)}-${pad(new Date(year, month, 0).getDate())}`
+    constraints.push(where('date', '>=', from), where('date', '<=', to))
+  }
+  const q = query(collection(db, COL), ...constraints)
   const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {

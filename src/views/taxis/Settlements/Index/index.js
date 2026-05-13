@@ -132,15 +132,15 @@ const Taxis = () => {
 
   // ── Effects ───────────────────────────────────────────────────────────────
   useEffect(() => {
-    dispatch(taxiSettlementActions.fetchRequest())
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
-    dispatch(taxiExpenseActions.fetchRequest())
     dispatch(taxiAuditNoteActions.fetchRequest())
   }, [dispatch])
 
   useEffect(() => {
     const periodStr = `${period.year}-${String(period.month).padStart(2, '0')}`
+    dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))
+    dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiPeriodNoteActions.fetchRequest({ period: periodStr }))
     dispatch(taxiPeriodAttachmentActions.fetchRequest({ period: periodStr }))
   }, [dispatch, period.year, period.month])
@@ -165,7 +165,7 @@ const Taxis = () => {
         editingRowIdRef.current = null
         setEditingRow(null)
       }
-      dispatch(taxiSettlementActions.fetchRequest())
+      dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))
       setToast({ type: 'success', msg: t('taxis.settlements.errors.saveSuccess') })
     }
     const timer = setTimeout(() => setToast(null), 4000)
@@ -238,9 +238,6 @@ const Taxis = () => {
   }, [records, period.year])
 
   const filtered = records.filter((r) => {
-    if (!r.date) return false
-    const [y, m] = r.date.split('-').map(Number)
-    if (y !== period.year || m !== period.month) return false
     if (driverFilter.size > 0 && !driverFilter.has(r.driver)) return false
     if (plateFilter && r.plate !== plateFilter) return false
     if (dayFilter.size > 0 && !dayFilter.has(Number(r.date?.split('-')[2]))) return false
@@ -249,11 +246,7 @@ const Taxis = () => {
 
   const total = filtered.reduce((acc, r) => acc + (r.amount || 0), 0)
 
-  const periodExpenses = (expensesData ?? []).filter((r) => {
-    if (!r.date) return false
-    const [y, m] = r.date.split('-').map(Number)
-    return y === period.year && m === period.month
-  })
+  const periodExpenses = expensesData ?? []
   const totalExpenses = periodExpenses.reduce((acc, r) => acc + (r.amount || 0), 0)
   const totalExpensesPaid = periodExpenses
     .filter((r) => r.paid === true)
