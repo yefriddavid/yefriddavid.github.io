@@ -13,16 +13,12 @@ import {
 import { getTenantId } from 'src/services/tenantContext'
 import { taxiCall } from '../firebaseClient'
 
-export const getSettlements = async ({ month, year }) => {
-  const pad = (n) => String(n).padStart(2, '0')
-  const from = `${year}-${pad(month)}-01`
-  const to = `${year}-${pad(month)}-${pad(new Date(year, month, 0).getDate())}`
-  const q = query(
-    collection(db, COL),
-    where('tenantId', '==', getTenantId()),
-    where('date', '>=', from),
-    where('date', '<=', to),
-  )
+// filter: { from, to } | undefined (no date filter)
+export const getSettlements = async (filter) => {
+  const constraints = [where('tenantId', '==', getTenantId())]
+  if (filter?.from && filter?.to)
+    constraints.push(where('date', '>=', filter.from), where('date', '<=', filter.to))
+  const q = query(collection(db, COL), ...constraints)
   const snap = await taxiCall(() => getDocs(q))
   return snap.docs
     .map((d) => {

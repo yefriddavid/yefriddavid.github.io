@@ -1,13 +1,14 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiSettlementActions'
 import * as service from '../../services/firebase/taxi/taxiSettlements'
+import { monthToRange } from '../../utils/dateRange'
 
 export function* fetchSettlements(action) {
   try {
     yield put(actions.beginRequestFetch())
     const now = new Date()
     const period = action?.payload ?? { month: now.getMonth() + 1, year: now.getFullYear() }
-    const data = yield call(service.getSettlements, period)
+    const data = yield call(service.getSettlements, monthToRange(period))
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))

@@ -14,6 +14,7 @@ import {
 } from '@coreui/react'
 import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
 import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
+import { monthToRange } from 'src/utils/dateRange'
 import './masters.scss'
 
 const MONTHS = [
@@ -55,7 +56,7 @@ const Resumen = () => {
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
   useEffect(() => {
-    Promise.all([getSettlements(period), fetchExpenses(period)])
+    Promise.all([getSettlements(monthToRange(period)), fetchExpenses(monthToRange(period))])
       .then(([settlements, expenses]) => {
         const merged = [
           ...settlements.map((s) => ({

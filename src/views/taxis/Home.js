@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CCard,
   CCardBody,
@@ -30,6 +30,7 @@ import {
 } from '@coreui/icons'
 import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
 import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
+import { monthToRange } from 'src/utils/dateRange'
 import { getDrivers } from 'src/services/firebase/taxi/taxiDrivers'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
 import './Home.scss'
@@ -128,20 +129,51 @@ const TaxisHome = () => {
   const [drivers, setDrivers] = useState([])
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(true)
+  const [trendData, setTrendData] = useState(null)
+  const [trendLoading, setTrendLoading] = useState(false)
+  const trendFetchKey = useRef(null)
 
   useEffect(() => {
-    const now = new Date()
-    const period = { month: now.getMonth() + 1, year: now.getFullYear() }
-    Promise.all([getSettlements(period), fetchExpenses(period), getDrivers(), getVehicles()]).then(
-      ([s, e, d, v]) => {
-        setSettlements(s)
-        setExpenses(e)
-        setDrivers(d)
-        setVehicles(v)
-        setLoading(false)
-      },
-    )
+    const p = { month: now.getMonth() + 1, year: now.getFullYear() }
+    Promise.all([
+      getSettlements(monthToRange(p)),
+      fetchExpenses(monthToRange(p)),
+      getDrivers(),
+      getVehicles(),
+    ]).then(([s, e, d, v]) => {
+      setSettlements(s)
+      setExpenses(e)
+      setDrivers(d)
+      setVehicles(v)
+      setLoading(false)
+    })
   }, [])
+
+  useEffect(() => {
+    setTrendData(null)
+    setTrendLoading(false)
+  }, [period])
+
+  useEffect(() => {
+    if (activeTab !== 'tendencias' || trendData !== null || trendLoading) return
+    const key = `${period.year}-${period.month}`
+    trendFetchKey.current = key
+    setTrendLoading(true)
+    const pad = (n) => String(n).padStart(2, '0')
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(period.year, period.month - 1 - (5 - i), 1)
+      return { year: d.getFullYear(), month: d.getMonth() + 1 }
+    })
+    const range = {
+      from: `${months[0].year}-${pad(months[0].month)}-01`,
+      to: monthToRange(months[5]).to,
+    }
+    Promise.all([getSettlements(range), fetchExpenses(range)]).then(([s, e]) => {
+      if (trendFetchKey.current !== key) return
+      setTrendData({ settlements: s, expenses: e })
+      setTrendLoading(false)
+    })
+  }, [activeTab, trendData, trendLoading, period])
 
   const availableYears = useMemo(() => {
     const years = [
@@ -255,15 +287,17 @@ const TaxisHome = () => {
   }, [period])
 
   const { trendSettled, trendExp } = useMemo(() => {
+    const empty = last6.map(() => 0)
+    if (!trendData) return { trendSettled: empty, trendExp: empty }
     const settledByMonth = {}
-    settlements.forEach((r) => {
+    trendData.settlements.forEach((r) => {
       if (r.date) {
         const k = r.date.slice(0, 7)
         settledByMonth[k] = (settledByMonth[k] || 0) + (r.amount || 0)
       }
     })
     const expByMonth = {}
-    expenses.forEach((r) => {
+    trendData.expenses.forEach((r) => {
       if (r.date) {
         const k = r.date.slice(0, 7)
         expByMonth[k] = (expByMonth[k] || 0) + (r.amount || 0)
@@ -277,7 +311,7 @@ const TaxisHome = () => {
         ({ year, month }) => expByMonth[`${year}-${String(month).padStart(2, '0')}`] || 0,
       ),
     }
-  }, [settlements, expenses, last6])
+  }, [trendData, last6])
   const trendNet = trendSettled.map((v, i) => v - trendExp[i])
 
   const byVehicle = useMemo(() => {
@@ -694,59 +728,66 @@ const TaxisHome = () => {
               <CCard className="taxis-home__card">
                 {cardHeader('Tendencia últimos 6 meses', cilChartLine)}
                 <CCardBody>
-                  <CChartLine
-                    style={{ maxHeight: 340 }}
-                    data={{
-                      labels: last6.map((m) => m.label),
-                      datasets: [
-                        {
-                          label: 'Liquidaciones',
-                          data: trendSettled,
-                          borderColor: '#1e3a5f',
-                          backgroundColor: 'rgba(30,58,95,0.08)',
-                          borderWidth: 2.5,
-                          pointBackgroundColor: '#1e3a5f',
-                          pointRadius: 5,
-                          fill: true,
-                          tension: 0.35,
+                  {trendLoading && (
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
+                      <CSpinner color="primary" />
+                    </div>
+                  )}
+                  {!trendLoading && trendData && (
+                    <CChartLine
+                      style={{ maxHeight: 340 }}
+                      data={{
+                        labels: last6.map((m) => m.label),
+                        datasets: [
+                          {
+                            label: 'Liquidaciones',
+                            data: trendSettled,
+                            borderColor: '#1e3a5f',
+                            backgroundColor: 'rgba(30,58,95,0.08)',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#1e3a5f',
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.35,
+                          },
+                          {
+                            label: 'Gastos',
+                            data: trendExp,
+                            borderColor: '#e03131',
+                            backgroundColor: 'rgba(224,49,49,0.06)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#e03131',
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.35,
+                          },
+                          {
+                            label: 'Neto',
+                            data: trendNet,
+                            borderColor: '#2f9e44',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [6, 3],
+                            pointBackgroundColor: '#2f9e44',
+                            pointRadius: 4,
+                            fill: false,
+                            tension: 0.35,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: { legend: { position: 'top', labels: { font: { size: 12 } } } },
+                        scales: {
+                          x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+                          y: {
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { font: { size: 11 }, callback: (v) => fmtM(v) },
+                          },
                         },
-                        {
-                          label: 'Gastos',
-                          data: trendExp,
-                          borderColor: '#e03131',
-                          backgroundColor: 'rgba(224,49,49,0.06)',
-                          borderWidth: 2,
-                          pointBackgroundColor: '#e03131',
-                          pointRadius: 4,
-                          fill: true,
-                          tension: 0.35,
-                        },
-                        {
-                          label: 'Neto',
-                          data: trendNet,
-                          borderColor: '#2f9e44',
-                          backgroundColor: 'transparent',
-                          borderWidth: 2,
-                          borderDash: [6, 3],
-                          pointBackgroundColor: '#2f9e44',
-                          pointRadius: 4,
-                          fill: false,
-                          tension: 0.35,
-                        },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      plugins: { legend: { position: 'top', labels: { font: { size: 12 } } } },
-                      scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
-                        y: {
-                          grid: { color: 'rgba(0,0,0,0.06)' },
-                          ticks: { font: { size: 11 }, callback: (v) => fmtM(v) },
-                        },
-                      },
-                    }}
-                  />
+                      }}
+                    />
+                  )}
                 </CCardBody>
               </CCard>
             </CCol>
