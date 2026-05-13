@@ -1,4 +1,4 @@
-import { db, COL_TAXI_SETTLEMENTS as COL } from '../settings'
+import { dbTaxi as db, COL_TAXI_SETTLEMENTS as COL } from '../settings'
 import {
   collection,
   addDoc,

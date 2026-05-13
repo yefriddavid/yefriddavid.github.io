@@ -14,6 +14,16 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
+const taxiConfig = {
+  apiKey: import.meta.env.VITE_TAXI_API_KEY,
+  authDomain: import.meta.env.VITE_TAXI_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_TAXI_DATABASE_URL,
+  projectId: import.meta.env.VITE_TAXI_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_TAXI_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_TAXI_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_TAXI_APP_ID,
+}
+
 const domoticaConfig = {
   apiKey: import.meta.env.VITE_DOMOTICA_API_KEY,
   authDomain: import.meta.env.VITE_DOMOTICA_AUTH_DOMAIN,
@@ -29,6 +39,9 @@ export const db = getFirestore(app)
 export const auth = getAuth(app)
 export const messaging = getMessaging(app)
 export const rtdb = getDatabase(app)
+
+const taxiApp = initializeApp(taxiConfig, 'taxi')
+export const dbTaxi = getFirestore(taxiApp)
 
 const domoticaApp = initializeApp(domoticaConfig, 'domotica')
 export const dbDomotica = getFirestore(domoticaApp)

@@ -1,4 +1,4 @@
-import { db, COL_TAXI_AUDIT_NOTES as COL } from '../settings'
+import { dbTaxi as db, COL_TAXI_AUDIT_NOTES as COL } from '../settings'
 import { collection, getDocs, setDoc, deleteDoc, doc, query, where } from 'firebase/firestore'
 import { getTenantId } from 'src/services/tenantContext'
 

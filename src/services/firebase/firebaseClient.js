@@ -108,13 +108,13 @@ export async function firestoreCall(operation, { retries = 1 } = {}) {
 }
 
 /**
- * Wrapper for Domotica project calls — no auth token injection, no logout on
- * permission errors (the Domotica project uses open rules, not Firebase Auth).
+ * Wrapper for secondary project calls (Taxi, Domotica) — no auth token
+ * injection, no logout on permission errors (these projects use open rules).
  * @param {() => Promise<any>} operation
  * @param {{ retries?: number }} options
  * @returns {Promise<any>}
  */
-export async function domoticaCall(operation, { retries = 1 } = {}) {
+async function openProjectCall(operation, { retries = 1 } = {}) {
   let lastErr
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -134,3 +134,6 @@ export async function domoticaCall(operation, { retries = 1 } = {}) {
 
   throw normalizeError(lastErr)
 }
+
+export const domoticaCall = (op, opts) => openProjectCall(op, opts)
+export const taxiCall = (op, opts) => openProjectCall(op, opts)

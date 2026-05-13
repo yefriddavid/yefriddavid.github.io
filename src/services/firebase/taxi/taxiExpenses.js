@@ -1,4 +1,4 @@
-import { db, COL_TAXI_EXPENSES as COL } from '../settings'
+import { dbTaxi as db, COL_TAXI_EXPENSES as COL } from '../settings'
 import {
   collection,
   addDoc,
@@ -10,7 +10,7 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
-import { firestoreCall } from '../firebaseClient'
+import { taxiCall as firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
