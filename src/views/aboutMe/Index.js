@@ -154,7 +154,12 @@ const AboutMe = () => {
   const { dotRef, ringRef, glowRef } = useCursorGlow(containerRef)
 
   useEffect(() => {
+    const prev = document.title
+    document.title = 'David Rios'
     trackPageVisit('about-me')
+    return () => {
+      document.title = prev
+    }
   }, [])
 
   return (

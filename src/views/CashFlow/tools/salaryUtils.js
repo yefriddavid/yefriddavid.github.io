@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 export { fmt } from 'src/utils/formatters'
-
-export const TYPE_LABELS = { percent: 'Porcentaje', value: 'Valor fijo', remainder: 'Restante' }
-export const TARGET_OPTIONS = ['bnc col', 'col-bnc', 'bnc arg', 'bnc loan', 'ctb']
+export {
+  SALARY_DISTRIBUTION_TYPE_LABELS as TYPE_LABELS,
+  SALARY_TARGET_OPTIONS as TARGET_OPTIONS,
+} from 'src/constants/cashFlow'
 
 export let nextId = Date.now()
 export const bumpId = () => ++nextId

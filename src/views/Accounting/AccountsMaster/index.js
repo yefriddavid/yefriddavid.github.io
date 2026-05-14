@@ -18,23 +18,13 @@ import {
   ACCOUNT_MASTER_TYPES,
   ACCOUNT_MASTER_TYPE_LABELS,
   ACCOUNT_MASTER_NATURE,
+  ACCOUNT_NATURE_COLOR as NATURE_COLOR,
+  ACCOUNT_TYPE_COLOR as TYPE_COLOR,
 } from 'src/constants/accounting'
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import AccountMasterForm from './AccountMasterForm'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
-
-const NATURE_COLOR = {
-  Débito: { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
-  Crédito: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-}
-
-const TYPE_COLOR = {
-  Activo: { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
-  Pasivo: { bg: '#fff7ed', color: '#9a3412', border: '#fed7aa' },
-  Incoming: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-  Outcoming: { bg: '#fef2f2', color: '#991b1b', border: '#fecaca' },
-}
 
 export default function AccountsMaster() {
   const dispatch = useDispatch()

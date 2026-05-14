@@ -16,16 +16,11 @@ import { deleteSession } from '../../services/firebase/security/sessions'
 import { signOut } from '../../services/firebase/auth'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import VersionModal from './VersionModal'
+import { USER_ROLE_LABELS as ROLE_LABELS } from 'src/constants/admin'
 import './AppHeaderDropdown.scss'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
-
-const ROLE_LABELS = {
-  superAdmin: 'Super Admin',
-  manager: 'Manager',
-  conductor: 'Conductor',
-}
 
 const AppHeaderDropdown = () => {
   const dispatch = useDispatch()

@@ -19,14 +19,10 @@ import { cilPlus, cilTrash, cilX } from '@coreui/icons'
 import * as tenantsActions from 'src/actions/tenantsActions'
 import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
-
-const PLANS = ['basic', 'pro', 'enterprise']
-
-const PLAN_COLORS = {
-  basic: 'secondary',
-  pro: 'primary',
-  enterprise: 'warning',
-}
+import {
+  ADMIN_PLANS as PLANS,
+  ADMIN_PLAN_COLORS as PLAN_COLORS,
+} from 'src/constants/admin'
 
 const EMPTY = {
   name: '',

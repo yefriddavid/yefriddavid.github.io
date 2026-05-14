@@ -1,10 +1,11 @@
-export const TYPES = ['financial', 'fixed']
-export const HORIZONS = ['largo', 'mediano', 'corto']
-
-export const TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700' }
-export const TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1' }
-export const HORIZON_COLOR = { largo: '#6741d9', mediano: '#1971c2', corto: '#e03131' }
-export const HORIZON_BG = { largo: '#f3f0ff', mediano: '#e7f5ff', corto: '#fff5f5' }
+export {
+  ASSET_TYPES as TYPES,
+  ASSET_HORIZONS as HORIZONS,
+  ASSET_TYPE_COLOR as TYPE_COLOR,
+  ASSET_TYPE_BG as TYPE_BG,
+  ASSET_HORIZON_COLOR as HORIZON_COLOR,
+  ASSET_HORIZON_BG as HORIZON_BG,
+} from 'src/constants/cashFlow'
 
 export const EMPTY_ASSET = {
   name: '',

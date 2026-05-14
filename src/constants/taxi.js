@@ -42,3 +42,38 @@ export const TAXI_MAINTENANCE_CATEGORIES = [
   'Póliza Resp. Civil',
   'Tarjeta de Operación',
 ]
+
+export const TAXI_REGULATORY_CATEGORIES = ['SOAT', 'RTM', 'Póliza Resp. Civil', 'Tarjeta de Operación']
+
+export const TAXI_MAINTENANCE_TYPE_COLORS = {
+  'pico-placa': { bg: '#fff1f2', border: '#f43f5e', text: '#9f1239', label: 'P&P' },
+  'Cambio Aceite': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', label: 'Aceite' },
+  'Cambio de Correa Dentada': { bg: '#fff7ed', border: '#ea580c', text: '#7c2d12', label: 'Correa' },
+  Mantenimiento: { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af', label: 'Mantto.' },
+  Lavado: { bg: '#f0fdf4', border: '#22c55e', text: '#166534', label: 'Lavado' },
+  Repuestos: { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', label: 'Repuesto' },
+  SOAT: { bg: '#ecfeff', border: '#06b6d4', text: '#155e75', label: 'SOAT' },
+  RTM: { bg: '#f7fee7', border: '#65a30d', text: '#365314', label: 'RTM' },
+  'Póliza Resp. Civil': { bg: '#fdf2f8', border: '#db2777', text: '#831843', label: 'Póliza RC' },
+  'Tarjeta de Operación': { bg: '#fff8f1', border: '#ea580c', text: '#7c2d12', label: 'Tarj. Op.' },
+}
+
+export const TAXI_CHART_CATEGORY_COLORS = ['#1971c2', '#e67700', '#2f9e44', '#ae3ec9', '#e03131', '#868e96']
+
+export const TAXI_DRIVER_AVATAR_COLORS = [
+  '#1e3a5f',
+  '#e67700',
+  '#2f9e44',
+  '#ae3ec9',
+  '#e03131',
+  '#1971c2',
+  '#0c8599',
+  '#c92a2a',
+]
+
+export const TAXI_AUDIT_STATUS_DEFS = [
+  { key: 'none', tKey: 'statusNone', color: '#e03131', bg: 'rgba(224,49,49,0.1)' },
+  { key: 'partial', tKey: 'statusPartial', color: '#e67700', bg: 'rgba(230,119,0,0.1)' },
+  { key: 'full', tKey: 'statusFull', color: '#2f9e44', bg: 'rgba(47,158,68,0.1)' },
+  { key: 'future', tKey: 'statusFuture', color: '#868e96', bg: 'rgba(134,142,150,0.1)' },
+]

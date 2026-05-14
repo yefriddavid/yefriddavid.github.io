@@ -16,6 +16,12 @@ import {
 } from '@coreui/react'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as deviceActions from 'src/actions/domotica/domoticaDeviceActions'
+import {
+  DOMOTICA_DEVICE_TYPES as DEVICE_TYPES,
+  DOMOTICA_DEVICE_STATUS_OPTIONS as STATUS_OPTIONS,
+  DOMOTICA_DEVICE_STATUS_COLOR as STATUS_COLOR,
+  DOMOTICA_DEVICE_STATUS_LABEL as STATUS_LABEL,
+} from 'src/constants/domotica'
 import './Devices.scss'
 
 const EMPTY_FORM = {
@@ -32,12 +38,6 @@ const generateInternalId = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   return Array.from({ length: 7 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
-
-const DEVICE_TYPES = ['esp8266', 'esp32', 'relay', 'sensor', 'gateway', 'otro']
-const STATUS_OPTIONS = ['active', 'inactive', 'error']
-
-const STATUS_COLOR = { active: 'success', inactive: 'secondary', error: 'danger' }
-const STATUS_LABEL = { active: 'Activo', inactive: 'Inactivo', error: 'Error' }
 
 const fieldError = (err) =>
   err ? (

@@ -1,11 +1,5 @@
 import React from 'react'
-
-const STATUS_DEFS = [
-  { key: 'none', tKey: 'statusNone', color: '#e03131', bg: 'rgba(224,49,49,0.1)' },
-  { key: 'partial', tKey: 'statusPartial', color: '#e67700', bg: 'rgba(230,119,0,0.1)' },
-  { key: 'full', tKey: 'statusFull', color: '#2f9e44', bg: 'rgba(47,158,68,0.1)' },
-  { key: 'future', tKey: 'statusFuture', color: '#868e96', bg: 'rgba(134,142,150,0.1)' },
-]
+import { TAXI_AUDIT_STATUS_DEFS as STATUS_DEFS } from 'src/constants/taxi'
 
 const AuditStatusStrip = ({
   auditDays,

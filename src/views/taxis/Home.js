@@ -36,6 +36,10 @@ import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
 import { fmt } from 'src/utils/formatters'
 import KPICard from 'src/components/shared/KPICard'
 import EmptyState from 'src/components/shared/EmptyState'
+import {
+  TAXI_CHART_CATEGORY_COLORS as CATEGORY_COLORS,
+  TAXI_DRIVER_AVATAR_COLORS as AVATAR_COLORS,
+} from 'src/constants/taxi'
 import './Home.scss'
 
 const MONTHS = [
@@ -51,19 +55,6 @@ const MONTHS = [
   'Octubre',
   'Noviembre',
   'Diciembre',
-]
-
-const CATEGORY_COLORS = ['#1971c2', '#e67700', '#2f9e44', '#ae3ec9', '#e03131', '#868e96']
-
-const AVATAR_COLORS = [
-  '#1e3a5f',
-  '#e67700',
-  '#2f9e44',
-  '#ae3ec9',
-  '#e03131',
-  '#1971c2',
-  '#0c8599',
-  '#c92a2a',
 ]
 
 const fmtM = (n) => {

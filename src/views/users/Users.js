@@ -21,20 +21,11 @@ import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import { sendUserPasswordReset } from 'src/services/firebase/security/users'
 import { LANDING_PAGES } from 'src/constants/commons'
-
-const ROLES = ['superAdmin', 'manager', 'conductor']
-
-const ROLE_LABELS = {
-  superAdmin: 'Super Admin',
-  manager: 'Manager',
-  conductor: 'Conductor',
-}
-
-const ROLE_COLORS = {
-  superAdmin: 'danger',
-  manager: 'primary',
-  conductor: 'secondary',
-}
+import {
+  USER_ROLES as ROLES,
+  USER_ROLE_LABELS as ROLE_LABELS,
+  USER_ROLE_COLORS as ROLE_COLORS,
+} from 'src/constants/admin'
 
 const EMPTY = {
   username: '',

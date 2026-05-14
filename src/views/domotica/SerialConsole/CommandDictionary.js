@@ -17,6 +17,7 @@ import { CButton, CToast, CToastBody, CToaster } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCopy, cilPlus, cilTrash, cilPencil, cilCheck } from '@coreui/icons'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
+import { DOMOTICA_SERIAL_CATEGORIES as CATEGORIES } from 'src/constants/domotica'
 import './CommandDictionary.scss'
 
 const STORAGE_KEY = 'domotica_command_dictionary'
@@ -33,25 +34,6 @@ const loadCommands = () => {
 const saveCommands = (commands) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(commands))
 }
-
-const CATEGORIES = [
-  'GPS',
-  'Misceláneos',
-  'Mensajes',
-  'Red',
-  'IP Router',
-  'Reloj RTC',
-  'Audio',
-  'GPIO',
-  'Macros',
-  'Funciones',
-  'Buzzer',
-  'Movimiento',
-  'FOTA',
-  'PAD',
-  'API TCP',
-  'Personalizado',
-]
 
 const EMPTY_CMD = {
   id: null,

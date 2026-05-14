@@ -15,13 +15,8 @@ import {
 import { Column, Paging, Pager } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as txActions from 'src/actions/domotica/domoticaTransactionActions'
+import { DOMOTICA_CLEANUP_TYPE_OPTIONS as TYPE_OPTIONS } from 'src/constants/domotica'
 import './Cleanup.scss'
-
-const TYPE_OPTIONS = [
-  { value: '', label: 'Todos los tipos' },
-  { value: 'voltaje', label: 'Voltaje' },
-  { value: 'corriente', label: 'Corriente' },
-]
 
 const toLocalDatetimeValue = (date) => {
   const d = new Date(date)

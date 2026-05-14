@@ -17,7 +17,10 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import { getColombianHolidays } from './auditHelpers'
-import { TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES } from 'src/constants/taxi'
+import {
+  TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES,
+  TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
+} from 'src/constants/taxi'
 
 // Derive day/month names from a locale string using Intl
 const getDayNames = (locale) =>
@@ -39,26 +42,6 @@ const pad2 = (n) => String(n).padStart(2, '0')
 const restrictedDaysForMonth = (vehicle, month) => {
   const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)] ?? {}
   return [restr.d1, restr.d2].filter(Boolean).map(Number)
-}
-
-// ── colors & types ────────────────────────────────────────────────────────────
-
-const TYPE_COLORS = {
-  'pico-placa': { bg: '#fff1f2', border: '#f43f5e', text: '#9f1239', label: 'P&P' },
-  'Cambio Aceite': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', label: 'Aceite' },
-  'Cambio de Correa Dentada': {
-    bg: '#fff7ed',
-    border: '#ea580c',
-    text: '#7c2d12',
-    label: 'Correa',
-  },
-  Mantenimiento: { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af', label: 'Mantto.' },
-  Lavado: { bg: '#f0fdf4', border: '#22c55e', text: '#166534', label: 'Lavado' },
-  Repuestos: { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', label: 'Repuesto' },
-  SOAT: { bg: '#ecfeff', border: '#06b6d4', text: '#155e75', label: 'SOAT' },
-  RTM: { bg: '#f7fee7', border: '#65a30d', text: '#365314', label: 'RTM' },
-  'Póliza Resp. Civil': { bg: '#fdf2f8', border: '#db2777', text: '#831843', label: 'Póliza RC' },
-  'Tarjeta de Operación': { bg: '#fff8f1', border: '#ea580c', text: '#7c2d12', label: 'Tarj. Op.' },
 }
 
 // ── badge ─────────────────────────────────────────────────────────────────────

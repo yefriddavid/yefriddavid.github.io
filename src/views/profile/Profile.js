@@ -4,18 +4,10 @@ import { CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert } from
 import * as authActions from 'src/actions/authActions'
 import { changeOwnPassword } from 'src/services/firebase/security/users'
 import { LANDING_PAGES } from 'src/constants/commons'
-
-const ROLE_LABELS = {
-  superAdmin: 'Super Admin',
-  manager: 'Manager',
-  conductor: 'Conductor',
-}
-
-const ROLE_COLORS = {
-  superAdmin: 'danger',
-  manager: 'primary',
-  conductor: 'secondary',
-}
+import {
+  USER_ROLE_LABELS as ROLE_LABELS,
+  USER_ROLE_COLORS as ROLE_COLORS,
+} from 'src/constants/admin'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
