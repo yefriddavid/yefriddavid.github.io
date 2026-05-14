@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import withRouter from '../../context/searchParamsContext'
 import { fetchProfile } from '../../actions/authActions'
 import { signIn } from '../../services/firebase/auth'
+import { useForm } from 'react-hook-form'
 import './Login.scss'
 
 // ── Icons ──────────────────────────────────────────────────────────
@@ -94,6 +95,13 @@ const Spinner = () => (
   </svg>
 )
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#ff6b6b', display: 'block', marginTop: 4 }}>
+      {err.message}
+    </span>
+  ) : null
+
 // ── Component ──────────────────────────────────────────────────────
 const Login = () => {
   const cookieUsername = getCookie('username') || ''
@@ -101,76 +109,57 @@ const Login = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const [form, setForm] = useState({
-    username: cookieUsername,
-    password: cookiePassword,
-    rememberMe: !!cookieUsername,
-    loading: false,
-    error: null,
-    shake: false,
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [shake, setShake] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: cookieUsername,
+      password: cookiePassword,
+      rememberMe: !!cookieUsername,
+    },
   })
 
   document.title = 'yefriddavid'
 
-  // AppContent handles redirect when Firebase Auth resolves — no manual check needed
-
-  const set = (name) => (e) => setForm((prev) => ({ ...prev, [name]: e.target.value, error: null }))
-
-  const toggleRemember = (e) => {
-    const checked = e.target.checked
-    setForm((prev) => ({ ...prev, rememberMe: checked }))
-    if (checked) {
-      setCookie('username', form.username)
-      setCookie('password', form.password)
-    } else {
-      deleteCookie('username')
-      deleteCookie('password')
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (form.loading) return
-    if (!form.username || !form.password) {
-      setForm((prev) => ({ ...prev, error: 'Ingresa usuario y contraseña', shake: true }))
-      setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
-      return
-    }
-    setForm((prev) => ({ ...prev, loading: true, error: null }))
-
+  const onSubmit = async ({ username, password, rememberMe }) => {
+    if (loading) return
+    setLoading(true)
+    setError(null)
     try {
-      const { username, landingPage, sessionId, token } = await signIn(
-        form.username.trim(),
-        form.password,
+      const { username: uname, landingPage, sessionId, token } = await signIn(
+        username.trim(),
+        password,
       )
-
       localStorage.setItem('token', token)
-      localStorage.setItem('username', username)
+      localStorage.setItem('username', uname)
       localStorage.setItem('landingPage', landingPage)
       localStorage.setItem('sessionId', sessionId)
-
-      if (form.rememberMe) {
-        setCookie('username', form.username)
-        setCookie('password', form.password)
+      if (rememberMe) {
+        setCookie('username', username)
+        setCookie('password', password)
       } else {
         deleteCookie('username')
         deleteCookie('password')
       }
-
-      dispatch(fetchProfile(username))
+      dispatch(fetchProfile(uname))
       navigate('/selectApp')
     } catch (e) {
-      setForm((prev) => ({
-        ...prev,
-        loading: false,
-        error: e.message || 'Error de conexión',
-        shake: true,
-      }))
-      setTimeout(() => setForm((prev) => ({ ...prev, shake: false })), 500)
+      setLoading(false)
+      setError(e.message || 'Error de conexión')
+      setShake(true)
+      setTimeout(() => setShake(false), 500)
     }
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSubmit()
+    if (e.key === 'Enter') handleSubmit(onSubmit)()
   }
 
   return (
@@ -197,7 +186,7 @@ const Login = () => {
         </div>
 
         {/* Card */}
-        <div className={`login-page__card${form.shake ? ' login-page__card--error' : ''}`}>
+        <div className={`login-page__card${shake ? ' login-page__card--error' : ''}`}>
           <div className="login-page__field">
             <label className="login-page__label">Usuario</label>
             <div className="login-page__input-wrap">
@@ -209,11 +198,11 @@ const Login = () => {
                 type="text"
                 placeholder="username"
                 autoComplete="username"
-                value={form.username}
-                onChange={set('username')}
                 onKeyDown={handleKeyDown}
+                {...register('username', { required: 'Ingresa tu usuario' })}
               />
             </div>
+            {fieldError(errors.username)}
           </div>
 
           <div className="login-page__field">
@@ -227,14 +216,14 @@ const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 autoComplete="current-password"
-                value={form.password}
-                onChange={set('password')}
                 onKeyDown={handleKeyDown}
+                {...register('password', { required: 'Ingresa tu contraseña' })}
               />
             </div>
+            {fieldError(errors.password)}
           </div>
 
-          {form.error && (
+          {error && (
             <div
               style={{
                 fontSize: 12,
@@ -246,7 +235,7 @@ const Login = () => {
                 marginBottom: 16,
               }}
             >
-              {form.error}
+              {error}
             </div>
           )}
 
@@ -254,15 +243,29 @@ const Login = () => {
             <input
               className="login-page__remember-check"
               type="checkbox"
-              checked={form.rememberMe}
-              onChange={toggleRemember}
+              {...register('rememberMe', {
+                onChange: (e) => {
+                  if (e.target.checked) {
+                    const { username, password } = getValues()
+                    setCookie('username', username)
+                    setCookie('password', password)
+                  } else {
+                    deleteCookie('username')
+                    deleteCookie('password')
+                  }
+                },
+              })}
             />
             <span className="login-page__remember-label">Recordar sesión</span>
           </label>
 
-          <button className="login-page__btn" onClick={handleSubmit} disabled={form.loading}>
-            {form.loading ? <Spinner /> : <IconArrow />}
-            {form.loading ? 'Ingresando...' : 'Ingresar'}
+          <button
+            className="login-page__btn"
+            onClick={handleSubmit(onSubmit)}
+            disabled={loading}
+          >
+            {loading ? <Spinner /> : <IconArrow />}
+            {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </div>
 

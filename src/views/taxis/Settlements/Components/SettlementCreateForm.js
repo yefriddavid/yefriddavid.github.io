@@ -1,36 +1,76 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
 import {
   CButton,
   CSpinner,
-  CForm,
-  CFormInput,
   CFormLabel,
-  CFormSelect,
   CRow,
   CCol,
 } from '@coreui/react'
 
-const SettlementCreateForm = ({
-  form,
-  drivers,
-  vehicles,
-  loading,
-  picoPlacaWarning,
-  error,
-  onSubmit,
-  onDriverChange,
-  onChange,
-}) => {
+const fieldError = (err) =>
+  err ? (
+    <div style={{ fontSize: 11, color: '#e03131', marginTop: 3 }}>{err.message}</div>
+  ) : null
+
+const SettlementCreateForm = ({ drivers, vehicles, vehiclesMap, loading, onSave }) => {
   const { t } = useTranslation()
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: { driver: '', plate: '', amount: '', date: '', comment: '' },
+  })
+
+  const plate = watch('plate')
+  const date = watch('date')
+
+  const picoPlacaWarning = useMemo(() => {
+    if (!plate || !date) return null
+    const [, monthStr, dayStr] = date.split('-')
+    const month = parseInt(monthStr, 10)
+    const day = parseInt(dayStr, 10)
+    const vehicle = vehiclesMap?.get(plate)
+    const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
+    if (restr && new Set([restr.d1, restr.d2].filter(Boolean).map(Number)).has(day)) {
+      return t('taxis.settlements.errors.picoPlaca', { plate, day })
+    }
+    return null
+  }, [plate, date, vehiclesMap, t])
+
+  const { onChange: driverRhfChange, ...driverReg } = register('driver', {
+    required: t('taxis.settlements.errors.allRequired'),
+  })
+
+  const handleDriverChange = (e) => {
+    driverRhfChange(e)
+    const name = e.target.value
+    const driver = drivers.find((d) => d.name === name)
+    if (driver?.defaultVehicle) setValue('plate', driver.defaultVehicle)
+    if (driver?.defaultAmount) setValue('amount', String(driver.defaultAmount))
+  }
+
+  const onSubmit = (data) => {
+    if (picoPlacaWarning) return
+    onSave(data)
+  }
 
   return (
     <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cui-border-color)' }}>
-      <CForm onSubmit={onSubmit}>
-        <CRow className="g-2 align-items-end">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CRow className="g-2 align-items-start">
           <CCol sm={3}>
             <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.driver')}</CFormLabel>
-            <CFormSelect size="sm" value={form.driver} onChange={onDriverChange}>
+            <select
+              className="form-select form-select-sm"
+              {...driverReg}
+              onChange={handleDriverChange}
+            >
               <option value="">{t('taxis.settlements.selectOption')}</option>
               {drivers.map((d) => (
                 <option key={d.id} value={d.name}>
@@ -38,11 +78,15 @@ const SettlementCreateForm = ({
                   {d.active === false ? ' (Inactivo)' : ''}
                 </option>
               ))}
-            </CFormSelect>
+            </select>
+            {fieldError(errors.driver)}
           </CCol>
           <CCol sm={2}>
             <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.plate')}</CFormLabel>
-            <CFormSelect size="sm" value={form.plate} onChange={onChange('plate')}>
+            <select
+              className="form-select form-select-sm"
+              {...register('plate', { required: t('taxis.settlements.errors.allRequired') })}
+            >
               <option value="">{t('taxis.settlements.selectOption')}</option>
               {vehicles.map((v) => (
                 <option key={v.id} value={v.plate}>
@@ -51,45 +95,45 @@ const SettlementCreateForm = ({
                   {v.active === false ? ' (Inactivo)' : ''}
                 </option>
               ))}
-            </CFormSelect>
+            </select>
+            {fieldError(errors.plate)}
           </CCol>
           <CCol sm={2}>
             <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.value')}</CFormLabel>
-            <CFormInput
-              size="sm"
+            <input
+              className="form-control form-control-sm"
               type="number"
               placeholder="0"
-              value={form.amount}
-              onChange={onChange('amount')}
+              {...register('amount', { required: t('taxis.settlements.errors.allRequired') })}
             />
+            {fieldError(errors.amount)}
           </CCol>
           <CCol sm={2}>
             <CFormLabel style={{ fontSize: 12 }}>{t('taxis.settlements.fields.date')}</CFormLabel>
-            <CFormInput
-              size="sm"
+            <input
+              className={`form-control form-control-sm${picoPlacaWarning ? ' is-invalid' : ''}`}
               type="date"
-              value={form.date}
-              onChange={onChange('date')}
-              invalid={!!picoPlacaWarning}
+              {...register('date', { required: t('taxis.settlements.errors.allRequired') })}
             />
             {picoPlacaWarning && (
               <div style={{ fontSize: 11, color: '#e03131', marginTop: 3 }}>
                 ⚠ {picoPlacaWarning}
               </div>
             )}
+            {!picoPlacaWarning && fieldError(errors.date)}
           </CCol>
           <CCol sm={2}>
             <CFormLabel style={{ fontSize: 12 }}>
               {t('taxis.settlements.fields.comment')}
             </CFormLabel>
-            <CFormInput
-              size="sm"
+            <input
+              className="form-control form-control-sm"
               placeholder={t('taxis.settlements.notes')}
-              value={form.comment}
-              onChange={onChange('comment')}
+              {...register('comment')}
             />
           </CCol>
-          <CCol sm={2}>
+          <CCol sm={1}>
+            <CFormLabel style={{ fontSize: 12, opacity: 0 }}>_</CFormLabel>
             <CButton
               type="submit"
               size="sm"
@@ -101,8 +145,7 @@ const SettlementCreateForm = ({
             </CButton>
           </CCol>
         </CRow>
-        {error && <div style={{ marginTop: 8, fontSize: 12, color: '#e03131' }}>{error}</div>}
-      </CForm>
+      </form>
     </div>
   )
 }

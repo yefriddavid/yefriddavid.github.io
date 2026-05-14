@@ -15,6 +15,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
+import { useForm } from 'react-hook-form'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
@@ -71,50 +72,57 @@ const DriverDetail = ({ data, vehicles }) => {
   )
 }
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
 const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtitle }) => {
-  const [form, setForm] = useState(initial)
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-  const toggle = (field) => () => setForm((p) => ({ ...p, [field]: !p[field] }))
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
+
+  const active = watch('active') ?? true
 
   return (
     <StandardForm
       title={title}
       subtitle={subtitle}
       onCancel={onCancel}
-      onSave={() => onSave(form)}
+      onSave={handleSubmit(onSave)}
       saving={saving}
     >
       <StandardField label="Nombre">
         <input
           className={SF.input}
           placeholder="Nombre completo"
-          value={form.name}
-          onChange={set('name')}
+          {...register('name', { required: 'El nombre es obligatorio' })}
         />
+        {fieldError(errors.name)}
       </StandardField>
       <StandardField label="Cédula">
         <input
           className={SF.input}
           placeholder="123456789"
-          value={form.idNumber}
-          onChange={set('idNumber')}
+          {...register('idNumber', { required: 'La cédula es obligatoria' })}
         />
+        {fieldError(errors.idNumber)}
       </StandardField>
       <StandardField label="Teléfono">
-        <input
-          className={SF.input}
-          placeholder="300 000 0000"
-          value={form.phone}
-          onChange={set('phone')}
-        />
+        <input className={SF.input} placeholder="300 000 0000" {...register('phone')} />
       </StandardField>
       <StandardField label="Liq. normal">
         <input
           className={SF.input}
           type="number"
           placeholder="85000"
-          value={form.defaultAmount}
-          onChange={set('defaultAmount')}
+          {...register('defaultAmount')}
         />
       </StandardField>
       <StandardField label="Liq. domingo">
@@ -122,12 +130,11 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
           className={SF.input}
           type="number"
           placeholder="0"
-          value={form.defaultAmountSunday}
-          onChange={set('defaultAmountSunday')}
+          {...register('defaultAmountSunday')}
         />
       </StandardField>
       <StandardField label="Taxi por defecto">
-        <select className={SF.select} value={form.defaultVehicle} onChange={set('defaultVehicle')}>
+        <select className={SF.select} {...register('defaultVehicle')}>
           <option value="">— Ninguno —</option>
           {(vehicles ?? []).map((v) => (
             <option key={v.id} value={v.plate}>
@@ -139,28 +146,18 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
         </select>
       </StandardField>
       <StandardField label="Fecha inicio">
-        <input
-          className={SF.input}
-          type="date"
-          value={form.startDate || ''}
-          onChange={set('startDate')}
-        />
+        <input className={SF.input} type="date" {...register('startDate')} />
       </StandardField>
       <StandardField label="Fecha fin">
-        <input
-          className={SF.input}
-          type="date"
-          value={form.endDate || ''}
-          onChange={set('endDate')}
-        />
+        <input className={SF.input} type="date" {...register('endDate')} />
       </StandardField>
       <StandardField label="Estado">
         <button
           type="button"
-          onClick={toggle('active')}
-          className={`master-toggle-btn${form.active !== false ? ' master-toggle-btn--active' : ' master-toggle-btn--inactive'}`}
+          onClick={() => setValue('active', !active)}
+          className={`master-toggle-btn${active !== false ? ' master-toggle-btn--active' : ' master-toggle-btn--inactive'}`}
         >
-          {form.active !== false ? '✓ Activo' : '✗ Inactivo'}
+          {active !== false ? '✓ Activo' : '✗ Inactivo'}
         </button>
       </StandardField>
     </StandardForm>

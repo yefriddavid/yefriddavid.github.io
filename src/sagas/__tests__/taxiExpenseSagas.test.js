@@ -8,10 +8,12 @@ import { makeExpense } from '../../__tests__/factories'
 describe('taxiExpenseSagas', () => {
   describe('fetchExpenses', () => {
     it('begin → fetchExpenses → success', () => {
-      const gen = fetchExpenses()
+      const gen = fetchExpenses({ payload: { month: 4, year: 2024 } })
       const expenses = [makeExpense()]
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
-      expect(gen.next().value).toEqual(call(service.fetchExpenses))
+      expect(gen.next().value).toEqual(
+        call(service.fetchExpenses, { from: '2024-04-01', to: '2024-04-30' }),
+      )
       expect(gen.next(expenses).value).toEqual(put(actions.successRequestFetch(expenses)))
       expect(gen.next().done).toBe(true)
     })

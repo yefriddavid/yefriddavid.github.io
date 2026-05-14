@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react'
+import ErrorBoundary from '../shared/ErrorBoundary'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -84,21 +85,23 @@ const AppContent = () => {
 
   return (
     <CContainer className="px-2" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
-        <Routes>
-          {routes.map((route, idx) => {
-            const Component = route.element
-            return (
-              Component &&
-              canAccess(route) && <Route key={idx} path={route.path} element={<Component />} />
-            )
-          })}
-          <Route path="/" element={<Navigate to="/selectApp" replace />} />
-          <Route path="/finance" element={<Navigate to={landingPage} replace />} />
-          <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
-          <Route path="/cash_flow/*" element={<Navigate to={landingPage} replace />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary module="vista">
+        <Suspense fallback={<CSpinner color="primary" />}>
+          <Routes>
+            {routes.map((route, idx) => {
+              const Component = route.element
+              return (
+                Component &&
+                canAccess(route) && <Route key={idx} path={route.path} element={<Component />} />
+              )
+            })}
+            <Route path="/" element={<Navigate to="/selectApp" replace />} />
+            <Route path="/finance" element={<Navigate to={landingPage} replace />} />
+            <Route path="/cash_flow" element={<Navigate to={landingPage} replace />} />
+            <Route path="/cash_flow/*" element={<Navigate to={landingPage} replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </CContainer>
   )
 }

@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { CButton, CSpinner } from '@coreui/react'
+import { useForm } from 'react-hook-form'
 import {
   CLASSIFICATION_OPTIONS,
   PERIOD_OPTIONS,
@@ -34,22 +35,31 @@ const EMPTY_FORM = {
 
 export { EMPTY_FORM }
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
+const PERIOD_WITH_MONTH = ['Anuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'N/A']
+
 export default function AccountMasterForm({ initial, saving, onSave, onCancel }) {
   const { monthLabels } = useLocaleData()
-  const [form, setForm] = useState(initial ?? EMPTY_FORM)
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({ defaultValues: initial ?? EMPTY_FORM })
 
-  const set = (field) => (e) => {
-    const val = e.target.type === 'number' ? Number(e.target.value) : e.target.value
-    setForm((prev) => ({ ...prev, [field]: val }))
-  }
-
-  const handleSave = () => {
-    if (!form.name.trim()) return
-    onSave(form)
-  }
-
+  const type = watch('type')
+  const period = watch('period')
+  const active = watch('active') ?? true
+  const important = watch('important') ?? false
   const isEdit = !!initial?.id
-  const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'}195)`
+  const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}195)`
 
   return (
     <div className="payment-form">
@@ -64,10 +74,10 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="text"
-            value={form.name}
-            onChange={set('name')}
             placeholder="Nombre de la cuenta"
+            {...register('name', { required: 'El nombre es obligatorio' })}
           />
+          {fieldError(errors.name)}
         </div>
 
         <div className="payment-form__field">
@@ -80,9 +90,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="text"
-            value={form.accountingName}
-            onChange={set('accountingName')}
             placeholder="Ej: Arrendamientos — inmueble"
+            {...register('accountingName')}
           />
         </div>
 
@@ -91,9 +100,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="text"
-            value={form.description}
-            onChange={set('description')}
             placeholder="Descripción corta"
+            {...register('description')}
           />
         </div>
 
@@ -101,11 +109,10 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <label className="payment-form__label">Notas</label>
           <textarea
             className="payment-form__input"
-            value={form.notes}
-            onChange={set('notes')}
             placeholder="Comentarios u observaciones adicionales…"
             rows={3}
             style={{ resize: 'vertical', lineHeight: 1.5 }}
+            {...register('notes')}
           />
         </div>
 
@@ -114,8 +121,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">Tipo</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.type}
-              onChange={set('type')}
+              {...register('type')}
             >
               {ACCOUNT_MASTER_TYPES.map((o) => (
                 <option key={o} value={o}>
@@ -129,15 +135,14 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">
               Código PUC *
               <span style={{ fontSize: 10, color: '#6c757d', fontWeight: 400, marginLeft: 4 }}>
-                (clase {ACCOUNT_MASTER_CODE_PREFIX[form.type] ?? '5'})
+                (clase {ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'})
               </span>
             </label>
             <input
               className="payment-form__input"
               type="text"
-              value={form.code}
-              onChange={set('code')}
               placeholder={codePlaceholder}
+              {...register('code')}
             />
           </div>
         </div>
@@ -148,7 +153,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <input
               className="payment-form__input"
               type="text"
-              value={ACCOUNT_MASTER_NATURE[form.type] ?? '—'}
+              value={ACCOUNT_MASTER_NATURE[type] ?? '—'}
               readOnly
               style={{ background: '#f8f9fa', color: '#6c757d', cursor: 'default' }}
             />
@@ -158,8 +163,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">Período</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.period}
-              onChange={set('period')}
+              {...register('period')}
             >
               {PERIOD_OPTIONS.map((o) => (
                 <option key={o} value={o}>
@@ -175,8 +179,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">Clasificación</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.classification}
-              onChange={set('classification')}
+              {...register('classification')}
             >
               {CLASSIFICATION_OPTIONS.map((o) => (
                 <option key={o} value={o}>
@@ -190,8 +193,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">Categoría</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.category}
-              onChange={set('category')}
+              {...register('category')}
             >
               <option value="">Sin categoría</option>
               {ACCOUNT_CATEGORIES.map((c) => (
@@ -211,8 +213,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
               type="number"
               min={1}
               max={31}
-              value={form.maxDatePay}
-              onChange={set('maxDatePay')}
+              {...register('maxDatePay')}
             />
           </div>
 
@@ -220,8 +221,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
             <label className="payment-form__label">Método de pago</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.paymentMethod}
-              onChange={set('paymentMethod')}
+              {...register('paymentMethod')}
             >
               {PAYMENT_METHODS.map((m) => (
                 <option key={m} value={m}>
@@ -232,17 +232,12 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           </div>
         </div>
 
-        {(form.period === 'Anuales' ||
-          form.period === 'Trimestrales' ||
-          form.period === 'Cuatrimestrales' ||
-          form.period === 'Semestrales' ||
-          form.period === 'N/A') && (
+        {PERIOD_WITH_MONTH.includes(period) && (
           <div className="payment-form__field">
             <label className="payment-form__label">Mes de inicio / aplica</label>
             <select
               className="payment-form__input payment-form__input--select"
-              value={form.monthStartAt}
-              onChange={set('monthStartAt')}
+              {...register('monthStartAt')}
             >
               {MONTH_NAMES.map((m, i) => (
                 <option key={m} value={m}>
@@ -258,10 +253,9 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="number"
-            value={form.defaultValue}
-            onChange={set('defaultValue')}
             placeholder="0 — opcional"
             min="0"
+            {...register('defaultValue')}
           />
         </div>
 
@@ -275,10 +269,9 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="number"
-            value={form.targetAmount}
-            onChange={set('targetAmount')}
             placeholder="0 — opcional"
             min="0"
+            {...register('targetAmount')}
           />
         </div>
 
@@ -287,9 +280,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <input
             className="payment-form__input"
             type="text"
-            value={form.definition}
-            onChange={set('definition')}
             placeholder="Ej: Indefinidos"
+            {...register('definition')}
           />
         </div>
 
@@ -297,8 +289,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
           <label className="payment-form__label">Estado</label>
           <select
             className="payment-form__input payment-form__input--select"
-            value={form.active ? 'true' : 'false'}
-            onChange={(e) => setForm((prev) => ({ ...prev, active: e.target.value === 'true' }))}
+            value={active ? 'true' : 'false'}
+            onChange={(e) => setValue('active', e.target.value === 'true')}
           >
             <option value="true">Activo</option>
             <option value="false">Inactivo</option>
@@ -308,12 +300,12 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         <div
           className="payment-form__field"
           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' }}
-          onClick={() => setForm((prev) => ({ ...prev, important: !prev.important }))}
+          onClick={() => setValue('important', !important)}
         >
           <input
             type="checkbox"
-            checked={!!form.important}
-            onChange={(e) => setForm((prev) => ({ ...prev, important: e.target.checked }))}
+            checked={important}
+            onChange={(e) => setValue('important', e.target.checked)}
             style={{
               width: 18,
               height: 18,
@@ -339,8 +331,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </CButton>
         <CButton
           className="payment-form__btn payment-form__btn--save"
-          onClick={handleSave}
-          disabled={saving || !form.name.trim()}
+          onClick={handleSubmit(onSave)}
+          disabled={saving}
         >
           {saving ? <CSpinner size="sm" /> : 'Guardar'}
         </CButton>

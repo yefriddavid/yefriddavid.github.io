@@ -1,4 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 10, color: '#e03131', display: 'block', marginTop: 2 }}>
+      {err.message}
+    </span>
+  ) : null
 
 const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) => {
   const defaultDriver = (() => {
@@ -24,20 +32,30 @@ const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) =
     return amt ? String(amt) : ''
   }
 
-  const [driverName, setDriverName] = useState(defaultDriver?.name || '')
-  const [amount, setAmount] = useState(getDefaultAmount(defaultDriver))
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      driverName: defaultDriver?.name || '',
+      amount: getDefaultAmount(defaultDriver),
+    },
+  })
 
-  const handleDriverChange = (name) => {
-    setDriverName(name)
-    const d = activeDrivers.find((dr) => dr.name === name)
-    setAmount(getDefaultAmount(d))
-  }
+  const driverName = watch('driverName')
 
-  const handleSave = () => {
-    if (!driverName || !amount) return
-    const driver = activeDrivers.find((d) => d.name === driverName)
+  useEffect(() => {
+    const d = activeDrivers.find((dr) => dr.name === driverName)
+    setValue('amount', getDefaultAmount(d))
+  }, [driverName])
+
+  const onSubmit = ({ driverName: name, amount }) => {
+    const driver = activeDrivers.find((d) => d.name === name)
     onSave({
-      driver: driverName,
+      driver: name,
       plate: driver?.defaultVehicle || '',
       amount: Number(amount),
       date: day.dateStr,
@@ -50,8 +68,7 @@ const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) =
       style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}
     >
       <select
-        value={driverName}
-        onChange={(e) => handleDriverChange(e.target.value)}
+        {...register('driverName', { required: 'Requerido' })}
         style={{
           fontSize: 11,
           padding: '2px 6px',
@@ -67,10 +84,10 @@ const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) =
           </option>
         ))}
       </select>
+      {fieldError(errors.driverName)}
       <input
         type="number"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        {...register('amount', { required: 'Requerido', min: { value: 1, message: '> 0' } })}
         style={{
           fontSize: 11,
           padding: '2px 6px',
@@ -80,9 +97,10 @@ const AuditAddForm = ({ day, activeDrivers, periodDrivers, onSave, onCancel }) =
           width: 100,
         }}
       />
+      {fieldError(errors.amount)}
       <div style={{ display: 'flex', gap: 4 }}>
         <button
-          onClick={handleSave}
+          onClick={handleSubmit(onSubmit)}
           style={{
             fontSize: 11,
             padding: '2px 8px',

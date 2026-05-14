@@ -1,8 +1,16 @@
 import React, { useState, useRef } from 'react'
 import { CSpinner } from '@coreui/react'
+import { useForm } from 'react-hook-form'
 import { ACCOUNT_CATEGORIES } from 'src/constants/cashFlow'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { fieldLabel, fieldInput } from './helpers'
+
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', display: 'block', marginBottom: 4 }}>
+      {err.message}
+    </span>
+  ) : null
 
 export default function AdHocExpenseModal({
   year,
@@ -17,14 +25,25 @@ export default function AdHocExpenseModal({
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
   const defaultDate = `${year}-${String(month).padStart(2, '0')}-01`
 
-  const [description, setDescription] = useState(initialData?.description ?? '')
-  const [amount, setAmount] = useState(initialData?.amount ?? '')
-  const [date, setDate] = useState(initialData?.date ?? defaultDate)
-  const [category, setCategory] = useState(initialData?.category ?? '')
-  const [note, setNote] = useState(initialData?.note ?? '')
-  const [type, setType] = useState(
-    initialData?.type ?? (defaultType === 'Incoming' ? 'income' : 'expense'),
-  )
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      description: initialData?.description ?? '',
+      amount: initialData?.amount ?? '',
+      date: initialData?.date ?? defaultDate,
+      category: initialData?.category ?? '',
+      note: initialData?.note ?? '',
+      type: initialData?.type ?? (defaultType === 'Incoming' ? 'income' : 'expense'),
+    },
+  })
+
+  const type = watch('type')
+
   const [attachment, setAttachment] = useState(initialData?.attachment ?? null)
   const [attachName, setAttachName] = useState(initialData?.attachmentName ?? '')
   const [processing, setProcessing] = useState(false)
@@ -47,11 +66,10 @@ export default function AdHocExpenseModal({
     }
   }
 
-  const handleSave = () => {
-    if (!description.trim() || !amount || !date) return
+  const onSubmit = ({ description, amount, date, category, note, type: t }) => {
     const payload = {
       ...(isEditing && { id: initialData.id }),
-      type,
+      type: t,
       category: category || '',
       description: description.trim(),
       amount: Number(String(amount).replace(/\D/g, '')),
@@ -63,8 +81,6 @@ export default function AdHocExpenseModal({
     }
     onSave(payload)
   }
-
-  const canSave = description.trim() && amount && date && !processing
 
   return (
     <div
@@ -117,23 +133,24 @@ export default function AdHocExpenseModal({
           {[
             { key: 'expense', label: 'Gasto' },
             { key: 'income', label: 'Ingreso' },
-          ].map((t) => (
+          ].map((opt) => (
             <button
-              key={t.key}
-              onClick={() => setType(t.key)}
+              key={opt.key}
+              type="button"
+              onClick={() => setValue('type', opt.key)}
               style={{
                 flex: 1,
                 padding: '8px 0',
                 border: 'none',
                 borderRadius: 10,
                 fontSize: 13,
-                fontWeight: type === t.key ? 700 : 500,
+                fontWeight: type === opt.key ? 700 : 500,
                 cursor: 'pointer',
-                background: type === t.key ? '#1e3a5f' : '#e9ecef',
-                color: type === t.key ? '#fff' : '#6c757d',
+                background: type === opt.key ? '#1e3a5f' : '#e9ecef',
+                color: type === opt.key ? '#fff' : '#6c757d',
               }}
             >
-              {t.label}
+              {opt.label}
             </button>
           ))}
         </div>
@@ -142,19 +159,18 @@ export default function AdHocExpenseModal({
         <label style={fieldLabel}>DESCRIPCIÓN *</label>
         <input
           type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           placeholder="Ej: Reparación, mercado…"
           autoFocus
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 20 }}
+          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          {...register('description', { required: 'La descripción es obligatoria' })}
         />
+        {fieldError(errors.description)}
+        <div style={{ marginBottom: 16 }} />
 
         {/* Amount */}
         <label style={fieldLabel}>MONTO (COP) *</label>
         <input
           type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
           min="0"
           style={{
@@ -162,25 +178,28 @@ export default function AdHocExpenseModal({
             fontSize: 28,
             fontWeight: 700,
             color: '#1e3a5f',
-            marginBottom: 20,
+            marginBottom: 4,
           }}
+          {...register('amount', { required: 'El monto es obligatorio' })}
         />
+        {fieldError(errors.amount)}
+        <div style={{ marginBottom: 16 }} />
 
         {/* Date */}
         <label style={fieldLabel}>FECHA *</label>
         <input
           type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 20 }}
+          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          {...register('date', { required: 'La fecha es obligatoria' })}
         />
+        {fieldError(errors.date)}
+        <div style={{ marginBottom: 16 }} />
 
         {/* Category */}
         <label style={fieldLabel}>CATEGORÍA (opcional)</label>
         <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
           style={{ ...fieldInput, fontSize: 14, marginBottom: 20 }}
+          {...register('category')}
         >
           <option value="">Sin categoría</option>
           {ACCOUNT_CATEGORIES.map((c) => (
@@ -193,8 +212,6 @@ export default function AdHocExpenseModal({
         {/* Note */}
         <label style={fieldLabel}>NOTA (opcional)</label>
         <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
           placeholder="Agregar una nota..."
           rows={2}
           style={{
@@ -204,6 +221,7 @@ export default function AdHocExpenseModal({
             marginBottom: 20,
             fontFamily: 'inherit',
           }}
+          {...register('note')}
         />
 
         {/* Attachment */}
@@ -326,18 +344,18 @@ export default function AdHocExpenseModal({
             Cancelar
           </button>
           <button
-            onClick={handleSave}
-            disabled={saving || !canSave}
+            onClick={handleSubmit(onSubmit)}
+            disabled={saving || processing}
             style={{
               flex: 2,
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: !canSave ? '#e9ecef' : '#1e3a5f',
+              background: processing ? '#e9ecef' : '#1e3a5f',
               fontSize: 15,
               fontWeight: 700,
-              color: !canSave ? '#adb5bd' : '#fff',
-              cursor: !canSave ? 'not-allowed' : 'pointer',
+              color: processing ? '#adb5bd' : '#fff',
+              cursor: processing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

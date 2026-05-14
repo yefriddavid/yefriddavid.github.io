@@ -6,6 +6,7 @@ import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton, CCollapse } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
+import { useForm } from 'react-hook-form'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import '../movements/payments/Payments.scss'
@@ -13,14 +14,59 @@ import './masters.scss'
 
 const EMPTY = { name: '', percentage: '' }
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
+const PartnerForm = ({ initial, editingId, onSave, onCancel, saving }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
+
+  return (
+    <StandardForm
+      title={editingId ? 'Editar socio' : 'Nuevo socio'}
+      subtitle={editingId ? initial.name : undefined}
+      onCancel={onCancel}
+      onSave={handleSubmit(onSave)}
+      saving={saving}
+    >
+      <StandardField label="Nombre">
+        <input
+          className={SF.input}
+          placeholder="Nombre completo"
+          {...register('name', { required: 'El nombre es obligatorio' })}
+        />
+        {fieldError(errors.name)}
+      </StandardField>
+      <StandardField label="Porcentaje (%)">
+        <input
+          className={SF.input}
+          type="number"
+          min="0"
+          max="100"
+          step="0.1"
+          placeholder="0"
+          {...register('percentage', { required: 'El porcentaje es obligatorio' })}
+        />
+        {fieldError(errors.percentage)}
+      </StandardField>
+    </StandardForm>
+  )
+}
+
 const Partners = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const { data, fetching } = useSelector((s) => s.taxiPartner)
 
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY)
-  const [editingId, setEditingId] = useState(null)
+  const [editingPartner, setEditingPartner] = useState(null)
 
   const partners = data ?? []
   const loading = fetching && !data
@@ -29,33 +75,27 @@ const Partners = () => {
     dispatch(taxiPartnerActions.fetchRequest())
   }, [dispatch])
 
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-
   const openCreate = () => {
-    setEditingId(null)
-    setForm(EMPTY)
+    setEditingPartner(null)
     setShowForm(true)
   }
 
   const openEdit = (partner) => {
-    setEditingId(partner.id)
-    setForm({ name: partner.name, percentage: String(partner.percentage) })
+    setEditingPartner(partner)
     setShowForm(true)
   }
 
   const handleCancel = () => {
     setShowForm(false)
-    setEditingId(null)
-    setForm(EMPTY)
+    setEditingPartner(null)
   }
 
-  const handleSave = () => {
-    if (!form.name || form.percentage === '') return
-    const percentage = Number(form.percentage)
-    if (editingId) {
-      dispatch(taxiPartnerActions.updateRequest({ id: editingId, name: form.name, percentage }))
+  const handleSave = ({ name, percentage }) => {
+    const pct = Number(percentage)
+    if (editingPartner) {
+      dispatch(taxiPartnerActions.updateRequest({ id: editingPartner.id, name, percentage: pct }))
     } else {
-      dispatch(taxiPartnerActions.createRequest({ name: form.name, percentage }))
+      dispatch(taxiPartnerActions.createRequest({ name, percentage: pct }))
     }
     handleCancel()
   }
@@ -75,45 +115,29 @@ const Partners = () => {
         </div>
         <CButton
           size="sm"
-          color={showForm && !editingId ? 'danger' : 'primary'}
+          color={showForm && !editingPartner ? 'danger' : 'primary'}
           variant="outline"
-          onClick={showForm && !editingId ? handleCancel : openCreate}
+          onClick={showForm && !editingPartner ? handleCancel : openCreate}
         >
-          <CIcon icon={showForm && !editingId ? cilX : cilPlus} size="sm" />{' '}
-          {showForm && !editingId ? 'Cancelar' : 'Nuevo socio'}
+          <CIcon icon={showForm && !editingPartner ? cilX : cilPlus} size="sm" />{' '}
+          {showForm && !editingPartner ? 'Cancelar' : 'Nuevo socio'}
         </CButton>
       </CCardHeader>
 
       <CCollapse visible={showForm}>
         <div className="master-form-panel" style={{ maxWidth: '50%' }}>
-          <StandardForm
-            title={editingId ? 'Editar socio' : 'Nuevo socio'}
-            subtitle={editingId ? form.name : undefined}
-            onCancel={handleCancel}
+          <PartnerForm
+            key={editingPartner?.id ?? 'new'}
+            initial={
+              editingPartner
+                ? { name: editingPartner.name, percentage: String(editingPartner.percentage) }
+                : EMPTY
+            }
+            editingId={editingPartner?.id ?? null}
             onSave={handleSave}
+            onCancel={handleCancel}
             saving={fetching}
-          >
-            <StandardField label="Nombre">
-              <input
-                className={SF.input}
-                placeholder="Nombre completo"
-                value={form.name}
-                onChange={set('name')}
-              />
-            </StandardField>
-            <StandardField label="Porcentaje (%)">
-              <input
-                className={SF.input}
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                placeholder="0"
-                value={form.percentage}
-                onChange={set('percentage')}
-              />
-            </StandardField>
-          </StandardForm>
+          />
         </div>
       </CCollapse>
 

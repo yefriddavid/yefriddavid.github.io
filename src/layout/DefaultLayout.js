@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
+import { AppContent, AppSidebar, AppFooter, AppHeader, ErrorBoundary } from '../components/index'
 import InstallBanner from '../components/shared/InstallBanner'
 import { APP_NAME } from '../components/BrandName'
 
@@ -41,7 +41,9 @@ const DefaultLayout = () => {
           </button>
         )}
         <div className="app-layout__body flex-grow-1">
-          <AppContent />
+          <ErrorBoundary module="app">
+            <AppContent />
+          </ErrorBoundary>
         </div>
         <AppFooter />
       </div>

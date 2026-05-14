@@ -1,7 +1,15 @@
 import React, { useState, useRef } from 'react'
 import { CSpinner } from '@coreui/react'
+import { useForm } from 'react-hook-form'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { fieldLabel, fieldInput } from './helpers'
+
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', display: 'block', marginBottom: 4 }}>
+      {err.message}
+    </span>
+  ) : null
 
 export default function PayModal({ account, year, month, saving, onSave, onClose }) {
   const defaultDate = (() => {
@@ -10,9 +18,18 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   })()
 
-  const [amount, setAmount] = useState(account.defaultValue || '')
-  const [date, setDate] = useState(defaultDate)
-  const [note, setNote] = useState('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      amount: account.defaultValue || '',
+      date: defaultDate,
+      note: '',
+    },
+  })
+
   const [attachment, setAttachment] = useState(null)
   const [attachName, setAttachName] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -35,8 +52,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
     }
   }
 
-  const handleSave = () => {
-    if (!amount || !date) return
+  const onSubmit = ({ amount, date, note }) => {
     const payload = {
       type: account.type === 'Outcoming' ? 'expense' : 'income',
       category: account.category || '',
@@ -112,8 +128,6 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
         <label style={fieldLabel}>MONTO (COP)</label>
         <input
           type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
           min="0"
           autoFocus
@@ -122,24 +136,26 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
             fontSize: 28,
             fontWeight: 700,
             color: '#1e3a5f',
-            marginBottom: 20,
+            marginBottom: 4,
           }}
+          {...register('amount', { required: 'El monto es obligatorio' })}
         />
+        {fieldError(errors.amount)}
+        <div style={{ marginBottom: 16 }} />
 
         {/* Date */}
         <label style={fieldLabel}>FECHA</label>
         <input
           type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 20 }}
+          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          {...register('date', { required: 'La fecha es obligatoria' })}
         />
+        {fieldError(errors.date)}
+        <div style={{ marginBottom: 16 }} />
 
         {/* Note */}
         <label style={fieldLabel}>NOTA (opcional)</label>
         <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
           placeholder="Agregar una nota..."
           rows={2}
           style={{
@@ -150,6 +166,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
             borderBottom: '2px solid #dee2e6',
             fontFamily: 'inherit',
           }}
+          {...register('note')}
         />
 
         {/* Attachment */}
@@ -284,18 +301,18 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
             Cancelar
           </button>
           <button
-            onClick={handleSave}
-            disabled={saving || !amount || processing}
+            onClick={handleSubmit(onSubmit)}
+            disabled={saving || processing}
             style={{
               flex: 2,
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: !amount || processing ? '#e9ecef' : '#1e3a5f',
+              background: processing ? '#e9ecef' : '#1e3a5f',
               fontSize: 15,
               fontWeight: 700,
-              color: !amount || processing ? '#adb5bd' : '#fff',
-              cursor: !amount || processing ? 'not-allowed' : 'pointer',
+              color: processing ? '#adb5bd' : '#fff',
+              cursor: processing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

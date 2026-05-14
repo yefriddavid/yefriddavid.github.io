@@ -27,7 +27,7 @@ import { getColombianHolidays, auditNoteId, buildAuditDay } from '../../auditHel
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
 import '../../Taxis.scss'
-import { fmt, fmtDate, EMPTY } from '../Components/utils'
+import { fmt, fmtDate } from '../Components/utils'
 import SettlementMasterDetail from '../Components/SettlementMasterDetail'
 import PeriodSummary from '../Components/PeriodSummary'
 import SettlementCreateForm from '../Components/SettlementCreateForm'
@@ -85,8 +85,7 @@ const Taxis = () => {
     () => localStorage.getItem('settlements_viewMode') || 'detail',
   )
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY)
-  const [error, setError] = useState(null)
+  const [createKey, setCreateKey] = useState(0)
   const [, setEditingRow] = useState(null)
   const [toast, setToast] = useState(null)
   const [summaryOpen, setSummaryOpen] = useState(
@@ -158,7 +157,7 @@ const Taxis = () => {
       setToast({ type: 'error', msg: t('taxis.settlements.errors.saveError') })
     } else {
       if (wasCreate) {
-        setForm(EMPTY)
+        setCreateKey((k) => k + 1)
         setShowForm(false)
       } else {
         dataGridRef.current?.instance?.collapseRow(editingRowIdRef.current)
@@ -173,42 +172,9 @@ const Taxis = () => {
   }, [loadingSettlements, settlementError])
 
   // ── Form handlers ─────────────────────────────────────────────────────────
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-
-  const handleDriverChange = (e) => {
-    const name = e.target.value
-    const driver = driversMap.get(name)
-    setForm((p) => ({
-      ...p,
-      driver: name,
-      amount: driver?.defaultAmount ? String(driver.defaultAmount) : p.amount,
-      plate: driver?.defaultVehicle || p.plate,
-    }))
-  }
-
-  const picoPlacaWarning = (() => {
-    if (!form.plate || !form.date) return null
-    const [, monthStr, dayStr] = form.date.split('-')
-    const month = parseInt(monthStr, 10)
-    const day = parseInt(dayStr, 10)
-    const vehicle = vehiclesMap.get(form.plate)
-    const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
-    if (restr && new Set([restr.d1, restr.d2].filter(Boolean).map(Number)).has(day)) {
-      return t('taxis.settlements.errors.picoPlaca', { plate: form.plate, day })
-    }
-    return null
-  })()
-
-  const handleAdd = (e) => {
-    e.preventDefault()
-    if (!form.driver || !form.plate || !form.amount || !form.date) {
-      setError(t('taxis.settlements.errors.allRequired'))
-      return
-    }
-    if (picoPlacaWarning) return
-    setError(null)
+  const handleCreate = (data) => {
     savingRef.current = 'create'
-    dispatch(taxiSettlementActions.createRequest(form))
+    dispatch(taxiSettlementActions.createRequest(data))
   }
 
   const handleRowUpdating = (e) => {
@@ -854,15 +820,12 @@ const Taxis = () => {
 
         <CCollapse visible={showForm}>
           <SettlementCreateForm
-            form={form}
+            key={createKey}
             drivers={drivers}
             vehicles={vehicles}
+            vehiclesMap={vehiclesMap}
             loading={loadingSettlements}
-            picoPlacaWarning={picoPlacaWarning}
-            error={error}
-            onSubmit={handleAdd}
-            onDriverChange={handleDriverChange}
-            onChange={set}
+            onSave={handleCreate}
           />
         </CCollapse>
 

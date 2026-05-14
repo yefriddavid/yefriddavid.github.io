@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
 import {
@@ -38,9 +39,20 @@ const STATUS_OPTIONS = ['active', 'inactive', 'error']
 const STATUS_COLOR = { active: 'success', inactive: 'secondary', error: 'danger' }
 const STATUS_LABEL = { active: 'Activo', inactive: 'Inactivo', error: 'Error' }
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
 const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
-  const [form, setForm] = useState(initial)
-  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
 
   return (
     <div className="device-form">
@@ -51,17 +63,17 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
         <input
           className="device-form__input"
           type="text"
-          value={form.name}
-          onChange={set('name')}
           placeholder="esp8266-battery"
           autoFocus
+          {...register('name', { required: 'El nombre es obligatorio' })}
         />
+        {fieldError(errors.name)}
       </div>
 
       <div className="device-form__cols">
         <div className="device-form__row">
           <label className="device-form__label">Tipo</label>
-          <select className="device-form__input" value={form.type} onChange={set('type')}>
+          <select className="device-form__input" {...register('type')}>
             <option value="">— Seleccionar —</option>
             {DEVICE_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -72,7 +84,7 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
         </div>
         <div className="device-form__row">
           <label className="device-form__label">Estado</label>
-          <select className="device-form__input" value={form.status} onChange={set('status')}>
+          <select className="device-form__input" {...register('status')}>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
                 {STATUS_LABEL[s]}
@@ -88,9 +100,8 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
           <input
             className="device-form__input"
             type="text"
-            value={form.ipAddress}
-            onChange={set('ipAddress')}
             placeholder="192.168.1.100"
+            {...register('ipAddress')}
           />
         </div>
         <div className="device-form__row">
@@ -98,9 +109,8 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
           <input
             className="device-form__input"
             type="text"
-            value={form.location}
-            onChange={set('location')}
             placeholder="Terraza, sala…"
+            {...register('location')}
           />
         </div>
       </div>
@@ -111,15 +121,14 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
           <input
             className="device-form__input device-form__input--mono"
             type="text"
-            value={form.internalId}
-            onChange={set('internalId')}
             placeholder="ej. aB3xZ9k"
             maxLength={7}
+            {...register('internalId')}
           />
           <button
             type="button"
             className="device-form__gen-btn"
-            onClick={() => setForm((f) => ({ ...f, internalId: generateInternalId() }))}
+            onClick={() => setValue('internalId', generateInternalId())}
           >
             Generar
           </button>
@@ -130,10 +139,9 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
         <label className="device-form__label">Notas</label>
         <textarea
           className="device-form__input"
-          value={form.notes}
-          onChange={set('notes')}
           rows={2}
           placeholder="Observaciones opcionales"
+          {...register('notes')}
         />
       </div>
 
@@ -147,8 +155,8 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
         </button>
         <button
           className="device-form__btn device-form__btn--save"
-          onClick={() => onSave(form)}
-          disabled={saving || !form.name.trim()}
+          onClick={handleSubmit(onSave)}
+          disabled={saving}
         >
           {saving ? <CSpinner size="sm" /> : 'Guardar'}
         </button>

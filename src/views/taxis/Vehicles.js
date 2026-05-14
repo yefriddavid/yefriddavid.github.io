@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
@@ -64,60 +65,62 @@ const currentMonthSummary = (restrictions) => {
     .join(', ')
 }
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
 const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => {
   const { t } = useTranslation()
-  const [form, setForm] = useState(initial)
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-  const setCheck = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.checked }))
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
+
+  const active = watch('active') ?? true
 
   return (
     <StandardForm
       title={title}
       subtitle={subtitle}
       onCancel={onCancel}
-      onSave={() => onSave(form)}
+      onSave={handleSubmit(onSave)}
       saving={saving}
     >
       <StandardField label={t('taxis.vehicles.fields.plate')}>
         <input
           className={SF.input}
           placeholder="ABC-123"
-          value={form.plate}
-          onChange={set('plate')}
+          {...register('plate', { required: 'La placa es obligatoria' })}
         />
+        {fieldError(errors.plate)}
       </StandardField>
       <StandardField label={t('taxis.vehicles.fields.brand')}>
         <input
           className={SF.input}
           placeholder="Renault"
-          value={form.brand}
-          onChange={set('brand')}
+          {...register('brand', { required: 'La marca es obligatoria' })}
         />
+        {fieldError(errors.brand)}
       </StandardField>
       <StandardField label={t('taxis.vehicles.fields.model')}>
-        <input
-          className={SF.input}
-          placeholder="Logan"
-          value={form.model}
-          onChange={set('model')}
-        />
+        <input className={SF.input} placeholder="Logan" {...register('model')} />
       </StandardField>
       <StandardField label={t('taxis.vehicles.fields.year')}>
-        <input
-          className={SF.input}
-          type="number"
-          placeholder="2020"
-          value={form.year}
-          onChange={set('year')}
-        />
+        <input className={SF.input} type="number" placeholder="2020" {...register('year')} />
       </StandardField>
       <StandardField label={t('taxis.vehicles.fields.status')}>
         <CFormCheck
-          id={`active-${form.id || 'new'}`}
-          checked={form.active !== false}
-          onChange={setCheck('active')}
+          id={`active-${initial?.id || 'new'}`}
+          checked={active !== false}
+          onChange={(e) => setValue('active', e.target.checked)}
           label={
-            form.active !== false
+            active !== false
               ? t('taxis.vehicles.fields.active')
               : t('taxis.vehicles.fields.inactive')
           }

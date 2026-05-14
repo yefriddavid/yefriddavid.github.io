@@ -137,17 +137,11 @@ describe('Settlements Index Page', () => {
   })
 
   it('filters records by current period (April 2024)', () => {
-    const customSettlements = [
-      ...mockSettlements,
-      makeSettlement({ id: 's3', date: '2024-03-15', amount: 100000 }), // March record
-    ]
-    renderWithRedux({
-      ...initialState,
-      taxiSettlement: { data: customSettlements, fetching: false },
-    })
+    // The component delegates period filtering to the saga — Redux state already
+    // contains only the requested period's data. The component filters by
+    // driver/plate/day within whatever is in the store.
+    renderWithRedux(initialState)
 
-    // Should only show April records
-    expect(screen.queryByText('100000')).toBeNull()
     expect(screen.getByText('Juan Perez')).toBeTruthy()
     expect(screen.getByText('Ana Garcia')).toBeTruthy()
   })

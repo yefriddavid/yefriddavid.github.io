@@ -2,6 +2,7 @@ import AppBreadcrumb from './layout/AppBreadcrumb'
 import StandardForm, { StandardField, SF } from './shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from './shared/DetailPanel'
 import StandardGrid from './shared/StandardGrid/Index'
+import ErrorBoundary from './shared/ErrorBoundary'
 import AppContent from './layout/AppContent'
 import AppFooter from './layout/AppFooter'
 import AppHeader from './layout/AppHeader'
@@ -30,4 +31,5 @@ export {
   DetailSection,
   DetailRow,
   StandardGrid,
+  ErrorBoundary,
 }

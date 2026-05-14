@@ -1,28 +1,32 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { CButton, CSpinner } from '@coreui/react'
+import { useForm } from 'react-hook-form'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { EMPTY_FORM } from './helpers'
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
 export default function TransactionForm({ initial, saving, onSave, onCancel }) {
-  const [form, setForm] = useState(initial ?? EMPTY_FORM)
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({ defaultValues: initial ?? EMPTY_FORM })
 
-  const set = (field) => (e) => {
-    const val = e.target.value
-    setForm((prev) => {
-      const next = { ...prev, [field]: val }
-      if (field === 'type') next.category = ''
-      return next
-    })
-  }
-
-  const categories = form.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES
-
-  const handleSave = () => {
-    if (!form.amount || !form.date) return
-    onSave({ ...form, amount: Number(String(form.amount).replace(/\D/g, '')) })
-  }
-
+  const type = watch('type')
+  const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES
   const isEdit = !!initial?.id
+
+  const onSubmit = (data) => {
+    onSave({ ...data, amount: Number(String(data.amount).replace(/\D/g, '')) })
+  }
 
   return (
     <div className="payment-form">
@@ -56,8 +60,9 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
           <label className="payment-form__label">Tipo</label>
           <select
             className="payment-form__input payment-form__input--select"
-            value={form.type}
-            onChange={set('type')}
+            {...register('type', {
+              onChange: () => setValue('category', ''),
+            })}
           >
             <option value="expense">Gasto</option>
             <option value="income">Ingreso</option>
@@ -67,8 +72,7 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
           <label className="payment-form__label">Categoría</label>
           <select
             className="payment-form__input payment-form__input--select"
-            value={form.category}
-            onChange={set('category')}
+            {...register('category')}
           >
             <option value="">Sin categoría</option>
             {categories.map((c) => (
@@ -83,9 +87,8 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
           <input
             className="payment-form__input"
             type="text"
-            value={form.description}
-            onChange={set('description')}
             placeholder="Descripción del movimiento"
+            {...register('description')}
           />
         </div>
         <div className="payment-form__field">
@@ -93,27 +96,26 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
           <input
             className="payment-form__input"
             type="number"
-            value={form.amount}
-            onChange={set('amount')}
             placeholder="0"
             min="0"
+            {...register('amount', { required: 'El monto es obligatorio' })}
           />
+          {fieldError(errors.amount)}
         </div>
         <div className="payment-form__field">
           <label className="payment-form__label">Fecha</label>
           <input
             className="payment-form__input"
             type="date"
-            value={form.date}
-            onChange={set('date')}
+            {...register('date', { required: 'La fecha es obligatoria' })}
           />
+          {fieldError(errors.date)}
         </div>
         <div className="payment-form__field">
           <label className="payment-form__label">Método de pago</label>
           <select
             className="payment-form__input payment-form__input--select"
-            value={form.paymentMethod ?? ''}
-            onChange={set('paymentMethod')}
+            {...register('paymentMethod')}
           >
             <option value="">Sin método</option>
             {PAYMENT_METHODS.map((m) => (
@@ -134,7 +136,7 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
         </CButton>
         <CButton
           className="payment-form__btn payment-form__btn--save"
-          onClick={handleSave}
+          onClick={handleSubmit(onSubmit)}
           disabled={saving}
         >
           {saving ? <CSpinner size="sm" /> : 'Guardar'}

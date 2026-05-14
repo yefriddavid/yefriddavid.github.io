@@ -13,10 +13,12 @@ import { makeSettlement } from '../../__tests__/factories'
 describe('taxiSettlementSagas', () => {
   describe('fetchSettlements', () => {
     it('begin → getSettlements → success', () => {
-      const gen = fetchSettlements()
+      const gen = fetchSettlements({ payload: { month: 4, year: 2024 } })
       const records = [makeSettlement()]
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
-      expect(gen.next().value).toEqual(call(service.getSettlements))
+      expect(gen.next().value).toEqual(
+        call(service.getSettlements, { from: '2024-04-01', to: '2024-04-30' }),
+      )
       expect(gen.next(records).value).toEqual(put(actions.successRequestFetch(records)))
       expect(gen.next().done).toBe(true)
     })

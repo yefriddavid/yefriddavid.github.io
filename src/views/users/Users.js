@@ -16,6 +16,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
+import { useForm } from 'react-hook-form'
 import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import { sendUserPasswordReset } from 'src/services/firebase/security/users'
@@ -50,68 +51,50 @@ const RoleBadge = ({ role }) => (
   <CBadge color={ROLE_COLORS[role] ?? 'secondary'}>{ROLE_LABELS[role] ?? role}</CBadge>
 )
 
-const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
-  const [form, setForm] = useState(initial)
-  const [error, setError] = useState(null)
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-  const toggle = (field) => () => setForm((p) => ({ ...p, [field]: !p[field] }))
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
 
-  const handleSave = () => {
-    setError(null)
-    if (!form.username.trim()) {
-      setError('El username es obligatorio')
-      return
-    }
-    if (!form.email.trim()) {
-      setError('El email es obligatorio')
-      return
-    }
-    if (isNew && !form.password) {
-      setError('La contraseña es obligatoria')
-      return
-    }
-    if (isNew && form.password !== form.confirmPassword) {
-      setError('Las contraseñas no coinciden')
-      return
-    }
-    if (isNew && form.password.length < 6) {
-      setError('Mínimo 6 caracteres')
-      return
-    }
-    onSave(form)
-  }
+const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    watch,
+    formState: { errors },
+  } = useForm({ defaultValues: initial })
+
+  const active = watch('active') ?? true
 
   return (
-    <StandardForm title={title} onCancel={onCancel} onSave={handleSave} saving={saving}>
+    <StandardForm title={title} onCancel={onCancel} onSave={handleSubmit(onSave)} saving={saving}>
       <StandardField label="Username">
         <input
           className={SF.input}
           placeholder="username"
-          value={form.username}
-          onChange={set('username')}
           disabled={!isNew}
+          {...register('username', { required: 'El username es obligatorio' })}
         />
+        {fieldError(errors.username)}
       </StandardField>
       <StandardField label="Nombre">
-        <input
-          className={SF.input}
-          placeholder="Nombre completo"
-          value={form.name}
-          onChange={set('name')}
-        />
+        <input className={SF.input} placeholder="Nombre completo" {...register('name')} />
       </StandardField>
       <StandardField label="Email *">
         <input
           className={SF.input}
           type="email"
           placeholder="correo@ejemplo.com"
-          value={form.email}
-          onChange={set('email')}
           disabled={!isNew}
+          {...register('email', { required: 'El email es obligatorio' })}
         />
+        {fieldError(errors.email)}
       </StandardField>
       <StandardField label="Rol">
-        <select className={SF.select} value={form.role} onChange={set('role')}>
+        <select className={SF.select} {...register('role')}>
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {ROLE_LABELS[r]}
@@ -120,11 +103,7 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
         </select>
       </StandardField>
       <StandardField label="Página de inicio">
-        <select
-          className={SF.select}
-          value={form.landingPage ?? '/finance/dashboard'}
-          onChange={set('landingPage')}
-        >
+        <select className={SF.select} {...register('landingPage')}>
           {LANDING_PAGES.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
@@ -139,30 +118,33 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
               className={SF.input}
               type="password"
               placeholder="Mínimo 6 caracteres"
-              value={form.password}
-              onChange={set('password')}
               autoComplete="new-password"
+              {...register('password', {
+                required: 'La contraseña es obligatoria',
+                minLength: { value: 6, message: 'Mínimo 6 caracteres' },
+              })}
             />
+            {fieldError(errors.password)}
           </StandardField>
           <StandardField label="Confirmar contraseña">
             <input
               className={SF.input}
               type="password"
               placeholder="••••••••"
-              value={form.confirmPassword}
-              onChange={set('confirmPassword')}
               autoComplete="new-password"
+              {...register('confirmPassword', {
+                validate: (val) =>
+                  val === getValues('password') || 'Las contraseñas no coinciden',
+              })}
             />
+            {fieldError(errors.confirmPassword)}
           </StandardField>
         </>
       )}
-      {error && (
-        <div style={{ color: '#e55353', fontSize: 12, padding: '4px 0 0 2px' }}>{error}</div>
-      )}
       <StandardField label="Activo">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-          <input type="checkbox" checked={form.active} onChange={toggle('active')} />
-          <span>{form.active ? 'Activo' : 'Inactivo'}</span>
+          <input type="checkbox" checked={active} {...register('active')} />
+          <span>{active ? 'Activo' : 'Inactivo'}</span>
         </label>
       </StandardField>
     </StandardForm>
