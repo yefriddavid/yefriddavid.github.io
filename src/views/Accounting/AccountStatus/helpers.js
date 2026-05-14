@@ -1,13 +1,10 @@
+import { fmt } from 'src/utils/formatters'
+
+export { fmt }
+
 export const now = new Date()
 export const CURRENT_YEAR = now.getFullYear()
 export const CURRENT_MONTH = now.getMonth() + 1
-
-export const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(n ?? 0)
 
 export const PERIOD_OPTIONS = [
   'Mensuales',

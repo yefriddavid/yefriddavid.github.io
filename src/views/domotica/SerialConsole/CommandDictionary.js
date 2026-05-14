@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import DataGrid, {
   Column,
   FilterRow,
@@ -115,11 +115,17 @@ const CommandDictionary = () => {
   const [editingCmd, setEditingCmd] = useState(null)
   const [form, setForm] = useState(EMPTY_CMD)
   const [toasts, setToasts] = useState([])
+  const toastTimersRef = useRef([])
+
+  useEffect(() => {
+    return () => toastTimersRef.current.forEach(clearTimeout)
+  }, [])
 
   const toast = useCallback((msg) => {
     const id = Date.now()
     setToasts((p) => [...p, { id, msg }])
-    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 2500)
+    const timerId = setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 2500)
+    toastTimersRef.current.push(timerId)
   }, [])
 
   const copyToClipboard = async (text) => {

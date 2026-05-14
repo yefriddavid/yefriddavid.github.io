@@ -33,6 +33,9 @@ import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
 import { monthToRange } from 'src/utils/dateRange'
 import { getDrivers } from 'src/services/firebase/taxi/taxiDrivers'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
+import { fmt } from 'src/utils/formatters'
+import KPICard from 'src/components/shared/KPICard'
+import EmptyState from 'src/components/shared/EmptyState'
 import './Home.scss'
 
 const MONTHS = [
@@ -63,13 +66,6 @@ const AVATAR_COLORS = [
   '#c92a2a',
 ]
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n ?? 0)
-
 const fmtM = (n) => {
   if (!n) return '$0'
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
@@ -78,38 +74,6 @@ const fmtM = (n) => {
 }
 
 const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : null)
-
-const Delta = ({ value, invert = false }) => {
-  if (value === null || value === undefined) return null
-  const positive = invert ? value < 0 : value > 0
-  const icon = value >= 0 ? cilArrowTop : cilArrowBottom
-  return (
-    <span className={`kpi-delta kpi-delta--${positive ? 'pos' : 'neg'}`}>
-      <CIcon icon={icon} className="kpi-delta__icon" />
-      {Math.abs(value).toFixed(1)}%
-    </span>
-  )
-}
-
-const KpiCard = ({ label, value, sub, accent, icon, delta, deltaInvert }) => (
-  <CCard className="kpi-card" style={{ '--kpi-accent': accent }}>
-    <CCardBody className="kpi-card__body">
-      <div className="kpi-card__top">
-        <span className="kpi-card__label">{label}</span>
-        {icon && (
-          <div className="kpi-card__icon-wrap">
-            <CIcon icon={icon} className="kpi-card__icon" />
-          </div>
-        )}
-      </div>
-      <div className="kpi-card__value">{value}</div>
-      <div className="kpi-card__bottom">
-        {sub && <span className="kpi-card__sub">{sub}</span>}
-        <Delta value={delta} invert={deltaInvert} />
-      </div>
-    </CCardBody>
-  </CCard>
-)
 
 const DriverAvatar = ({ name, rank }) => (
   <div
@@ -406,7 +370,7 @@ const TaxisHome = () => {
         <CTabPane visible={activeTab === 'dashboard'}>
           <CRow className="g-3 mb-4">
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Total liquidado"
                 value={fmtM(totalSettled)}
                 sub={`${monthSettlements.length} liquidaciones`}
@@ -416,7 +380,7 @@ const TaxisHome = () => {
               />
             </CCol>
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Total gastos"
                 value={fmtM(totalExp)}
                 sub={
@@ -431,7 +395,7 @@ const TaxisHome = () => {
               />
             </CCol>
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Balance neto"
                 value={fmtM(netBalance)}
                 sub={netBalance >= 0 ? 'Positivo ✓' : 'Negativo ✗'}
@@ -441,7 +405,7 @@ const TaxisHome = () => {
               />
             </CCol>
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Promedio por día"
                 value={fmtM(avgPerDay)}
                 sub={`${activeDays} días con actividad`}
@@ -451,7 +415,7 @@ const TaxisHome = () => {
               />
             </CCol>
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Conductores activos"
                 value={activeDrivers}
                 sub={`de ${drivers.length} registrados`}
@@ -460,7 +424,7 @@ const TaxisHome = () => {
               />
             </CCol>
             <CCol sm={6} lg={4} xl={2}>
-              <KpiCard
+              <KPICard
                 label="Vehículos activos"
                 value={activeVehicles}
                 sub={`de ${vehicles.length} registrados`}
@@ -536,7 +500,7 @@ const TaxisHome = () => {
                 {cardHeader('Gastos por categoría', cilChartPie)}
                 <CCardBody className="d-flex flex-column align-items-center justify-content-center">
                   {byCategory.length === 0 ? (
-                    <span className="taxis-home__empty">Sin gastos este periodo</span>
+                    <EmptyState message="Sin gastos este periodo" size="sm" />
                   ) : (
                     <>
                       <CChartDoughnut
@@ -590,7 +554,7 @@ const TaxisHome = () => {
                 {cardHeader('Top conductores del mes', cilStar)}
                 <CCardBody>
                   {byDriver.length === 0 ? (
-                    <span className="taxis-home__empty">Sin liquidaciones este periodo</span>
+                    <EmptyState message="Sin liquidaciones este periodo" size="sm" />
                   ) : (
                     <CChartBar
                       style={{ maxHeight: 260 }}
@@ -629,7 +593,7 @@ const TaxisHome = () => {
                 {cardHeader('Liquidaciones por vehículo', cilCarAlt)}
                 <CCardBody>
                   {byVehicle.length === 0 ? (
-                    <span className="taxis-home__empty">Sin datos</span>
+                    <EmptyState message="Sin datos para este periodo" size="sm" />
                   ) : (
                     <CChartBar
                       style={{ maxHeight: 240 }}
@@ -671,7 +635,7 @@ const TaxisHome = () => {
                 {cardHeader('Ranking de conductores', cilPeople)}
                 <CCardBody className="taxis-home__card-body--flush">
                   {byDriver.length === 0 ? (
-                    <div className="taxis-home__empty--padded">Sin datos</div>
+                    <EmptyState message="Sin datos para este periodo" size="sm" />
                   ) : (
                     <table className="driver-ranking">
                       <thead>

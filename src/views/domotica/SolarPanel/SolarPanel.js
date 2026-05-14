@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import * as domoticaSolarBatteryActions from 'src/actions/domotica/domoticaSolarBatteryActions'
 import * as domoticaTransactionActions from 'src/actions/domotica/domoticaTransactionActions'
 import * as domoticaCommandActions from 'src/actions/domotica/domoticaCommandActions'
-import { getSocColor, STATUS_CONFIG, BATTERY_CAPACITY_WH, BATTERY_CAPACITY_AH } from './constants'
+import { selectBatteryDerived, selectBatteryFetching } from 'src/selectors/domoticaSelectors'
 import { useRelativeTime } from './hooks/useRelativeTime'
 import SolarHeader from './Components/SolarHeader'
 import AlertBanner from './Components/AlertBanner'
@@ -18,8 +18,8 @@ import './SolarPanel.scss'
 const SolarPanel = () => {
   const dispatch = useDispatch()
 
-  const battery = useSelector((s) => s.domoticaSolarBattery.battery)
-  const fetching = useSelector((s) => s.domoticaSolarBattery.fetching)
+  const battery = useSelector(selectBatteryDerived)
+  const fetching = useSelector(selectBatteryFetching)
 
   const [online, setOnline] = useState(false)
   const relativeTime = useRelativeTime(battery?.updatedAt)
@@ -28,7 +28,7 @@ const SolarPanel = () => {
     if (battery?.updatedAt) {
       setOnline(Date.now() - new Date(battery.updatedAt).getTime() < 10 * 60 * 1000)
     }
-  }, [battery])
+  }, [battery?.updatedAt])
 
   useEffect(() => {
     dispatch(domoticaSolarBatteryActions.subscribeRequest())
@@ -43,19 +43,20 @@ const SolarPanel = () => {
     dispatch(domoticaTransactionActions.fetchCurrentRequest())
   }
 
-  // Derived values
-  const soc = battery?.percent ?? null
-  const voltage = battery?.voltage ?? null
-  const solar = battery?.solar ?? null
-  const alert = battery?.alert ?? null
-  const status = battery?.status ?? null
-  const statusCfg = STATUS_CONFIG[status] ?? null
-  const energyWh = soc != null ? Math.round((soc / 100) * BATTERY_CAPACITY_WH) : null
-  const color = getSocColor(soc)
-  const amps = battery?.current ?? null
-  const watts = amps != null && voltage != null ? Math.abs(amps) * voltage : null
-  const currentAlert = battery?.currentAlert ?? null
-  const hoursRemaining = amps > 0 && soc > 0 ? ((soc / 100) * BATTERY_CAPACITY_AH) / amps : null
+  const {
+    soc,
+    voltage,
+    solar,
+    alert,
+    status,
+    statusCfg,
+    energyWh,
+    color,
+    amps,
+    watts,
+    currentAlert,
+    hoursRemaining,
+  } = battery ?? {}
 
   return (
     <div className="solar-panel">

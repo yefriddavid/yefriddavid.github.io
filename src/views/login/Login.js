@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { deleteCookie, getCookie, setCookie } from 'cookies-next'
 import { Link, useNavigate } from 'react-router-dom'
 import BrandName from '../../components/BrandName'
@@ -45,14 +45,17 @@ const IconLock = () => (
 const IconCash = () => (
   <svg width="52" height="28" viewBox="0 0 52 28" fill="none" xmlns="http://www.w3.org/2000/svg">
     <text
-      x="26" y="21"
+      x="26"
+      y="21"
       textAnchor="middle"
       fontSize="20"
       fontWeight="900"
       fontFamily="Arial Black, Arial, sans-serif"
       fill="#000"
       letterSpacing="2"
-    >ADM</text>
+    >
+      ADM
+    </text>
   </svg>
 )
 
@@ -112,6 +115,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [shake, setShake] = useState(false)
+  const shakeTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (shakeTimerRef.current) clearTimeout(shakeTimerRef.current)
+    }
+  }, [])
 
   const {
     register,
@@ -133,10 +143,12 @@ const Login = () => {
     setLoading(true)
     setError(null)
     try {
-      const { username: uname, landingPage, sessionId, token } = await signIn(
-        username.trim(),
-        password,
-      )
+      const {
+        username: uname,
+        landingPage,
+        sessionId,
+        token,
+      } = await signIn(username.trim(), password)
       localStorage.setItem('token', token)
       localStorage.setItem('username', uname)
       localStorage.setItem('landingPage', landingPage)
@@ -154,7 +166,7 @@ const Login = () => {
       setLoading(false)
       setError(e.message || 'Error de conexión')
       setShake(true)
-      setTimeout(() => setShake(false), 500)
+      shakeTimerRef.current = setTimeout(() => setShake(false), 500)
     }
   }
 
@@ -259,11 +271,7 @@ const Login = () => {
             <span className="login-page__remember-label">Recordar sesión</span>
           </label>
 
-          <button
-            className="login-page__btn"
-            onClick={handleSubmit(onSubmit)}
-            disabled={loading}
-          >
+          <button className="login-page__btn" onClick={handleSubmit(onSubmit)} disabled={loading}>
             {loading ? <Spinner /> : <IconArrow />}
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>

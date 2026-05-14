@@ -54,12 +54,14 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
     formState: { errors },
   } = useForm({ defaultValues: initial ?? EMPTY_FORM })
 
+  const name = watch('name')
   const type = watch('type')
   const period = watch('period')
   const active = watch('active') ?? true
   const important = watch('important') ?? false
   const isEdit = !!initial?.id
   const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}195)`
+  const onSubmit = (data) => onSave(data)
 
   return (
     <div className="payment-form">
@@ -331,8 +333,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </CButton>
         <CButton
           className="payment-form__btn payment-form__btn--save"
-          onClick={handleSubmit(onSave)}
-          disabled={saving}
+          onClick={handleSubmit(onSubmit)}
+          disabled={saving || !name?.trim()}
         >
           {saving ? <CSpinner size="sm" /> : 'Guardar'}
         </CButton>

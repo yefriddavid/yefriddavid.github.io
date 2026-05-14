@@ -43,6 +43,8 @@ export default function AdHocExpenseModal({
   })
 
   const type = watch('type')
+  const description = watch('description')
+  const amount = watch('amount')
 
   const [attachment, setAttachment] = useState(initialData?.attachment ?? null)
   const [attachName, setAttachName] = useState(initialData?.attachmentName ?? '')
@@ -345,7 +347,7 @@ export default function AdHocExpenseModal({
           </button>
           <button
             onClick={handleSubmit(onSubmit)}
-            disabled={saving || processing}
+            disabled={saving || processing || !description || !amount}
             style={{
               flex: 2,
               padding: '14px',

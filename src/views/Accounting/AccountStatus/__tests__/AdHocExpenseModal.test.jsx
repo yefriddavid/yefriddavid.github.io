@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 
 vi.mock('@coreui/react', () => ({
   CSpinner: () => <span data-testid="spinner" />,
@@ -104,7 +104,7 @@ describe('AdHocExpenseModal', () => {
       expect(screen.getByText('Guardar').disabled).toBe(false)
     })
 
-    it('calls onSave with correct payload on submit', () => {
+    it('calls onSave with correct payload on submit', async () => {
       const onSave = vi.fn()
       renderModal({ onSave })
       fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
@@ -113,7 +113,7 @@ describe('AdHocExpenseModal', () => {
       fireEvent.change(screen.getByPlaceholderText('0'), {
         target: { value: '150000' },
       })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'expense',
@@ -124,7 +124,7 @@ describe('AdHocExpenseModal', () => {
       )
     })
 
-    it('payload includes type:income when Ingreso selected', () => {
+    it('payload includes type:income when Ingreso selected', async () => {
       const onSave = vi.fn()
       renderModal({ onSave })
       fireEvent.click(screen.getByText('Ingreso'))
@@ -134,18 +134,18 @@ describe('AdHocExpenseModal', () => {
       fireEvent.change(screen.getByPlaceholderText('0'), {
         target: { value: '2000000' },
       })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ type: 'income' }))
     })
 
-    it('payload note is null when note field is empty', () => {
+    it('payload note is null when note field is empty', async () => {
       const onSave = vi.fn()
       renderModal({ onSave })
       fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
         target: { value: 'X' },
       })
       fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '1' } })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ note: null }))
     })
 
@@ -210,17 +210,17 @@ describe('AdHocExpenseModal', () => {
       expect(screen.getByDisplayValue('pago mensual')).toBeTruthy()
     })
 
-    it('payload includes id in edit mode', () => {
+    it('payload includes id in edit mode', async () => {
       const onSave = vi.fn()
       renderModal({ initialData, onSave })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'tx1' }))
     })
 
-    it('payload uses initialData.accountMonth', () => {
+    it('payload uses initialData.accountMonth', async () => {
       const onSave = vi.fn()
       renderModal({ initialData, onSave })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ accountMonth: '2024-04' }))
     })
   })

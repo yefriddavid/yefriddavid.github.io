@@ -7,6 +7,7 @@ import CIcon from '@coreui/icons-react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import * as accountStatusNoteActions from 'src/actions/cashflow/accountStatusNoteActions'
+import { selectCumulativePaymentsMap } from 'src/selectors/cashflowSelectors'
 import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
@@ -79,15 +80,7 @@ export default function AccountStatus() {
     dispatch(accountStatusNoteActions.fetchRequest({ period: monthStr }))
   }, [dispatch, monthStr])
 
-  const cumulativePaymentsMap = useMemo(() => {
-    if (!transactions) return {}
-    const map = {}
-    transactions.forEach((t) => {
-      if (!t.accountMasterId) return
-      map[t.accountMasterId] = (map[t.accountMasterId] ?? 0) + (t.amount || 0)
-    })
-    return map
-  }, [transactions])
+  const cumulativePaymentsMap = useSelector(selectCumulativePaymentsMap)
 
   const applicable = useMemo(() => {
     if (!masters) return []

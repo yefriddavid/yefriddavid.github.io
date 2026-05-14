@@ -3,920 +3,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as actions from 'src/actions/cashflow/assetActions'
+import { uid, now, fmt } from './assetHelpers'
+import {
+  TYPES,
+  HORIZONS,
+  TYPE_COLOR,
+  TYPE_BG,
+  HORIZON_COLOR,
+  HORIZON_BG,
+  SEED_ASSETS,
+} from './assetConstants'
+import AssetCard from './AssetCard'
+import AssetSheet from './AssetSheet'
+import SummaryCard from './SummaryCard'
 
-const uid = () => crypto.randomUUID()
-const now = () => new Date().toISOString()
-
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n ?? 0)
-
-const fmtNum = (n, decimals = 6) =>
-  n != null && n !== ''
-    ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: decimals }).format(n)
-    : '—'
-
-// ── Seed data from Excel ──────────────────────────────────────────────────────
-// unitPrice stored as effective COP/unit so valueCOP = quantity × unitPrice matches Excel
-const SEED_ASSETS = [
-  {
-    name: 'BTC/ARG',
-    quantity: 0.18101424,
-    unitPrice: 244718000,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'mediano',
-    monthlyGain: 0,
-    archived: false,
-    notes: 'Precio original ARS ~12,402',
-  },
-  {
-    name: 'BTC/COL',
-    quantity: 0.0003,
-    unitPrice: 244740000,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'LDG',
-    quantity: 0.341704,
-    unitPrice: 244738000,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'WS',
-    quantity: 11773,
-    unitPrice: 1,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: 'yriosmor@gmail.com',
-  },
-  {
-    name: 'ML 403',
-    quantity: 1,
-    unitPrice: 183750000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 1300000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Gld',
-    quantity: 150,
-    unitPrice: 600000,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'QT 201',
-    quantity: 1,
-    unitPrice: 300000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: 'corto',
-    monthlyGain: 900000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'QT 200',
-    quantity: 1,
-    unitPrice: 150000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: 'corto',
-    monthlyGain: 334000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'ML 106',
-    quantity: 1,
-    unitPrice: 175000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: 'corto',
-    monthlyGain: 1350000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'CDT July 2024',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: true,
-    projection: false,
-    horizon: 'mediano',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Carro KMR636',
-    quantity: 1,
-    unitPrice: 20000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'ETH/ARG',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'DollarApp',
-    quantity: 134.31,
-    unitPrice: 3572,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Deel rest of year',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: true,
-    projection: true,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'work rest of year',
-    quantity: 0,
-    unitPrice: 1,
-    type: 'financial',
-    liquid: true,
-    projection: true,
-    horizon: '',
-    monthlyGain: 0,
-    archived: true,
-    notes: '',
-  },
-  {
-    name: 'Alquileres rest of year',
-    quantity: 0,
-    unitPrice: 9,
-    type: 'financial',
-    liquid: true,
-    projection: true,
-    horizon: '',
-    monthlyGain: 0,
-    archived: true,
-    notes: '',
-  },
-  {
-    name: 'btc rest of year',
-    quantity: 0,
-    unitPrice: 3000,
-    type: 'financial',
-    liquid: false,
-    projection: true,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Neverless plazo fijo',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Hyundai',
-    quantity: 1,
-    unitPrice: 2000000,
-    type: 'financial',
-    liquid: true,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'fdusd 1742',
-    quantity: 0,
-    unitPrice: 3572,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: 'corto',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'CDT bcol 13/NOV/2024 (90)',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: true,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'CDT pichincha a mi nombre',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'aqua wallet',
-    quantity: 0,
-    unitPrice: 0,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Neverless btc',
-    quantity: 0.008611,
-    unitPrice: 244738000,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: 'Precio original USD ~$589.99',
-  },
-  {
-    name: 'trazor eth',
-    quantity: 1.408,
-    unitPrice: 7621238,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Neverless rest',
-    quantity: 1000,
-    unitPrice: 3572,
-    type: 'financial',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 0,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'taxi TPV655',
-    quantity: 1,
-    unitPrice: 15000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 1000000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'Taxi TSK086',
-    quantity: 1,
-    unitPrice: 18000000,
-    type: 'fixed',
-    liquid: false,
-    projection: false,
-    horizon: '',
-    monthlyGain: 1000000,
-    archived: false,
-    notes: '',
-  },
-  {
-    name: 'ph wallet short',
-    quantity: 0.00295713,
-    unitPrice: 244741000,
-    type: 'financial',
-    liquid: true,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: 'Precio original USD ~$202.61',
-  },
-  {
-    name: 'ph wallet long',
-    quantity: 0.01453002,
-    unitPrice: 244737000,
-    type: 'financial',
-    liquid: true,
-    projection: false,
-    horizon: 'largo',
-    monthlyGain: 0,
-    archived: false,
-    notes: 'Precio original USD ~$995.54',
-  },
-]
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-const TYPES = ['financial', 'fixed']
-const HORIZONS = ['largo', 'mediano', 'corto']
-
-const TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700' }
-const TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1' }
-const HORIZON_COLOR = { largo: '#6741d9', mediano: '#1971c2', corto: '#e03131' }
-const HORIZON_BG = { largo: '#f3f0ff', mediano: '#e7f5ff', corto: '#fff5f5' }
-
-const EMPTY = {
-  name: '',
-  quantity: '',
-  unitPrice: '',
-  type: 'financial',
-  liquid: false,
-  projection: false,
-  horizon: '',
-  monthlyGain: '',
-  archived: false,
-  notes: '',
-}
-
-// ── Pill badge ────────────────────────────────────────────────────────────────
-function Pill({ label, color, bg }) {
-  return (
-    <span
-      style={{
-        fontSize: 10,
-        fontWeight: 700,
-        padding: '2px 7px',
-        borderRadius: 10,
-        background: bg,
-        color,
-        letterSpacing: '0.04em',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {label}
-    </span>
-  )
-}
-
-// ── Asset card ────────────────────────────────────────────────────────────────
-function AssetCard({ asset, onEdit, onDelete, onSync, syncing }) {
-  const valueCOP = (Number(asset.quantity) || 0) * (Number(asset.unitPrice) || 0)
-
-  return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: 14,
-        padding: '13px 15px',
-        marginBottom: 8,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-        borderLeft: `4px solid ${TYPE_COLOR[asset.type] ?? '#dee2e6'}`,
-        opacity: asset.archived ? 0.5 : 1,
-      }}
-    >
-      {/* Row 1: name + value */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 6,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
-          <div
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#1a1a2e',
-              textDecoration: asset.archived ? 'line-through' : 'none',
-            }}
-          >
-            {asset.name}
-          </div>
-          {/* badges row */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-            <Pill label={asset.type} color={TYPE_COLOR[asset.type]} bg={TYPE_BG[asset.type]} />
-            {asset.liquid && <Pill label="liquid" color="#2f9e44" bg="#f0fdf4" />}
-            {asset.projection && <Pill label="proyección" color="#6c757d" bg="#f8f9fa" />}
-            {asset.horizon && (
-              <Pill
-                label={asset.horizon}
-                color={HORIZON_COLOR[asset.horizon]}
-                bg={HORIZON_BG[asset.horizon]}
-              />
-            )}
-          </div>
-        </div>
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1a1a2e' }}>{fmt(valueCOP)}</div>
-          {asset.monthlyGain > 0 && (
-            <div style={{ fontSize: 11, color: '#2f9e44', fontWeight: 700, marginTop: 2 }}>
-              +{fmt(asset.monthlyGain)}/mes
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Row 2: quantity × unit price */}
-      {(asset.quantity || asset.unitPrice) && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 6,
-            alignItems: 'center',
-            fontSize: 12,
-            color: '#6c757d',
-            marginBottom: 8,
-          }}
-        >
-          <span>{fmtNum(asset.quantity)} unidades</span>
-          {asset.unitPrice ? (
-            <>
-              <span style={{ color: '#dee2e6' }}>·</span>
-              <span>precio {fmt(asset.unitPrice)}</span>
-            </>
-          ) : null}
-        </div>
-      )}
-
-      {/* Row 3: notes */}
-      {asset.notes && (
-        <div style={{ fontSize: 11, color: '#adb5bd', fontStyle: 'italic', marginBottom: 8 }}>
-          {asset.notes}
-        </div>
-      )}
-
-      {/* Row 4: actions */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button
-          onClick={() => onEdit(asset)}
-          style={{
-            flex: 1,
-            padding: '7px',
-            borderRadius: 8,
-            border: '1px solid #dee2e6',
-            background: '#fff',
-            fontSize: 13,
-            fontWeight: 600,
-            color: '#1e3a5f',
-            cursor: 'pointer',
-          }}
-        >
-          ✏️ Editar
-        </button>
-        <button
-          onClick={() => onSync(asset)}
-          disabled={syncing}
-          style={{
-            padding: '7px 12px',
-            borderRadius: 8,
-            border: 'none',
-            background: '#eef4ff',
-            fontSize: 13,
-            fontWeight: 600,
-            color: syncing ? '#adb5bd' : '#1e3a5f',
-            cursor: syncing ? 'not-allowed' : 'pointer',
-          }}
-          title="Sincronizar a Firebase"
-        >
-          ☁️
-        </button>
-        <button
-          onClick={() => onDelete(asset)}
-          style={{
-            padding: '7px 12px',
-            borderRadius: 8,
-            border: 'none',
-            background: '#fff5f5',
-            fontSize: 13,
-            color: '#e03131',
-            cursor: 'pointer',
-          }}
-        >
-          🗑
-        </button>
-      </div>
-      <div
-        style={{
-          fontSize: 10,
-          color: asset.syncedAt ? '#2f9e44' : '#f59f00',
-          marginTop: 4,
-          textAlign: 'right',
-        }}
-      >
-        {asset.syncedAt ? '● Firebase' : '○ Local'}
-      </div>
-    </div>
-  )
-}
-
-// ── Form sheet ────────────────────────────────────────────────────────────────
-function AssetSheet({ initial, saving, onSave, onClose }) {
-  const isEdit = !!initial?.id
-  const [form, setForm] = useState(
-    initial
-      ? {
-          name: initial.name ?? '',
-          quantity: initial.quantity ?? '',
-          unitPrice: initial.unitPrice ?? '',
-          type: initial.type ?? 'financial',
-          liquid: initial.liquid ?? false,
-          projection: initial.projection ?? false,
-          horizon: initial.horizon ?? '',
-          monthlyGain: initial.monthlyGain ?? '',
-          archived: initial.archived ?? false,
-          notes: initial.notes ?? '',
-        }
-      : { ...EMPTY },
-  )
-
-  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
-  const toggle = (field) => () => setForm((p) => ({ ...p, [field]: !p[field] }))
-
-  const valueCOP = (Number(form.quantity) || 0) * (Number(form.unitPrice) || 0)
-
-  const handleSave = () => {
-    if (!form.name.trim()) return
-    onSave({
-      id: initial?.id ?? uid(),
-      name: form.name.trim(),
-      quantity: Number(form.quantity) || 0,
-      unitPrice: Number(form.unitPrice) || 0,
-      type: form.type,
-      liquid: form.liquid,
-      projection: form.projection,
-      horizon: form.horizon,
-      monthlyGain: Number(form.monthlyGain) || 0,
-      archived: form.archived,
-      notes: form.notes.trim(),
-      createdAt: initial?.createdAt ?? now(),
-      updatedAt: now(),
-    })
-  }
-
-  const inputStyle = {
-    width: '100%',
-    border: 'none',
-    borderBottom: '2px solid #dee2e6',
-    outline: 'none',
-    padding: '4px 0 8px',
-    background: 'transparent',
-    fontSize: 15,
-    color: '#1a1a2e',
-  }
-  const labelStyle = {
-    fontSize: 11,
-    fontWeight: 600,
-    color: '#6c757d',
-    display: 'block',
-    marginBottom: 4,
-    letterSpacing: '0.05em',
-  }
-  const toggleStyle = (active, color = '#1e3a5f', bg = '#eef4ff') => ({
-    padding: '6px 14px',
-    borderRadius: 20,
-    border: 'none',
-    cursor: 'pointer',
-    background: active ? bg : '#f8f9fa',
-    color: active ? color : '#adb5bd',
-    fontSize: 12,
-    fontWeight: 700,
-  })
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.45)',
-        zIndex: 1050,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: 540,
-          background: '#fff',
-          borderRadius: '20px 20px 0 0',
-          padding: '20px 20px 36px',
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div
-          style={{
-            width: 40,
-            height: 4,
-            borderRadius: 2,
-            background: '#dee2e6',
-            margin: '0 auto 18px',
-          }}
-        />
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a2e', marginBottom: 20 }}>
-          {isEdit ? 'Editar activo' : 'Nuevo activo'}
-        </div>
-
-        {/* Name */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>NOMBRE *</label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={form.name}
-            onChange={set('name')}
-            placeholder="Ej: BTC/COL"
-            autoFocus
-          />
-        </div>
-
-        {/* Type */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>TIPO</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {TYPES.map((t) => (
-              <button
-                key={t}
-                style={toggleStyle(form.type === t, TYPE_COLOR[t], TYPE_BG[t])}
-                onClick={() => setForm((p) => ({ ...p, type: t }))}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Quantity + Unit price */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-          <div>
-            <label style={labelStyle}>CANTIDAD</label>
-            <input
-              style={inputStyle}
-              type="number"
-              min="0"
-              step="any"
-              value={form.quantity}
-              onChange={set('quantity')}
-              placeholder="0"
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>PRECIO UNITARIO (COP)</label>
-            <input
-              style={inputStyle}
-              type="number"
-              min="0"
-              step="any"
-              value={form.unitPrice}
-              onChange={set('unitPrice')}
-              placeholder="0"
-            />
-          </div>
-        </div>
-
-        {/* Computed value */}
-        {valueCOP > 0 && (
-          <div
-            style={{
-              background: '#eef4ff',
-              border: '1px solid #c5d8ff',
-              borderRadius: 10,
-              padding: '10px 14px',
-              marginBottom: 16,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600 }}>Valor COP</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f' }}>{fmt(valueCOP)}</span>
-          </div>
-        )}
-
-        {/* Horizon */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>HORIZONTE</label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              style={toggleStyle(!form.horizon)}
-              onClick={() => setForm((p) => ({ ...p, horizon: '' }))}
-            >
-              ninguno
-            </button>
-            {HORIZONS.map((h) => (
-              <button
-                key={h}
-                style={toggleStyle(form.horizon === h, HORIZON_COLOR[h], HORIZON_BG[h])}
-                onClick={() => setForm((p) => ({ ...p, horizon: h }))}
-              >
-                {h}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Monthly gain */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>GANANCIA MENSUAL (COP)</label>
-          <input
-            style={inputStyle}
-            type="number"
-            min="0"
-            value={form.monthlyGain}
-            onChange={set('monthlyGain')}
-            placeholder="0"
-          />
-        </div>
-
-        {/* Toggles */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-          <button style={toggleStyle(form.liquid, '#2f9e44', '#f0fdf4')} onClick={toggle('liquid')}>
-            {form.liquid ? '✓' : '○'} Liquid
-          </button>
-          <button
-            style={toggleStyle(form.projection, '#6c757d', '#f8f9fa')}
-            onClick={toggle('projection')}
-          >
-            {form.projection ? '✓' : '○'} Proyección
-          </button>
-          <button
-            style={toggleStyle(form.archived, '#e03131', '#fff5f5')}
-            onClick={toggle('archived')}
-          >
-            {form.archived ? '✓' : '○'} Archivado
-          </button>
-        </div>
-
-        {/* Notes */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>NOTAS</label>
-          <textarea
-            style={{
-              ...inputStyle,
-              resize: 'none',
-              fontFamily: 'inherit',
-              fontSize: 13,
-              lineHeight: 1.5,
-            }}
-            rows={2}
-            value={form.notes}
-            onChange={set('notes')}
-            placeholder="Observaciones…"
-          />
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '13px',
-              borderRadius: 12,
-              border: '1px solid #dee2e6',
-              background: '#fff',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#6c757d',
-              cursor: 'pointer',
-            }}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !form.name.trim()}
-            style={{
-              flex: 2,
-              padding: '13px',
-              borderRadius: 12,
-              border: 'none',
-              background: saving || !form.name.trim() ? '#e9ecef' : '#1e3a5f',
-              color: saving || !form.name.trim() ? '#adb5bd' : '#fff',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: saving || !form.name.trim() ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isEdit ? 'Guardar cambios' : 'Crear activo'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Summary card ──────────────────────────────────────────────────────────────
-function SummaryCard({
-  label,
-  value,
-  sub,
-  color = '#1a1a2e',
-  bg = '#f8f9fa',
-  border = '#e9ecef',
-  wide = false,
-}) {
-  return (
-    <div
-      style={{
-        background: bg,
-        border: `1px solid ${border}`,
-        borderRadius: 12,
-        padding: '10px 14px',
-        gridColumn: wide ? '1 / -1' : undefined,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 700,
-          color: '#adb5bd',
-          letterSpacing: '0.05em',
-          marginBottom: 4,
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ fontSize: 16, fontWeight: 800, color }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: '#6c757d', marginTop: 2 }}>{sub}</div>}
-    </div>
-  )
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function Assets() {
   const dispatch = useDispatch()
   const { assets, loading, saving, syncing, syncingAll, importing } = useSelector((s) => s.asset)
@@ -963,6 +63,15 @@ export default function Assets() {
     return { total, financial, fixed, liquid, monthly }
   }, [assets])
 
+  const gridData = useMemo(
+    () =>
+      filtered.map((a) => ({
+        ...a,
+        valueCOP: (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0),
+      })),
+    [filtered],
+  )
+
   const handleSave = (asset) => {
     dispatch(actions.saveRequest(asset))
     setSheet(null)
@@ -977,7 +86,6 @@ export default function Assets() {
     const ts = now()
     const seeded = SEED_ASSETS.map((a) => ({ ...a, id: uid(), createdAt: ts, updatedAt: ts }))
     seeded.forEach((a) => dispatch(actions.saveRequest(a)))
-    // sync all to Firebase right after seeding
     setTimeout(() => dispatch(actions.syncAllRequest(seeded)), 800)
   }
 
@@ -986,6 +94,8 @@ export default function Assets() {
   const handleImport = () => dispatch(actions.importRequest())
 
   const unsyncedCount = assets.filter((a) => !a.syncedAt).length
+  const activeFilters =
+    filterType !== 'all' || filterHorizon !== 'all' || filterLiquid !== 'all' || !!search
 
   const toggleView = () => {
     const next = viewMode === 'cards' ? 'grid' : 'cards'
@@ -993,17 +103,18 @@ export default function Assets() {
     localStorage.setItem('assets_viewMode', next)
   }
 
-  const gridData = useMemo(
-    () =>
-      filtered.map((a) => ({
-        ...a,
-        valueCOP: (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0),
-      })),
-    [filtered],
-  )
-
-  const activeFilters =
-    filterType !== 'all' || filterHorizon !== 'all' || filterLiquid !== 'all' || !!search
+  const btnStyle = (active, activeBg, activeColor) => ({
+    padding: '5px 12px',
+    borderRadius: 20,
+    border: 'none',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    fontSize: 12,
+    fontWeight: 600,
+    flexShrink: 0,
+    background: active ? activeBg : '#f8f9fa',
+    color: active ? activeColor : '#6c757d',
+  })
 
   return (
     <div
@@ -1014,7 +125,7 @@ export default function Assets() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <div
         style={{
           display: 'flex',
@@ -1053,6 +164,7 @@ export default function Assets() {
           </button>
           <button
             onClick={toggleView}
+            title={viewMode === 'cards' ? 'Ver tabla' : 'Ver tarjetas'}
             style={{
               width: 44,
               height: 44,
@@ -1066,7 +178,6 @@ export default function Assets() {
               alignItems: 'center',
               justifyContent: 'center',
             }}
-            title={viewMode === 'cards' ? 'Ver tabla' : 'Ver tarjetas'}
           >
             {viewMode === 'cards' ? '⊞' : '▤'}
           </button>
@@ -1091,10 +202,9 @@ export default function Assets() {
         </div>
       </div>
 
-      {/* ── Portfolio summary ── */}
+      {/* Portfolio summary */}
       {!loading && assets.length > 0 && (
         <>
-          {/* Big total */}
           <div
             style={{
               background: 'linear-gradient(135deg, #1a1a2e 0%, #1e3a5f 100%)',
@@ -1123,8 +233,6 @@ export default function Assets() {
               </div>
             )}
           </div>
-
-          {/* Summary grid */}
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}
           >
@@ -1167,7 +275,7 @@ export default function Assets() {
         </>
       )}
 
-      {/* ── Search ── */}
+      {/* Search */}
       <div style={{ position: 'relative', marginBottom: 10 }}>
         <span
           style={{
@@ -1216,93 +324,45 @@ export default function Assets() {
         )}
       </div>
 
-      {/* ── Filters ── */}
+      {/* Filters */}
       <div
         style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 12 }}
       >
-        {/* Type */}
         {['all', ...TYPES].map((t) => (
           <button
             key={t}
             onClick={() => setFilterType(t)}
-            style={{
-              padding: '5px 12px',
-              borderRadius: 20,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontSize: 12,
-              fontWeight: 600,
-              flexShrink: 0,
-              background: filterType === t ? (TYPE_BG[t] ?? '#1a1a2e') : '#f8f9fa',
-              color: filterType === t ? (TYPE_COLOR[t] ?? '#fff') : '#6c757d',
-            }}
+            style={btnStyle(filterType === t, TYPE_BG[t] ?? '#1a1a2e', TYPE_COLOR[t] ?? '#fff')}
           >
             {t === 'all' ? 'Todos' : t}
           </button>
         ))}
         <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
-        {/* Horizon */}
         {HORIZONS.map((h) => (
           <button
             key={h}
             onClick={() => setFilterHorizon(filterHorizon === h ? 'all' : h)}
-            style={{
-              padding: '5px 12px',
-              borderRadius: 20,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontSize: 12,
-              fontWeight: 600,
-              flexShrink: 0,
-              background: filterHorizon === h ? HORIZON_BG[h] : '#f8f9fa',
-              color: filterHorizon === h ? HORIZON_COLOR[h] : '#6c757d',
-            }}
+            style={btnStyle(filterHorizon === h, HORIZON_BG[h], HORIZON_COLOR[h])}
           >
             {h}
           </button>
         ))}
         <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
-        {/* Liquid */}
         <button
           onClick={() => setFilterLiquid(filterLiquid === 'yes' ? 'all' : 'yes')}
-          style={{
-            padding: '5px 12px',
-            borderRadius: 20,
-            border: 'none',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            fontSize: 12,
-            fontWeight: 600,
-            flexShrink: 0,
-            background: filterLiquid === 'yes' ? '#f0fdf4' : '#f8f9fa',
-            color: filterLiquid === 'yes' ? '#2f9e44' : '#6c757d',
-          }}
+          style={btnStyle(filterLiquid === 'yes', '#f0fdf4', '#2f9e44')}
         >
           liquid
         </button>
-        {/* Archived toggle */}
         <button
           onClick={() => setShowArchived((v) => !v)}
-          style={{
-            padding: '5px 12px',
-            borderRadius: 20,
-            border: 'none',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            fontSize: 12,
-            fontWeight: 600,
-            flexShrink: 0,
-            background: showArchived ? '#fff5f5' : '#f8f9fa',
-            color: showArchived ? '#e03131' : '#6c757d',
-          }}
+          style={btnStyle(showArchived, '#fff5f5', '#e03131')}
         >
           archivados
         </button>
       </div>
 
-      {/* ── Sync all ── */}
+      {/* Sync all */}
       {unsyncedCount > 0 && (
         <button
           onClick={handleSyncAll}
@@ -1330,7 +390,7 @@ export default function Assets() {
         </button>
       )}
 
-      {/* ── List ── */}
+      {/* List / Grid / Empty */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
           <div
@@ -1465,7 +525,6 @@ export default function Assets() {
               displayFormat="Total: {0}"
               valueFormat={{ type: 'currency', currency: 'COP', precision: 0 }}
             />
-
             <TotalItem
               column="monthlyGain"
               summaryType="sum"
@@ -1487,7 +546,6 @@ export default function Assets() {
         ))
       )}
 
-      {/* ── Sheet ── */}
       {sheet && (
         <AssetSheet
           initial={sheet === 'new' ? null : sheet}

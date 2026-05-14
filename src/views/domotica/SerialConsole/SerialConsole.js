@@ -119,6 +119,7 @@ const SerialConsole = () => {
   const readerRef = useRef(null)
   const logEndRef = useRef(null)
   const inputRef = useRef(null)
+  const focusTimerRef = useRef(null)
 
   const addLog = useCallback((type, text) => {
     const time = new Date().toLocaleTimeString('es-CO', {
@@ -127,6 +128,12 @@ const SerialConsole = () => {
       second: '2-digit',
     })
     setLog((prev) => [...prev, { id: Date.now() + Math.random(), type, text, time }])
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -267,7 +274,7 @@ const SerialConsole = () => {
       // Has unfilled params — load into input bar for the user to fill
       setInput(executable)
       setShowDict(false)
-      setTimeout(() => inputRef.current?.focus(), 100)
+      focusTimerRef.current = setTimeout(() => inputRef.current?.focus(), 100)
     } else {
       // No params — send directly
       const sent = await sendText(executable)

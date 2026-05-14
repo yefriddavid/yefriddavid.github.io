@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 
 vi.mock('@coreui/react', () => ({
   CSpinner: () => <span data-testid="spinner" />,
@@ -112,10 +112,10 @@ describe('PayModal', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
-  it('calls onSave with correct payload on submit', () => {
+  it('calls onSave with correct payload on submit', async () => {
     const onSave = vi.fn()
     renderModal({ onSave })
-    fireEvent.click(screen.getByText('Guardar pago'))
+    await act(async () => fireEvent.click(screen.getByText('Guardar pago')))
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'expense',
@@ -129,20 +129,20 @@ describe('PayModal', () => {
     )
   })
 
-  it('payload type is income for Incoming account', () => {
+  it('payload type is income for Incoming account', async () => {
     const onSave = vi.fn()
     renderModal({ account: { ...account, type: 'Incoming' }, onSave })
-    fireEvent.click(screen.getByText('Guardar pago'))
+    await act(async () => fireEvent.click(screen.getByText('Guardar pago')))
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ type: 'income' }))
   })
 
-  it('payload includes note when filled', () => {
+  it('payload includes note when filled', async () => {
     const onSave = vi.fn()
     renderModal({ onSave })
     fireEvent.change(screen.getByPlaceholderText('Agregar una nota...'), {
       target: { value: 'nota de pago' },
     })
-    fireEvent.click(screen.getByText('Guardar pago'))
+    await act(async () => fireEvent.click(screen.getByText('Guardar pago')))
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ note: 'nota de pago' }))
   })
 

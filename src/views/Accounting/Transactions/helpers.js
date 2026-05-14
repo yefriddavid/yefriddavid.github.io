@@ -1,5 +1,12 @@
 import { MONTH_NAMES } from 'src/constants/commons'
 
+export const fmt = (value) =>
+  new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(value ?? 0)
+
 export const now = new Date()
 export const CURRENT_YEAR = now.getFullYear()
 export const CURRENT_MONTH = now.getMonth() + 1
@@ -36,12 +43,6 @@ export const MONTHS_SHORT = [
   'Dic',
 ]
 
-export const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(n ?? 0)
 
 export const EMPTY_FORM = {
   type: 'expense',

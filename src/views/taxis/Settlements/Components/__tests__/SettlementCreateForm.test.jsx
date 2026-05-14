@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import SettlementCreateForm from '../SettlementCreateForm'
 import { makeDriver, makeVehicle } from 'src/__tests__/factories'
 
@@ -11,17 +11,12 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-const defaultForm = { driver: '', plate: '', amount: '', date: '2024-04-01', comment: '' }
 const defaultProps = {
-  form: defaultForm,
   drivers: [],
   vehicles: [],
+  vehiclesMap: new Map(),
   loading: false,
-  picoPlacaWarning: null,
-  error: null,
-  onSubmit: vi.fn(),
-  onDriverChange: vi.fn(),
-  onChange: vi.fn(() => vi.fn()),
+  onSave: vi.fn(),
 }
 
 const renderForm = (props = {}) => render(<SettlementCreateForm {...defaultProps} {...props} />)
@@ -58,25 +53,31 @@ describe('SettlementCreateForm', () => {
       expect(screen.getByText('XYZ999')).toBeTruthy()
     })
 
-    it('shows error message when error prop is set', () => {
-      renderForm({ error: 'El conductor es requerido' })
-      expect(screen.getByText('El conductor es requerido')).toBeTruthy()
-    })
-
-    it('shows pico y placa warning when picoPlacaWarning is set', () => {
-      renderForm({ picoPlacaWarning: 'Placa restringida hoy' })
-      expect(screen.getByText(/Placa restringida hoy/)).toBeTruthy()
-    })
-
     it('renders save label when not loading', () => {
       renderForm({ loading: false })
       expect(screen.getByText('common.save')).toBeTruthy()
+    })
+
+    it('shows pico y placa warning when restricted plate and date are selected', () => {
+      const vehicle = makeVehicle({
+        id: 'v1',
+        plate: 'XYZ999',
+        brand: null,
+        restrictions: { 4: { d1: 15, d2: 22 } },
+      })
+      const vehiclesMap = new Map([['XYZ999', vehicle]])
+      renderForm({ vehicles: [vehicle], vehiclesMap })
+      const selects = screen.getAllByRole('combobox')
+      fireEvent.change(selects[1], { target: { value: 'XYZ999' } })
+      const dateInput = document.querySelector('input[type="date"]')
+      fireEvent.change(dateInput, { target: { value: '2024-04-15' } })
+      expect(screen.getByText(/taxis.settlements.errors.picoPlaca/)).toBeTruthy()
     })
   })
 
   describe('submit button state', () => {
     it('is enabled when not loading and no pico y placa warning', () => {
-      renderForm({ loading: false, picoPlacaWarning: null })
+      renderForm({ loading: false })
       expect(screen.getByRole('button').disabled).toBe(false)
     })
 
@@ -85,46 +86,52 @@ describe('SettlementCreateForm', () => {
       expect(screen.getByRole('button').disabled).toBe(true)
     })
 
-    it('is disabled when picoPlacaWarning is set', () => {
-      renderForm({ picoPlacaWarning: 'Placa restringida' })
+    it('is disabled when restricted plate and date are selected', () => {
+      const vehicle = makeVehicle({
+        id: 'v1',
+        plate: 'XYZ999',
+        brand: null,
+        restrictions: { 4: { d1: 15, d2: 22 } },
+      })
+      const vehiclesMap = new Map([['XYZ999', vehicle]])
+      renderForm({ vehicles: [vehicle], vehiclesMap })
+      const selects = screen.getAllByRole('combobox')
+      fireEvent.change(selects[1], { target: { value: 'XYZ999' } })
+      const dateInput = document.querySelector('input[type="date"]')
+      fireEvent.change(dateInput, { target: { value: '2024-04-15' } })
       expect(screen.getByRole('button').disabled).toBe(true)
     })
   })
 
   describe('interactions', () => {
-    it('calls onDriverChange when driver select changes', () => {
-      const onDriverChange = vi.fn()
-      const drivers = [makeDriver({ id: 'd1', name: 'Juan Perez' })]
-      renderForm({ drivers, onDriverChange })
+    it('auto-fills plate and amount when driver with defaults is selected', () => {
+      const driver = makeDriver({
+        id: 'd1',
+        name: 'Juan Perez',
+        defaultVehicle: 'ABC123',
+        defaultAmount: 50000,
+      })
+      const vehicle = makeVehicle({ id: 'v1', plate: 'ABC123', brand: null })
+      renderForm({ drivers: [driver], vehicles: [vehicle] })
       const selects = screen.getAllByRole('combobox')
       fireEvent.change(selects[0], { target: { value: 'Juan Perez' } })
-      expect(onDriverChange).toHaveBeenCalledTimes(1)
+      expect(selects[1].value).toBe('ABC123')
+      expect(screen.getByDisplayValue('50000')).toBeTruthy()
     })
 
-    it('calls onChange handler for plate field', () => {
-      const fieldHandler = vi.fn()
-      const onChange = vi.fn((field) => (field === 'plate' ? fieldHandler : vi.fn()))
-      const vehicles = [makeVehicle({ id: 'v1', plate: 'ABC123', brand: null })]
-      renderForm({ vehicles, onChange })
+    it('calls onSave when form is submitted with all required fields', async () => {
+      const onSave = vi.fn()
+      const driver = makeDriver({ id: 'd1', name: 'Juan Perez' })
+      const vehicle = makeVehicle({ id: 'v1', plate: 'ABC123', brand: null })
+      renderForm({ drivers: [driver], vehicles: [vehicle], onSave })
       const selects = screen.getAllByRole('combobox')
+      fireEvent.change(selects[0], { target: { value: 'Juan Perez' } })
       fireEvent.change(selects[1], { target: { value: 'ABC123' } })
-      expect(fieldHandler).toHaveBeenCalledTimes(1)
-    })
-
-    it('calls onChange handler for amount field', () => {
-      const fieldHandler = vi.fn()
-      const onChange = vi.fn((field) => (field === 'amount' ? fieldHandler : vi.fn()))
-      renderForm({ onChange })
-      const amountInput = screen.getByPlaceholderText('0')
-      fireEvent.change(amountInput, { target: { value: '60000' } })
-      expect(fieldHandler).toHaveBeenCalledTimes(1)
-    })
-
-    it('calls onSubmit when form is submitted', () => {
-      const onSubmit = vi.fn((e) => e.preventDefault())
-      renderForm({ onSubmit })
-      fireEvent.submit(screen.getByRole('button').closest('form'))
-      expect(onSubmit).toHaveBeenCalledTimes(1)
+      fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '50000' } })
+      const dateInput = document.querySelector('input[type="date"]')
+      fireEvent.change(dateInput, { target: { value: '2024-04-10' } })
+      await act(async () => fireEvent.submit(screen.getByRole('button').closest('form')))
+      expect(onSave).toHaveBeenCalledTimes(1)
     })
   })
 })

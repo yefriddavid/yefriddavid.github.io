@@ -186,7 +186,7 @@ describe('Conductores (Drivers)', () => {
       expect(screen.queryByTestId('standard-form')).toBeNull()
     })
 
-    it('form closes after saving with valid name and idNumber (createRequest dispatched)', () => {
+    it('form closes after saving with valid name and idNumber (createRequest dispatched)', async () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(driverState())
       act(() => {
@@ -200,7 +200,7 @@ describe('Conductores (Drivers)', () => {
       fireEvent.change(screen.getByPlaceholderText('123456789'), {
         target: { value: '999888777' },
       })
-      fireEvent.click(screen.getByText('save'))
+      await act(async () => fireEvent.click(screen.getByText('save')))
 
       // handleCreate() is called after dispatch → CCollapse closes (showCreate=false)
       expect(screen.queryByTestId('collapse')).toBeNull()

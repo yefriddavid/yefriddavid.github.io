@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { fmt } from 'src/utils/formatters'
 import { useTranslation } from 'react-i18next'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
@@ -32,12 +33,7 @@ const MONTHS = [
   'Diciembre',
 ]
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
+
 
 const SummaryCard = ({ label, value, color }) => (
   <CCard className="text-center h-100">

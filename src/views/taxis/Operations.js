@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { fmt } from 'src/utils/formatters'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import {
@@ -62,12 +63,7 @@ const TYPE_COLORS = {
 
 // ── badge ─────────────────────────────────────────────────────────────────────
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
+
 
 const ItemBadge = ({ plate, driver, type, lastExpense, onClick }) => {
   const c = TYPE_COLORS[type] || { bg: '#f8fafc', border: '#94a3b8', text: '#475569', label: type }

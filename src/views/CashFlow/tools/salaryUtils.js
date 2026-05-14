@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react'
-
-export const fmt = (n) =>
-  Number(n).toLocaleString('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  })
+export { fmt } from 'src/utils/formatters'
 
 export const TYPE_LABELS = { percent: 'Porcentaje', value: 'Valor fijo', remainder: 'Restante' }
 export const TARGET_OPTIONS = ['bnc col', 'col-bnc', 'bnc arg', 'bnc loan', 'ctb']

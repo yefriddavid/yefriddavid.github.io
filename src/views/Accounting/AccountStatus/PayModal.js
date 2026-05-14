@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react'
 import { CSpinner } from '@coreui/react'
 import { useForm } from 'react-hook-form'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { fieldLabel, fieldInput } from './helpers'
+import FileUploadField from 'src/components/shared/FileUploadField'
 
 const fieldError = (err) =>
   err ? (
@@ -21,6 +21,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -30,39 +31,22 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
     },
   })
 
+  const amount = watch('amount')
+
   const [attachment, setAttachment] = useState(null)
   const [attachName, setAttachName] = useState('')
-  const [processing, setProcessing] = useState(false)
-  const [fileError, setFileError] = useState('')
-  const fileRef = useRef()
 
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setFileError('')
-    setProcessing(true)
-    try {
-      const data = await processAttachmentFile(file)
-      setAttachment(data)
-      setAttachName(file.name)
-    } catch (err) {
-      setFileError(`Error procesando archivo: ${err.message}`)
-    } finally {
-      setProcessing(false)
-    }
-  }
-
-  const onSubmit = ({ amount, date, note }) => {
+  const onSubmit = (data) => {
     const payload = {
       type: account.type === 'Outcoming' ? 'expense' : 'income',
       category: account.category || '',
       description: account.name,
-      amount: Number(String(amount).replace(/\D/g, '')),
-      date,
+      amount: Number(String(data.amount).replace(/\D/g, '')),
+      date: data.date,
       accountMonth: `${year}-${String(month).padStart(2, '0')}`,
       accountMasterId: account.id,
     }
-    if (note.trim()) payload.note = note.trim()
+    if (data.note?.trim()) payload.note = data.note.trim()
     if (attachment) {
       payload.attachment = attachment
       payload.attachmentName = attachName
@@ -171,116 +155,15 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
 
         {/* Attachment */}
         <label style={fieldLabel}>ADJUNTO (opcional)</label>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*,application/pdf"
-          style={{ display: 'none' }}
-          onChange={handleFile}
+        <FileUploadField
+          value={attachment}
+          name={attachName}
+          label="imagen o PDF"
+          onChange={(data, name) => {
+            setAttachment(data)
+            setAttachName(name)
+          }}
         />
-
-        {!attachment && !processing && (
-          <button
-            onClick={() => fileRef.current?.click()}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: 10,
-              marginBottom: 8,
-              border: '2px dashed #dee2e6',
-              background: '#fafafa',
-              fontSize: 13,
-              color: '#6c757d',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 18 }}>📎</span> Adjuntar imagen o PDF
-          </button>
-        )}
-
-        {processing && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 0',
-              marginBottom: 8,
-            }}
-          >
-            <CSpinner size="sm" />
-            <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando archivo…</span>
-          </div>
-        )}
-
-        {fileError && (
-          <div style={{ fontSize: 12, color: '#e03131', marginBottom: 8 }}>{fileError}</div>
-        )}
-
-        {attachment && (
-          <div style={{ marginBottom: 20, position: 'relative' }}>
-            <img
-              src={attachment}
-              alt="adjunto"
-              style={{
-                width: '100%',
-                borderRadius: 10,
-                border: '1px solid #dee2e6',
-                display: 'block',
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                display: 'flex',
-                gap: 6,
-              }}
-            >
-              <button
-                onClick={() => fileRef.current?.click()}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(0,0,0,0.55)',
-                  color: '#fff',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Cambiar
-              </button>
-              <button
-                onClick={() => {
-                  setAttachment(null)
-                  setAttachName('')
-                }}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(220,53,69,0.85)',
-                  color: '#fff',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Quitar
-              </button>
-            </div>
-            <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4, paddingLeft: 2 }}>
-              {attachName}
-            </div>
-          </div>
-        )}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
@@ -302,17 +185,17 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
           </button>
           <button
             onClick={handleSubmit(onSubmit)}
-            disabled={saving || processing}
+            disabled={saving || saving || !amount}
             style={{
               flex: 2,
               padding: '14px',
               borderRadius: 12,
               border: 'none',
-              background: processing ? '#e9ecef' : '#1e3a5f',
+              background: saving ? '#e9ecef' : '#1e3a5f',
               fontSize: 15,
               fontWeight: 700,
-              color: processing ? '#adb5bd' : '#fff',
-              cursor: processing ? 'not-allowed' : 'pointer',
+              color: saving ? '#adb5bd' : '#fff',
+              cursor: saving ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

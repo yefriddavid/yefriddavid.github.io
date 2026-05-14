@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 
 vi.mock('@coreui/react', () => ({
   CButton: ({ children, onClick, disabled }) => (
@@ -144,13 +144,13 @@ describe('TransactionForm', () => {
   })
 
   describe('save', () => {
-    it('calls onSave with numeric amount stripped of non-digits', () => {
+    it('calls onSave with numeric amount stripped of non-digits', async () => {
       renderForm()
       fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '150000' } })
       fireEvent.change(screen.getAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)[0], {
         target: { value: '2026-04-17' },
       })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(mockOnSave).toHaveBeenCalledWith(
         expect.objectContaining({ amount: 150000, date: '2026-04-17' }),
       )

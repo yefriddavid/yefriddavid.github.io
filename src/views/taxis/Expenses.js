@@ -42,12 +42,7 @@ import {
 //  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 //]
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
+import { fmt } from 'src/utils/formatters'
 
 const today = () => new Date().toISOString().split('T')[0]
 

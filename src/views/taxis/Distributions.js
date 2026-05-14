@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { fmt } from 'src/utils/formatters'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
@@ -30,12 +31,7 @@ import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n ?? 0)
+
 
 const today = () => new Date().toISOString().split('T')[0]
 

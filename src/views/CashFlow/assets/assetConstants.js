@@ -1,0 +1,54 @@
+export const TYPES = ['financial', 'fixed']
+export const HORIZONS = ['largo', 'mediano', 'corto']
+
+export const TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700' }
+export const TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1' }
+export const HORIZON_COLOR = { largo: '#6741d9', mediano: '#1971c2', corto: '#e03131' }
+export const HORIZON_BG = { largo: '#f3f0ff', mediano: '#e7f5ff', corto: '#fff5f5' }
+
+export const EMPTY_ASSET = {
+  name: '',
+  quantity: '',
+  unitPrice: '',
+  type: 'financial',
+  liquid: false,
+  projection: false,
+  horizon: '',
+  monthlyGain: '',
+  archived: false,
+  notes: '',
+}
+
+// unitPrice stored as effective COP/unit so valueCOP = quantity × unitPrice matches Excel
+export const SEED_ASSETS = [
+  { name: 'BTC/ARG', quantity: 0.18101424, unitPrice: 244718000, type: 'financial', liquid: false, projection: false, horizon: 'mediano', monthlyGain: 0, archived: false, notes: 'Precio original ARS ~12,402' },
+  { name: 'BTC/COL', quantity: 0.0003, unitPrice: 244740000, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'LDG', quantity: 0.341704, unitPrice: 244738000, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'WS', quantity: 11773, unitPrice: 1, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: 'yriosmor@gmail.com' },
+  { name: 'ML 403', quantity: 1, unitPrice: 183750000, type: 'fixed', liquid: false, projection: false, horizon: '', monthlyGain: 1300000, archived: false, notes: '' },
+  { name: 'Gld', quantity: 150, unitPrice: 600000, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'QT 201', quantity: 1, unitPrice: 300000000, type: 'fixed', liquid: false, projection: false, horizon: 'corto', monthlyGain: 900000, archived: false, notes: '' },
+  { name: 'QT 200', quantity: 1, unitPrice: 150000000, type: 'fixed', liquid: false, projection: false, horizon: 'corto', monthlyGain: 334000, archived: false, notes: '' },
+  { name: 'ML 106', quantity: 1, unitPrice: 175000000, type: 'fixed', liquid: false, projection: false, horizon: 'corto', monthlyGain: 1350000, archived: false, notes: '' },
+  { name: 'CDT July 2024', quantity: 0, unitPrice: 0, type: 'financial', liquid: true, projection: false, horizon: 'mediano', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Carro KMR636', quantity: 1, unitPrice: 20000000, type: 'fixed', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'ETH/ARG', quantity: 0, unitPrice: 0, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'DollarApp', quantity: 134.31, unitPrice: 3572, type: 'financial', liquid: false, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Deel rest of year', quantity: 0, unitPrice: 0, type: 'financial', liquid: true, projection: true, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'work rest of year', quantity: 0, unitPrice: 1, type: 'financial', liquid: true, projection: true, horizon: '', monthlyGain: 0, archived: true, notes: '' },
+  { name: 'Alquileres rest of year', quantity: 0, unitPrice: 9, type: 'financial', liquid: true, projection: true, horizon: '', monthlyGain: 0, archived: true, notes: '' },
+  { name: 'btc rest of year', quantity: 0, unitPrice: 3000, type: 'financial', liquid: false, projection: true, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Neverless plazo fijo', quantity: 0, unitPrice: 0, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Hyundai', quantity: 1, unitPrice: 2000000, type: 'financial', liquid: true, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'fdusd 1742', quantity: 0, unitPrice: 3572, type: 'financial', liquid: false, projection: false, horizon: 'corto', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'CDT bcol 13/NOV/2024 (90)', quantity: 0, unitPrice: 0, type: 'financial', liquid: true, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'CDT pichincha a mi nombre', quantity: 0, unitPrice: 0, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'aqua wallet', quantity: 0, unitPrice: 0, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Neverless btc', quantity: 0.008611, unitPrice: 244738000, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: 'Precio original USD ~$589.99' },
+  { name: 'trazor eth', quantity: 1.408, unitPrice: 7621238, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'Neverless rest', quantity: 1000, unitPrice: 3572, type: 'financial', liquid: false, projection: false, horizon: '', monthlyGain: 0, archived: false, notes: '' },
+  { name: 'taxi TPV655', quantity: 1, unitPrice: 15000000, type: 'fixed', liquid: false, projection: false, horizon: '', monthlyGain: 1000000, archived: false, notes: '' },
+  { name: 'Taxi TSK086', quantity: 1, unitPrice: 18000000, type: 'fixed', liquid: false, projection: false, horizon: '', monthlyGain: 1000000, archived: false, notes: '' },
+  { name: 'ph wallet short', quantity: 0.00295713, unitPrice: 244741000, type: 'financial', liquid: true, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: 'Precio original USD ~$202.61' },
+  { name: 'ph wallet long', quantity: 0.01453002, unitPrice: 244737000, type: 'financial', liquid: true, projection: false, horizon: 'largo', monthlyGain: 0, archived: false, notes: 'Precio original USD ~$995.54' },
+]

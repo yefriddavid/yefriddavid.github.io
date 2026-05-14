@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 
 vi.mock('@coreui/react', () => ({
   CButton: ({ children, onClick, disabled }) => (
@@ -191,12 +191,12 @@ describe('AccountMasterForm', () => {
   })
 
   describe('save validation', () => {
-    it('calls onSave when name is filled', () => {
+    it('calls onSave when name is filled', async () => {
       renderForm()
       fireEvent.change(screen.getByPlaceholderText('Nombre de la cuenta'), {
         target: { value: 'Servicios EPM' },
       })
-      fireEvent.click(screen.getByText('Guardar'))
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({ name: 'Servicios EPM' }))
     })
 

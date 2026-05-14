@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { fmt } from 'src/utils/formatters'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   CButton,
@@ -16,12 +17,6 @@ import * as eggActions from 'src/actions/cashflow/eggActions'
 const today = () => new Date().toISOString().split('T')[0]
 const EMPTY = { name: '', date: today(), quantity: '', price: '', total: '' }
 
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
 
 const fmtDate = (d) =>
   d

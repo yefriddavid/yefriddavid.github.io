@@ -4,6 +4,14 @@ import { CCard, CCardBody, CButton, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilSync } from '@coreui/icons'
 import * as domoticaTransactionActions from 'src/actions/domotica/domoticaTransactionActions'
+import {
+  selectVoltageHistory,
+  selectVoltageFetching,
+  selectCurrentHistory,
+  selectCurrentFetching,
+  selectLastVoltageAt,
+  selectLastCurrentAt,
+} from 'src/selectors/domoticaSelectors'
 import VoltageChart from './VoltageChart'
 import CurrentChart from './CurrentChart'
 
@@ -39,16 +47,12 @@ const ChartSection = ({ label, lastAt, fetching, onRefresh, children }) => (
 
 const HistoryCharts = () => {
   const dispatch = useDispatch()
-  const voltageHistory = useSelector((s) => s.domoticaTransaction.voltageData)
-  const voltageFetching = useSelector((s) => s.domoticaTransaction.voltageFetching)
-  const currentHistory = useSelector((s) => s.domoticaTransaction.currentData)
-  const currentFetching = useSelector((s) => s.domoticaTransaction.currentFetching)
-  const lastVoltageAt = useSelector(
-    (s) => s.domoticaTransaction.voltageData?.at(-1)?.createdAt ?? null,
-  )
-  const lastCurrentAt = useSelector(
-    (s) => s.domoticaTransaction.currentData?.at(-1)?.createdAt ?? null,
-  )
+  const voltageHistory = useSelector(selectVoltageHistory)
+  const voltageFetching = useSelector(selectVoltageFetching)
+  const currentHistory = useSelector(selectCurrentHistory)
+  const currentFetching = useSelector(selectCurrentFetching)
+  const lastVoltageAt = useSelector(selectLastVoltageAt)
+  const lastCurrentAt = useSelector(selectLastCurrentAt)
 
   return (
     <>

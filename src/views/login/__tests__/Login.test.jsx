@@ -75,16 +75,16 @@ describe('Login form', () => {
   it('shows error and does not call signIn when fields are empty', async () => {
     renderLogin()
     await act(async () => fireEvent.click(getSubmitBtn()))
-    expect(screen.getByText('Ingresa usuario y contraseña')).toBeTruthy()
+    expect(screen.getByText('Ingresa tu usuario')).toBeTruthy()
     expect(mockSignIn).not.toHaveBeenCalled()
   })
 
   it('clears the error message when the user types after an error', async () => {
     renderLogin()
     await act(async () => fireEvent.click(getSubmitBtn()))
-    expect(screen.getByText('Ingresa usuario y contraseña')).toBeTruthy()
-    fireEvent.change(getUsername(), { target: { value: 'a' } })
-    expect(screen.queryByText('Ingresa usuario y contraseña')).toBeNull()
+    expect(screen.getByText('Ingresa tu usuario')).toBeTruthy()
+    await act(async () => fireEvent.change(getUsername(), { target: { value: 'a' } }))
+    expect(screen.queryByText('Ingresa tu usuario')).toBeNull()
   })
 
   it('calls signIn with trimmed username and navigates on success', async () => {

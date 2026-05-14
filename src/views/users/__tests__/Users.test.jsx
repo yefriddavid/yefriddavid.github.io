@@ -196,7 +196,7 @@ describe('Users', () => {
       expect(screen.queryByTestId('standard-form')).toBeNull()
     })
 
-    it('form closes after saving with valid data (createRequest dispatched)', () => {
+    it('form closes after saving with valid data (createRequest dispatched)', async () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(usersState())
       act(() => {
@@ -213,7 +213,7 @@ describe('Users', () => {
       fireEvent.change(pwInput, { target: { value: 'secret123' } })
       fireEvent.change(confirmInput, { target: { value: 'secret123' } })
 
-      fireEvent.click(screen.getByTestId('form-save'))
+      await act(async () => fireEvent.click(screen.getByTestId('form-save')))
       // handleCreate() called → setShowForm(false) → CCollapse collapses
       expect(screen.queryByTestId('collapse')).toBeNull()
     })
@@ -238,22 +238,22 @@ describe('UserForm validation', () => {
     return screen
   }
 
-  it('shows error when username is empty on save', () => {
+  it('shows error when username is empty on save', async () => {
     renderForm()
-    fireEvent.click(screen.getByTestId('form-save'))
+    await act(async () => fireEvent.click(screen.getByTestId('form-save')))
     expect(screen.getByText('El username es obligatorio')).toBeTruthy()
   })
 
-  it('shows error when email is empty', () => {
+  it('shows error when email is empty', async () => {
     renderForm()
     fireEvent.change(screen.getByPlaceholderText('username'), {
       target: { value: 'user1' },
     })
-    fireEvent.click(screen.getByTestId('form-save'))
+    await act(async () => fireEvent.click(screen.getByTestId('form-save')))
     expect(screen.getByText('El email es obligatorio')).toBeTruthy()
   })
 
-  it('shows error when password is empty for new user', () => {
+  it('shows error when password is empty for new user', async () => {
     renderForm()
     fireEvent.change(screen.getByPlaceholderText('username'), {
       target: { value: 'user1' },
@@ -261,11 +261,11 @@ describe('UserForm validation', () => {
     fireEvent.change(screen.getByPlaceholderText('correo@ejemplo.com'), {
       target: { value: 'user@test.com' },
     })
-    fireEvent.click(screen.getByTestId('form-save'))
+    await act(async () => fireEvent.click(screen.getByTestId('form-save')))
     expect(screen.getByText('La contraseña es obligatoria')).toBeTruthy()
   })
 
-  it('shows error when passwords do not match', () => {
+  it('shows error when passwords do not match', async () => {
     renderForm()
     fireEvent.change(screen.getByPlaceholderText('username'), { target: { value: 'user1' } })
     fireEvent.change(screen.getByPlaceholderText('correo@ejemplo.com'), {
@@ -274,11 +274,11 @@ describe('UserForm validation', () => {
     const [pwInput, confirmInput] = screen.getAllByPlaceholderText(/caracteres|••/)
     fireEvent.change(pwInput, { target: { value: 'abc123' } })
     fireEvent.change(confirmInput, { target: { value: 'different' } })
-    fireEvent.click(screen.getByTestId('form-save'))
+    await act(async () => fireEvent.click(screen.getByTestId('form-save')))
     expect(screen.getByText('Las contraseñas no coinciden')).toBeTruthy()
   })
 
-  it('shows error when password is shorter than 6 characters', () => {
+  it('shows error when password is shorter than 6 characters', async () => {
     renderForm()
     fireEvent.change(screen.getByPlaceholderText('username'), { target: { value: 'user1' } })
     fireEvent.change(screen.getByPlaceholderText('correo@ejemplo.com'), {
@@ -287,7 +287,7 @@ describe('UserForm validation', () => {
     const [pwInput, confirmInput] = screen.getAllByPlaceholderText(/caracteres|••/)
     fireEvent.change(pwInput, { target: { value: 'abc' } })
     fireEvent.change(confirmInput, { target: { value: 'abc' } })
-    fireEvent.click(screen.getByTestId('form-save'))
+    await act(async () => fireEvent.click(screen.getByTestId('form-save')))
     expect(screen.getByText('Mínimo 6 caracteres')).toBeTruthy()
   })
 })

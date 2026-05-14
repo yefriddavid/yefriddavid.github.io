@@ -1,9 +1,6 @@
-export const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
+import { fmt } from 'src/utils/formatters'
+
+export { fmt }
 
 export const fmtDate = (dateStr, locale = 'es-CO', weekdayFormat = 'short') => {
   if (!dateStr) return ''

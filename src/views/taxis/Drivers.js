@@ -20,14 +20,9 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
+import { fmt } from 'src/utils/formatters'
+import StatusBadge from 'src/components/shared/StatusBadge'
 import './masters.scss'
-
-const fmt = (n) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(n)
 
 const EMPTY = {
   name: '',
@@ -322,9 +317,7 @@ const Conductores = () => {
               width={100}
               allowSorting={true}
               cellRender={({ data }) => (
-                <span className={`master-status-badge${data.active !== false ? ' master-status-badge--active' : ' master-status-badge--inactive'}`}>
-                  {data.active !== false ? '✓ Activo' : '✗ Inactivo'}
-                </span>
+                <StatusBadge active={data.active !== false} />
               )}
             />
             <Column

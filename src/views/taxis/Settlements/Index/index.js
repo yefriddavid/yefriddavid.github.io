@@ -23,6 +23,7 @@ import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiAuditNoteActions from 'src/actions/taxi/taxiAuditNoteActions'
 import * as taxiPeriodNoteActions from 'src/actions/taxi/taxiPeriodNoteActions'
 import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
+import { selectTaxiSettlementsPage } from 'src/selectors/taxiSelectors'
 import { getColombianHolidays, auditNoteId, buildAuditDay } from '../../auditHelpers'
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
@@ -37,19 +38,21 @@ import PeriodAttachments from '../Components/PeriodAttachments'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { buildAuditExporters } from './auditExport'
 
+import PeriodSelector from 'src/components/shared/PeriodSelector'
+
 const Taxis = () => {
   const { t, i18n } = useTranslation()
   const { dayNames, dayNamesFull } = useLocaleData()
   const dispatch = useDispatch()
   const {
-    data: settlementsData,
-    fetching: loadingSettlements,
-    isError: settlementError,
-  } = useSelector((s) => s.taxiSettlement)
-  const { data: driversData } = useSelector((s) => s.taxiDriver)
-  const { data: vehiclesData } = useSelector((s) => s.taxiVehicle)
-  const { data: expensesData } = useSelector((s) => s.taxiExpense)
-  const { notes: auditNotes } = useSelector((s) => s.taxiAuditNote)
+    settlementsData,
+    loadingSettlements,
+    settlementError,
+    driversData,
+    vehiclesData,
+    expensesData,
+    auditNotes,
+  } = useSelector(selectTaxiSettlementsPage)
 
   const months = t('taxis.months', { returnObjects: true })
   const now = new Date()
@@ -686,36 +689,14 @@ const Taxis = () => {
             >
               {t('taxis.settlements.period')}
             </span>
-            <CFormSelect
-              size="sm"
-              style={{ width: 120 }}
-              value={period.month}
-              onChange={(e) => {
-                setPeriod((p) => ({ ...p, month: Number(e.target.value) }))
+            <PeriodSelector
+              value={period}
+              onChange={(next) => {
+                setPeriod(next)
                 setDayFilter(new Set())
               }}
-            >
-              {months.map((name, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {name}
-                </option>
-              ))}
-            </CFormSelect>
-            <CFormSelect
-              size="sm"
-              style={{ width: 90 }}
-              value={period.year}
-              onChange={(e) => {
-                setPeriod((p) => ({ ...p, year: Number(e.target.value) }))
-                setDayFilter(new Set())
-              }}
-            >
-              {availableYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </CFormSelect>
+              years={availableYears}
+            />
 
             {(viewMode === 'detail' || viewMode === 'byDriver') && (
               <MultiSelectDropdown
@@ -799,7 +780,11 @@ const Taxis = () => {
             size="sm"
             color="secondary"
             variant="outline"
-            onClick={() => dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))}
+            onClick={() =>
+              dispatch(
+                taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }),
+              )
+            }
             title={t('common.refresh')}
           >
             <CIcon icon={cilReload} size="sm" />

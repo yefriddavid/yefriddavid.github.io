@@ -162,7 +162,7 @@ describe('Partners', () => {
       expect(screen.queryByTestId('standard-form')).toBeNull()
     })
 
-    it('form closes after saving valid name and percentage (createRequest dispatched)', () => {
+    it('form closes after saving valid name and percentage (createRequest dispatched)', async () => {
       // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
       const { store } = renderWithRedux(partnerState())
       act(() => {
@@ -174,7 +174,7 @@ describe('Partners', () => {
         target: { value: 'Socio Nuevo' },
       })
       fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '40' } })
-      fireEvent.click(screen.getByText('save'))
+      await act(async () => fireEvent.click(screen.getByText('save')))
 
       // handleCancel() is called after dispatch → form collapses
       expect(screen.queryByTestId('collapse')).toBeNull()
