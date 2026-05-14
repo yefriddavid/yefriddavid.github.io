@@ -1,18 +1,12 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiVehicleActions'
-import * as service from '../../services/firebase/taxi/taxiVehicles'
-import { saveVehicles } from '../../services/idb/cashflow/taxiVehicles'
+import * as service from '../../services/facade/taxi/taxiVehicleFacade'
 
 export function* fetchVehicles() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getVehicles)
     yield put(actions.successRequestFetch(data))
-    try {
-      yield call(saveVehicles, data)
-    } catch (_) {
-      // IDB sync failure is non-critical
-    }
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
   }

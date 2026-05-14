@@ -16,6 +16,7 @@ import { AppSidebarNav } from '../layout/AppSidebarNav'
 import { signOut } from '../../services/firebase/auth'
 import { sygnet } from 'src/assets/brand/sygnet'
 import getSystemNav from '../../_nav.system'
+import { setUi } from 'src/reducers/uiReducer'
 
 const SystemSidebar = () => {
   const dispatch = useDispatch()
@@ -37,7 +38,7 @@ const SystemSidebar = () => {
       unfoldable={unfoldable}
       visible={sidebarShow}
       onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
+        dispatch(setUi({ sidebarShow: visible }))
       }}
     >
       <CSidebarHeader className="border-bottom">
@@ -51,7 +52,7 @@ const SystemSidebar = () => {
         <CCloseButton
           className="d-lg-none"
           dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
@@ -68,7 +69,7 @@ const SystemSidebar = () => {
           <span>Cerrar sesión</span>
         </button>
         <button
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
           className="sidebar-footer-btn"
           style={{ borderBottom: 'none' }}
         >
@@ -76,7 +77,7 @@ const SystemSidebar = () => {
           <span>Ocultar menú</span>
         </button>
         <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+          onClick={() => dispatch(setUi({ sidebarUnfoldable: !unfoldable }))}
         />
       </CSidebarFooter>
     </CSidebar>

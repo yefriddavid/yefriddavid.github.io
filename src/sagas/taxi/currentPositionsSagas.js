@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest, fork } from 'redux-saga/effects'
 import * as actions from 'src/actions/taxi/currentPositionsActions'
-import { getLastKnownPosition } from 'src/services/firebase/taxi/vehicleLocationHistory'
+import { getLastKnownPosition } from 'src/services/facade/taxi/vehicleLocationHistoryFacade'
 
 function* fetchSinglePosition(vehicle) {
   try {

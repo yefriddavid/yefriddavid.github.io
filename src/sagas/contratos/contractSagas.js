@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/contractActions'
-import * as service from '../../services/firebase/contratos/contracts'
+import * as service from '../../services/facade/contratos/contractFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchContracts() {
   try {
@@ -9,6 +10,7 @@ function* fetchContracts() {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ function* loadContract({ payload }) {
     yield put(actions.successRequestLoad(data))
   } catch (e) {
     yield put(actions.errorRequestLoad(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ function* createContract({ payload }) {
     yield put(actions.successRequestCreate({ id, name: payload.name, ...payload.data }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -39,6 +43,7 @@ function* updateContract({ payload }) {
     yield put(actions.successRequestUpdate({ id: payload.id, ...payload.data }))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -50,6 +55,7 @@ function* cloneContract({ payload }) {
     yield put(actions.successRequestClone(full))
   } catch (e) {
     yield put(actions.errorRequestClone(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -60,6 +66,7 @@ function* deleteContract({ payload }) {
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -70,6 +77,7 @@ function* archiveContract({ payload }) {
     yield put(actions.successRequestArchive(payload))
   } catch (e) {
     yield put(actions.errorRequestArchive(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/cashflow/gridTradeActions'
-import * as fb from '../../services/firebase/cashflow/gridTrades'
+import * as fb from '../../services/facade/cashflow/gridTradeFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* loadTrades() {
   try {
@@ -8,6 +9,7 @@ function* loadTrades() {
     yield put(actions.loadSuccess(trades))
   } catch (e) {
     yield put(actions.loadError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -17,6 +19,7 @@ function* saveTrade({ payload }) {
     yield put(actions.saveSuccess({ ...payload, id }))
   } catch (e) {
     yield put(actions.saveError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -26,6 +29,7 @@ function* deleteTrade({ payload }) {
     yield put(actions.deleteSuccess({ id: payload.id }))
   } catch (e) {
     yield put(actions.deleteError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

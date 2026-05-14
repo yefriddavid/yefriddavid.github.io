@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/vehicleLocationHistoryActions'
-import * as service from '../../services/firebase/taxi/vehicleLocationHistory'
+import * as service from '../../services/facade/taxi/vehicleLocationHistoryFacade'
 
 export function* fetchHistory({ payload }) {
   try {

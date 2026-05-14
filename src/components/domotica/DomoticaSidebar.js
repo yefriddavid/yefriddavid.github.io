@@ -17,6 +17,7 @@ import { AppSidebarNav } from '../layout/AppSidebarNav'
 import { signOut } from '../../services/firebase/auth'
 import { sygnet } from 'src/assets/brand/sygnet'
 import getDomoticaNav from '../../_nav.domotica'
+import { setUi } from 'src/reducers/uiReducer'
 
 const DomoticaSidebar = () => {
   const dispatch = useDispatch()
@@ -39,7 +40,7 @@ const DomoticaSidebar = () => {
       unfoldable={unfoldable}
       visible={sidebarShow}
       onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
+        dispatch(setUi({ sidebarShow: visible }))
       }}
     >
       <CSidebarHeader className="border-bottom">
@@ -53,7 +54,7 @@ const DomoticaSidebar = () => {
         <CCloseButton
           className="d-lg-none"
           dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
@@ -70,7 +71,7 @@ const DomoticaSidebar = () => {
           <span>{t('auth.logout')}</span>
         </button>
         <button
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
           className="sidebar-footer-btn"
           style={{ borderBottom: 'none' }}
         >
@@ -78,7 +79,7 @@ const DomoticaSidebar = () => {
           <span>{t('nav.hideMenu')}</span>
         </button>
         <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+          onClick={() => dispatch(setUi({ sidebarUnfoldable: !unfoldable }))}
         />
       </CSidebarFooter>
     </CSidebar>

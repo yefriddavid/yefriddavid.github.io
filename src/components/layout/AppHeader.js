@@ -37,6 +37,7 @@ import AppHeaderDropdown from './AppHeaderDropdown'
 import LanguageSwitcher from '../shared/LanguageSwitcher'
 import useVersionCheck from '../../hooks/useVersionCheck'
 import './AppHeader.scss'
+import { setUi } from 'src/reducers/uiReducer'
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -59,7 +60,7 @@ const AppHeader = () => {
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   const appTheme = useSelector((state) => state.ui.appTheme)
-  const hideHeader = () => dispatch({ type: 'set', headerShow: false })
+  const hideHeader = () => dispatch(setUi({ headerShow: false }))
   const hasUpdate = useVersionCheck()
 
   useEffect(() => {
@@ -162,7 +163,7 @@ const AppHeader = () => {
       )}
       <CContainer className="border-bottom px-4 py-0" fluid>
         <CHeaderToggler
-          onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
+          onClick={() => dispatch(setUi({ sidebarShow: !sidebarShow }))}
           style={{ marginInlineStart: '-14px' }}
         >
           <CIcon icon={cilMenu} size="lg" />
@@ -239,7 +240,7 @@ const AppHeader = () => {
                   className="d-flex align-items-center gap-2"
                   as="button"
                   type="button"
-                  onClick={() => dispatch({ type: 'set', appTheme: 'yellow' })}
+                  onClick={() => dispatch(setUi({ appTheme: 'yellow' }))}
                 >
                   <span
                     style={{
@@ -258,7 +259,7 @@ const AppHeader = () => {
                   className="d-flex align-items-center gap-2"
                   as="button"
                   type="button"
-                  onClick={() => dispatch({ type: 'set', appTheme: 'blue' })}
+                  onClick={() => dispatch(setUi({ appTheme: 'blue' }))}
                 >
                   <span
                     style={{

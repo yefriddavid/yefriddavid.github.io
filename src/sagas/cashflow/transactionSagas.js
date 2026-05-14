@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/cashflow/transactionActions'
-import * as service from '../../services/firebase/cashflow/transactions'
+import * as service from '../../services/facade/cashflow/transactionFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 export function* fetchTransactions({ payload }) {
   try {
@@ -9,6 +10,7 @@ export function* fetchTransactions({ payload }) {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ export function* createTransaction({ payload }) {
     yield put(actions.successRequestCreate({ id, ...payload }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ export function* updateTransaction({ payload }) {
     yield put(actions.successRequestUpdate(payload))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -39,6 +43,7 @@ export function* deleteTransaction({ payload }) {
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -53,6 +58,7 @@ export function* importTransactions({ payload }) {
     yield put(actions.importComplete(data))
   } catch (e) {
     yield put(actions.importError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

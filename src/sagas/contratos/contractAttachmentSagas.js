@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/contractAttachmentActions'
-import * as service from '../../services/firebase/contratos/contractAttachments'
+import * as service from '../../services/facade/contratos/contractAttachmentFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchAttachments({ payload }) {
   try {
@@ -9,6 +10,7 @@ function* fetchAttachments({ payload }) {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ function* createAttachment({ payload }) {
     yield put(actions.successRequestCreate({ id, ...payload }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ function* deactivateAttachment({ payload }) {
     yield put(actions.successRequestDeactivate(payload))
   } catch (e) {
     yield put(actions.errorRequestDeactivate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

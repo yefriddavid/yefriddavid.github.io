@@ -1,6 +1,6 @@
 import { put, call, take, fork, cancel, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaSolarBatteryActions'
-import { createSolarBatteryChannel } from '../../services/firebase/domotica/solarRtdb'
+import { createSolarBatteryChannel } from '../../services/facade/domotica/domoticaSolarBatteryFacade'
 
 function* watchBatteryChannel() {
   const channel = yield call(createSolarBatteryChannel)

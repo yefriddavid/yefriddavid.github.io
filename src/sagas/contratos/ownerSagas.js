@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/ownerActions'
-import * as service from '../../services/firebase/contratos/owners'
+import * as service from '../../services/facade/contratos/ownerFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchOwners() {
   try {
@@ -9,6 +10,7 @@ function* fetchOwners() {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ function* createOwner({ payload }) {
     yield put(actions.successRequestCreate({ id, ...payload }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ function* updateOwner({ payload }) {
     yield put(actions.successRequestUpdate(payload))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -39,6 +43,7 @@ function* deleteOwner({ payload }) {
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

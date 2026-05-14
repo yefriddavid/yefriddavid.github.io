@@ -1,7 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/tenantsActions'
-import * as service from '../services/firebase/admin/tenants'
-import { setUserTenant } from '../services/firebase/security/users'
+import * as service from '../services/facade/admin/tenantsFacade'
+import { setUserTenant } from '../services/facade/security/usersFacade'
 import { fetchRequest as fetchUsersRequest } from '../actions/usersActions'
 
 function* fetchTenants() {

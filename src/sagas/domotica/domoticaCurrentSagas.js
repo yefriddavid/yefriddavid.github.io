@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaCurrentActions'
-import * as service from '../../services/firebase/domotica/domoticaCurrent'
+import * as service from '../../services/facade/domotica/domoticaCurrentFacade'
 
 function* fetchCurrentRecords({ payload } = {}) {
   try {

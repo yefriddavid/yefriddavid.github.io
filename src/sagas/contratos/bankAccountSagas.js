@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/bankAccountActions'
-import * as service from '../../services/firebase/contratos/bankAccounts'
+import * as service from '../../services/facade/contratos/bankAccountFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchBankAccounts() {
   try {
@@ -9,6 +10,7 @@ function* fetchBankAccounts() {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ function* createBankAccount({ payload }) {
     yield put(actions.successRequestCreate({ id, ...payload }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ function* updateBankAccount({ payload }) {
     yield put(actions.successRequestUpdate(payload))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -39,6 +43,7 @@ function* deleteBankAccount({ payload }) {
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

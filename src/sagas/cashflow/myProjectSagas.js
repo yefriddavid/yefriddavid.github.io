@@ -1,70 +1,65 @@
 import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/cashflow/myProjectActions'
-import * as idb from '../../services/idb/cashflow/myProjects'
-import * as fb from '../../services/firebase/cashflow/myProjects'
+import * as facade from '../../services/facade/cashflow/myProjectFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* loadProjects() {
   try {
-    const projects = yield call(idb.getAllProjects)
+    const projects = yield call(facade.getAllProjects)
     yield put(actions.loadSuccess(projects))
   } catch (e) {
     yield put(actions.loadError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* saveProject({ payload }) {
   try {
-    yield call(idb.saveProject, payload)
+    yield call(facade.saveProject, payload)
     yield put(actions.saveSuccess(payload))
   } catch (e) {
     yield put(actions.saveError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* deleteProject({ payload }) {
   try {
-    yield call(idb.deleteProject, payload.id)
+    yield call(facade.deleteProject, payload.id)
     yield put(actions.deleteSuccess({ id: payload.id }))
   } catch (e) {
     yield put(actions.deleteError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* syncProject({ payload }) {
   try {
-    yield call(fb.syncProjectToFirebase, payload)
-    const syncedAt = new Date().toISOString()
-    const updated = { ...payload, syncedAt }
-    yield call(idb.saveProject, updated)
-    yield put(actions.syncSuccess({ id: payload.id, syncedAt }))
+    const result = yield call(facade.syncProject, payload)
+    yield put(actions.syncSuccess(result))
   } catch (e) {
     yield put(actions.syncError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* syncAllProjects({ payload }) {
   try {
-    const now = new Date().toISOString()
-    for (const project of payload) {
-      yield call(fb.syncProjectToFirebase, project)
-      yield call(idb.saveProject, { ...project, syncedAt: now })
-    }
-    const result = payload.map((p) => ({ id: p.id, syncedAt: now }))
+    const result = yield call(facade.syncAll, payload)
     yield put(actions.syncAllSuccess(result))
   } catch (e) {
     yield put(actions.syncAllError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* importFromFirebase() {
   try {
-    const projects = yield call(fb.fetchAllFromFirebase)
-    for (const project of projects) {
-      yield call(idb.saveProject, project)
-    }
+    const projects = yield call(facade.importFromFirebase)
     yield put(actions.importSuccess(projects))
   } catch (e) {
     yield put(actions.importError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

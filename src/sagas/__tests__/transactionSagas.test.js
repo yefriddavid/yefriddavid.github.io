@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/cashflow/transactionActions'
-import * as service from '../../services/firebase/cashflow/transactions'
+import * as service from '../../services/facade/cashflow/transactionFacade'
 import {
   fetchTransactions,
   createTransaction,
@@ -37,6 +37,7 @@ describe('fetchTransactions', () => {
     gen.next() // call getTransactions
     const error = new Error('Firestore unavailable')
     expect(gen.throw(error).value).toEqual(put(actions.errorRequestFetch('Firestore unavailable')))
+    gen.next() // push notification
     expect(gen.next().done).toBe(true)
   })
 })
@@ -63,6 +64,7 @@ describe('createTransaction', () => {
     expect(gen.throw(error).value).toEqual(
       put(actions.errorRequestCreate('Write permission denied')),
     )
+    gen.next() // push notification
     expect(gen.next().done).toBe(true)
   })
 })
@@ -85,6 +87,7 @@ describe('updateTransaction', () => {
     gen.next() // call updateTransaction
     const error = new Error('Network error')
     expect(gen.throw(error).value).toEqual(put(actions.errorRequestUpdate('Network error')))
+    gen.next() // push notification
     expect(gen.next().done).toBe(true)
   })
 })
@@ -107,6 +110,7 @@ describe('deleteTransaction', () => {
     gen.next() // call deleteTransaction
     const error = new Error('Document not found')
     expect(gen.throw(error).value).toEqual(put(actions.errorRequestDelete('Document not found')))
+    gen.next() // push notification
     expect(gen.next().done).toBe(true)
   })
 })

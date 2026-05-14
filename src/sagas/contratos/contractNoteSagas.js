@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/contractNoteActions'
-import * as service from '../../services/firebase/contratos/contractNotes'
+import * as service from '../../services/facade/contratos/contractNoteFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchNotes({ payload }) {
   try {
@@ -8,6 +9,7 @@ function* fetchNotes({ payload }) {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -26,6 +28,7 @@ function* createNote({ payload }) {
     )
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -45,6 +48,7 @@ function* updateNote({ payload }) {
     )
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -54,6 +58,7 @@ function* deleteNote({ payload }) {
     yield put(actions.successRequestDelete({ id: payload.id }))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

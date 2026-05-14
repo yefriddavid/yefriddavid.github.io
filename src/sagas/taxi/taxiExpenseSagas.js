@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as taxiExpenseActions from '../../actions/taxi/taxiExpenseActions'
-import * as expenseService from '../../services/firebase/taxi/taxiExpenses'
+import * as expenseService from '../../services/facade/taxi/taxiExpenseFacade'
 import { monthToRange } from '../../utils/dateRange'
 
 export function* fetchExpenses(action) {

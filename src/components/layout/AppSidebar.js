@@ -24,6 +24,7 @@ import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
 import getNav from '../../_nav'
+import { setUi } from 'src/reducers/uiReducer'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
@@ -47,7 +48,7 @@ const AppSidebar = () => {
       unfoldable={unfoldable}
       visible={sidebarShow}
       onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
+        dispatch(setUi({ sidebarShow: visible }))
       }}
     >
       <CSidebarHeader className="border-bottom">
@@ -64,7 +65,7 @@ const AppSidebar = () => {
         <CCloseButton
           className="d-lg-none"
           dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
@@ -81,7 +82,7 @@ const AppSidebar = () => {
           <span>{t('auth.logout')}</span>
         </button>
         <button
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setUi({ sidebarShow: false }))}
           className="sidebar-footer-btn"
           style={{ borderBottom: 'none' }}
         >
@@ -89,7 +90,7 @@ const AppSidebar = () => {
           <span>{t('nav.hideMenu')}</span>
         </button>
         <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+          onClick={() => dispatch(setUi({ sidebarUnfoldable: !unfoldable }))}
         />
       </CSidebarFooter>
     </CSidebar>

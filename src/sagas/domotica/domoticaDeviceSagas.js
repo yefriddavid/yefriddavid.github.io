@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaDeviceActions'
-import * as service from '../../services/firebase/domotica/domoticaDevices'
+import * as service from '../../services/facade/domotica/domoticaDeviceFacade'
 
 function* fetchDevices() {
   try {

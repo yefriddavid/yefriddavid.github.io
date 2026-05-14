@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from 'src/actions/taxi/vehicleRouteActions'
-import { getHistoryByRange } from 'src/services/firebase/taxi/vehicleLocationHistory'
+import { getHistoryByRange } from 'src/services/facade/taxi/vehicleLocationHistoryFacade'
 
 export function* fetchRoute({ payload }) {
   try {

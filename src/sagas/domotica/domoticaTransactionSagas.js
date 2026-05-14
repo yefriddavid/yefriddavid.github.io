@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaTransactionActions'
-import * as service from '../../services/firebase/domotica/domoticaTransactions'
+import * as service from '../../services/facade/domotica/domoticaTransactionFacade'
 
 const getLast24hRange = () => {
   const endDate = new Date()

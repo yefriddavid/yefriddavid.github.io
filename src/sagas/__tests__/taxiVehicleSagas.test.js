@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiVehicleActions'
-import * as service from '../../services/firebase/taxi/taxiVehicles'
-import { saveVehicles } from '../../services/idb/cashflow/taxiVehicles'
+import * as service from '../../services/facade/taxi/taxiVehicleFacade'
 import {
   fetchVehicles,
   createVehicle,
@@ -14,14 +13,13 @@ import { makeVehicle } from '../../__tests__/factories'
 
 describe('taxiVehicleSagas', () => {
   describe('fetchVehicles', () => {
-    it('begin → getVehicles → success → IDB sync', () => {
+    it('begin → getVehicles → success', () => {
       const gen = fetchVehicles()
       const vehicles = [makeVehicle()]
 
       expect(gen.next().value).toEqual(put(actions.beginRequestFetch()))
       expect(gen.next().value).toEqual(call(service.getVehicles))
       expect(gen.next(vehicles).value).toEqual(put(actions.successRequestFetch(vehicles)))
-      expect(gen.next().value).toEqual(call(saveVehicles, vehicles)) // IDB sync (non-critical)
       expect(gen.next().done).toBe(true)
     })
 

@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as eggActions from '../../actions/cashflow/eggActions'
-import * as eggService from '../../services/firebase/cashflow/eggs'
+import * as eggService from '../../services/facade/cashflow/eggFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchEggs() {
   try {
@@ -9,6 +10,7 @@ function* fetchEggs() {
     yield put(eggActions.successRequestFetch(data))
   } catch (e) {
     yield put(eggActions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -26,6 +28,7 @@ function* createEgg({ payload }) {
     )
   } catch (e) {
     yield put(eggActions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -36,6 +39,7 @@ function* updateEgg({ payload }) {
     yield put(eggActions.successRequestUpdate(payload))
   } catch (e) {
     yield put(eggActions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -46,6 +50,7 @@ function* deleteEgg({ payload }) {
     yield put(eggActions.successRequestDelete(payload))
   } catch (e) {
     yield put(eggActions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

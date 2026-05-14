@@ -1,75 +1,71 @@
 import { put, call, all, takeLatest, takeEvery, select } from 'redux-saga/effects'
 import * as actions from '../../actions/finance/customGridTradeActions'
-import * as fb from '../../services/firebase/finance/customGridTrades'
-import * as idb from '../../services/indexeddb/finance/customGridTrades'
-
-const svc = (useIndexedDB) => (useIndexedDB ? idb : fb)
+import * as facade from '../../services/facade/finance/customGridTradeFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* loadTrades() {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    const trades = yield call(svc(useIndexedDB).fetchAll)
+    const trades = yield call(facade.fetchAll, useIndexedDB)
     yield put(actions.loadSuccess(trades))
   } catch (e) {
     yield put(actions.loadError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* saveTrade({ payload }) {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    const id = yield call(svc(useIndexedDB).saveTrade, payload)
+    const id = yield call(facade.saveTrade, useIndexedDB, payload)
     yield put(actions.saveSuccess({ ...payload, id }))
   } catch (e) {
     yield put(actions.saveError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* deleteTrade({ payload }) {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    yield call(svc(useIndexedDB).deleteTrade, payload.id)
+    yield call(facade.deleteTrade, useIndexedDB, payload.id)
     yield put(actions.deleteSuccess({ id: payload.id }))
   } catch (e) {
     yield put(actions.deleteError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* bulkImport({ payload }) {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    for (const trade of payload) {
-      yield call(svc(useIndexedDB).saveTrade, trade)
-    }
-    const trades = yield call(svc(useIndexedDB).fetchAll)
+    const trades = yield call(facade.bulkImport, useIndexedDB, payload)
     yield put(actions.bulkImportSuccess(trades))
   } catch (e) {
     yield put(actions.bulkImportError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* syncTrades() {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    const source = svc(useIndexedDB)
-    const dest = svc(!useIndexedDB)
-    const trades = yield call(source.fetchAll)
-    for (const trade of trades) {
-      yield call(dest.saveTrade, trade)
-    }
+    yield call(facade.syncTrades, useIndexedDB)
     yield put(actions.syncSuccess())
   } catch (e) {
     yield put(actions.syncError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
 function* deleteAllTrades() {
   try {
     const useIndexedDB = yield select((s) => s.customGridTrade.useIndexedDB)
-    yield call(svc(useIndexedDB).deleteAll)
+    yield call(facade.deleteAll, useIndexedDB)
     yield put(actions.deleteAllSuccess())
   } catch (e) {
     yield put(actions.deleteAllError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

@@ -1,6 +1,6 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiSettlementActions'
-import * as service from '../../services/firebase/taxi/taxiSettlements'
+import * as service from '../../services/facade/taxi/taxiSettlementFacade'
 import { monthToRange } from '../../utils/dateRange'
 
 export function* fetchSettlements(action) {

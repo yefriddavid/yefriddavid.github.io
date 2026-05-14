@@ -38,6 +38,7 @@ import domoticaCurrent from './domotica/domoticaCurrentReducer'
 import domoticaDevice from './domotica/domoticaDeviceReducer'
 import domoticaCommand from './domotica/domoticaCommandReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
+import notifications from './notificationsSlice'
 
 const combinedReducers = combineReducers({
   payment,
@@ -79,6 +80,7 @@ const combinedReducers = combineReducers({
   domoticaDevice,
   domoticaCommand,
   domoticaSolarBattery,
+  notifications,
 })
 
 export default combinedReducers

@@ -2,7 +2,9 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppContent, AppSidebar, AppFooter, AppHeader, ErrorBoundary } from '../components/index'
 import InstallBanner from '../components/shared/InstallBanner'
+import NotificationToaster from '../components/shared/NotificationToaster'
 import { APP_NAME } from '../components/BrandName'
+import { setUi } from 'src/reducers/uiReducer'
 
 const DefaultLayout = () => {
   document.title = APP_NAME
@@ -16,7 +18,7 @@ const DefaultLayout = () => {
         {headerShow && <AppHeader />}
         {!headerShow && (
           <button
-            onClick={() => dispatch({ type: 'set', headerShow: true })}
+            onClick={() => dispatch(setUi({ headerShow: true }))}
             title="Mostrar cabecera"
             style={{
               position: 'fixed',
@@ -48,6 +50,7 @@ const DefaultLayout = () => {
         <AppFooter />
       </div>
       <InstallBanner />
+      <NotificationToaster />
     </div>
   )
 }

@@ -47,7 +47,7 @@ export const useGridContext = () => useContext(GridContext)
 
 ---
 
-## 3. Migrar redux-act → RTK createSlice
+## 3. Migrar redux-act → RTK createSlice ✅ IMPLEMENTADO
 
 **Problema:** El proyecto usa `redux-act` (2016). Cada slice requiere `createAction` + `createReducer` por separado con mucho boilerplate.
 
@@ -74,6 +74,8 @@ const accountSlice = createSlice({
 export const { fetchRequest, fetchSuccess } = accountSlice.actions
 export default accountSlice.reducer
 ```
+
+**Implementación:** La migración ya estaba completada en el código — `crudFactory.js` usa RTK `createAction` + `createSlice`, y todos los reducers usan `createCRUDReducer` o `createSlice` directo. Trabajo realizado: (1) eliminado `redux-act` de `package.json`, (2) migrado `uiReducer.js` de switch/string a `createSlice` con acción `setUi`, (3) actualizados los 6 componentes de layout que hacían `dispatch({ type: 'set', ... })` a `dispatch(setUi({ ... }))`. 933 tests verdes.
 
 **Esfuerzo:** Alto (afecta todos los slices + sagas) | **Riesgo:** Medio | **Impacto:** Alto (menos código, mejor DX)
 
@@ -108,21 +110,13 @@ const useNotify = () => useSelector((s) => s.notifications)
 
 ---
 
-## 5. Facade entre sagas y servicios Firebase
+## 5. Facade entre sagas y servicios Firebase ✅ IMPLEMENTADO
 
 **Problema:** Las sagas llaman directamente a funciones de `src/services/firebase/`. Si cambia el proveedor de datos, hay que modificar cada saga.
 
 **Solución:** Una capa Facade que expone una interfaz estable; los servicios concretos quedan detrás.
 
-```js
-// src/services/facade/accountFacade.js
-import { getAccounts, saveAccount } from '../firebase/accountService'
-export const accountFacade = { getAll: getAccounts, save: saveAccount }
-
-// saga
-import { accountFacade } from 'src/services/facade/accountFacade'
-const data = yield call(accountFacade.getAll, params)
-```
+**Implementación:** `src/services/facade/{domain}/{entity}Facade.js` — 32 archivos de facade creados cubriendo todos los dominios (cashflow, finance, taxi, contratos, domotica, admin, security). Los facades simples son re-exports; los complejos (asset, accountsMaster, myProject, salaryDistribution, taxiVehicle, customGridTrade) encapsulan la coordinación entre Firebase e IndexedDB. Todos los sagas actualizados. 933 tests verdes.
 
 **Esfuerzo:** Medio | **Riesgo:** Bajo | **Impacto:** Medio (desacoplamiento, testabilidad)
 
@@ -134,6 +128,6 @@ const data = yield call(accountFacade.getAll, params)
 |---|--------|----------|--------|---------|
 | 1 | Dividir hooks grandes | Bajo | Bajo | Alto |
 | 2 | Context para grid | Medio | Bajo | Alto |
-| 3 | redux-act → createSlice | Alto | Medio | Alto |
+| 3 | redux-act → createSlice | Alto | Medio | Alto | ✅ |
 | 4 | Error Bus centralizado | Medio | Bajo | Medio |
-| 5 | Facade Firebase | Medio | Bajo | Medio |
+| 5 | Facade Firebase | Medio | Bajo | Medio | ✅ |

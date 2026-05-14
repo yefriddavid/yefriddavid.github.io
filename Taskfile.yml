@@ -1,5 +1,8 @@
 version: '3'
 
+env:
+  NODE_OPTIONS: --max-old-space-size=8192
+
 tasks:
   dev:
     desc: Start dev server at http://localhost:3000

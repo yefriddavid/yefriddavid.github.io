@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/contratos/propertyActions'
-import * as service from '../../services/firebase/contratos/properties'
+import * as service from '../../services/facade/contratos/propertyFacade'
+import { push } from '../../reducers/notificationsSlice'
 
 function* fetchProperties() {
   try {
@@ -9,6 +10,7 @@ function* fetchProperties() {
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -19,6 +21,7 @@ function* createProperty({ payload }) {
     yield put(actions.successRequestCreate({ id, ...payload }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -29,6 +32,7 @@ function* updateProperty({ payload }) {
     yield put(actions.successRequestUpdate(payload))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
@@ -39,6 +43,7 @@ function* deleteProperty({ payload }) {
     yield put(actions.successRequestDelete(payload))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 

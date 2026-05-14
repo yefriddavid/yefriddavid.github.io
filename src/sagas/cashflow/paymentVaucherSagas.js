@@ -5,8 +5,9 @@ import cloneDeep from 'lodash/cloneDeep'
 import * as paymentActions from '../../actions/cashflow/paymentActions'
 import * as accountActions from '../../actions/cashflow/accountActions'
 import * as paymentVaucherActions from '../../actions/cashflow/paymentVaucherActions'
+import { push } from '../../reducers/notificationsSlice'
 
-import * as apiPaymentVaucherServices from '../../services/firebase/cashflow/paymentVaucher'
+import * as apiPaymentVaucherServices from '../../services/facade/cashflow/paymentVaucherFacade'
 import { getCache, setCache } from '../../services/voucherCache'
 
 export function* addVauchersToAccountPayments({ payload }) {
@@ -54,6 +55,7 @@ export function* createPaymentVaucher({ payload }) {
     yield put(paymentVaucherActions.successRequestCreate(response.data))
   } catch (e) {
     yield put(paymentVaucherActions.errorRequestCreate(e.message))
+    yield put(push({ type: 'error', message: e.message }))
   }
 }
 
