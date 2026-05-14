@@ -17,6 +17,7 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import { getColombianHolidays } from './auditHelpers'
+import NextMonthPanel from './NextMonthPanel'
 import {
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES,
   TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
@@ -301,8 +302,9 @@ const Operations = () => {
           )}
         </div>
 
-        {/* Period selector */}
+        {/* Next month panel + Period selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <NextMonthPanel vehicles={vehicles} drivers={drivers} expenses={expenses} />
           <CFormSelect
             size="sm"
             style={{ width: 130 }}
@@ -330,6 +332,7 @@ const Operations = () => {
           </CFormSelect>
         </div>
       </CCardHeader>
+
 
       <CCardBody style={{ padding: 0 }}>
         {fetching && !vehiclesData ? (
