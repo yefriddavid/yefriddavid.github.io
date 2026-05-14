@@ -61,6 +61,25 @@ Auth is handled by **Firebase Auth (email/password provider)** — no separate b
   - `changePassword(username, currentPw, newPw)` — re-authenticates then updates password
 - **Required Firebase console step**: enable **Email/Password** under Authentication → Sign-in method
 
+#### RULE: Services receive generic parameters — no business logic inside
+
+Service files (`src/services/firebase/**`) must be pure data-access functions. They receive ready-to-use primitive parameters (strings, numbers, dates) and execute the Firestore/API call. Business logic (computing date ranges, deriving values, formatting, conditionals based on domain rules) belongs in the saga or the caller before invoking the service.
+
+- ✅ `getSettlements({ from: '2025-05-01', to: '2025-05-31' })` — service gets ready strings
+- ✅ Saga computes `from`/`to` from `{ month, year }` before calling the service
+- ❌ Service receives `{ month, year }` and computes the date range internally
+- ❌ Service contains `if/else` branches based on domain state (e.g. `if month === 0`)
+
+#### RULE: All Firestore collection names must be defined in `settings.js`
+
+Every Firestore collection name must be exported as a named constant from `src/services/firebase/settings.js`. **Never hardcode a collection name string inside a service file.**
+
+- ✅ `export const COL_TAXI_PERIOD_ATTACHMENTS = 'Taxi_period_attachments'` in `settings.js`
+- ✅ `import { COL_TAXI_PERIOD_ATTACHMENTS } from '../settings'` in the service file
+- ❌ `const COL = 'Taxi_period_attachments'` hardcoded inside a service file
+
+Collection name convention: `Prefix_tableName` where prefix matches the module (`Taxi_`, `CashFlow_`, `Contratos_`, `Domotica_`, `Admin_`, etc.).
+
 #### Firestore Middleware
 All Firestore operations should go through `src/services/providers/firebase/firebaseClient.js`:
 
@@ -100,5 +119,97 @@ SCSS with CoreUI variables. Custom overrides in `src/scss/_custom.scss` and `src
 ### Key Libraries
 - **DevExtreme / DevExpress** — DataGrid (`Accounts.js`) and reporting views
 - **Chart.js + CoreUI Charts** — Dashboard charts
-- **React Hook Form** — Form handling
+- **React Hook Form** — Form handling and validation (see pattern below)
 - **Moment.js** — Date manipulation
+
+### Form Validation Pattern — React Hook Form
+
+#### RULE: Every form must use `react-hook-form`
+
+**No exceptions.** Every component that collects user input for create or edit must use `react-hook-form`. Never use manual `useState` validation logic or guard clauses like `if (!form.name) return`. The library handles all state, validation, and submission.
+
+```js
+import { useForm } from 'react-hook-form'
+
+const fieldError = (err) =>
+  err ? <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>{err.message}</span> : null
+
+const MyForm = ({ initial, onSave, onCancel, saving }) => {
+  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm({ defaultValues: initial })
+
+  return (
+    <StandardForm onSave={handleSubmit(onSave)} onCancel={onCancel} saving={saving}>
+      <StandardField label="Descripción">
+        <input className={SF.input} {...register('description', { required: 'La descripción es obligatoria' })} />
+        {fieldError(errors.description)}
+      </StandardField>
+      <StandardField label="Valor">
+        <input className={SF.input} type="number" {...register('amount', {
+          required: 'El valor es obligatorio',
+          min: { value: 1, message: 'El valor debe ser mayor a 0' },
+        })} />
+        {fieldError(errors.amount)}
+      </StandardField>
+    </StandardForm>
+  )
+}
+```
+
+**Core rules:**
+- `defaultValues` receives the initial data object — works for both create (EMPTY) and edit (existing record)
+- Native inputs (`input`, `select`, `textarea`) use `{...register('field', rules)}` — no `value`/`onChange`
+- `handleSubmit(onSave)` validates before calling `onSave`; wire it to the save button or form `onSubmit`
+- Render errors inline: `{fieldError(errors.fieldName)}` immediately below each field
+- Async/server errors (e.g. 401) stay in `useState` — RHF is only for field-level validation
+
+**Selects with side effects** (e.g. auto-filling other fields when a select changes): destructure `onChange` from `register` and merge:
+
+```js
+const { onChange: rhfChange, ...driverReg } = register('driver', { required: 'Requerido' })
+
+<select {...driverReg} onChange={(e) => {
+  rhfChange(e)                         // keeps RHF state in sync
+  const d = drivers.find(...)
+  if (d?.defaultAmount) setValue('amount', String(d.defaultAmount))
+}}>
+```
+
+**Boolean toggles / custom controls** — use `watch` + `setValue`, never controlled `useState`:
+
+```js
+const active = watch('active') ?? true
+
+<button type="button" onClick={() => setValue('active', !active)}>
+  {active ? '✓ Activo' : '✗ Inactivo'}
+</button>
+```
+
+**Checkboxes**: `register` handles them natively; for side effects use the `onChange` option:
+
+```js
+{...register('rememberMe', {
+  onChange: (e) => { if (e.target.checked) saveCookies() else clearCookies() }
+})}
+```
+
+**Cross-field validation** (e.g. confirm password):
+
+```js
+{...register('confirmPassword', {
+  validate: (val) => val === getValues('password') || 'Las contraseñas no coinciden'
+})}
+```
+
+**File inputs** — not registered; keep attachment state in `useState` and merge on submit:
+
+```js
+const [attachment, setAttachment] = useState(null)
+const onSubmit = (data) => onSave({ ...data, attachment })
+```
+
+**Form reset after save**: pass a changing `key` prop to the form component — React remounts it fresh with empty `defaultValues`. Do not call `reset()` manually.
+
+```jsx
+<MyForm key={createKey} initial={EMPTY} onSave={handleCreate} />
+// After successful save: setCreateKey(k => k + 1)
+```
