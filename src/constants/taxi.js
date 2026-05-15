@@ -22,6 +22,7 @@ export const TAXI_EXPENSE_CATEGORIES = [
   'RTM',
   'Póliza Resp. Civil',
   'Tarjeta de Operación',
+  'Impuestos',
   'Multa',
   'Otro',
 ]
@@ -41,9 +42,10 @@ export const TAXI_MAINTENANCE_CATEGORIES = [
   'RTM',
   'Póliza Resp. Civil',
   'Tarjeta de Operación',
+  'Impuestos',
 ]
 
-export const TAXI_REGULATORY_CATEGORIES = ['SOAT', 'RTM', 'Póliza Resp. Civil', 'Tarjeta de Operación']
+export const TAXI_REGULATORY_CATEGORIES = ['SOAT', 'RTM', 'Póliza Resp. Civil', 'Tarjeta de Operación', 'Impuestos']
 
 export const TAXI_MAINTENANCE_TYPE_COLORS = {
   'pico-placa': { bg: '#fff1f2', border: '#f43f5e', text: '#9f1239', label: 'P&P' },
@@ -56,6 +58,7 @@ export const TAXI_MAINTENANCE_TYPE_COLORS = {
   RTM: { bg: '#f7fee7', border: '#65a30d', text: '#365314', label: 'RTM' },
   'Póliza Resp. Civil': { bg: '#fdf2f8', border: '#db2777', text: '#831843', label: 'Póliza RC' },
   'Tarjeta de Operación': { bg: '#fff8f1', border: '#ea580c', text: '#7c2d12', label: 'Tarj. Op.' },
+  Impuestos: { bg: '#eef2ff', border: '#4338ca', text: '#312e81', label: 'Impuesto' },
 }
 
 export const TAXI_CHART_CATEGORY_COLORS = ['#1971c2', '#e67700', '#2f9e44', '#ae3ec9', '#e03131', '#868e96']
