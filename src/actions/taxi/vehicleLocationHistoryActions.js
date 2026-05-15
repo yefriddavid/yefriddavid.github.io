@@ -24,3 +24,4 @@ export const {
 export const fetchRecentRequest = createAction('vehicleLocationHistory/fetchRecentRequest') // { vehicleId, plate }
 export const fetchRecentSuccess = createAction('vehicleLocationHistory/fetchRecentSuccess') // { vehicleId, data }
 export const fetchRecentError = createAction('vehicleLocationHistory/fetchRecentError')    // { vehicleId }
+

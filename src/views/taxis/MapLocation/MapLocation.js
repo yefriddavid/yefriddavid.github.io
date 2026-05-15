@@ -19,7 +19,7 @@ import {
   CAccordionBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin, cilTrash } from '@coreui/icons'
+import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin, cilTrash, cilReload } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -53,11 +53,16 @@ const MapLocation = () => {
 
   const vehiclesRef = useRef(vehicles)
   const prevPositionsRef = useRef(new Map())
+  const recentHistoriesRef = useRef(recentHistories)
   const fetching = fetchingVehicles || fetchingDrivers
 
   useEffect(() => {
     vehiclesRef.current = vehicles
   }, [vehicles])
+
+  useEffect(() => {
+    recentHistoriesRef.current = recentHistories
+  }, [recentHistories])
 
   useEffect(() => {
     if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
@@ -108,6 +113,10 @@ const MapLocation = () => {
           lastUpdate: new Date().toISOString(),
         }),
       )
+
+      if (recentHistoriesRef.current[vehicle.id] !== undefined) {
+        dispatch(vehicleLocationHistoryActions.fetchRecentRequest({ vehicleId: vehicle.id, plate }))
+      }
 
       // if (shouldPersist(vehicle.id)) {
       //   dispatch(
@@ -179,6 +188,10 @@ const MapLocation = () => {
 
   const fetchVehicleHistory = (vehicleId, plate) => {
     if (recentHistories[vehicleId] || loadingHistories[vehicleId]) return
+    dispatch(vehicleLocationHistoryActions.fetchRecentRequest({ vehicleId, plate }))
+  }
+
+  const forceRefreshHistory = (vehicleId, plate) => {
     dispatch(vehicleLocationHistoryActions.fetchRecentRequest({ vehicleId, plate }))
   }
 
@@ -383,9 +396,20 @@ const MapLocation = () => {
                       </div>
                     </CAccordionHeader>
                     <CAccordionBody className="p-2">
-                      <div className="d-flex align-items-center mb-2 px-1">
-                        <CIcon icon={cilHistory} size="sm" className="me-1" />
-                        <span className="small fw-bold">Últimas 5 posiciones</span>
+                      <div className="d-flex align-items-center justify-content-between mb-2 px-1">
+                        <div className="d-flex align-items-center">
+                          <CIcon icon={cilHistory} size="sm" className="me-1" />
+                          <span className="small fw-bold">Últimas 5 posiciones</span>
+                        </div>
+                        <CButton
+                          size="sm"
+                          color="link"
+                          className="p-0 text-secondary"
+                          disabled={!!loadingHistories[loc.vehicle?.id]}
+                          onClick={() => forceRefreshHistory(loc.vehicle?.id, loc.plate)}
+                        >
+                          <CIcon icon={cilReload} size="sm" />
+                        </CButton>
                       </div>
                       {loadingHistories[loc.vehicle?.id] && (
                         <div className="text-center py-2">
