@@ -11,21 +11,10 @@ const fmt = (iso) => {
 
 const VoltageChart = ({ data, loading }) => {
   const [range, setRange] = useState([0, 0])
-  const userAdjusted = React.useRef(false)
 
   useEffect(() => {
-    if (!data?.length) return
-    if (userAdjusted.current) {
-      setRange((prev) => [prev[0], Math.min(prev[1], data.length - 1)])
-    } else {
-      setRange([0, data.length - 1])
-    }
+    if (data?.length) setRange([0, data.length - 1])
   }, [data?.length])
-
-  const handleRangeChange = (r) => {
-    userAdjusted.current = true
-    setRange(r)
-  }
 
   if (loading && (!data || data.length === 0)) {
     return (
@@ -45,13 +34,26 @@ const VoltageChart = ({ data, loading }) => {
   const labels = slice.map((r) => fmt(r.createdAt))
   const values = slice.map((r) => r.value)
 
+  const trailingLabels = []
+  const trailingValues = []
+  if (slice.length >= 2) {
+    const avgInterval =
+      (new Date(slice[slice.length - 1].createdAt) - new Date(slice[0].createdAt)) / (slice.length - 1)
+    const last = new Date(slice[slice.length - 1].createdAt)
+    const steps = Math.max(3, Math.round((2 * 60 * 60 * 1000) / avgInterval))
+    for (let i = 1; i <= steps; i++) {
+      trailingLabels.push(fmt(new Date(last.getTime() + avgInterval * i).toISOString()))
+      trailingValues.push(null)
+    }
+  }
+
   return (
     <>
       <ChartRangeSlider
         total={data.length}
         start={startIdx}
         end={endIdx}
-        onChange={handleRangeChange}
+        onChange={setRange}
         startLabel={data[startIdx] ? fmt(data[startIdx].createdAt) : ''}
         endLabel={data[endIdx] ? fmt(data[endIdx].createdAt) : ''}
       />
@@ -59,11 +61,11 @@ const VoltageChart = ({ data, loading }) => {
         plugins={[nightShadingPlugin]}
         style={{ height: '260px' }}
         data={{
-          labels,
+          labels: [...labels, ...trailingLabels],
           datasets: [
             {
               label: 'Voltaje (V)',
-              data: values,
+              data: [...values, ...trailingValues],
               borderColor: '#1971c2',
               backgroundColor: 'rgba(25, 113, 194, 0.08)',
               borderWidth: 2,

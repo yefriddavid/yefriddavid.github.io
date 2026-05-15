@@ -34,6 +34,19 @@ const CurrentChart = ({ data, loading }) => {
   const labels = slice.map((r) => fmt(r.createdAt))
   const values = slice.map((r) => r.value != null ? parseFloat(r.value.toFixed(2)) : null)
 
+  const trailingLabels = []
+  const trailingValues = []
+  if (slice.length >= 2) {
+    const avgInterval =
+      (new Date(slice[slice.length - 1].createdAt) - new Date(slice[0].createdAt)) / (slice.length - 1)
+    const last = new Date(slice[slice.length - 1].createdAt)
+    const steps = Math.max(3, Math.round((2 * 60 * 60 * 1000) / avgInterval))
+    for (let i = 1; i <= steps; i++) {
+      trailingLabels.push(fmt(new Date(last.getTime() + avgInterval * i).toISOString()))
+      trailingValues.push(null)
+    }
+  }
+
   return (
     <>
       <ChartRangeSlider
@@ -48,11 +61,11 @@ const CurrentChart = ({ data, loading }) => {
         plugins={[nightShadingPlugin]}
         style={{ height: '260px' }}
         data={{
-          labels,
+          labels: [...labels, ...trailingLabels],
           datasets: [
             {
               label: 'Corriente (A)',
-              data: values,
+              data: [...values, ...trailingValues],
               borderColor: '#7c3aed',
               backgroundColor: 'rgba(124, 58, 237, 0.08)',
               borderWidth: 2,
