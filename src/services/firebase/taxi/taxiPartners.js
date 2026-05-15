@@ -10,12 +10,13 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
+import { taxiCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const getPartners = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await taxiCall(() => getDocs(q))
   return snap.docs
     .map((d) => ({
       id: d.id,
@@ -26,22 +27,26 @@ export const getPartners = async () => {
 }
 
 export const addPartner = async ({ name, percentage }) => {
-  const ref = await addDoc(collection(db, COL), {
-    name,
-    percentage: Number(percentage),
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await taxiCall(() =>
+    addDoc(collection(db, COL), {
+      name,
+      percentage: Number(percentage),
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updatePartner = async (id, data) => {
-  await updateDoc(doc(db, COL, id), {
-    name: data.name,
-    percentage: Number(data.percentage),
-  })
+  await taxiCall(() =>
+    updateDoc(doc(db, COL, id), {
+      name: data.name,
+      percentage: Number(data.percentage),
+    }),
+  )
 }
 
 export const deletePartner = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await taxiCall(() => deleteDoc(doc(db, COL, id)))
 }

@@ -10,12 +10,13 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const fetchEggs = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -31,26 +32,30 @@ export const fetchEggs = async () => {
 }
 
 export const createEgg = async ({ name, date, quantity, price }) => {
-  const ref = await addDoc(collection(db, COL), {
-    name,
-    date,
-    quantity: Number(quantity),
-    price: Number(price),
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      name,
+      date,
+      quantity: Number(quantity),
+      price: Number(price),
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateEgg = async (id, { name, date, quantity, price }) => {
-  await updateDoc(doc(db, COL, id), {
-    name,
-    date,
-    quantity: Number(quantity),
-    price: Number(price),
-  })
+  await firestoreCall(() =>
+    updateDoc(doc(db, COL, id), {
+      name,
+      date,
+      quantity: Number(quantity),
+      price: Number(price),
+    }),
+  )
 }
 
 export const deleteEgg = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }

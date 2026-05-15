@@ -11,6 +11,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 export { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
@@ -21,7 +22,7 @@ export const getAccountsMaster = async () => {
     collection(db, COL_CASHFLOW_ACCOUNTS_MASTER),
     where('tenantId', '==', getTenantId()),
   )
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -51,20 +52,22 @@ export const getAccountsMaster = async () => {
 }
 
 export const addAccountMaster = async (payload) => {
-  const ref = await addDoc(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), {
-    ...payload,
-    tenantId: getTenantId(),
-    active: true,
-    created_at: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL_CASHFLOW_ACCOUNTS_MASTER), {
+      ...payload,
+      tenantId: getTenantId(),
+      active: true,
+      created_at: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateAccountMaster = async (id, payload) => {
   const { id: _id, created_at: _ca, ...rest } = payload
-  await updateDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id), rest)
+  await firestoreCall(() => updateDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id), rest))
 }
 
 export const deleteAccountMaster = async (id) => {
-  await deleteDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL_CASHFLOW_ACCOUNTS_MASTER, id)))
 }

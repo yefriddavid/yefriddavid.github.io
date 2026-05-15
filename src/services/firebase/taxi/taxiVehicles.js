@@ -10,12 +10,13 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { taxiCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const getVehicles = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await taxiCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -33,33 +34,37 @@ export const getVehicles = async () => {
 }
 
 export const addVehicle = async ({ plate, brand, model, year, active }) => {
-  const ref = await addDoc(collection(db, COL), {
-    plate: plate.toUpperCase(),
-    brand,
-    model,
-    year,
-    active: active !== false,
-    restrictions: {},
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await taxiCall(() =>
+    addDoc(collection(db, COL), {
+      plate: plate.toUpperCase(),
+      brand,
+      model,
+      year,
+      active: active !== false,
+      restrictions: {},
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateVehicle = async (id, { plate, brand, model, year, active }) => {
-  await updateDoc(doc(db, COL, id), {
-    plate: plate.toUpperCase(),
-    brand,
-    model,
-    year,
-    active: active !== false,
-  })
+  await taxiCall(() =>
+    updateDoc(doc(db, COL, id), {
+      plate: plate.toUpperCase(),
+      brand,
+      model,
+      year,
+      active: active !== false,
+    }),
+  )
 }
 
 export const updateRestrictions = async (id, restrictions) => {
-  await updateDoc(doc(db, COL, id), { restrictions })
+  await taxiCall(() => updateDoc(doc(db, COL, id), { restrictions }))
 }
 
 export const deleteVehicle = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await taxiCall(() => deleteDoc(doc(db, COL, id)))
 }

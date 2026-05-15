@@ -9,21 +9,24 @@ import {
   query,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const syncProjectToFirebase = async (project) => {
   const { id, ...data } = project
-  await setDoc(doc(collection(db, COL), id), {
-    ...data,
-    tenantId: getTenantId(),
-    syncedAt: serverTimestamp(),
-  })
+  await firestoreCall(() =>
+    setDoc(doc(collection(db, COL), id), {
+      ...data,
+      tenantId: getTenantId(),
+      syncedAt: serverTimestamp(),
+    }),
+  )
 }
 
 export const fetchAllFromFirebase = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs.map((d) => {
     const data = d.data()
     return {
@@ -42,5 +45,5 @@ export const fetchAllFromFirebase = async () => {
 }
 
 export const deleteProjectFromFirebase = async (id) => {
-  await deleteDoc(doc(collection(db, COL), id))
+  await firestoreCall(() => deleteDoc(doc(collection(db, COL), id)))
 }

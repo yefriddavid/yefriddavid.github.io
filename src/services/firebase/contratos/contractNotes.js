@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
@@ -19,7 +20,7 @@ export const fetchContractNotes = async (contractId) => {
     where('tenantId', '==', getTenantId()),
     where('contractId', '==', contractId),
   )
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -36,21 +37,25 @@ export const fetchContractNotes = async (contractId) => {
 }
 
 export const createContractNote = async ({ contractId, text }) => {
-  const ref = await addDoc(collection(db, COL), {
-    contractId,
-    text,
-    resolved: false,
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      contractId,
+      text,
+      resolved: false,
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateContractNote = async (id, { text, resolved }) => {
-  await updateDoc(doc(db, COL, id), { text, resolved, updatedAt: serverTimestamp() })
+  await firestoreCall(() =>
+    updateDoc(doc(db, COL, id), { text, resolved, updatedAt: serverTimestamp() }),
+  )
 }
 
 export const deleteContractNote = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }

@@ -10,8 +10,8 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
-import { getTenantId } from 'src/services/tenantContext'
 import { taxiCall } from '../firebaseClient'
+import { getTenantId } from 'src/services/tenantContext'
 
 // filter: { from, to } | undefined (no date filter)
 export const getSettlements = async (filter) => {
@@ -37,29 +37,33 @@ export const getSettlements = async (filter) => {
 }
 
 export const addSettlement = async ({ driver, plate, amount, date, comment }) => {
-  const ref = await addDoc(collection(db, COL), {
-    driver,
-    plate: plate.toUpperCase(),
-    amount: Number(amount),
-    date,
-    comment: comment || null,
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await taxiCall(() =>
+    addDoc(collection(db, COL), {
+      driver,
+      plate: plate.toUpperCase(),
+      amount: Number(amount),
+      date,
+      comment: comment || null,
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateSettlement = async (id, { driver, plate, amount, date, comment, paid_at }) => {
-  await updateDoc(doc(db, COL, id), {
-    driver,
-    plate: plate?.toUpperCase() ?? '',
-    amount: Number(amount),
-    date,
-    comment: comment || null,
-    paid_at: paid_at || null,
-  })
+  await taxiCall(() =>
+    updateDoc(doc(db, COL, id), {
+      driver,
+      plate: plate?.toUpperCase() ?? '',
+      amount: Number(amount),
+      date,
+      comment: comment || null,
+      paid_at: paid_at || null,
+    }),
+  )
 }
 
 export const deleteSettlement = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await taxiCall(() => deleteDoc(doc(db, COL, id)))
 }

@@ -9,12 +9,13 @@ import {
   query,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const fetchAll = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs.map((d) => {
     const data = d.data()
     return {
@@ -39,18 +40,20 @@ export const fetchAll = async () => {
 export const saveTrade = async (trade) => {
   const { id, ...data } = trade
   const ref = id ? doc(collection(db, COL), id) : doc(collection(db, COL))
-  await setDoc(
-    ref,
-    {
-      ...data,
-      tenantId: getTenantId(),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true },
+  await firestoreCall(() =>
+    setDoc(
+      ref,
+      {
+        ...data,
+        tenantId: getTenantId(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    ),
   )
   return ref.id
 }
 
 export const deleteTrade = async (id) => {
-  await deleteDoc(doc(collection(db, COL), id))
+  await firestoreCall(() => deleteDoc(doc(collection(db, COL), id)))
 }

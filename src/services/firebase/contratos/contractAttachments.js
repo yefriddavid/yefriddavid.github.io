@@ -9,6 +9,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
@@ -18,7 +19,7 @@ export const getAttachments = async (contractId) => {
     where('tenantId', '==', getTenantId()),
     where('contractId', '==', contractId),
   )
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -36,15 +37,17 @@ export const getAttachments = async (contractId) => {
 }
 
 export const addAttachment = async (payload) => {
-  const ref = await addDoc(collection(db, COL), {
-    ...payload,
-    tenantId: getTenantId(),
-    active: true,
-    createdAt: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      ...payload,
+      tenantId: getTenantId(),
+      active: true,
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const deactivateAttachment = async (id) => {
-  await updateDoc(doc(db, COL, id), { active: false })
+  await firestoreCall(() => updateDoc(doc(db, COL, id), { active: false }))
 }

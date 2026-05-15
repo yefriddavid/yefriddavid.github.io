@@ -11,25 +11,28 @@ import {
   where,
   serverTimestamp,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 
 
 export const createSession = async (sessionId, username, token) => {
-  await setDoc(doc(db, COL, sessionId), {
-    username,
-    token,
-    createdAt: serverTimestamp(),
-    userAgent: navigator.userAgent,
-  })
+  await firestoreCall(() =>
+    setDoc(doc(db, COL, sessionId), {
+      username,
+      token,
+      createdAt: serverTimestamp(),
+      userAgent: navigator.userAgent,
+    }),
+  )
 }
 
 export const validateSession = async (sessionId) => {
-  const snap = await getDoc(doc(db, COL, sessionId))
+  const snap = await firestoreCall(() => getDoc(doc(db, COL, sessionId)))
   return snap.exists()
 }
 
 export const getSessionsByUser = async (username) => {
   const q = query(collection(db, COL), where('username', '==', username))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs.map((d) => ({
     sessionId: d.id,
     ...d.data(),
@@ -38,13 +41,13 @@ export const getSessionsByUser = async (username) => {
 }
 
 export const deleteSession = async (sessionId) => {
-  await deleteDoc(doc(db, COL, sessionId))
+  await firestoreCall(() => deleteDoc(doc(db, COL, sessionId)))
 }
 
 export const deleteAllSessionsByUser = async (username) => {
   const q = query(collection(db, COL), where('username', '==', username))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   const batch = writeBatch(db)
   snap.docs.forEach((d) => batch.delete(d.ref))
-  await batch.commit()
+  await firestoreCall(() => batch.commit())
 }

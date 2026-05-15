@@ -1,5 +1,6 @@
 import { collection, getCountFromServer } from 'firebase/firestore'
 import { db } from '../settings'
+import { firestoreCall } from '../firebaseClient'
 
 const currentYear = new Date().getFullYear()
 
@@ -53,7 +54,7 @@ export const SPARK_LIMITS = {
 export async function fetchCollectionCounts() {
   const results = await Promise.allSettled(
     COLLECTIONS.map(async (col) => {
-      const snap = await getCountFromServer(collection(db, col.name))
+      const snap = await firestoreCall(() => getCountFromServer(collection(db, col.name)))
       return { ...col, count: snap.data().count }
     }),
   )

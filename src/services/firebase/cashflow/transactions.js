@@ -10,6 +10,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
@@ -17,7 +18,7 @@ export { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
 
 export const getTransactions = async (year) => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -32,19 +33,21 @@ export const getTransactions = async (year) => {
 }
 
 export const addTransaction = async (payload) => {
-  const ref = await addDoc(collection(db, COL), {
-    ...payload,
-    tenantId: getTenantId(),
-    created_at: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      ...payload,
+      tenantId: getTenantId(),
+      created_at: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateTransaction = async (id, payload) => {
   const { id: _id, created_at: _ca, ...rest } = payload
-  await updateDoc(doc(db, COL, id), rest)
+  await firestoreCall(() => updateDoc(doc(db, COL, id), rest))
 }
 
 export const deleteTransaction = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }

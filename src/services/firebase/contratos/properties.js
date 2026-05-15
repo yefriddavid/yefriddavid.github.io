@@ -10,12 +10,13 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const getProperties = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -36,18 +37,20 @@ export const getProperties = async () => {
 }
 
 export const addProperty = async (payload) => {
-  const ref = await addDoc(collection(db, COL), {
-    ...payload,
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      ...payload,
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updateProperty = async (id, payload) => {
-  await updateDoc(doc(db, COL, id), payload)
+  await firestoreCall(() => updateDoc(doc(db, COL, id), payload))
 }
 
 export const deleteProperty = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }

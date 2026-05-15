@@ -10,12 +10,13 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { taxiCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
 export const getDrivers = async () => {
   const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
-  const snap = await getDocs(q)
+  const snap = await taxiCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -45,19 +46,21 @@ export const addDriver = async ({
   active,
   startDate,
 }) => {
-  const ref = await addDoc(collection(db, COL), {
-    name,
-    idNumber,
-    phone: phone || null,
-    defaultAmount: defaultAmount ? Number(defaultAmount) : null,
-    defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
-    defaultVehicle: defaultVehicle || null,
-    active: active !== false,
-    startDate: startDate || null,
-    endDate: null,
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-  })
+  const ref = await taxiCall(() =>
+    addDoc(collection(db, COL), {
+      name,
+      idNumber,
+      phone: phone || null,
+      defaultAmount: defaultAmount ? Number(defaultAmount) : null,
+      defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
+      defaultVehicle: defaultVehicle || null,
+      active: active !== false,
+      startDate: startDate || null,
+      endDate: null,
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
@@ -75,19 +78,21 @@ export const updateDriver = async (
     endDate,
   },
 ) => {
-  await updateDoc(doc(db, COL, id), {
-    name,
-    idNumber,
-    phone: phone || null,
-    defaultAmount: defaultAmount ? Number(defaultAmount) : null,
-    defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
-    defaultVehicle: defaultVehicle || null,
-    active: active !== false,
-    startDate: startDate || null,
-    endDate: endDate || null,
-  })
+  await taxiCall(() =>
+    updateDoc(doc(db, COL, id), {
+      name,
+      idNumber,
+      phone: phone || null,
+      defaultAmount: defaultAmount ? Number(defaultAmount) : null,
+      defaultAmountSunday: defaultAmountSunday ? Number(defaultAmountSunday) : null,
+      defaultVehicle: defaultVehicle || null,
+      active: active !== false,
+      startDate: startDate || null,
+      endDate: endDate || null,
+    }),
+  )
 }
 
 export const deleteDriver = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await taxiCall(() => deleteDoc(doc(db, COL, id)))
 }

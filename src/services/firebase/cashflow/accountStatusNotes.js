@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   where,
 } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
 
 
@@ -19,7 +20,7 @@ export const fetchPeriodNotes = async (period) => {
     where('tenantId', '==', getTenantId()),
     where('period', '==', period),
   )
-  const snap = await getDocs(q)
+  const snap = await firestoreCall(() => getDocs(q))
   return snap.docs
     .map((d) => {
       const data = d.data()
@@ -36,21 +37,25 @@ export const fetchPeriodNotes = async (period) => {
 }
 
 export const createPeriodNote = async ({ period, text }) => {
-  const ref = await addDoc(collection(db, COL), {
-    period,
-    text,
-    checked: false,
-    tenantId: getTenantId(),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  })
+  const ref = await firestoreCall(() =>
+    addDoc(collection(db, COL), {
+      period,
+      text,
+      checked: false,
+      tenantId: getTenantId(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  )
   return ref.id
 }
 
 export const updatePeriodNote = async (id, fields) => {
-  await updateDoc(doc(db, COL, id), { ...fields, updatedAt: serverTimestamp() })
+  await firestoreCall(() =>
+    updateDoc(doc(db, COL, id), { ...fields, updatedAt: serverTimestamp() }),
+  )
 }
 
 export const deletePeriodNote = async (id) => {
-  await deleteDoc(doc(db, COL, id))
+  await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }

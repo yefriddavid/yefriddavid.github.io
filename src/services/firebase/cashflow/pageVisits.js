@@ -1,5 +1,6 @@
 import { db } from '../settings'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { firestoreCall } from '../firebaseClient'
 
 const collectVisitorMeta = () => ({
   userAgent: navigator.userAgent,
@@ -36,11 +37,13 @@ export const trackPageVisit = async (page) => {
   if (import.meta.env.DEV) return
   try {
     const [geo, meta] = await Promise.all([fetchGeoInfo(), Promise.resolve(collectVisitorMeta())])
-    await addDoc(collection(db, 'page_visits'), {
-      page,
-      ...meta,
-      ...geo,
-      createdAt: serverTimestamp(),
-    })
+    await firestoreCall(() =>
+      addDoc(collection(db, 'page_visits'), {
+        page,
+        ...meta,
+        ...geo,
+        createdAt: serverTimestamp(),
+      }),
+    )
   } catch {}
 }
