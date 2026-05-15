@@ -100,6 +100,9 @@ export const COL_DOMOTICA_TRANSACTIONS = 'Domotica_transactions'
 export const COL_DOMOTICA_CURRENT = 'Domotica_current'
 export const COL_DOMOTICA_DEVICES = 'Domotica_devices'
 export const COL_DOMOTICA_COMMAND = 'Domotica_command'
+export const COL_DOMOTICA_COMMAND_DICTIONARY = 'Domotica_command_dictionary'
+export const COL_DOMOTICA_COMMAND_PROFILES = 'Domotica_command_profiles'
+export const COL_DOMOTICA_COMMAND_PROFILE_ITEMS = 'Domotica_command_profile_items'
 
 // Others
 export const COL_PAGE_VISITS = 'page_visits'

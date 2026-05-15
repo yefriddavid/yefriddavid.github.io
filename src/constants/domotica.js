@@ -36,5 +36,6 @@ export const DOMOTICA_SERIAL_CATEGORIES = [
   'FOTA',
   'PAD',
   'API TCP',
+  'Configuración Celular',
   'Personalizado',
 ]

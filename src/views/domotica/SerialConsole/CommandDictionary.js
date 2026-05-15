@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import DataGrid, {
   Column,
   FilterRow,
@@ -11,44 +12,27 @@ import DataGrid, {
   HeaderFilter,
   Toolbar,
   Item,
-  Export,
 } from 'devextreme-react/data-grid'
-import { CButton, CToast, CToastBody, CToaster } from '@coreui/react'
+import { CButton, CSpinner, CToast, CToastBody, CToaster } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCopy, cilPlus, cilTrash, cilPencil, cilCheck } from '@coreui/icons'
+import { cilCopy, cilPlus, cilTrash, cilPencil, cilCheck, cilCloudDownload } from '@coreui/icons'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
 import { DOMOTICA_SERIAL_CATEGORIES as CATEGORIES } from 'src/constants/domotica'
+import * as actions from 'src/actions/domotica/domoticaCommandDictionaryActions'
+import CommandProfilesPanel from './CommandProfilesPanel'
 import './CommandDictionary.scss'
 
-const STORAGE_KEY = 'domotica_command_dictionary'
-
-const loadCommands = () => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : SKYPATROL_COMMANDS
-  } catch {
-    return SKYPATROL_COMMANDS
-  }
-}
-
-const saveCommands = (commands) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(commands))
-}
-
 const EMPTY_CMD = {
-  id: null,
   category: 'Personalizado',
   command: '',
   name: '',
   description: '',
-  queryFormat: '',
-  readFormat: '',
-  writeFormat: '',
+  queryFormat: 'N/A',
+  readFormat: 'N/A',
+  writeFormat: 'N/A',
   params: '',
   notes: '',
 }
-
-let nextCustomId = 1000
 
 const DetailPanel = ({ data }) => {
   const row = data.data
@@ -92,16 +76,25 @@ const DetailPanel = ({ data }) => {
 }
 
 const CommandDictionary = () => {
-  const [commands, setCommands] = useState(loadCommands)
+  const dispatch = useDispatch()
+  const { data, fetching, saving, seeding } = useSelector((s) => s.domoticaCommandDictionary)
+
   const [showForm, setShowForm] = useState(false)
-  const [editingCmd, setEditingCmd] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(EMPTY_CMD)
   const [toasts, setToasts] = useState([])
   const toastTimersRef = useRef([])
 
   useEffect(() => {
+    dispatch(actions.fetchRequest())
     return () => toastTimersRef.current.forEach(clearTimeout)
-  }, [])
+  }, [dispatch])
+
+  const prevSaving = useRef(saving)
+  useEffect(() => {
+    if (prevSaving.current && !saving && showForm) setShowForm(false)
+    prevSaving.current = saving
+  }, [saving, showForm])
 
   const toast = useCallback((msg) => {
     const id = Date.now()
@@ -120,51 +113,45 @@ const CommandDictionary = () => {
   }
 
   const openAdd = () => {
-    setEditingCmd(null)
-    setForm({ ...EMPTY_CMD, id: nextCustomId++ })
+    setEditingId(null)
+    setForm({ ...EMPTY_CMD })
     setShowForm(true)
   }
 
   const openEdit = (row) => {
-    setEditingCmd(row.id)
+    setEditingId(row.id)
     setForm({ ...row })
     setShowForm(true)
   }
 
-  const deleteCmd = (id) => {
-    const updated = commands.filter((c) => c.id !== id)
-    setCommands(updated)
-    saveCommands(updated)
-  }
-
   const saveForm = () => {
     if (!form.command.trim() || !form.name.trim()) return
-    let updated
-    if (editingCmd !== null) {
-      updated = commands.map((c) => (c.id === editingCmd ? { ...form } : c))
+    if (editingId) {
+      dispatch(actions.updateRequest({ ...form, id: editingId }))
+      toast('Comando actualizado')
     } else {
-      updated = [...commands, { ...form }]
+      dispatch(actions.createRequest(form))
+      toast('Comando agregado')
     }
-    setCommands(updated)
-    saveCommands(updated)
-    setShowForm(false)
-    toast(editingCmd !== null ? 'Comando actualizado' : 'Comando agregado')
   }
 
-  const resetToDefault = () => {
-    setCommands(SKYPATROL_COMMANDS)
-    saveCommands(SKYPATROL_COMMANDS)
-    toast('Diccionario restaurado')
+  const deleteCmd = (id) => {
+    dispatch(actions.deleteRequest({ id }))
   }
 
-  const actionsCell = ({ data }) => (
+  const seedFromSkypatrol = () => {
+    dispatch(actions.seedRequest(SKYPATROL_COMMANDS))
+    toast('Importando comandos Skypatrol…')
+  }
+
+  const actionsCell = ({ data: row }) => (
     <div className="cmd-actions">
       <button
         className="cmd-actions__btn cmd-actions__btn--copy"
         title="Copiar comando"
         onClick={() =>
           copyToClipboard(
-            data.writeFormat !== 'N/A' ? data.writeFormat : data.readFormat || data.queryFormat,
+            row.writeFormat !== 'N/A' ? row.writeFormat : row.readFormat || row.queryFormat,
           )
         }
       >
@@ -173,14 +160,14 @@ const CommandDictionary = () => {
       <button
         className="cmd-actions__btn cmd-actions__btn--edit"
         title="Editar"
-        onClick={() => openEdit(data)}
+        onClick={() => openEdit(row)}
       >
         <CIcon icon={cilPencil} size="sm" />
       </button>
       <button
         className="cmd-actions__btn cmd-actions__btn--del"
         title="Eliminar"
-        onClick={() => deleteCmd(data.id)}
+        onClick={() => deleteCmd(row.id)}
       >
         <CIcon icon={cilTrash} size="sm" />
       </button>
@@ -193,7 +180,16 @@ const CommandDictionary = () => {
 
   const commandCell = ({ value }) => <code className="cmd-code">{value}</code>
 
+  if (fetching && !data) {
+    return (
+      <div className="d-flex justify-content-center py-5">
+        <CSpinner color="primary" />
+      </div>
+    )
+  }
+
   return (
+    <div className="cmd-page">
     <div className="cmd-dict">
       <CToaster placement="top-end">
         {toasts.map((t) => (
@@ -206,15 +202,12 @@ const CommandDictionary = () => {
         ))}
       </CToaster>
 
-      {/* ── Form ── */}
       {showForm && (
         <div className="cmd-form-overlay">
           <div className="cmd-form">
             <div className="cmd-form__header">
-              <h5>{editingCmd !== null ? 'Editar Comando' : 'Nuevo Comando'}</h5>
-              <button className="cmd-form__close" onClick={() => setShowForm(false)}>
-                ✕
-              </button>
+              <h5>{editingId ? 'Editar Comando' : 'Nuevo Comando'}</h5>
+              <button className="cmd-form__close" onClick={() => setShowForm(false)}>✕</button>
             </div>
             <div className="cmd-form__body">
               <div className="cmd-form__row">
@@ -224,16 +217,14 @@ const CommandDictionary = () => {
                   onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
                 >
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
               <div className="cmd-form__row">
                 <label>Comando *</label>
                 <input
-                  placeholder="AT$TTGPSTT"
+                  placeholder="AT+CGDCONT"
                   value={form.command}
                   onChange={(e) => setForm((p) => ({ ...p, command: e.target.value }))}
                 />
@@ -241,7 +232,7 @@ const CommandDictionary = () => {
               <div className="cmd-form__row">
                 <label>Nombre *</label>
                 <input
-                  placeholder="GPS Status"
+                  placeholder="Configurar APN"
                   value={form.name}
                   onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 />
@@ -257,7 +248,6 @@ const CommandDictionary = () => {
               <div className="cmd-form__row">
                 <label>Query Format</label>
                 <input
-                  placeholder="AT$TTGPSTT=?"
                   value={form.queryFormat}
                   onChange={(e) => setForm((p) => ({ ...p, queryFormat: e.target.value }))}
                 />
@@ -265,7 +255,6 @@ const CommandDictionary = () => {
               <div className="cmd-form__row">
                 <label>Read Format</label>
                 <input
-                  placeholder="AT$TTGPSTT?"
                   value={form.readFormat}
                   onChange={(e) => setForm((p) => ({ ...p, readFormat: e.target.value }))}
                 />
@@ -273,7 +262,6 @@ const CommandDictionary = () => {
               <div className="cmd-form__row">
                 <label>Write Format</label>
                 <input
-                  placeholder="AT$TTGPSTT=<cmd>"
                   value={form.writeFormat}
                   onChange={(e) => setForm((p) => ({ ...p, writeFormat: e.target.value }))}
                 />
@@ -296,27 +284,23 @@ const CommandDictionary = () => {
               </div>
             </div>
             <div className="cmd-form__footer">
-              <button
-                className="cmd-form__btn cmd-form__btn--cancel"
-                onClick={() => setShowForm(false)}
-              >
+              <button className="cmd-form__btn cmd-form__btn--cancel" onClick={() => setShowForm(false)}>
                 Cancelar
               </button>
               <button
                 className="cmd-form__btn cmd-form__btn--save"
                 onClick={saveForm}
-                disabled={!form.command.trim() || !form.name.trim()}
+                disabled={saving || !form.command.trim() || !form.name.trim()}
               >
-                Guardar
+                {saving ? <CSpinner size="sm" /> : 'Guardar'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Grid ── */}
       <DataGrid
-        dataSource={commands}
+        dataSource={data ?? []}
         keyExpr="id"
         showBorders={false}
         rowAlternationEnabled
@@ -337,14 +321,26 @@ const CommandDictionary = () => {
           <Item name="groupPanel" />
           <Item name="searchPanel" />
           <Item location="after">
-            <CButton size="sm" color="primary" onClick={openAdd}>
+            <CButton size="sm" color="primary" onClick={openAdd} disabled={saving}>
               <CIcon icon={cilPlus} size="sm" className="me-1" />
               Agregar
             </CButton>
           </Item>
           <Item location="after">
-            <CButton size="sm" color="secondary" variant="outline" onClick={resetToDefault}>
-              Restaurar Skypatrol
+            <CButton
+              size="sm"
+              color="secondary"
+              variant="outline"
+              onClick={seedFromSkypatrol}
+              disabled={seeding}
+              title="Importa todos los comandos Skypatrol TT8750 a Firebase"
+            >
+              {seeding ? (
+                <CSpinner size="sm" className="me-1" />
+              ) : (
+                <CIcon icon={cilCloudDownload} size="sm" className="me-1" />
+              )}
+              Seed Skypatrol
             </CButton>
           </Item>
         </Toolbar>
@@ -395,6 +391,8 @@ const CommandDictionary = () => {
 
         <MasterDetail enabled component={DetailPanel} />
       </DataGrid>
+    </div>
+    <CommandProfilesPanel />
     </div>
   )
 }

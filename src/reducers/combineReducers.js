@@ -37,6 +37,8 @@ import domoticaTransaction from './domotica/domoticaTransactionReducer'
 import domoticaCurrent from './domotica/domoticaCurrentReducer'
 import domoticaDevice from './domotica/domoticaDeviceReducer'
 import domoticaCommand from './domotica/domoticaCommandReducer'
+import domoticaCommandDictionary from './domotica/domoticaCommandDictionaryReducer'
+import domoticaCommandProfile from './domotica/domoticaCommandProfileReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
 import notifications from './notificationsSlice'
 
@@ -79,6 +81,8 @@ const combinedReducers = combineReducers({
   domoticaCurrent,
   domoticaDevice,
   domoticaCommand,
+  domoticaCommandDictionary,
+  domoticaCommandProfile,
   domoticaSolarBattery,
   notifications,
 })

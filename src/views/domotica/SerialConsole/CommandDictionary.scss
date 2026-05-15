@@ -255,3 +255,331 @@ $muted: var(--cui-secondary-color);
   font-size: 13px;
   min-width: 220px;
 }
+
+// ── Page layout (dictionary + profiles panel) ─────────────────────────────────
+.cmd-page {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
+
+  .cmd-dict {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// ── Profiles panel ────────────────────────────────────────────────────────────
+.cp-panel {
+  width: 300px;
+  flex-shrink: 0;
+  border-left: 1px solid $border;
+  position: sticky;
+  top: 56px;
+  align-self: flex-start;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  background: var(--cui-body-bg);
+
+  @media (max-width: 900px) {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid $border;
+    position: static;
+    max-height: none;
+  }
+
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid $border;
+    position: sticky;
+    top: 0;
+    background: var(--cui-body-bg);
+    z-index: 1;
+  }
+
+  &__title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $muted;
+  }
+
+  &__add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(88, 166, 255, 0.12);
+    color: #58a6ff;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(88, 166, 255, 0.25); }
+  }
+}
+
+.cp-panel__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cp-empty {
+  padding: 20px 14px;
+  font-size: 12px;
+  color: $muted;
+  text-align: center;
+
+  &--sm { padding: 8px 0; }
+}
+
+// ── Profile card ──────────────────────────────────────────────────────────────
+.cp-profile {
+  border-bottom: 1px solid $border;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+
+    &:hover { background: $bg2; }
+  }
+
+  &__chevron { color: $muted; flex-shrink: 0; }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cui-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__model {
+    font-size: 10px;
+    color: $muted;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+  }
+
+  &__btns {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &__header:hover &__btns { opacity: 1; }
+
+  &__body {
+    padding: 8px 10px 10px;
+    background: $bg2;
+    border-top: 1px solid $border;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: $muted;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed $border;
+  }
+}
+
+// ── Items list ────────────────────────────────────────────────────────────────
+.cp-items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cp-item {
+  background: var(--cui-body-bg);
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 7px 9px;
+
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  &__value {
+    flex: 1;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #58a6ff;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover &__actions { opacity: 1; }
+
+  &__notes {
+    display: block;
+    font-size: 11px;
+    color: $muted;
+    margin-top: 3px;
+  }
+}
+
+.cp-items__loading {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}
+
+// ── Icon buttons ──────────────────────────────────────────────────────────────
+.cp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover { background: rgba(139, 148, 158, 0.15); color: var(--cui-body-color); }
+  &--danger:hover { background: rgba(248, 81, 73, 0.15); color: #f85149; }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+}
+
+.cp-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: $muted;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.12s, background 0.12s;
+
+  &:hover { color: var(--cui-body-color); background: $border; }
+  &--primary { color: #58a6ff; &:hover { background: rgba(88,166,255,0.12); } }
+}
+
+// ── Inline forms ──────────────────────────────────────────────────────────────
+.cp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+
+  &--profile {
+    padding: 10px 14px;
+    border-bottom: 1px solid $border;
+    background: $bg2;
+    margin-top: 0;
+  }
+
+  &__input {
+    background: var(--cui-body-bg);
+    border: 1px solid $border;
+    color: var(--cui-body-color);
+    border-radius: 5px;
+    padding: 6px 9px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+
+    &:focus { border-color: #58a6ff; }
+
+    &--sm { font-size: 11px; padding: 5px 8px; }
+    &--code {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #58a6ff;
+    }
+  }
+
+  &__row { display: flex; flex-direction: column; gap: 4px; }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  &__btn {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &--cancel {
+      background: $bg2;
+      color: var(--cui-body-color);
+      border: 1px solid $border;
+      &:hover { background: $border; }
+    }
+
+    &--save {
+      background: #58a6ff;
+      color: #000;
+      &:hover:not(:disabled) { opacity: 0.88; }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+  }
+}
