@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSpinner, useColorModes } from '@coreui/react'
+import ErrorBoundary from './components/shared/ErrorBoundary'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { fetchProfile } from './actions/authActions'
 import './scss/style.scss'
@@ -116,28 +117,30 @@ const App = () => {
           </button>
         </div>
       )}
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/404" element={<Page404 />} />
-          <Route path="/500" element={<Page500 />} />
-          <Route path="/aboutMe" element={<AboutMe />} />
-          <Route path="/hard-refresh" element={<HardRefresh />} />
-          <Route path="/selectApp" element={<SelectApp />} />
-          <Route path="/contratos/generar" element={<GenerarContrato />} />
-          <Route path="/domotica/*" element={<DomoticaLayout />} />
-          <Route path="/taxis/*" element={<TaxisLayout />} />
-          <Route path="/system/*" element={<SystemLayout />} />
-          <Route path="/*" element={<DefaultLayout />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="pt-3 text-center">
+              <CSpinner color="primary" variant="grow" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/404" element={<Page404 />} />
+            <Route path="/500" element={<Page500 />} />
+            <Route path="/aboutMe" element={<AboutMe />} />
+            <Route path="/hard-refresh" element={<HardRefresh />} />
+            <Route path="/selectApp" element={<SelectApp />} />
+            <Route path="/contratos/generar" element={<GenerarContrato />} />
+            <Route path="/domotica/*" element={<DomoticaLayout />} />
+            <Route path="/taxis/*" element={<TaxisLayout />} />
+            <Route path="/system/*" element={<SystemLayout />} />
+            <Route path="/*" element={<DefaultLayout />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }

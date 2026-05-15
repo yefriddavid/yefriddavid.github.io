@@ -340,6 +340,7 @@ export default function Eggs() {
       setModalOpen(false)
     }
     prevSaving.current = saving
+    return () => clearTimeout(toastTimer.current)
   }, [saving])
 
   useEffect(() => {

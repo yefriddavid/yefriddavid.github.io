@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
 import taxisRoutes from '../../routes.taxis'
+import ErrorBoundary from '../shared/ErrorBoundary'
 
 const TaxisContent = () => {
   const [firebaseUser, setFirebaseUser] = useState(undefined)
@@ -48,16 +49,18 @@ const TaxisContent = () => {
 
   return (
     <CContainer className="px-2" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
-        <Routes>
-          {taxisRoutes.map((route, idx) => {
-            const Component = route.element
-            return Component && <Route key={idx} path={route.path.replace('/taxis', '')} element={<Component />} />
-          })}
-          <Route path="/" element={<Navigate to="/taxis/home" replace />} />
-          <Route path="/*" element={<Navigate to="/taxis/home" replace />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary module="Taxis">
+        <Suspense fallback={<CSpinner color="primary" />}>
+          <Routes>
+            {taxisRoutes.map((route, idx) => {
+              const Component = route.element
+              return Component && <Route key={idx} path={route.path.replace('/taxis', '')} element={<Component />} />
+            })}
+            <Route path="/" element={<Navigate to="/taxis/home" replace />} />
+            <Route path="/*" element={<Navigate to="/taxis/home" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </CContainer>
   )
 }

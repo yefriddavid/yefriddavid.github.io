@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
 import domoticaRoutes from '../../routes.domotica'
+import ErrorBoundary from '../shared/ErrorBoundary'
 
 const DomoticaContent = () => {
   const [firebaseUser, setFirebaseUser] = useState(undefined)
@@ -48,24 +49,26 @@ const DomoticaContent = () => {
 
   return (
     <CContainer className="px-2" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
-        <Routes>
-          {domoticaRoutes.map((route, idx) => {
-            const Component = route.element
-            return (
-              Component && (
-                <Route
-                  key={idx}
-                  path={route.path.replace('/domotica', '')}
-                  element={<Component />}
-                />
+      <ErrorBoundary module="Domotica">
+        <Suspense fallback={<CSpinner color="primary" />}>
+          <Routes>
+            {domoticaRoutes.map((route, idx) => {
+              const Component = route.element
+              return (
+                Component && (
+                  <Route
+                    key={idx}
+                    path={route.path.replace('/domotica', '')}
+                    element={<Component />}
+                  />
+                )
               )
-            )
-          })}
-          <Route path="/" element={<Navigate to="/domotica/home" replace />} />
-          <Route path="/*" element={<Navigate to="/domotica/home" replace />} />
-        </Routes>
-      </Suspense>
+            })}
+            <Route path="/" element={<Navigate to="/domotica/home" replace />} />
+            <Route path="/*" element={<Navigate to="/domotica/home" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </CContainer>
   )
 }
