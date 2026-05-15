@@ -19,7 +19,7 @@ import {
   CAccordionBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin } from '@coreui/icons'
+import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin, cilTrash } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -109,18 +109,18 @@ const MapLocation = () => {
         }),
       )
 
-      if (shouldPersist(vehicle.id)) {
-        dispatch(
-          vehicleLocationHistoryActions.createRequest({
-            vehicleId: vehicle.id,
-            plate,
-            latitude: lat,
-            longitude: lng,
-            source: 'wss',
-            createdAt: new Date().toISOString(),
-          }),
-        )
-      }
+      // if (shouldPersist(vehicle.id)) {
+      //   dispatch(
+      //     vehicleLocationHistoryActions.createRequest({
+      //       vehicleId: vehicle.id,
+      //       plate,
+      //       latitude: lat,
+      //       longitude: lng,
+      //       source: 'wss',
+      //       createdAt: new Date().toISOString(),
+      //     }),
+      //   )
+      // }
     })
 
     return () => {
@@ -419,6 +419,18 @@ const MapLocation = () => {
                                     setCenterOn([pos.lat, pos.lng])
                                   }}
                                 />
+                                <CIcon
+                                  icon={cilTrash}
+                                  className="history-delete-icon"
+                                  onClick={() =>
+                                    dispatch(
+                                      vehicleLocationHistoryActions.deleteRequest({
+                                        id: h.id,
+                                        vehicleId: loc.vehicle.id,
+                                      }),
+                                    )
+                                  }
+                                />
                               </div>
                               <span className="history-time">
                                 {formatTimeAgo(h.timestamp)}
@@ -440,8 +452,9 @@ const MapLocation = () => {
                                     {geoNames[geoKey(h.latitude, h.longitude)]}
                                   </span>
                                 )}
-                                {parseFloat(h.latitude).toFixed(4)},{' '}
-                                {parseFloat(h.longitude).toFixed(4)}
+                                <span>
+                                  <span className="text-muted" style={{ fontSize: '10px' }}>lat:</span>{parseFloat(h.latitude).toFixed(4)}, <span className="text-muted" style={{ fontSize: '10px' }}>lng:</span>{parseFloat(h.longitude).toFixed(4)}
+                                </span>
                               </span>
                             </div>
                           </div>

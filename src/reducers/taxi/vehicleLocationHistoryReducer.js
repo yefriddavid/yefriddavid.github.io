@@ -15,5 +15,16 @@ export default createCRUDReducer('vehicleLocationHistory', actions, {
       .addCase(actions.fetchRecentError, (state, { payload }) => {
         state.loadingHistories[payload.vehicleId] = false
       })
+      .addMatcher(
+        (action) => action.type === actions.successRequestDelete.type,
+        (state, { payload }) => {
+          const { id, vehicleId } = payload
+          if (vehicleId && state.recentHistories[vehicleId]) {
+            state.recentHistories[vehicleId] = state.recentHistories[vehicleId].filter(
+              (h) => h.id !== id,
+            )
+          }
+        },
+      )
   },
 }).reducer
