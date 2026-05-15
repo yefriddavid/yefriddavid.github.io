@@ -18,6 +18,8 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import { getColombianHolidays } from './auditHelpers'
 import NextMonthPanel from './NextMonthPanel'
+import NextMonthMiniCalendar from './NextMonthMiniCalendar'
+import './Operations.scss'
 import {
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES,
   TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
@@ -261,19 +263,10 @@ const Operations = () => {
 
   return (
     <CCard>
-      <CCardHeader
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
-          justifyContent: 'space-between',
-        }}
-      >
+      <CCardHeader className="ops-header">
         <strong>Operaciones</strong>
 
-        {/* Toggle badges — click to activate/deactivate each type */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div className="ops-badges">
           {[{ key: 'pico-placa' }, ...MAINTENANCE_CATEGORIES.map((c) => ({ key: c }))].map(
             ({ key }) => {
               const c = TYPE_COLORS[key]
@@ -302,8 +295,7 @@ const Operations = () => {
           )}
         </div>
 
-        {/* Next month panel + Period selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div className="ops-controls">
           <NextMonthPanel vehicles={vehicles} drivers={drivers} expenses={expenses} />
           <CFormSelect
             size="sm"
@@ -343,185 +335,132 @@ const Operations = () => {
           <div style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}>
             Selecciona al menos un tipo para mostrar.
           </div>
-        ) : month === 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: '#1e3a5f', color: '#fff' }}>
-                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Vencimiento</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'center', width: 90 }}>Días</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left', width: 110 }}>Placa</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Conductor</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Concepto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcomingEvents.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}
-                    >
-                      Sin vencimientos próximos para los conceptos seleccionados.
-                    </td>
-                  </tr>
-                ) : (
-                  upcomingEvents.map((item, idx) => {
-                    const c =
-                      TYPE_COLORS[item.type] || {
-                        bg: '#f8fafc',
-                        border: '#94a3b8',
-                        text: '#475569',
-                        label: item.type,
-                      }
-                    const urgent = item.daysLeft <= 7
-                    const soon = item.daysLeft <= 30
-                    const daysColor = urgent ? '#dc2626' : soon ? '#d97706' : '#16a34a'
-                    return (
-                      <tr
-                        key={idx}
-                        onClick={() => setActiveItem(item)}
-                        style={{
-                          borderBottom: '1px solid #f0f0f0',
-                          borderLeft: `3px solid ${c.border}`,
-                          background: urgent ? '#fff5f5' : '#fff',
-                          cursor: item.lastExpense ? 'pointer' : 'default',
-                        }}
-                      >
-                        <td style={{ padding: '8px 14px', fontVariantNumeric: 'tabular-nums' }}>
-                          {item.nextDate}
-                        </td>
-                        <td style={{ padding: '8px 14px', textAlign: 'center' }}>
-                          <span
-                            style={{
-                              fontWeight: 700,
-                              fontSize: 13,
-                              color: daysColor,
-                            }}
-                          >
-                            {item.daysLeft === 0 ? 'Hoy' : `${item.daysLeft}d`}
-                          </span>
-                        </td>
-                        <td style={{ padding: '8px 14px' }}>
-                          <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                            {item.vehicle.plate}
-                          </span>
-                        </td>
-                        <td style={{ padding: '8px 14px', color: '#6b7280', fontSize: 12 }}>
-                          {item.driver?.name ?? '—'}
-                        </td>
-                        <td style={{ padding: '8px 14px' }}>
-                          <span
-                            style={{
-                              background: c.bg,
-                              border: `1px solid ${c.border}`,
-                              color: c.text,
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: 11,
-                              fontWeight: 600,
-                            }}
-                          >
-                            {c.label}
-                          </span>
+        ) : (
+          <div className="ops-layout">
+            <div className="ops-main">
+              {month === 0 ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#1e3a5f', color: '#fff' }}>
+                      <th style={{ padding: '8px 14px', textAlign: 'left' }}>Vencimiento</th>
+                      <th style={{ padding: '8px 14px', textAlign: 'center', width: 90 }}>Días</th>
+                      <th style={{ padding: '8px 14px', textAlign: 'left', width: 110 }}>Placa</th>
+                      <th style={{ padding: '8px 14px', textAlign: 'left' }}>Conductor</th>
+                      <th style={{ padding: '8px 14px', textAlign: 'left' }}>Concepto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcomingEvents.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}>
+                          Sin vencimientos próximos para los conceptos seleccionados.
                         </td>
                       </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: '#1e3a5f', color: '#fff' }}>
-                  <th style={{ padding: '8px 12px', textAlign: 'center', width: 48 }}>Día</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'center', width: 120 }}>Semana</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left' }}>Eventos</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: daysInMonth }, (_, i) => {
-                  const day = i + 1
-                  const dateStr = `${monthStr}-${pad2(day)}`
-                  const dow = new Date(year, month - 1, day).getDay()
-                  const isSunday = dow === 0
-                  const isHoliday = holidays.has(dateStr)
-                  const isToday = day === todayNum
-                  const items = itemsByDay.get(day) ?? []
-                  const hasItems = items.length > 0
-
-                  return (
-                    <tr
-                      key={day}
-                      style={{
-                        background: isToday
-                          ? '#e8f0fb'
-                          : isSunday || isHoliday
-                            ? '#fafafa'
-                            : '#fff',
-                        borderBottom: '1px solid #f0f0f0',
-                        borderLeft: isToday
-                          ? '3px solid #1e3a5f'
-                          : hasItems
-                            ? '3px solid #f59e0b'
-                            : '3px solid transparent',
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: '7px 12px',
-                          textAlign: 'center',
-                          fontWeight: isToday ? 700 : 500,
-                          fontVariantNumeric: 'tabular-nums',
-                          color: isToday
-                            ? '#1e3a5f'
-                            : isSunday || isHoliday
-                              ? '#92400e'
-                              : '#374151',
-                        }}
-                      >
-                        {pad2(day)}
-                        {isHoliday && (
-                          <span style={{ fontSize: 9, display: 'block', color: '#b45309' }}>
-                            Fest.
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        style={{
-                          padding: '7px 12px',
-                          textAlign: 'center',
-                          color: isSunday || isHoliday ? '#92400e' : '#6b7280',
-                          fontStyle: isSunday || isHoliday ? 'italic' : 'normal',
-                          fontSize: 12,
-                        }}
-                      >
-                        {dayNames[dow]}
-                      </td>
-                      <td style={{ padding: '5px 14px' }}>
-                        {hasItems ? (
-                          items.map((item, idx) => (
-                            <ItemBadge
-                              key={idx}
-                              plate={item.vehicle.plate}
-                              driver={item.driver?.name}
-                              type={item.type}
-                              lastExpense={item.lastExpense}
-                              onClick={() => setActiveItem(item)}
-                            />
-                          ))
-                        ) : (
-                          <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
-                        )}
-                      </td>
+                    ) : (
+                      upcomingEvents.map((item, idx) => {
+                        const c = TYPE_COLORS[item.type] || { bg: '#f8fafc', border: '#94a3b8', text: '#475569', label: item.type }
+                        const urgent = item.daysLeft <= 7
+                        const soon = item.daysLeft <= 30
+                        const daysColor = urgent ? '#dc2626' : soon ? '#d97706' : '#16a34a'
+                        return (
+                          <tr
+                            key={idx}
+                            onClick={() => setActiveItem(item)}
+                            style={{
+                              borderBottom: '1px solid #f0f0f0',
+                              borderLeft: `3px solid ${c.border}`,
+                              background: urgent ? '#fff5f5' : '#fff',
+                              cursor: item.lastExpense ? 'pointer' : 'default',
+                            }}
+                          >
+                            <td style={{ padding: '8px 14px', fontVariantNumeric: 'tabular-nums' }}>{item.nextDate}</td>
+                            <td style={{ padding: '8px 14px', textAlign: 'center' }}>
+                              <span style={{ fontWeight: 700, fontSize: 13, color: daysColor }}>
+                                {item.daysLeft === 0 ? 'Hoy' : `${item.daysLeft}d`}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px 14px' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.vehicle.plate}</span>
+                            </td>
+                            <td style={{ padding: '8px 14px', color: '#6b7280', fontSize: 12 }}>{item.driver?.name ?? '—'}</td>
+                            <td style={{ padding: '8px 14px' }}>
+                              <span style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>
+                                {c.label}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#1e3a5f', color: '#fff' }}>
+                      <th style={{ padding: '8px 12px', textAlign: 'center', width: 48 }}>Día</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'center', width: 120 }}>Semana</th>
+                      <th style={{ padding: '8px 14px', textAlign: 'left' }}>Eventos</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: daysInMonth }, (_, i) => {
+                      const day = i + 1
+                      const dateStr = `${monthStr}-${pad2(day)}`
+                      const dow = new Date(year, month - 1, day).getDay()
+                      const isSunday = dow === 0
+                      const isHoliday = holidays.has(dateStr)
+                      const isToday = day === todayNum
+                      const items = itemsByDay.get(day) ?? []
+                      const hasItems = items.length > 0
+                      return (
+                        <tr
+                          key={day}
+                          style={{
+                            background: isToday ? '#e8f0fb' : isSunday || isHoliday ? '#fafafa' : '#fff',
+                            borderBottom: '1px solid #f0f0f0',
+                            borderLeft: isToday ? '3px solid #1e3a5f' : hasItems ? '3px solid #f59e0b' : '3px solid transparent',
+                          }}
+                        >
+                          <td style={{ padding: '7px 12px', textAlign: 'center', fontWeight: isToday ? 700 : 500, fontVariantNumeric: 'tabular-nums', color: isToday ? '#1e3a5f' : isSunday || isHoliday ? '#92400e' : '#374151' }}>
+                            {pad2(day)}
+                            {isHoliday && <span style={{ fontSize: 9, display: 'block', color: '#b45309' }}>Fest.</span>}
+                          </td>
+                          <td style={{ padding: '7px 12px', textAlign: 'center', color: isSunday || isHoliday ? '#92400e' : '#6b7280', fontStyle: isSunday || isHoliday ? 'italic' : 'normal', fontSize: 12 }}>
+                            {dayNames[dow]}
+                          </td>
+                          <td style={{ padding: '5px 14px' }}>
+                            {hasItems ? (
+                              items.map((item, idx) => (
+                                <ItemBadge
+                                  key={idx}
+                                  plate={item.vehicle.plate}
+                                  driver={item.driver?.name}
+                                  type={item.type}
+                                  lastExpense={item.lastExpense}
+                                  onClick={() => setActiveItem(item)}
+                                />
+                              ))
+                            ) : (
+                              <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div>
+              <NextMonthMiniCalendar
+                vehicles={vehicles}
+                lastByCategory={lastByCategory}
+                selected={selected}
+              />
+            </div>
+
           </div>
         )}
       </CCardBody>
