@@ -70,6 +70,25 @@ Service files (`src/services/firebase/**`) must be pure data-access functions. T
 - ❌ Service receives `{ month, year }` and computes the date range internally
 - ❌ Service contains `if/else` branches based on domain state (e.g. `if month === 0`)
 
+#### RULE: Static domain constants must live in `src/constants/`
+
+All static domain values (option lists, type enumerations, label maps, color maps tied to a domain status/type) must be exported from the appropriate file in `src/constants/`. **Never define them inline inside a view or component file.**
+
+Available constants files and their scope:
+- `src/constants/taxi.js` — Taxi module (categories, colors, audit status, chart palettes)
+- `src/constants/cashFlow.js` — CashFlow module (account categories, payment methods, asset types, salary distribution)
+- `src/constants/accounting.js` — Accounting module (account types, nature/type color maps)
+- `src/constants/domotica.js` — Domotica module (device types, status labels/colors, serial categories)
+- `src/constants/admin.js` — Admin/auth (plans, roles, role labels/colors)
+- `src/constants/commons.js` — Cross-module shared values
+
+- ✅ `export const TAXI_AUDIT_STATUS_DEFS = [...]` in `src/constants/taxi.js`
+- ✅ `import { TAXI_AUDIT_STATUS_DEFS as STATUS_DEFS } from 'src/constants/taxi'` in the view
+- ❌ `const STATUS_DEFS = [{ key: 'none', ... }]` defined inline inside a component file
+- ❌ Duplicating the same list in multiple files
+
+This also applies to color maps that are semantically tied to domain types (e.g. `{ active: 'success', inactive: 'secondary' }`).
+
 #### RULE: All Firestore collection names must be defined in `settings.js`
 
 Every Firestore collection name must be exported as a named constant from `src/services/firebase/settings.js`. **Never hardcode a collection name string inside a service file.**
@@ -112,6 +131,35 @@ Dual backend:
 
 ### Styling
 SCSS with CoreUI variables. Custom overrides in `src/scss/_custom.scss` and `src/scss/_variables.scss`. Prettier enforces: no semicolons, single quotes, trailing commas, 100-char line width, 2-space indent.
+
+#### RULE: All SCSS must use BEM methodology
+
+Every SCSS file in this project must follow **BEM (Block Element Modifier)**. No exceptions.
+
+- **Block**: standalone component root — `.cmd-dict`, `.cp-panel`, `.cp-profile`
+- **Element**: part of a block, separated by `__` — `.cp-panel__header`, `.cp-profile__name`, `.cp-item__value`
+- **Modifier**: variant or state, separated by `--` — `.cp-panel--loading`, `.cp-icon-btn--danger`, `.cmd-cat--gps`
+
+Rules:
+- ✅ Use `&__element` and `&--modifier` shorthand inside the block declaration
+- ✅ Standalone helper classes (`.cp-icon-btn`, `.cp-text-btn`) are allowed when they are reused across multiple blocks
+- ❌ Never nest descendant selectors inside a block (`.block { .child {} }`) — use `&__child` instead
+- ❌ Never use non-BEM class names like `.history-list`, `.route-controls`, `.empty-state` as scoped children
+
+```scss
+// ✅ Correct
+.cp-profile {
+  &__header { ... }
+  &__name   { ... }
+  &--open   { ... }
+}
+
+// ❌ Wrong — descendant selector, not BEM
+.cp-profile {
+  .header { ... }
+  .name   { ... }
+}
+```
 
 ### i18n
 `i18next` with Spanish (`es`) as default. Translation files loaded via HTTP backend. Use `useTranslation()` hook and `t('key')` in components.
@@ -213,3 +261,8 @@ const onSubmit = (data) => onSave({ ...data, attachment })
 <MyForm key={createKey} initial={EMPTY} onSave={handleCreate} />
 // After successful save: setCreateKey(k => k + 1)
 ```
+
+
+
+nunca usar esto:
+const REGULATORY = ['SOAT', 'RTM', 'Póliza Resp. Civil', 'Tarjeta de Operación'] dentro de las vistas o archivos esto debe ir en settings
