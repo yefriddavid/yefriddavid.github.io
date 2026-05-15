@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { CSpinner } from '@coreui/react'
 import ChartRangeSlider from './ChartRangeSlider'
+import nightShadingPlugin from './nightShadingPlugin'
 
 const fmt = (iso) => {
   const d = new Date(iso)
@@ -55,6 +56,7 @@ const VoltageChart = ({ data, loading }) => {
         endLabel={data[endIdx] ? fmt(data[endIdx].createdAt) : ''}
       />
       <CChartLine
+        plugins={[nightShadingPlugin]}
         style={{ height: '180px' }}
         data={{
           labels,

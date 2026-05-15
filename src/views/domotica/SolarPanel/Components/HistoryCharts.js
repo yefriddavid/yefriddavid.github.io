@@ -24,10 +24,10 @@ const PRESETS = [
 ]
 
 const getPresetRange = (hours) => {
-  const endDate = new Date()
-  const startDate = new Date()
-  startDate.setHours(startDate.getHours() - hours)
-  return { startDate, endDate }
+  const end = new Date()
+  const start = new Date()
+  start.setHours(start.getHours() - hours)
+  return { startDate: start.toISOString(), endDate: end.toISOString() }
 }
 
 const toDatetimeLocal = (d) => {
@@ -104,7 +104,7 @@ const HistoryCharts = () => {
 
   const applyCustom = () => {
     if (!customFrom || !customTo) return
-    const range = { startDate: new Date(customFrom), endDate: new Date(customTo) }
+    const range = { startDate: new Date(customFrom).toISOString(), endDate: new Date(customTo).toISOString() }
     setDateRange(range)
     setFilterKey((k) => k + 1)
     fetchBoth(range)
