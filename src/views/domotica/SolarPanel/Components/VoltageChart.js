@@ -57,7 +57,7 @@ const VoltageChart = ({ data, loading }) => {
       />
       <CChartLine
         plugins={[nightShadingPlugin]}
-        style={{ height: '180px' }}
+        style={{ height: '260px' }}
         data={{
           labels,
           datasets: [
