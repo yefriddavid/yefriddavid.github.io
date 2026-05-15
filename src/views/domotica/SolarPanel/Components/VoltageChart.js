@@ -10,10 +10,21 @@ const fmt = (iso) => {
 
 const VoltageChart = ({ data, loading }) => {
   const [range, setRange] = useState([0, 0])
+  const userAdjusted = React.useRef(false)
 
   useEffect(() => {
-    if (data?.length) setRange([0, data.length - 1])
+    if (!data?.length) return
+    if (userAdjusted.current) {
+      setRange((prev) => [prev[0], Math.min(prev[1], data.length - 1)])
+    } else {
+      setRange([0, data.length - 1])
+    }
   }, [data?.length])
+
+  const handleRangeChange = (r) => {
+    userAdjusted.current = true
+    setRange(r)
+  }
 
   if (loading && (!data || data.length === 0)) {
     return (
@@ -39,7 +50,7 @@ const VoltageChart = ({ data, loading }) => {
         total={data.length}
         start={startIdx}
         end={endIdx}
-        onChange={setRange}
+        onChange={handleRangeChange}
         startLabel={data[startIdx] ? fmt(data[startIdx].createdAt) : ''}
         endLabel={data[endIdx] ? fmt(data[endIdx].createdAt) : ''}
       />

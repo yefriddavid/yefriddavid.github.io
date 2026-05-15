@@ -49,20 +49,20 @@ function* deleteTransaction({ payload }) {
   }
 }
 
-function* fetchVoltageHistory() {
+function* fetchVoltageHistory({ payload } = {}) {
   try {
-    const { startDate, endDate } = getLast24hRange()
-    const data = yield call(service.fetchVoltageHistory, { startDate, endDate })
+    const range = payload?.startDate ? payload : getLast24hRange()
+    const data = yield call(service.fetchVoltageHistory, range)
     yield put(actions.fetchVoltageSuccess(data))
   } catch (e) {
     yield put(actions.fetchVoltageError(e.message))
   }
 }
 
-function* fetchCurrentHistory() {
+function* fetchCurrentHistory({ payload } = {}) {
   try {
-    const { startDate, endDate } = getLast24hRange()
-    const data = yield call(service.fetchCurrentHistory, { startDate, endDate })
+    const range = payload?.startDate ? payload : getLast24hRange()
+    const data = yield call(service.fetchCurrentHistory, range)
     yield put(actions.fetchCurrentSuccess(data))
   } catch (e) {
     yield put(actions.fetchCurrentError(e.message))

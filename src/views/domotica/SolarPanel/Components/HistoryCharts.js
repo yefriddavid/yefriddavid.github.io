@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CCardBody, CButton, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -14,6 +14,26 @@ import {
 } from 'src/selectors/domoticaSelectors'
 import VoltageChart from './VoltageChart'
 import CurrentChart from './CurrentChart'
+
+const PRESETS = [
+  { key: '24h', label: 'Últ. 24h', hours: 24 },
+  { key: '48h', label: 'Últ. 48h', hours: 48 },
+  { key: '7d', label: '7 días', hours: 168 },
+  { key: '30d', label: '30 días', hours: 720 },
+  { key: 'custom', label: 'Personalizado', hours: null },
+]
+
+const getPresetRange = (hours) => {
+  const endDate = new Date()
+  const startDate = new Date()
+  startDate.setHours(startDate.getHours() - hours)
+  return { startDate, endDate }
+}
+
+const toDatetimeLocal = (d) => {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 const fmt = (iso) => {
   if (!iso) return null
@@ -54,24 +74,101 @@ const HistoryCharts = () => {
   const lastVoltageAt = useSelector(selectLastVoltageAt)
   const lastCurrentAt = useSelector(selectLastCurrentAt)
 
+  const [preset, setPreset] = useState('24h')
+  const [customFrom, setCustomFrom] = useState(() => toDatetimeLocal((() => { const d = new Date(); d.setHours(d.getHours() - 24); return d })()))
+  const [customTo, setCustomTo] = useState(() => toDatetimeLocal(new Date()))
+  const [dateRange, setDateRange] = useState(() => getPresetRange(24))
+  const [filterKey, setFilterKey] = useState(0)
+
+  const fetchBoth = useCallback(
+    (range) => {
+      dispatch(domoticaTransactionActions.fetchVoltageRequest(range))
+      dispatch(domoticaTransactionActions.fetchCurrentRequest(range))
+    },
+    [dispatch],
+  )
+
+  useEffect(() => {
+    fetchBoth(dateRange)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const applyPreset = (key) => {
+    setPreset(key)
+    if (key === 'custom') return
+    const p = PRESETS.find((p) => p.key === key)
+    const range = getPresetRange(p.hours)
+    setDateRange(range)
+    setFilterKey((k) => k + 1)
+    fetchBoth(range)
+  }
+
+  const applyCustom = () => {
+    if (!customFrom || !customTo) return
+    const range = { startDate: new Date(customFrom), endDate: new Date(customTo) }
+    setDateRange(range)
+    setFilterKey((k) => k + 1)
+    fetchBoth(range)
+  }
+
+  const handleRefresh = () => fetchBoth(dateRange)
+
+  const fetching = voltageFetching || currentFetching
+
   return (
     <>
+      <div className="solar-panel__history-filter">
+        <div className="solar-panel__history-filter-presets">
+          {PRESETS.map((p) => (
+            <CButton
+              key={p.key}
+              size="sm"
+              color="primary"
+              variant={preset === p.key ? undefined : 'outline'}
+              onClick={() => applyPreset(p.key)}
+              disabled={fetching}
+            >
+              {p.label}
+            </CButton>
+          ))}
+        </div>
+        {preset === 'custom' && (
+          <div className="solar-panel__history-filter-custom">
+            <input
+              type="datetime-local"
+              className="solar-panel__datetime-input"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+            />
+            <span className="solar-panel__history-filter-sep">—</span>
+            <input
+              type="datetime-local"
+              className="solar-panel__datetime-input"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+            />
+            <CButton size="sm" color="success" onClick={applyCustom} disabled={fetching || !customFrom || !customTo}>
+              Aplicar
+            </CButton>
+          </div>
+        )}
+      </div>
+
       <ChartSection
         label="Historial de voltaje — hoy"
         lastAt={lastVoltageAt}
         fetching={voltageFetching}
-        onRefresh={() => dispatch(domoticaTransactionActions.fetchVoltageRequest())}
+        onRefresh={handleRefresh}
       >
-        <VoltageChart data={voltageHistory} loading={voltageFetching} />
+        <VoltageChart key={filterKey} data={voltageHistory} loading={voltageFetching} />
       </ChartSection>
 
       <ChartSection
         label="Historial de corriente — hoy"
         lastAt={lastCurrentAt}
         fetching={currentFetching}
-        onRefresh={() => dispatch(domoticaTransactionActions.fetchCurrentRequest())}
+        onRefresh={handleRefresh}
       >
-        <CurrentChart data={currentHistory} loading={currentFetching} />
+        <CurrentChart key={filterKey} data={currentHistory} loading={currentFetching} />
       </ChartSection>
     </>
   )
