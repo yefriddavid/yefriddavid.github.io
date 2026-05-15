@@ -2,7 +2,7 @@ import { put, call, all, takeLatest, takeEvery } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaCommandProfileActions'
 import * as service from '../../services/facade/domotica/domoticaCommandProfilesFacade'
 
-function* fetchProfiles() {
+export function* fetchProfiles() {
   try {
     yield put(actions.beginFetchProfiles())
     const data = yield call(service.fetchProfiles)
@@ -12,7 +12,7 @@ function* fetchProfiles() {
   }
 }
 
-function* createProfile({ payload }) {
+export function* createProfile({ payload }) {
   try {
     yield put(actions.beginCreateProfile())
     const id = yield call(service.createProfile, payload)
@@ -22,7 +22,7 @@ function* createProfile({ payload }) {
   }
 }
 
-function* updateProfile({ payload }) {
+export function* updateProfile({ payload }) {
   try {
     yield put(actions.beginUpdateProfile())
     yield call(service.updateProfile, payload.id, payload)
@@ -32,7 +32,7 @@ function* updateProfile({ payload }) {
   }
 }
 
-function* deleteProfile({ payload }) {
+export function* deleteProfile({ payload }) {
   try {
     yield put(actions.beginDeleteProfile())
     yield call(service.deleteProfile, payload.id)
@@ -42,7 +42,7 @@ function* deleteProfile({ payload }) {
   }
 }
 
-function* fetchItems({ payload }) {
+export function* fetchItems({ payload }) {
   const { profileId } = payload
   try {
     const data = yield call(service.fetchProfileItems, profileId)
@@ -52,7 +52,7 @@ function* fetchItems({ payload }) {
   }
 }
 
-function* createItem({ payload }) {
+export function* createItem({ payload }) {
   try {
     yield put(actions.beginCreateItem())
     const id = yield call(service.createProfileItem, payload)
@@ -62,7 +62,7 @@ function* createItem({ payload }) {
   }
 }
 
-function* updateItem({ payload }) {
+export function* updateItem({ payload }) {
   try {
     yield call(service.updateProfileItem, payload.id, payload)
     yield put(actions.successUpdateItem(payload))
@@ -71,7 +71,7 @@ function* updateItem({ payload }) {
   }
 }
 
-function* deleteItem({ payload }) {
+export function* deleteItem({ payload }) {
   try {
     yield call(service.deleteProfileItem, payload.id)
     yield put(actions.successDeleteItem(payload))
@@ -80,7 +80,7 @@ function* deleteItem({ payload }) {
   }
 }
 
-function* reorderItems({ payload }) {
+export function* reorderItems({ payload }) {
   try {
     yield call(service.reorderProfileItems, payload.items)
     yield put(actions.successReorderItems(payload))

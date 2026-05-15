@@ -36,6 +36,8 @@ vi.mock('@coreui/icons', () => ({
   cilHistory: 'hist',
   cilGlobeAlt: 'globe',
   cilLocationPin: 'pin',
+  cilTrash: 'trash',
+  cilReload: 'reload',
 }))
 vi.mock('@coreui/react', () => ({
   CCard: ({ children, className }) => <div className={className}>{children}</div>,

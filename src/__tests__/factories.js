@@ -134,3 +134,128 @@ export const makeUser = (overrides = {}) => ({
   avatar: null,
   ...overrides,
 })
+
+export const makePeriodAttachment = (overrides = {}) => ({
+  id: 'att-1',
+  periodId: 'period-2024-03',
+  name: 'recibo.jpg',
+  url: null,
+  file: 'base64string',
+  createdAt: '2024-03-10T10:00:00Z',
+  ...overrides,
+})
+
+export const makePeriodNote = (overrides = {}) => ({
+  id: 'note-1',
+  periodId: 'period-2024-03',
+  text: 'Nota de ejemplo',
+  createdAt: '2024-03-10T10:00:00Z',
+  author: 'jperez',
+  ...overrides,
+})
+
+export const makeStatusNote = (overrides = {}) => ({
+  id: 'snote-1',
+  accountId: 'acc-1',
+  text: 'Estado revisado',
+  createdAt: '2024-03-10T10:00:00Z',
+  author: 'jperez',
+  ...overrides,
+})
+
+export const makeAccountMaster = (overrides = {}) => ({
+  id: 'am-1',
+  name: 'Cuenta Bancaria',
+  type: 'bank',
+  active: true,
+  balance: 1000000,
+  ...overrides,
+})
+
+export const makeAsset = (overrides = {}) => ({
+  id: 'asset-1',
+  name: 'Laptop',
+  value: 3000000,
+  category: 'tech',
+  syncedAt: null,
+  ...overrides,
+})
+
+export const makeEgg = (overrides = {}) => ({
+  id: 'egg-1',
+  amount: 500000,
+  description: 'Ahorro mensual',
+  date: '2024-03-01',
+  ...overrides,
+})
+
+export const makeGridTrade = (overrides = {}) => ({
+  id: 'gt-1',
+  symbol: 'BTCUSDT',
+  lowerPrice: 20000,
+  upperPrice: 30000,
+  grids: 10,
+  investment: 1000,
+  ...overrides,
+})
+
+export const makeProject = (overrides = {}) => ({
+  id: 'proj-1',
+  name: 'Proyecto Alpha',
+  description: 'Descripción del proyecto',
+  active: true,
+  syncedAt: null,
+  ...overrides,
+})
+
+export const makeCustomGridTrade = (overrides = {}) => ({
+  id: 'cgt-1',
+  symbol: 'ETHUSDT',
+  lowerPrice: 1500,
+  upperPrice: 2500,
+  grids: 5,
+  investment: 500,
+  ...overrides,
+})
+
+export const makeTenant = (overrides = {}) => ({
+  id: 'tenant-1',
+  name: 'Arrendatario A',
+  email: 'arrendatario@example.com',
+  phone: '3101234567',
+  active: true,
+  ...overrides,
+})
+
+export const makeDomoticaDevice = (overrides = {}) => ({
+  id: 'dev-1',
+  name: 'Sensor Temperatura',
+  type: 'sensor',
+  active: true,
+  topic: 'home/sensor/temp',
+  ...overrides,
+})
+
+export const makeDomoticaCommand = (overrides = {}) => ({
+  id: 'cmd-1',
+  name: 'Encender luz',
+  topic: 'home/light/on',
+  payload: '1',
+  active: true,
+  ...overrides,
+})
+
+export const makeDomoticaProfile = (overrides = {}) => ({
+  id: 'profile-1',
+  name: 'Perfil Casa',
+  description: 'Perfil para control de casa',
+  ...overrides,
+})
+
+export const makeDomoticaProfileItem = (overrides = {}) => ({
+  id: 'item-1',
+  profileId: 'profile-1',
+  commandId: 'cmd-1',
+  order: 0,
+  ...overrides,
+})

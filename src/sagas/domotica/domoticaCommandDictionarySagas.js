@@ -2,7 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaCommandDictionaryActions'
 import * as service from '../../services/facade/domotica/domoticaCommandDictionaryFacade'
 
-function* fetchDictionary() {
+export function* fetchDictionary() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.fetchCommandDictionary)
@@ -12,7 +12,7 @@ function* fetchDictionary() {
   }
 }
 
-function* createEntry({ payload }) {
+export function* createEntry({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.createCommandEntry, payload)
@@ -22,7 +22,7 @@ function* createEntry({ payload }) {
   }
 }
 
-function* updateEntry({ payload }) {
+export function* updateEntry({ payload }) {
   try {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateCommandEntry, payload.id, payload)
@@ -32,7 +32,7 @@ function* updateEntry({ payload }) {
   }
 }
 
-function* deleteEntry({ payload }) {
+export function* deleteEntry({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteCommandEntry, payload.id)
@@ -42,7 +42,7 @@ function* deleteEntry({ payload }) {
   }
 }
 
-function* seedDictionary({ payload }) {
+export function* seedDictionary({ payload }) {
   try {
     yield put(actions.beginRequestSeed())
     yield call(service.seedCommandDictionary, payload)
