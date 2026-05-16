@@ -14,7 +14,7 @@ function safeSerialize(value) {
   }
 }
 
-export const flightRecorderMiddleware = () => (next) => (action) => {
+export const flightRecorderMiddleware = (store) => (next) => (action) => {
   const entry = {
     type: action.type,
     ts: new Date().toISOString(),
@@ -22,10 +22,21 @@ export const flightRecorderMiddleware = () => (next) => (action) => {
   }
   if (actionBuffer.length >= BUFFER_SIZE) actionBuffer.shift()
   actionBuffer.push(entry)
+
+  if (action.error === true && action.payload instanceof Error) {
+    const state = store.getState()
+    reportError(action.payload, action.type, {
+      reduxState: {
+        username: state.login?.username ?? null,
+        currentRoute: window.location.hash,
+      },
+    })
+  }
+
   return next(action)
 }
 
-export async function reportError(error, context = 'unknown') {
+export async function reportError(error, context = 'unknown', extra = {}) {
   try {
     await addDoc(collection(db, COL_SYSTEM_ERROR_LOGS), {
       timestamp: serverTimestamp(),
@@ -35,6 +46,7 @@ export async function reportError(error, context = 'unknown') {
       url: window.location.href,
       username: localStorage.getItem('username'),
       recentActions: [...actionBuffer],
+      ...safeSerialize(extra),
     })
   } catch {
     // Silently fail — never throw from error reporting
