@@ -8,7 +8,7 @@ export const getErrorLogs = async () => {
   return snap.docs.map((d) => ({
     id: d.id,
     ...d.data(),
-    timestamp: d.data().timestamp?.toDate?.() ?? null,
+    timestamp: d.data().timestamp?.toDate?.()?.toISOString() ?? null,
   }))
 }
 
