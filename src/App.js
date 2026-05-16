@@ -34,6 +34,7 @@ const HardRefresh = React.lazy(() => import('./views/hard-refresh/HardRefresh'))
 const SelectApp = React.lazy(() => import('./views/selectApp/SelectApp'))
 
 import * as accountsMasterActions from './actions/cashflow/accountsMasterActions'
+import { reportError } from './services/errorReporter'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -44,6 +45,17 @@ const App = () => {
   const { needRefresh: needRefreshState, updateServiceWorker } = useRegisterSW()
 
   const needRefresh = Array.isArray(needRefreshState) ? needRefreshState[0] : !!needRefreshState
+
+  useEffect(() => {
+    const onError = (event) => reportError(event.error ?? new Error(event.message), 'window.onerror')
+    const onUnhandled = (event) => reportError(event.reason, 'unhandledrejection')
+    window.addEventListener('error', onError)
+    window.addEventListener('unhandledrejection', onUnhandled)
+    return () => {
+      window.removeEventListener('error', onError)
+      window.removeEventListener('unhandledrejection', onUnhandled)
+    }
+  }, [])
 
   // Background sync for accounting accounts
   useEffect(() => {

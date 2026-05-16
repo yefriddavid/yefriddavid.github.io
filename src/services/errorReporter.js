@@ -1,0 +1,42 @@
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from './firebase/settings'
+import { COL_SYSTEM_ERROR_LOGS } from './firebase/settings'
+
+const BUFFER_SIZE = 10
+
+const actionBuffer = []
+
+function safeSerialize(value) {
+  try {
+    return JSON.parse(JSON.stringify(value))
+  } catch {
+    return '[unserializable]'
+  }
+}
+
+export const flightRecorderMiddleware = () => (next) => (action) => {
+  const entry = {
+    type: action.type,
+    ts: new Date().toISOString(),
+    payload: safeSerialize(action.payload),
+  }
+  if (actionBuffer.length >= BUFFER_SIZE) actionBuffer.shift()
+  actionBuffer.push(entry)
+  return next(action)
+}
+
+export async function reportError(error, context = 'unknown') {
+  try {
+    await addDoc(collection(db, COL_SYSTEM_ERROR_LOGS), {
+      timestamp: serverTimestamp(),
+      context,
+      message: error?.message ?? String(error),
+      stack: error?.stack ?? null,
+      url: window.location.href,
+      username: localStorage.getItem('username'),
+      recentActions: [...actionBuffer],
+    })
+  } catch {
+    // Silently fail — never throw from error reporting
+  }
+}

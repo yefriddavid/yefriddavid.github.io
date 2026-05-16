@@ -1,5 +1,6 @@
 import React from 'react'
 import { CButton } from '@coreui/react'
+import { reportError } from '../../services/errorReporter'
 
 class ErrorBoundary extends React.Component {
   state = { error: null }
@@ -9,8 +10,9 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    const label = this.props.module ? `[ErrorBoundary:${this.props.module}]` : '[ErrorBoundary]'
-    console.error(label, error, info.componentStack)
+    const context = this.props.module ? `ErrorBoundary:${this.props.module}` : 'ErrorBoundary'
+    console.error(`[${context}]`, error, info.componentStack)
+    reportError(error, context)
   }
 
   handleReset = () => {
