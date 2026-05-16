@@ -73,8 +73,9 @@ function sleep(ms) {
  * @param {{ retries?: number }} options
  * @returns {Promise<any>}
  */
-export async function firestoreCall(operation, { retries = 1 } = {}) {
+export async function firestoreCall(operation, { retries = 1, label } = {}) {
   let lastErr
+  const start = performance.now()
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -84,7 +85,14 @@ export async function firestoreCall(operation, { retries = 1 } = {}) {
         await auth.currentUser.getIdToken(attempt > 0)
       }
 
-      return await operation()
+      const result = await operation()
+      const ms = Math.round(performance.now() - start)
+      if (ms > 2000 && label) {
+        import('./system/perfLogs').then(({ writePerfLog }) =>
+          writePerfLog({ label, durationMs: ms, route: window.location.hash, username: localStorage.getItem('username'), slow: true })
+        )
+      }
+      return result
     } catch (err) {
       lastErr = err
 
@@ -104,6 +112,12 @@ export async function firestoreCall(operation, { retries = 1 } = {}) {
     }
   }
 
+  const ms = Math.round(performance.now() - start)
+  if (label) {
+    import('./system/perfLogs').then(({ writePerfLog }) =>
+      writePerfLog({ label, durationMs: ms, route: window.location.hash, username: localStorage.getItem('username'), slow: ms > 2000, error: lastErr?.message })
+    )
+  }
   throw normalizeError(lastErr)
 }
 

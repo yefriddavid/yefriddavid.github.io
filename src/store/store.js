@@ -4,11 +4,12 @@ import { createLogger } from 'redux-logger'
 import combinedReducers from '../reducers/combineReducers'
 import rootSagas from '../sagas'
 import { flightRecorderMiddleware } from '../services/errorReporter'
+import { auditMiddleware } from '../services/auditMiddleware'
 
 const sagaMiddleware = createSagaMiddleware()
 
 const middleware = (getDefaultMiddleware) => {
-  const base = getDefaultMiddleware().concat(sagaMiddleware, flightRecorderMiddleware)
+  const base = getDefaultMiddleware().concat(sagaMiddleware, flightRecorderMiddleware, auditMiddleware)
   return import.meta.env.DEV ? base.concat(createLogger({ collapsed: true })) : base
 }
 

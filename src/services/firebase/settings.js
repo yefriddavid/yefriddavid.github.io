@@ -108,3 +108,5 @@ export const COL_DOMOTICA_COMMAND_PROFILE_ITEMS = 'Domotica_command_profile_item
 export const COL_PAGE_VISITS = 'page_visits'
 export const COL_PAYMENT_VAUCHERS = (year) => `paymentVauchers-${year}`
 export const COL_SYSTEM_ERROR_LOGS = 'System_error_logs'
+export const COL_SYSTEM_AUDIT_LOGS = 'System_audit_logs'
+export const COL_SYSTEM_PERF_LOGS = 'System_perf_logs'

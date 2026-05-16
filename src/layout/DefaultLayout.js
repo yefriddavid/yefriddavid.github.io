@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { AppContent, AppSidebar, AppFooter, AppHeader, ErrorBoundary } from '../components/index'
 import InstallBanner from '../components/shared/InstallBanner'
 import NotificationToaster from '../components/shared/NotificationToaster'
+import OfflineBanner from '../components/shared/OfflineBanner'
 import { APP_NAME } from '../components/BrandName'
 import { setUi } from 'src/reducers/uiReducer'
 
@@ -51,6 +52,7 @@ const DefaultLayout = () => {
       </div>
       <InstallBanner />
       <NotificationToaster />
+      <OfflineBanner />
     </div>
   )
 }

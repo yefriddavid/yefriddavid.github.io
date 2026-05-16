@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import withRouter from '../../context/searchParamsContext'
 import { fetchProfile } from '../../actions/authActions'
 import { signIn } from '../../services/firebase/auth'
+import { checkFirebaseConnectivity } from '../../services/firebase/healthCheck'
 import { useForm } from 'react-hook-form'
 import './Login.scss'
 
@@ -143,6 +144,14 @@ const Login = () => {
     setLoading(true)
     setError(null)
     try {
+      const reachable = await checkFirebaseConnectivity()
+      if (!reachable) {
+        setLoading(false)
+        setError('Firebase no disponible — verifica tu conexión e intenta de nuevo')
+        setShake(true)
+        shakeTimerRef.current = setTimeout(() => setShake(false), 500)
+        return
+      }
       const {
         username: uname,
         landingPage,
