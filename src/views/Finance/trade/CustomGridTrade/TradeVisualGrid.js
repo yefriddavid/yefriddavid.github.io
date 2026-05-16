@@ -7,7 +7,7 @@ import GridSvg from './GridSvg'
 import GridFilterModal from './GridFilterModal'
 import TradeDetailModal from './TradeDetailModal'
 
-export default function TradeVisualGrid({ transactions = [], loanRate = 3.5, onLoanRateChange }) {
+export default function TradeVisualGrid({ transactions = [], loanRate = 3.5, onLoanRateChange, saving }) {
   const hook = useTradeVisualGrid({ transactions, loanRate })
 
   return (
@@ -90,6 +90,7 @@ export default function TradeVisualGrid({ transactions = [], loanRate = 3.5, onL
         setEditForm={hook.setEditForm}
         onClose={hook.closeDetailModal}
         onSave={hook.saveDetailModal}
+        saving={saving}
       />
     </div>
   )

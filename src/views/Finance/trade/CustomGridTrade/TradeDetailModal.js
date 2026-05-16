@@ -8,11 +8,12 @@ import {
   CButton,
   CFormInput,
   CFormLabel,
+  CSpinner,
 } from '@coreui/react'
 
 const labelStyle = { fontSize: 11, fontWeight: 700, color: '#868e96', letterSpacing: '0.05em' }
 
-const TradeDetailModal = ({ detailModal, editForm, setEditForm, onClose, onSave }) => (
+const TradeDetailModal = ({ detailModal, editForm, setEditForm, onClose, onSave, saving }) => (
   <CModal visible={!!detailModal} onClose={onClose} alignment="center">
     <CModalHeader>
       <CModalTitle>Detalle de Operación</CModalTitle>
@@ -57,11 +58,11 @@ const TradeDetailModal = ({ detailModal, editForm, setEditForm, onClose, onSave 
       )}
     </CModalBody>
     <CModalFooter>
-      <CButton color="secondary" onClick={onClose}>
+      <CButton color="secondary" onClick={onClose} disabled={saving}>
         Cancelar
       </CButton>
-      <CButton color="primary" onClick={onSave}>
-        Guardar
+      <CButton color="primary" onClick={onSave} disabled={saving}>
+        {saving ? <CSpinner size="sm" /> : 'Guardar'}
       </CButton>
     </CModalFooter>
   </CModal>

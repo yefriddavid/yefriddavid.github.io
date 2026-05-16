@@ -3,6 +3,7 @@ import * as actions from '../../actions/taxi/taxiVehicleActions'
 
 export default createCRUDReducer('taxiVehicle', actions, {
   sortKey: 'plate',
+  beginUpdate: true,
   extraCases: (builder) => {
     builder
       .addCase(actions.successRequestUpdateRestrictions, (s, { payload }) => {

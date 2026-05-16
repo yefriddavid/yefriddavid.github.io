@@ -4,6 +4,7 @@ import * as actions from '../actions/usersActions'
 export default createCRUDReducer('users', actions, {
   sortKey: 'name',
   idKey: 'username',
+  beginUpdate: true,
   initialState: { sessions: {} },
   extraCases: (builder) => {
     builder

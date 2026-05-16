@@ -81,6 +81,7 @@ export default function CustomGridTrade() {
               transactions={trades}
               loanRate={loanRate}
               onLoanRateChange={handleLoanRateChange}
+              saving={saving}
             />
           </div>
         </CTabPane>
