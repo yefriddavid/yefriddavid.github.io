@@ -41,6 +41,7 @@ import domoticaCommandDictionary from './domotica/domoticaCommandDictionaryReduc
 import domoticaCommandProfile from './domotica/domoticaCommandProfileReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
 import notifications from './notificationsSlice'
+import errorLog from './system/errorLogReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -85,6 +86,7 @@ const combinedReducers = combineReducers({
   domoticaCommandProfile,
   domoticaSolarBattery,
   notifications,
+  errorLog,
 })
 
 export default combinedReducers

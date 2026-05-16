@@ -39,6 +39,7 @@ import sagaDomoticaCommands from './domotica/domoticaCommandSagas'
 import sagaDomoticaCommandDictionary from './domotica/domoticaCommandDictionarySagas'
 import sagaDomoticaCommandProfiles from './domotica/domoticaCommandProfileSagas'
 import sagaDomoticaSolarBattery from './domotica/domoticaSolarBatterySagas'
+import sagaErrorLogs from './system/errorLogSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -82,5 +83,6 @@ export default function* rootSagas() {
     sagaDomoticaCommandDictionary(),
     sagaDomoticaCommandProfiles(),
     sagaDomoticaSolarBattery(),
+    sagaErrorLogs(),
   ])
 }

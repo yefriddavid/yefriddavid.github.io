@@ -149,7 +149,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       https: true,
-      open: true,
+      open: false,
       proxy: {
         // https://vitejs.dev/config/server-options.html
       },

@@ -1,5 +1,7 @@
 import React from 'react'
 
+const ErrorLogsPage = React.lazy(() => import('./views/pages/system/ErrorLogs/ErrorLogsPage'))
+
 const Users = React.lazy(() => import('./views/users/Users'))
 const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
 const Tenants = React.lazy(() => import('./views/admin/Tenants'))
@@ -31,6 +33,11 @@ const systemRoutes = [
     path: '/system/visits',
     name: 'Visits',
     element: Visits,
+  },
+  {
+    path: '/system/error-logs',
+    name: 'Error Logs',
+    element: ErrorLogsPage,
   },
 ]
 
