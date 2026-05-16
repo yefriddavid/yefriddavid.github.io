@@ -19,7 +19,7 @@ import {
   CAccordionBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin, cilTrash, cilReload } from '@coreui/icons'
+import { cilFullscreen, cilFullscreenExit, cilHistory, cilGlobeAlt, cilLocationPin, cilTrash, cilReload, cilChevronRight, cilChevronLeft } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
@@ -43,6 +43,7 @@ const MapLocation = () => {
   const currentPositions = useSelector((s) => s.currentPositions)
   const { recentHistories, loadingHistories } = useSelector((s) => s.vehicleLocationHistory)
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [sidePanelOpen, setSidePanelOpen] = useState(true)
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
   const [, setRefreshTime] = useState(0)
 
@@ -259,7 +260,7 @@ const MapLocation = () => {
           </div>
         ) : (
           <CRow className="g-0">
-            <CCol lg={9}>
+            <CCol lg={sidePanelOpen ? 9 : 12} className="map-location-card__map-col">
               <div
                 className={`map-container-wrapper ${isFullScreen ? 'fullscreen' : ''}`}
                 style={{ height: isFullScreen ? 'auto' : '600px' }}
@@ -330,8 +331,15 @@ const MapLocation = () => {
                   <FullscreenControl isFullScreen={isFullScreen} toggle={toggleFullScreen} />
                 </MapContainer>
               </div>
+              <button
+                className={`map-location-card__panel-toggle${sidePanelOpen ? '' : ' map-location-card__panel-toggle--closed'}`}
+                onClick={() => setSidePanelOpen((p) => !p)}
+                title={sidePanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
+              >
+                <CIcon icon={sidePanelOpen ? cilChevronRight : cilChevronLeft} size="sm" />
+              </button>
             </CCol>
-            <CCol lg={3} className={`ps-lg-3 side-panel ${isFullScreen ? 'fullscreen' : ''}`}>
+            <CCol lg={3} className={`ps-lg-3 side-panel ${isFullScreen ? 'fullscreen' : ''}${!sidePanelOpen ? ' d-none' : ''}`}>
               <h6 className="mb-3 px-2 mt-2 mt-lg-0">
                 Flota ({activeOnMap.length}/{fleetList.length})
               </h6>

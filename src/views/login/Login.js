@@ -147,7 +147,8 @@ const Login = () => {
       const reachable = await checkFirebaseConnectivity()
       if (!reachable) {
         setLoading(false)
-        setError('Firebase no disponible — verifica tu conexión e intenta de nuevo')
+        // setError('Firebase no disponible — verifica tu conexión e intenta de nuevo')
+        setError('Applicacion no disponible — verifica tu conexión e intenta de nuevo')
         setShake(true)
         shakeTimerRef.current = setTimeout(() => setShake(false), 500)
         return
