@@ -4,21 +4,50 @@ export class WebSocketService {
     this.socket = null
     this.reconnectAttempt = 0
     this.listeners = new Set()
+    this.statusListeners = new Set()
     this.reconnectTimer = null
+    this.connected = false
 
     if (typeof window !== 'undefined') {
-      const onRecover = () => {
-        if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
-          this.reconnectAttempt = 0
-          this.connect()
-        }
-      }
-      // desktop: focus fires when the tab/window regains focus
-      window.addEventListener('focus', onRecover)
-      // mobile: visibilitychange fires when returning from background/screen-lock
+      window.addEventListener('focus', () => this._recover(false))
+      // On mobile, visibilitychange fires when returning from background/screen-lock.
+      // Force-close the socket: iOS can leave a zombie OPEN socket that never fires onclose.
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') onRecover()
+        if (document.visibilityState === 'visible') this._recover(true)
       })
+    }
+  }
+
+  _setConnected(value) {
+    this.connected = value
+    this.statusListeners.forEach((cb) => cb(value))
+  }
+
+  onStatus(callback) {
+    this.statusListeners.add(callback)
+    callback(this.connected)
+    return () => this.statusListeners.delete(callback)
+  }
+
+  _recover(force) {
+    if (this.listeners.size === 0) return
+    if (force) {
+      // Mobile: always tear down the old socket (may be a zombie with readyState=OPEN but dead)
+      if (this.socket) {
+        this.socket.onclose = null
+        this.socket.onerror = null
+        this.socket.close()
+        this.socket = null
+      }
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer)
+        this.reconnectTimer = null
+      }
+      this.reconnectAttempt = 0
+    }
+    if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
+      this.reconnectAttempt = 0
+      this.connect()
     }
   }
 
@@ -44,6 +73,7 @@ export class WebSocketService {
       this.socket.onopen = () => {
         console.log('WebSocket: Connected successfully')
         this.reconnectAttempt = 0
+        this._setConnected(true)
       }
 
       this.socket.onmessage = (event) => {
@@ -58,6 +88,7 @@ export class WebSocketService {
       this.socket.onclose = (e) => {
         console.log(`WebSocket: Closed (${e.code})`)
         this.socket = null
+        this._setConnected(false)
         this.scheduleReconnect()
       }
 

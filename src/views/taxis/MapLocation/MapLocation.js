@@ -47,6 +47,7 @@ const MapLocation = () => {
   const [iconStyle, setIconStyle] = useState(() => localStorage.getItem('map_icon_style') || 'v2')
   const [, setRefreshTime] = useState(0)
 
+  const [wsConnected, setWsConnected] = useState(false)
   const [manualPositions, setManualPositions] = useState({})
   const [centerOn, setCenterOn] = useState(null)
   const [geoNames, setGeoNames] = useState({})
@@ -79,6 +80,8 @@ const MapLocation = () => {
   }, [vehicles, dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useVehicleLocationSnapshot()
+
+  useEffect(() => taxiWebSocket.onStatus(setWsConnected), [])
 
   useEffect(() => {
     const unsubscribe = taxiWebSocket.subscribe((data) => {
@@ -242,11 +245,14 @@ const MapLocation = () => {
           )}
         </div>
         <div className="d-flex gap-2">
-          {!isFullScreen && (
-            <CBadge color="success" className="d-flex align-items-center">
-              En vivo
-            </CBadge>
-          )}
+          <CBadge
+            color={wsConnected ? 'success' : 'secondary'}
+            className="d-flex align-items-center gap-1"
+            title={wsConnected ? 'WebSocket conectado' : 'WebSocket desconectado'}
+          >
+            <span className={`wss-dot${wsConnected ? ' wss-dot--live' : ''}`} />
+            {wsConnected ? 'En vivo' : 'Desconectado'}
+          </CBadge>
           <CButton color="secondary" variant="outline" size="sm" onClick={toggleFullScreen}>
             <CIcon icon={isFullScreen ? cilFullscreenExit : cilFullscreen} />
             {isFullScreen ? ' Salir' : ' Pantalla Completa'}
