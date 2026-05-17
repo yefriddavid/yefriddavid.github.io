@@ -6,13 +6,18 @@ export class WebSocketService {
     this.listeners = new Set()
     this.reconnectTimer = null
 
-    // Handle window focus to ensure connection
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', () => {
+      const onRecover = () => {
         if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
           this.reconnectAttempt = 0
           this.connect()
         }
+      }
+      // desktop: focus fires when the tab/window regains focus
+      window.addEventListener('focus', onRecover)
+      // mobile: visibilitychange fires when returning from background/screen-lock
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') onRecover()
       })
     }
   }
