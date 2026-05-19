@@ -110,7 +110,16 @@ const HistoryCharts = () => {
     fetchBoth(range)
   }
 
-  const handleRefresh = () => fetchBoth(dateRange)
+  const handleRefresh = () => {
+    if (preset === 'custom') {
+      fetchBoth(dateRange)
+    } else {
+      const p = PRESETS.find((p) => p.key === preset)
+      const range = getPresetRange(p.hours)
+      setDateRange(range)
+      fetchBoth(range)
+    }
+  }
 
   const fetching = voltageFetching || currentFetching
 
