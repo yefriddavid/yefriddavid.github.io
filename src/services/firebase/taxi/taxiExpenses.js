@@ -91,10 +91,8 @@ export const updateExpense = async (id, data) => {
   )
 }
 
-export const toggleExpensePaid = async (id, paid) => {
-  const payedAt = paid ? new Date().toISOString().split('T')[0] : null
+export const toggleExpensePaid = async (id, paid, payedAt) => {
   await firestoreCall(() => updateDoc(doc(db, COL, id), { paid, payedAt }))
-  return payedAt
 }
 
 export const deleteExpense = async (id) => {

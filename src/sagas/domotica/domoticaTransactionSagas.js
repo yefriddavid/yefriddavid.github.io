@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/domotica/domoticaTransactionActions'
 import * as service from '../../services/facade/domotica/domoticaTransactionFacade'
+import { TRANSACTION_TYPE_VOLTAGE, TRANSACTION_TYPE_CURRENT } from '../../constants/domotica'
 
 const getLast24hRange = () => {
   const endDate = new Date()
@@ -56,7 +57,7 @@ const toDateRange = (payload) => {
 
 function* fetchVoltageHistory({ payload } = {}) {
   try {
-    const data = yield call(service.fetchVoltageHistory, toDateRange(payload))
+    const data = yield call(service.fetchTransactionHistory, { type: TRANSACTION_TYPE_VOLTAGE, ...toDateRange(payload) })
     yield put(actions.fetchVoltageSuccess(data))
   } catch (e) {
     yield put(actions.fetchVoltageError(e.message))
@@ -65,7 +66,7 @@ function* fetchVoltageHistory({ payload } = {}) {
 
 function* fetchCurrentHistory({ payload } = {}) {
   try {
-    const data = yield call(service.fetchCurrentHistory, toDateRange(payload))
+    const data = yield call(service.fetchTransactionHistory, { type: TRANSACTION_TYPE_CURRENT, ...toDateRange(payload) })
     yield put(actions.fetchCurrentSuccess(data))
   } catch (e) {
     yield put(actions.fetchCurrentError(e.message))

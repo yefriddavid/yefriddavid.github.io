@@ -563,7 +563,7 @@ class ItemDetail1 extends Component {
       payments: { ...account.payments, items: loadingItems },
     })
     // traer de Firestore y cachear
-    const result = await fetchVaucherPayment(payment.paymentId)
+    const result = await fetchVaucherPayment(payment.paymentId, this.props.year)
     const freshVaucher = result.vaucher || ''
     setCache(payment.paymentId, freshVaucher)
     const freshItems = account.payments.items.map((p) =>

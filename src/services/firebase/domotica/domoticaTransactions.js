@@ -36,33 +36,13 @@ const mapDoc = (d) => {
   }
 }
 
-export const fetchVoltageHistory = async ({ startDate, endDate } = {}) => {
-  const constraints = [where('type', '==', 'voltaje'), orderBy('createdAt', 'asc'), limit(500)]
+export const fetchTransactionHistory = async ({ type, startDate, endDate } = {}) => {
+  const constraints = [where('type', '==', type), orderBy('createdAt', 'asc'), limit(500)]
 
   if (startDate) constraints.push(where('createdAt', '>=', startDate))
   if (endDate) constraints.push(where('createdAt', '<=', endDate))
 
   const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
-  let data = []
-  try {
-    const snap = await firestoreCall(() => getDocs(q))
-    data = snap.docs.map(mapDoc)
-    return data
-  } catch (e) {
-    console.log(e)
-  }
-  return data
-}
-
-export const fetchCurrentHistory = async ({ startDate, endDate } = {}) => {
-  const constraints = [where('type', '==', 'corriente'), orderBy('createdAt', 'asc'), limit(500)]
-
-  if (startDate) constraints.push(where('createdAt', '>=', startDate))
-  if (endDate) constraints.push(where('createdAt', '<=', endDate))
-
-  const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
-  //const snap = await firestoreCall(() => getDocs(q))
-  //return snap.docs.map(mapDoc)
   let data = []
   try {
     const snap = await firestoreCall(() => getDocs(q))

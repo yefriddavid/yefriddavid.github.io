@@ -52,10 +52,10 @@ const CreatePaymentVaucher = async ({ paymentId, vaucher, year = 2025 }) => {
   }
 }
 
-const fetchVaucherPaymentMultiple = async (payments) => {
+const fetchVaucherPaymentMultiple = async (payments, year) => {
   const paymentIds = payments.map((o) => parseInt(o.paymentId))
   const q = query(
-    collection(db, 'paymentVauchers-2025'),
+    collection(db, 'paymentVauchers-' + year),
     where('tenantId', '==', getTenantId()),
     where('id', 'in', paymentIds),
   )
@@ -64,9 +64,9 @@ const fetchVaucherPaymentMultiple = async (payments) => {
   return documentResponse.map((o) => ({ vaucher: o.file, paymentId: o.id }))
 }
 
-const fetchVaucherPayment = async (paymentId) => {
+const fetchVaucherPayment = async (paymentId, year) => {
   const q = query(
-    collection(db, 'paymentVauchers-2025'),
+    collection(db, 'paymentVauchers-' + year),
     where('tenantId', '==', getTenantId()),
     where('id', '==', parseInt(paymentId)),
   )

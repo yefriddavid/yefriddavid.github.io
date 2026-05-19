@@ -1,4 +1,4 @@
-import { dbDomotica as db, COL_DOMOTICA_CURRENT, COL_DOMOTICA_TRANSACTIONS } from '../settings'
+import { dbDomotica as db, COL_DOMOTICA_CURRENT } from '../settings'
 import { domoticaCall as firestoreCall } from '../firebaseClient'
 import {
   collection,
@@ -9,9 +9,6 @@ import {
   updateDoc,
   query,
   where,
-  orderBy,
-  limit,
-  Timestamp,
   serverTimestamp,
 } from 'firebase/firestore'
 
@@ -78,23 +75,3 @@ export const deleteCurrentRecord = async (id) => {
   await firestoreCall(() => deleteDoc(doc(db, COL_DOMOTICA_CURRENT, id)))
 }
 
-export const fetchVoltageHistory = async () => {
-  const startOfToday = Timestamp.fromDate(new Date(new Date().setHours(0, 0, 0, 0)))
-  const q = query(
-    collection(db, COL_DOMOTICA_TRANSACTIONS),
-    where('device', '==', 'esp8266-battery'),
-    where('type', '==', 'voltaje'),
-    where('createdAt', '>=', startOfToday),
-    orderBy('createdAt', 'asc'),
-    limit(200),
-  )
-  const snap = await firestoreCall(() => getDocs(q))
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      value: data.voltage ?? data.value ?? null,
-      createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
-    }
-  })
-}

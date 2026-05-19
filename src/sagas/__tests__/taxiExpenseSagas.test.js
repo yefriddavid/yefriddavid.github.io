@@ -79,24 +79,25 @@ describe('taxiExpenseSagas', () => {
   })
 
   describe('togglePaid', () => {
-    it('calls toggleExpensePaid with id and paid flag, then dispatches success', () => {
+    it('calls toggleExpensePaid with id, paid flag and payedAt date, then dispatches success', () => {
+      const today = new Date().toISOString().split('T')[0]
       const payload = { id: 'e1', paid: true }
       const gen = togglePaid({ payload })
 
-      expect(gen.next().value).toEqual(call(service.toggleExpensePaid, 'e1', true))
-      expect(gen.next().value).toEqual(put(actions.successRequestTogglePaid(payload)))
+      expect(gen.next().value).toEqual(call(service.toggleExpensePaid, 'e1', true, today))
+      expect(gen.next().value).toEqual(put(actions.successRequestTogglePaid({ ...payload, payedAt: today })))
       expect(gen.next().done).toBe(true)
     })
 
-    it('works for unpaid toggle (paid: false)', () => {
+    it('passes null payedAt when toggling to unpaid', () => {
       const payload = { id: 'e1', paid: false }
       const gen = togglePaid({ payload })
-      expect(gen.next().value).toEqual(call(service.toggleExpensePaid, 'e1', false))
+      expect(gen.next().value).toEqual(call(service.toggleExpensePaid, 'e1', false, null))
     })
 
     it('error path dispatches errorRequestTogglePaid', () => {
       const gen = togglePaid({ payload: { id: 'e1', paid: true } })
-      gen.next() // advance to call(service.toggleExpensePaid, ...)
+      gen.next()
       expect(gen.throw(new Error('perm denied')).value).toEqual(
         put(actions.errorRequestTogglePaid('perm denied')),
       )

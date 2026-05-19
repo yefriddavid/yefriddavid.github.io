@@ -14,10 +14,13 @@ export const DOMOTICA_DEVICE_STATUS_LABEL = {
   error: 'Error',
 }
 
+export const TRANSACTION_TYPE_VOLTAGE = 'voltaje'
+export const TRANSACTION_TYPE_CURRENT = 'current'
+
 export const DOMOTICA_CLEANUP_TYPE_OPTIONS = [
   { value: '', label: 'Todos los tipos' },
-  { value: 'voltaje', label: 'Voltaje' },
-  { value: 'corriente', label: 'Corriente' },
+  { value: TRANSACTION_TYPE_VOLTAGE, label: 'Voltaje' },
+  { value: TRANSACTION_TYPE_CURRENT, label: 'Corriente' },
 ]
 
 export const DOMOTICA_SERIAL_CATEGORIES = [

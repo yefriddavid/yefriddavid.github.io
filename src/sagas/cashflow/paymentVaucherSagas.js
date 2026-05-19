@@ -35,7 +35,7 @@ export function* addVauchersToAccountPayments({ payload }) {
     // Paso 2: buscar solo los no cacheados en Firestore (en background)
     const uncached = paymentItems.filter((v) => v.vaucher === false)
     if (uncached.length > 0) {
-      const vauchers = yield call(apiPaymentVaucherServices.fetchVaucherPaymentMultiple, uncached)
+      const vauchers = yield call(apiPaymentVaucherServices.fetchVaucherPaymentMultiple, uncached, account.year)
       uncached.forEach((v) => {
         const found = vauchers.find((i) => i.paymentId === v.paymentId)
         v.vaucher = found ? found.vaucher : ''
