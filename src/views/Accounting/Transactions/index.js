@@ -4,16 +4,9 @@ import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
-} from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader, CCollapse } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus, cilX } from '@coreui/icons'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
@@ -36,7 +29,8 @@ export default function Transactions() {
   const [month, setMonth] = useState(CURRENT_MONTH)
   const [typeFilter, setTypeFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [formModal, setFormModal] = useState(null)
+  const [showForm, setShowForm] = useState(false)
+  const [formInitial, setFormInitial] = useState(null)
   const [migrationOpen, setMigrationOpen] = useState(false)
   const [viewer, setViewer] = useState(null)
   const [activeTab, setActiveTab] = useState('maestro')
@@ -126,14 +120,24 @@ export default function Transactions() {
     return [...new Set([...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES])]
   }, [typeFilter])
 
+  const closeForm = () => {
+    setShowForm(false)
+    setFormInitial(null)
+  }
+
+  const openForm = (initial = null) => {
+    setShowForm(true)
+    setFormInitial(initial)
+  }
+
   const handleCreate = (payload) => {
     dispatch(transactionActions.createRequest(payload))
-    setFormModal(null)
+    closeForm()
   }
 
   const handleUpdate = (payload) => {
     dispatch(transactionActions.updateRequest(payload))
-    setFormModal(null)
+    closeForm()
   }
 
   const handleDelete = (row) => {
@@ -147,23 +151,20 @@ export default function Transactions() {
       const d = new Date(year, month - 1, account.maxDatePay || 15)
       return d.toISOString().slice(0, 10)
     })()
-    setFormModal({
-      mode: 'create',
-      initial: {
-        type: account.type === 'Outcoming' ? 'expense' : 'income',
-        category: account.category || '',
-        description: account.name,
-        amount: account.defaultValue || '',
-        date: defaultDate,
-        accountMasterId: account.id,
-        accountMasterName: account.name,
-        accountMasterImportant: account.important,
-      },
+    openForm({
+      type: account.type === 'Outcoming' ? 'expense' : 'income',
+      category: account.category || '',
+      description: account.name,
+      amount: account.defaultValue || '',
+      date: defaultDate,
+      accountMasterId: account.id,
+      accountMasterName: account.name,
+      accountMasterImportant: account.important,
     })
   }
 
   const handleViewPayment = (transaction) => {
-    setFormModal({ mode: 'edit', initial: transaction })
+    openForm(transaction)
   }
 
   const handleAttach = (transaction) => {
@@ -215,12 +216,32 @@ export default function Transactions() {
             >
               ↓ Migrar legado
             </CButton>
-            <CButton size="sm" color="primary" onClick={() => setFormModal({ mode: 'create' })}>
-              + Nueva transacción
-            </CButton>
+            {showForm ? (
+              <CButton size="sm" color="secondary" variant="outline" onClick={closeForm}>
+                <CIcon icon={cilX} /> Cancelar
+              </CButton>
+            ) : (
+              <CButton size="sm" color="primary" onClick={() => openForm(null)}>
+                <CIcon icon={cilPlus} /> Nueva transacción
+              </CButton>
+            )}
           </div>
         </CCardHeader>
         <CCardBody>
+          <CCollapse visible={showForm}>
+            <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
+              <TransactionForm
+                key={showForm ? JSON.stringify(formInitial) : 'hidden'}
+                initial={formInitial}
+                saving={saving}
+                onSave={
+                  formInitial?.id ? (p) => handleUpdate({ ...formInitial, ...p }) : handleCreate
+                }
+                onCancel={closeForm}
+              />
+            </div>
+          </CCollapse>
+
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
             <SummaryCard
               label="Cuentas maestras pagadas"
@@ -670,7 +691,7 @@ export default function Transactions() {
                       <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                         <button
                           title="Editar"
-                          onClick={() => setFormModal({ mode: 'edit', initial: row })}
+                          onClick={() => openForm(row)}
                           style={{
                             background: 'none',
                             border: 'none',
@@ -760,28 +781,6 @@ export default function Transactions() {
           onClose={() => setViewer(null)}
         />
       )}
-
-      <CModal visible={!!formModal} onClose={() => setFormModal(null)} alignment="center">
-        <CModalHeader>
-          <CModalTitle>
-            {formModal?.mode === 'edit' ? 'Editar transacción' : 'Nueva transacción'}
-          </CModalTitle>
-        </CModalHeader>
-        <CModalBody style={{ padding: 0 }}>
-          {formModal && (
-            <TransactionForm
-              initial={formModal.initial}
-              saving={saving}
-              onSave={
-                formModal.mode === 'edit'
-                  ? (p) => handleUpdate({ ...formModal.initial, ...p })
-                  : handleCreate
-              }
-              onCancel={() => setFormModal(null)}
-            />
-          )}
-        </CModalBody>
-      </CModal>
     </>
   )
 }

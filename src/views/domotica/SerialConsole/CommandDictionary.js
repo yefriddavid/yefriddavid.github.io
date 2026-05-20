@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import DataGrid, {
+import {
   Column,
   FilterRow,
   SearchPanel,
@@ -13,6 +13,7 @@ import DataGrid, {
   Toolbar,
   Item,
 } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { CButton, CToast, CToastBody, CToaster } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCopy, cilPlus, cilTrash, cilPencil, cilCheck, cilCloudDownload } from '@coreui/icons'
@@ -300,13 +301,10 @@ const CommandDictionary = () => {
         </div>
       )}
 
-      <DataGrid
+      <StandardGrid
         dataSource={data ?? []}
         keyExpr="id"
         showBorders={false}
-        rowAlternationEnabled
-        allowColumnResizing
-        columnAutoWidth
         wordWrapEnabled={false}
         className="cmd-dict__grid"
       >
@@ -391,7 +389,7 @@ const CommandDictionary = () => {
         />
 
         <MasterDetail enabled component={DetailPanel} />
-      </DataGrid>
+      </StandardGrid>
     </div>
     <CommandProfilesPanel />
     </div>

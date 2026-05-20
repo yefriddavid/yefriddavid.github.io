@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Column, MasterDetail } from 'devextreme-react/data-grid'
+import { Column, MasterDetail, Paging } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import {
   CCard,
@@ -16,14 +16,7 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CFormInput,
   CFormCheck,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash, cilBell } from '@coreui/icons'
@@ -192,8 +185,22 @@ const Vehiculos = () => {
     setRestrictModal({ id: data.id, plate: data.plate })
   }
 
-  const setRestrictDay = (month, field) => (e) =>
-    setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: e.target.value } }))
+  const restrictionsData = useMemo(
+    () =>
+      MONTHS.map((name, i) => ({
+        id: i + 1,
+        name,
+        d1: Number(restrictForm[i + 1]?.d1) || null,
+        d2: Number(restrictForm[i + 1]?.d2) || null,
+      })),
+    [restrictForm],
+  )
+
+  const onRestrictCellChanged = useCallback((e) => {
+    const month = e.key
+    const field = e.column.dataField
+    setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: String(e.value ?? '') } }))
+  }, [])
 
   const handleSaveRestrictions = () => {
     setRestrictSaving(true)
@@ -418,49 +425,18 @@ const Vehiculos = () => {
           <CModalTitle>Pico y placa — {restrictModal?.plate}</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <CTable small bordered style={{ marginBottom: 0 }}>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell style={{ width: 140 }}>Mes</CTableHeaderCell>
-                <CTableHeaderCell>Día 1</CTableHeaderCell>
-                <CTableHeaderCell>Día 2</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {MONTHS.map((name, i) => {
-                const m = i + 1
-                return (
-                  <CTableRow key={m}>
-                    <CTableDataCell className="fw-medium">{name}</CTableDataCell>
-                    <CTableDataCell>
-                      <CFormInput
-                        size="sm"
-                        type="number"
-                        min={1}
-                        max={31}
-                        placeholder="—"
-                        value={restrictForm[m]?.d1 ?? ''}
-                        onChange={setRestrictDay(m, 'd1')}
-                        style={{ width: 80 }}
-                      />
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CFormInput
-                        size="sm"
-                        type="number"
-                        min={1}
-                        max={31}
-                        placeholder="—"
-                        value={restrictForm[m]?.d2 ?? ''}
-                        onChange={setRestrictDay(m, 'd2')}
-                        style={{ width: 80 }}
-                      />
-                    </CTableDataCell>
-                  </CTableRow>
-                )
-              })}
-            </CTableBody>
-          </CTable>
+          <StandardGrid
+            dataSource={restrictionsData}
+            keyExpr="id"
+            style={{ margin: 0 }}
+            editing={{ mode: 'cell', allowUpdating: true, allowAdding: false, allowDeleting: false }}
+            onCellValueChanged={onRestrictCellChanged}
+          >
+            <Paging enabled={false} />
+            <Column dataField="name" caption="Mes" width={140} allowSorting={false} allowEditing={false} />
+            <Column dataField="d1" caption="Día 1" dataType="number" editorOptions={{ min: 1, max: 31, placeholder: '—' }} allowSorting={false} />
+            <Column dataField="d2" caption="Día 2" dataType="number" editorOptions={{ min: 1, max: 31, placeholder: '—' }} allowSorting={false} />
+          </StandardGrid>
         </CModalBody>
         <CModalFooter>
           <CButton

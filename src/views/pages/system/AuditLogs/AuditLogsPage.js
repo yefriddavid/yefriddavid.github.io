@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { CCard, CBadge, CButton } from '@coreui/react'
-import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import moment from 'moment'
 import { getAuditLogs } from 'src/services/firebase/system/auditLogs'
 import Spinner from 'src/components/shared/Spinner'
@@ -86,14 +87,13 @@ const AuditLogsPage = () => {
           <div style={{ padding: 60, textAlign: 'center', opacity: 0.4 }}>Sin operaciones registradas</div>
         )}
         {!loading && logs.length > 0 && (
-          <DataGrid
+          <StandardGrid
             dataSource={logs}
             keyExpr="id"
             showBorders={false}
             showColumnLines={false}
             showRowLines={true}
             rowAlternationEnabled={false}
-            hoverStateEnabled={true}
             wordWrapEnabled={false}
           >
             <FilterRow visible={true} />
@@ -107,7 +107,7 @@ const AuditLogsPage = () => {
             <Column dataField="username" caption="Usuario" width={120} />
             <Column dataField="payload" caption="Datos" cellRender={renderPayload} />
             <Column dataField="route" caption="Ruta" width={180} />
-          </DataGrid>
+          </StandardGrid>
         )}
       </CCard>
     </div>

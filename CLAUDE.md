@@ -165,10 +165,56 @@ Rules:
 `i18next` with Spanish (`es`) as default. Translation files loaded via HTTP backend. Use `useTranslation()` hook and `t('key')` in components.
 
 ### Key Libraries
-- **DevExtreme / DevExpress** — DataGrid (`Accounts.js`) and reporting views
+- **DevExtreme / DevExpress** — DataGrid (via `StandardGrid` wrapper) and reporting views
 - **Chart.js + CoreUI Charts** — Dashboard charts
 - **React Hook Form** — Form handling and validation (see pattern below)
 - **Moment.js** — Date manipulation
+
+### Data Grids and Tables
+
+#### RULE: Always use `StandardGrid` — never `DataGrid` directly or `CTable`
+
+All data tables must go through `src/components/shared/StandardGrid/Index.js`. **Never import `DataGrid` from `devextreme-react/data-grid` directly. Never use CoreUI `CTable`.**
+
+```js
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import { Column, Paging, FilterRow, Toolbar, Item, MasterDetail } from 'devextreme-react/data-grid'
+```
+
+`StandardGrid` is a `React.forwardRef` wrapper around DevExtreme `DataGrid` with shared defaults: borders, column resizing, alternating rows, hover state, native scroll. All DevExtreme child components (`Column`, `Paging`, `FilterRow`, etc.) are used as children of `StandardGrid` exactly as they would be with `DataGrid`.
+
+```js
+// ✅ Correct
+<StandardGrid dataSource={records} keyExpr="id">
+  <Column dataField="name" caption="Nombre" />
+  <Column dataField="amount" caption="Valor" dataType="number" />
+  <Paging defaultPageSize={25} />
+  <FilterRow visible />
+</StandardGrid>
+
+// ✅ Override defaults when needed (e.g. compact display in a settings panel)
+<StandardGrid dataSource={rows} keyExpr="name" showBorders={false} rowAlternationEnabled={false}>
+  <Paging enabled={false} />
+  <Column dataField="label" caption="Colección" />
+  <Column dataField="count" caption="Docs" width={90} alignment="right" />
+</StandardGrid>
+
+// ✅ Editable grid (e.g. month restrictions form)
+<StandardGrid
+  dataSource={data}
+  keyExpr="id"
+  editing={{ mode: 'cell', allowUpdating: true, allowAdding: false, allowDeleting: false }}
+  onCellValueChanged={handleCellChanged}
+>
+  <Paging enabled={false} />
+  <Column dataField="name" caption="Mes" allowEditing={false} />
+  <Column dataField="d1" caption="Día 1" dataType="number" />
+</StandardGrid>
+```
+
+- ❌ `import DataGrid from 'devextreme-react/data-grid'` — never import DataGrid directly
+- ❌ `import { CTable, CTableBody, ... } from '@coreui/react'` — never use CTable
+- ❌ `<DataGrid dataSource={...}>` — wrap in StandardGrid instead
 
 ### Spinner — Loading states
 

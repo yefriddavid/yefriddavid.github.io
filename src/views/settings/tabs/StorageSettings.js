@@ -6,11 +6,9 @@ import {
   CListGroupItem,
   CProgress,
   CBadge,
-  CTable,
-  CTableRow,
-  CTableBody,
-  CTableDataCell,
 } from '@coreui/react'
+import { Column, Paging } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { cilReload } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { fetchCollectionCounts, SPARK_LIMITS } from 'src/services/firebase/admin/usageMetrics'
@@ -224,22 +222,29 @@ const StorageSettings = () => {
                 >
                   {mod}
                 </div>
-                <CTable small bordered className="mb-0" style={{ fontSize: 13 }}>
-                  <CTableBody>
-                    {rows.map((row) => (
-                      <CTableRow key={row.name}>
-                        <CTableDataCell>{row.label}</CTableDataCell>
-                        <CTableDataCell className="text-end" style={{ width: 80 }}>
-                          {row.error ? (
-                            <span className="text-danger">—</span>
-                          ) : (
-                            <strong>{formatNumber(row.count)}</strong>
-                          )}
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
+                <StandardGrid
+                  dataSource={rows}
+                  keyExpr="name"
+                  style={{ margin: 0, fontSize: 13 }}
+                  rowAlternationEnabled={false}
+                  hoverStateEnabled={false}
+                  allowColumnResizing={false}
+                >
+                  <Paging enabled={false} />
+                  <Column dataField="label" caption="Colección" />
+                  <Column
+                    caption="Docs"
+                    width={90}
+                    alignment="right"
+                    cellRender={({ data }) =>
+                      data.error ? (
+                        <span className="text-danger">—</span>
+                      ) : (
+                        <strong>{formatNumber(data.count)}</strong>
+                      )
+                    }
+                  />
+                </StandardGrid>
               </div>
             )
           })}

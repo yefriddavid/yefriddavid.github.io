@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
-import { Column } from 'devextreme-react/data-grid'
+import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import {
   CButton,
   CCard,
   CCardBody,
   CCardHeader,
+  CCollapse,
   CModal,
   CModalBody,
   CModalHeader,
   CModalTitle,
   CBadge,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus, cilX } from '@coreui/icons'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as deviceActions from 'src/actions/domotica/domoticaDeviceActions'
@@ -161,8 +164,9 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
 const Devices = () => {
   const dispatch = useDispatch()
   const { data, fetching } = useSelector((s) => s.domoticaDevice)
+  const gridRef = useRef(null)
 
-  const [modal, setModal] = useState(null) // null | { mode: 'create' | 'edit', record }
+  const [showForm, setShowForm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [saving, setSaving] = useState(false)
 
@@ -170,19 +174,30 @@ const Devices = () => {
     dispatch(deviceActions.fetchRequest())
   }, [dispatch])
 
-  const openCreate = () => setModal({ mode: 'create', record: EMPTY_FORM })
-  const openEdit = (record) => setModal({ mode: 'edit', record })
-  const closeModal = () => setModal(null)
-
-  const handleSave = (form) => {
-    setSaving(true)
-    if (modal.mode === 'create') {
-      dispatch(deviceActions.createRequest(form))
+  const toggleRow = (row) => {
+    if (!gridRef.current) return
+    setShowForm(false)
+    const instance = gridRef.current.instance
+    if (instance.isRowExpanded(row.id)) {
+      instance.collapseRow(row.id)
     } else {
-      dispatch(deviceActions.updateRequest({ ...form, id: modal.record.id }))
+      instance.collapseAll(-1)
+      instance.expandRow(row.id)
     }
+  }
+
+  const handleCreate = (form) => {
+    setSaving(true)
+    dispatch(deviceActions.createRequest(form))
     setSaving(false)
-    closeModal()
+    setShowForm(false)
+  }
+
+  const handleUpdate = (form, id) => {
+    setSaving(true)
+    dispatch(deviceActions.updateRequest({ ...form, id }))
+    setSaving(false)
+    gridRef.current?.instance.collapseAll(-1)
   }
 
   const handleDelete = () => {
@@ -199,7 +214,7 @@ const Devices = () => {
 
   const actionsCell = ({ data: row }) => (
     <div className="devices-grid__actions">
-      <CButton size="sm" color="primary" variant="outline" onClick={() => openEdit(row)}>
+      <CButton size="sm" color="primary" variant="outline" onClick={() => toggleRow(row)}>
         Editar
       </CButton>
       <CButton size="sm" color="danger" variant="outline" onClick={() => setDeleteTarget(row)}>
@@ -223,13 +238,43 @@ const Devices = () => {
             >
               {fetching ? <Spinner size="sm" /> : 'Refrescar'}
             </CButton>
-            <CButton color="primary" size="sm" onClick={openCreate}>
-              + Nuevo
-            </CButton>
+            {showForm ? (
+              <CButton
+                size="sm"
+                color="secondary"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+              >
+                <CIcon icon={cilX} /> Cancelar
+              </CButton>
+            ) : (
+              <CButton
+                color="primary"
+                size="sm"
+                onClick={() => {
+                  setShowForm(true)
+                  gridRef.current?.instance.collapseAll(-1)
+                }}
+              >
+                <CIcon icon={cilPlus} /> Nuevo
+              </CButton>
+            )}
           </div>
         </CCardHeader>
         <CCardBody style={{ padding: 0 }}>
-          <StandardGrid dataSource={data ?? []} keyExpr="id">
+          <CCollapse visible={showForm}>
+            <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
+              <DeviceForm
+                key={showForm ? 'new' : 'hidden'}
+                initial={EMPTY_FORM}
+                onSave={handleCreate}
+                onCancel={() => setShowForm(false)}
+                saving={saving}
+              />
+            </div>
+          </CCollapse>
+
+          <StandardGrid ref={gridRef} dataSource={data ?? []} keyExpr="id">
             <Column dataField="name" caption="Nombre" minWidth={140} />
             <Column dataField="type" caption="Tipo" width={110} />
             <Column dataField="location" caption="Ubicación" width={130} />
@@ -259,26 +304,26 @@ const Devices = () => {
               allowSorting={false}
               allowFiltering={false}
             />
+            <MasterDetail
+              enabled
+              render={({ data: row }) => (
+                <div
+                  style={{ padding: 16, background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}
+                >
+                  <DeviceForm
+                    key={row.id}
+                    initial={row}
+                    onSave={(form) => handleUpdate(form, row.id)}
+                    onCancel={() => gridRef.current?.instance.collapseRow(row.id)}
+                    saving={saving}
+                  />
+                </div>
+              )}
+            />
           </StandardGrid>
         </CCardBody>
       </CCard>
 
-      {/* Create / Edit modal */}
-      <CModal visible={!!modal} onClose={closeModal} size="lg">
-        <CModalBody style={{ padding: 0 }}>
-          {modal && (
-            <DeviceForm
-              key={modal.record.id ?? 'new'}
-              initial={modal.record}
-              onSave={handleSave}
-              onCancel={closeModal}
-              saving={saving}
-            />
-          )}
-        </CModalBody>
-      </CModal>
-
-      {/* Delete confirm modal */}
       <CModal visible={!!deleteTarget} onClose={() => setDeleteTarget(null)} size="sm">
         <CModalHeader>
           <CModalTitle>Confirmar eliminación</CModalTitle>

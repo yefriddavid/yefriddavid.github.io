@@ -1,13 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import {
-  Editing,
-  Column,
-  MasterDetail,
-  Selection,
-  Button as GButton,
-} from 'devextreme-react/data-grid'
+import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { SelectControl } from './Controls'
 import ItemDetail from './ItemDetail'
@@ -46,6 +40,7 @@ const Payments = () => {
     error: fetchErrorMessage,
   } = useSelector((s) => s.account)
 
+  const gridRef = useRef(null)
   const [filters, setFilters] = useState(INITIAL_FILTERS)
   const [expandedRowKey, setExpandedRowKey] = useState(null)
   const [cachedData, setCachedData] = useState(null)
@@ -124,12 +119,13 @@ const Payments = () => {
     }
   }
 
-  const openAddPayment = (e) => {
-    const account = e.row.data
-    e.component.collapseAll(-1)
-    e.component.expandRow(account.accountId)
-    setAddingPaymentAccountId(account.accountId)
-    setExpandedRowKey(account.accountId)
+  const openAddPayment = (row) => {
+    const instance = gridRef.current?.instance
+    if (!instance) return
+    instance.collapseAll(-1)
+    instance.expandRow(row.accountId)
+    setAddingPaymentAccountId(row.accountId)
+    setExpandedRowKey(row.accountId)
   }
 
   const closeAddPayment = () => setAddingPaymentAccountId(null)
@@ -183,14 +179,13 @@ const Payments = () => {
         </div>
       ) : (
         <StandardGrid
+          ref={gridRef}
           keyExpr="accountId"
           onContentReady={onContentReady}
           onRowClick={onRowClick}
           dataSource={data}
           onRowExpanded={(e) => loadVauchers(e)}
         >
-          <Selection mode="single" />
-          <Editing allowUpdating={true} allowDeleting={true} />
           <Column
             dataField="accountId"
             width={60}
@@ -256,14 +251,23 @@ const Payments = () => {
               )
             }}
           />
-          <Column type="buttons" caption={t('payments.columns.actions')} width={90}>
-            <GButton name="add" onClick={openAddPayment} />
-            <GButton name="edit" />
-            <GButton name="delete" />
-          </Column>
+          <Column
+            caption={t('payments.columns.actions')}
+            width={100}
+            allowSorting={false}
+            cellRender={({ data: row }) => (
+              <CButton
+                size="sm"
+                color="primary"
+                variant="outline"
+                onClick={() => openAddPayment(row)}
+              >
+                + Pago
+              </CButton>
+            )}
+          />
           <MasterDetail
-            key={crypto.randomUUID()}
-            autoExpandAll="false"
+            autoExpandAll={false}
             enabled={false}
             render={(item) =>
               ItemDetail(item.data, year, monthNumber, {

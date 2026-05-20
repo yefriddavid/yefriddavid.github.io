@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { CCard, CBadge, CButton } from '@coreui/react'
-import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import moment from 'moment'
 import './ErrorLogs.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -262,14 +263,13 @@ const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh }) => {
         {!loading && logs.length === 0 && <EmptyState />}
 
         {!loading && logs.length > 0 && (
-          <DataGrid
+          <StandardGrid
             dataSource={logs}
             keyExpr="id"
             showBorders={false}
             showColumnLines={false}
             showRowLines={true}
             rowAlternationEnabled={false}
-            hoverStateEnabled={true}
             onRowClick={handleRowClick}
             rowCssClass={rowClass}
             className="el__grid"
@@ -288,7 +288,7 @@ const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh }) => {
             <Column dataField="username" caption="Usuario" width={110} />
             <Column dataField="url" caption="Ruta" width={180} cellRender={renderRoute} />
             <Column caption="" width={48} allowFiltering={false} allowSorting={false} cellRender={renderActions} />
-          </DataGrid>
+          </StandardGrid>
         )}
       </CCard>
 

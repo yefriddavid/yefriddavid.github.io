@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { CCard, CBadge, CButton } from '@coreui/react'
-import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import moment from 'moment'
 import { getPerfLogs } from 'src/services/firebase/system/perfLogs'
 import Spinner from 'src/components/shared/Spinner'
@@ -90,14 +91,13 @@ const PerfLogsPage = () => {
           </div>
         )}
         {!loading && logs.length > 0 && (
-          <DataGrid
+          <StandardGrid
             dataSource={logs}
             keyExpr="id"
             showBorders={false}
             showColumnLines={false}
             showRowLines={true}
             rowAlternationEnabled={false}
-            hoverStateEnabled={true}
             wordWrapEnabled={false}
           >
             <FilterRow visible={true} />
@@ -112,7 +112,7 @@ const PerfLogsPage = () => {
             <Column dataField="username" caption="Usuario" width={120} />
             <Column dataField="route" caption="Ruta" width={200} />
             <Column dataField="error" caption="Error" width={200} />
-          </DataGrid>
+          </StandardGrid>
         )}
       </CCard>
     </div>
