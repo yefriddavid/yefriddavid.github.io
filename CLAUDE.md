@@ -170,6 +170,94 @@ Rules:
 - **React Hook Form** — Form handling and validation (see pattern below)
 - **Moment.js** — Date manipulation
 
+### Spinner — Loading states
+
+#### RULE: Never use `CSpinner` directly — always use `<Spinner>`
+
+All loading indicators must go through `src/components/shared/Spinner.js`. **Never import `CSpinner` from `@coreui/react`.**
+
+```js
+import Spinner from 'src/components/shared/Spinner'
+```
+
+| Prop | Values | When to use |
+|---|---|---|
+| `mode` | `'inline'` (default) | Inside buttons, next to text, small indicators |
+| `mode` | `'section'` | Centered in a content area — Suspense fallbacks, data loading |
+| `mode` | `'page'` | Fixed full-screen overlay — auth resolving, initial app load |
+| `color` | `'primary'` (default), `'info'`, `'light'`, … | Any CoreUI color |
+| `variant` | `'border'` (default), `'grow'` | Spinner animation style |
+| `size` | `'sm'` | Small spinner for buttons |
+
+```js
+// ✅ button saving state
+{saving ? <Spinner size="sm" /> : 'Guardar'}
+
+// ✅ Suspense fallback / data loading in a section
+<Suspense fallback={<Spinner mode="section" />}>
+
+// ✅ Full-screen overlay while Firebase resolves auth
+if (firebaseUser === undefined) return <Spinner mode="page" />
+```
+
+- ❌ `import { CSpinner } from '@coreui/react'` — never use CSpinner directly
+- ❌ Hand-rolling a centered div + CSpinner — use `mode="section"` or `mode="page"` instead
+
+### Form Layout — StandardForm
+
+#### RULE: All CRUD / panel forms must use `StandardForm`
+
+Every create/edit form rendered as a panel or modal must use the shared component `src/components/shared/StandardForm.js`. **Never recreate the form shell manually.**
+
+```js
+import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
+```
+
+Exports:
+- `StandardForm` — wrapper with title, subtitle, cancel/save buttons and spinner
+- `StandardField` — label + input pair (`payment-form__field` + `payment-form__label`)
+- `SF` — CSS class helpers: `SF.input`, `SF.select`, `SF.textarea`, `SF.readonly`
+
+```jsx
+<StandardForm
+  title="Nueva cuenta"
+  subtitle="ID: abc123"   // optional — shown below title
+  onCancel={onCancel}
+  onSave={handleSubmit(onSave)}
+  saving={saving}
+  saveLabel="Crear"       // optional — defaults to i18n common.save
+  cancelLabel="Volver"    // optional — defaults to i18n common.cancel
+>
+  <StandardField label="Nombre *">
+    <input className={SF.input} {...register('name', { required: 'Requerido' })} />
+    {fieldError(errors.name)}
+  </StandardField>
+
+  {/* 2-column grid — wrap StandardFields in a plain div */}
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+    <StandardField label="Tipo">
+      <select className={SF.select} {...register('type')} />
+    </StandardField>
+    <StandardField label="Estado">
+      <select className={SF.select} {...register('status')} />
+    </StandardField>
+  </div>
+</StandardForm>
+```
+
+- ✅ `StandardField` accepts any ReactNode as `label` — use JSX for inline annotations
+- ✅ For readonly inputs use `SF.readonly` + the `readOnly` attribute
+- ✅ Custom children (e.g. a button next to an input) go inside `StandardField` as children
+- ❌ Never hand-write `<div className="payment-form">`, `__header`, `__body`, `__actions`
+- ❌ Never import `CButton` or `CSpinner` inside a form — `StandardForm` owns the action buttons and spinner
+- ❌ Never create a separate per-module form SCSS — `StandardForm` brings `payment-form__*` styles automatically
+
+**Intentional exceptions** — these are NOT wrapped in `StandardForm`:
+- Bottom-sheet modals (`AdHocExpenseModal`, `PayModal`) — mobile-style overlay with custom layout
+- Compact inline/horizontal forms (`SettlementCreateForm`) — row grid embedded in a table header
+- Micro-forms inside table cells (`AuditAddForm`) — tiny inputs rendered inside a cell
+- Login page — public page with its own branded design
+
 ### Form Validation Pattern — React Hook Form
 
 #### RULE: Every form must use `react-hook-form`

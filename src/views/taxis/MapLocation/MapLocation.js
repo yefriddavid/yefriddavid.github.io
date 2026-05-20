@@ -6,7 +6,6 @@ import {
   CCardHeader,
   CCardBody,
   CBadge,
-  CSpinner,
   CRow,
   CCol,
   CListGroup,
@@ -35,6 +34,7 @@ import './MapLocation.scss'
 import { createTaxiIconFlat, createTaxiIconV2 } from './MapIcons'
 import { FullscreenControl, MapController } from './MapControls'
 import { DEFAULT_CENTER, formatTimeAgo } from './utils'
+import Spinner from 'src/components/shared/Spinner'
 
 const MapLocation = () => {
   const dispatch = useDispatch()
@@ -262,7 +262,7 @@ const MapLocation = () => {
       <CCardBody className="card-body">
         {fetching && !vehicles ? (
           <div className="text-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : (
           <CRow className="g-0">
@@ -427,7 +427,7 @@ const MapLocation = () => {
                       </div>
                       {loadingHistories[loc.vehicle?.id] && (
                         <div className="text-center py-2">
-                          <CSpinner size="sm" color="primary" />
+                          <Spinner size="sm" color="primary" />
                         </div>
                       )}
                       <div className="history-list">

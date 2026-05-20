@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { CSpinner } from '@coreui/react'
 import InlinePaymentMethod from '../InlinePaymentMethod'
 import { fmt, getStatus } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function AccountCard({
   account,
@@ -175,7 +175,7 @@ export default function AccountCard({
               }}
             >
               {isSaving ? (
-                <CSpinner
+                <Spinner
                   size="sm"
                   style={{
                     width: 14,
@@ -315,7 +315,7 @@ export default function AccountCard({
                       }}
                     >
                       {isAttaching ? (
-                        <CSpinner size="sm" style={{ width: 10, height: 10 }} />
+                        <Spinner size="sm" style={{ width: 10, height: 10 }} />
                       ) : (
                         '📎'
                       )}

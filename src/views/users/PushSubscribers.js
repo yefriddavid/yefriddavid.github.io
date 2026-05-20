@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton } from '@coreui/react'
+import { CCard, CCardBody, CCardHeader, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilReload, cilTrash } from '@coreui/icons'
 import { getTokens, deleteFcmToken } from 'src/services/firebase/security/fcmTokens'
+import Spinner from 'src/components/shared/Spinner'
 
 const parseDevice = (userAgent) => {
   if (!userAgent) return '—'
@@ -70,7 +71,7 @@ const PushSubscribers = () => {
         <div className="d-flex align-items-center gap-2">
           <strong>Suscriptores Push</strong>
           <CBadge color="secondary">{rows.length}</CBadge>
-          {loading && <CSpinner size="sm" />}
+          {loading && <Spinner size="sm" />}
         </div>
         <CButton size="sm" color="secondary" variant="outline" onClick={load} disabled={loading}>
           <CIcon icon={cilReload} size="sm" /> Actualizar
@@ -80,7 +81,7 @@ const PushSubscribers = () => {
       <CCardBody style={{ padding: 0 }}>
         {loading && rows.length === 0 ? (
           <div className="d-flex justify-content-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : (
           <StandardGrid
@@ -113,7 +114,7 @@ const PushSubscribers = () => {
                   title="Eliminar suscriptor"
                 >
                   {deletingId === data.id ? (
-                    <CSpinner size="sm" />
+                    <Spinner size="sm" />
                   ) : (
                     <CIcon icon={cilTrash} size="sm" />
                   )}

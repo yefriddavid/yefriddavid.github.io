@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { CCard, CBadge, CSpinner, CButton } from '@coreui/react'
+import { CCard, CBadge, CButton } from '@coreui/react'
 import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
 import moment from 'moment'
 import { getPerfLogs } from 'src/services/firebase/system/perfLogs'
+import Spinner from 'src/components/shared/Spinner'
 
 const renderTs = ({ value }) => (
   <span style={{ fontFamily: 'monospace', fontSize: 12, opacity: 0.75 }}>
@@ -57,7 +58,7 @@ const PerfLogsPage = () => {
           <span style={{ fontFamily: 'monospace', fontSize: 11, opacity: 0.4 }}>queries {'>'} 2s</span>
         </div>
         <CButton color="primary" variant="outline" size="sm" onClick={load} disabled={loading}>
-          {loading ? <CSpinner size="sm" /> : '↺'}&nbsp;Recargar
+          {loading ? <Spinner size="sm" /> : '↺'}&nbsp;Recargar
         </CButton>
       </div>
 
@@ -78,7 +79,7 @@ const PerfLogsPage = () => {
       <CCard style={{ borderRadius: 12, overflow: 'hidden' }}>
         {loading && (
           <div style={{ padding: 40, textAlign: 'center' }}>
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         )}
         {!loading && logs.length === 0 && (

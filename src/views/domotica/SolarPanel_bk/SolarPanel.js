@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CAlert, CButton, CCard, CCardBody, CRow, CCol, CBadge, CSpinner } from '@coreui/react'
+import { CAlert, CButton, CCard, CCardBody, CRow, CCol, CBadge } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
   cilSun,
@@ -16,6 +16,7 @@ import {
   triggerRead,
 } from 'src/services/firebase/domotica/solarBattery'
 import './SolarPanel.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 // 12V 100Ah = 1200 Wh
 const BATTERY_CAPACITY_WH = 1800
@@ -225,7 +226,7 @@ const SolarPanel = () => {
           >
             {readState === 'loading' ? (
               <>
-                <CSpinner size="sm" className="me-1" />
+                <Spinner size="sm" className="me-1" />
                 Leyendo…
               </>
             ) : readState === 'done' ? (

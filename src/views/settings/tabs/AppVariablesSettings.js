@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { CSpinner } from '@coreui/react'
 import {
   getAppSettings,
   setAppSetting,
   SETTING_LABELS,
 } from 'src/services/firebase/admin/appSettings'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function AppVariablesSettings() {
   const [settings, setSettings] = useState(null)
@@ -65,7 +65,7 @@ export default function AppVariablesSettings() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-        <CSpinner color="primary" />
+        <Spinner color="primary" />
       </div>
     )
   }
@@ -174,7 +174,7 @@ export default function AppVariablesSettings() {
                       }}
                     >
                       {isSaving ? (
-                        <CSpinner size="sm" style={{ width: 12, height: 12 }} />
+                        <Spinner size="sm" style={{ width: 12, height: 12 }} />
                       ) : (
                         'Guardar'
                       )}

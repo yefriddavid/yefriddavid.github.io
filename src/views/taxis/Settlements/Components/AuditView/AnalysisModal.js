@@ -1,6 +1,7 @@
 import React from 'react'
-import { CModal, CModalHeader, CModalTitle, CModalBody, CSpinner } from '@coreui/react'
+import { CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
 import { fmt } from '../utils'
+import Spinner from 'src/components/shared/Spinner'
 
 const LEVEL_STYLE = {
   danger: { bg: '#fff5f5', border: '#fca5a5', color: '#b91c1c', icon: '🔴' },
@@ -22,7 +23,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
       <CModalBody style={{ padding: '15px 12px' }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <CSpinner style={{ color: '#7c3aed' }} />
+            <Spinner style={{ color: '#7c3aed' }} />
             <div style={{ marginTop: 12, color: '#7c3aed', fontSize: 13 }}>Analizando datos…</div>
           </div>
         )}

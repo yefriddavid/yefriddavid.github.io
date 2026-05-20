@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { CCard, CCardHeader, CCardBody, CButton, CBadge, CSpinner, CAlert } from '@coreui/react'
+import { CCard, CCardHeader, CCardBody, CButton, CBadge, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
 import { changeOwnPassword } from 'src/services/firebase/security/users'
 import { LANDING_PAGES } from 'src/constants/commons'
@@ -8,6 +8,7 @@ import {
   USER_ROLE_LABELS as ROLE_LABELS,
   USER_ROLE_COLORS as ROLE_COLORS,
 } from 'src/constants/admin'
+import Spinner from 'src/components/shared/Spinner'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
@@ -30,7 +31,7 @@ const Profile = () => {
     return (
       <CCard>
         <CCardBody className="text-center py-5">
-          {loading ? <CSpinner /> : <p className="text-secondary">Perfil no disponible.</p>}
+          {loading ? <Spinner /> : <p className="text-secondary">Perfil no disponible.</p>}
         </CCardBody>
       </CCard>
     )
@@ -143,7 +144,7 @@ const Profile = () => {
                   justifyContent: 'center',
                 }}
               >
-                <CSpinner size="sm" color="light" />
+                <Spinner size="sm" color="light" />
               </div>
             )}
           </div>
@@ -213,7 +214,7 @@ const Profile = () => {
             </div>
             <div className="d-flex gap-2 pt-1">
               <CButton color="primary" size="sm" onClick={saveEdit} disabled={loading}>
-                {loading ? <CSpinner size="sm" /> : 'Guardar'}
+                {loading ? <Spinner size="sm" /> : 'Guardar'}
               </CButton>
               <CButton color="secondary" variant="outline" size="sm" onClick={cancelEdit}>
                 Cancelar
@@ -327,7 +328,7 @@ const Profile = () => {
                 onClick={handleChangePassword}
                 disabled={pwLoading}
               >
-                {pwLoading ? <CSpinner size="sm" /> : 'Guardar'}
+                {pwLoading ? <Spinner size="sm" /> : 'Guardar'}
               </CButton>
               <CButton
                 size="sm"

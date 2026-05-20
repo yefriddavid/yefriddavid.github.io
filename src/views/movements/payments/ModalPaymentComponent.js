@@ -8,7 +8,6 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CSpinner,
 } from '@coreui/react'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
@@ -18,6 +17,7 @@ import DatePicker from 'react-datepicker'
 import { formatDate } from 'src/utils/moment'
 
 import 'react-datepicker/dist/react-datepicker.css'
+import Spinner from 'src/components/shared/Spinner'
 
 class ModalPaymentComponent extends PureComponent {
   //const [selectedImage, setSelectedImage] = useState(null);
@@ -127,7 +127,7 @@ class ModalPaymentComponent extends PureComponent {
     let saveButtonControl = null
 
     if (fetching === true) {
-      saveButtonControl = <CSpinner color="info" />
+      saveButtonControl = <Spinner color="info" />
     } else {
       saveButtonControl = (
         <CButton color="primary" onClick={() => savePayment(account)}>

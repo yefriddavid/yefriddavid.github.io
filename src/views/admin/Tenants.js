@@ -6,7 +6,6 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CSpinner,
   CBadge,
   CAlert,
   CButton,
@@ -23,6 +22,7 @@ import {
   ADMIN_PLANS as PLANS,
   ADMIN_PLAN_COLORS as PLAN_COLORS,
 } from 'src/constants/admin'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY = {
   name: '',
@@ -143,7 +143,7 @@ const MembersPanel = React.memo(({ tenant }) => {
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: '#1e3a5f' }}>
         Miembros ({members.length})
       </div>
-      {usersLoading && <CSpinner size="sm" />}
+      {usersLoading && <Spinner size="sm" />}
       {members.length === 0 && !usersLoading && (
         <p style={{ fontSize: 13, color: '#888' }}>Sin miembros asignados.</p>
       )}
@@ -257,7 +257,7 @@ const Tenants = () => {
     <CCard>
       <CCardHeader className="d-flex align-items-center gap-2">
         <strong>Tenants</strong>
-        {fetching && <CSpinner size="sm" />}
+        {fetching && <Spinner size="sm" />}
         <div className="ms-auto d-flex gap-2">
           {showForm ? (
             <CButton

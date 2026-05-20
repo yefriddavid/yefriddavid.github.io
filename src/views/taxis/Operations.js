@@ -6,7 +6,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CFormSelect,
   CModal,
   CModalHeader,
@@ -24,6 +23,7 @@ import {
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES,
   TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
 } from 'src/constants/taxi'
+import Spinner from 'src/components/shared/Spinner'
 
 // Derive day/month names from a locale string using Intl
 const getDayNames = (locale) =>
@@ -329,7 +329,7 @@ const Operations = () => {
       <CCardBody style={{ padding: 0 }}>
         {fetching && !vehiclesData ? (
           <div className="d-flex justify-content-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : selected.size === 0 ? (
           <div style={{ padding: 32, textAlign: 'center', color: 'var(--cui-secondary-color)' }}>

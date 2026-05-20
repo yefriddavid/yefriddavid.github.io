@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { CSpinner } from '@coreui/react'
+import Spinner from './Spinner'
 import '../../views/movements/payments/ItemDetail.scss'
 
 // CSS class helpers for inputs inside StandardField
@@ -53,7 +53,7 @@ const StandardForm = ({
           onClick={onSave}
           disabled={saving}
         >
-          {saving ? <CSpinner size="sm" /> : resolvedSaveLabel}
+          {saving ? <Spinner size="sm" /> : resolvedSaveLabel}
         </button>
       </div>
     </div>

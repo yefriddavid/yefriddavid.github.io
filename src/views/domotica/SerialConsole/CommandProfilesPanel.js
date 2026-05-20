@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import CIcon from '@coreui/icons-react'
-import { CSpinner } from '@coreui/react'
 import {
   cilPlus, cilTrash, cilPencil, cilChevronBottom, cilChevronRight,
   cilCopy, cilArrowTop, cilArrowBottom,
 } from '@coreui/icons'
 import * as actions from 'src/actions/domotica/domoticaCommandProfileActions'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY_PROFILE = { name: '', description: '', deviceModel: '' }
 const EMPTY_ITEM = { value: '', notes: '' }
@@ -108,7 +108,7 @@ const CommandProfilesPanel = () => {
   if (fetching && !profiles) {
     return (
       <div className="cp-panel cp-panel--loading">
-        <CSpinner size="sm" />
+        <Spinner size="sm" />
       </div>
     )
   }
@@ -159,7 +159,7 @@ const CommandProfilesPanel = () => {
               onClick={saveProfile}
               disabled={saving || !profileForm.data.name.trim()}
             >
-              {saving ? <CSpinner size="sm" /> : 'Guardar'}
+              {saving ? <Spinner size="sm" /> : 'Guardar'}
             </button>
           </div>
         </div>
@@ -217,7 +217,7 @@ const CommandProfilesPanel = () => {
                   )}
 
                   {isLoadingItems && (
-                    <div className="cp-items__loading"><CSpinner size="sm" /></div>
+                    <div className="cp-items__loading"><Spinner size="sm" /></div>
                   )}
 
                   {!isLoadingItems && items.length > 0 && (
@@ -323,7 +323,7 @@ const CommandProfilesPanel = () => {
                           onClick={saveItem}
                           disabled={saving || !itemForm.data.value.trim()}
                         >
-                          {saving ? <CSpinner size="sm" /> : 'Agregar'}
+                          {saving ? <Spinner size="sm" /> : 'Agregar'}
                         </button>
                       </div>
                     </div>

@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { CContainer, CSpinner } from '@coreui/react'
+import { CContainer } from '@coreui/react'
+import Spinner from '../shared/Spinner'
 import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
@@ -26,15 +27,7 @@ const DomoticaContent = () => {
   }, [dispatch])
 
   if (firebaseUser === undefined) {
-    return (
-      <CContainer
-        className="px-2"
-        fluid
-        style={{ display: 'flex', justifyContent: 'center', paddingTop: '2rem' }}
-      >
-        <CSpinner color="primary" />
-      </CContainer>
-    )
+    return <Spinner mode="page" />
   }
 
   if (!firebaseUser) {
@@ -50,7 +43,7 @@ const DomoticaContent = () => {
   return (
     <CContainer className="px-2" fluid>
       <ErrorBoundary module="Domotica">
-        <Suspense fallback={<CSpinner color="primary" />}>
+        <Suspense fallback={<Spinner mode="section" />}>
           <Routes>
             {domoticaRoutes.map((route, idx) => {
               const Component = route.element

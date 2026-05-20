@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { CSpinner } from '@coreui/react'
 import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
@@ -11,6 +10,7 @@ import {
   TYPE_OPTIONS,
   CLASSIFICATION_OPTIONS,
 } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function DetailModal({ account, saving, onUpdate, onClone, onClose }) {
   const [tab, setTab] = useState('info')
@@ -181,7 +181,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 }}
               >
                 {saving ? (
-                  <CSpinner
+                  <Spinner
                     size="sm"
                     style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
                   />
@@ -459,7 +459,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 }}
               >
                 {saving ? (
-                  <CSpinner
+                  <Spinner
                     size="sm"
                     style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
                   />

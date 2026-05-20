@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { CChartLine } from '@coreui/react-chartjs'
-import { CSpinner } from '@coreui/react'
 import ChartRangeSlider from './ChartRangeSlider'
 import nightShadingPlugin from './nightShadingPlugin'
+import Spinner from 'src/components/shared/Spinner'
 
 const fmt = (iso) => {
   const d = new Date(iso)
@@ -19,7 +19,7 @@ const CurrentChart = ({ data, loading }) => {
   if (loading && (!data || data.length === 0)) {
     return (
       <div className="solar-panel__chart-loading">
-        <CSpinner size="sm" className="me-2" />
+        <Spinner size="sm" className="me-2" />
         Cargando historial…
       </div>
     )

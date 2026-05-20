@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   CButton,
-  CSpinner,
   CBadge,
   CCollapse,
   CModal,
@@ -22,6 +21,7 @@ import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import { fmt } from './utils'
 import StatCard from 'src/components/StatCard'
 import './PeriodSummary.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const PeriodSummary = ({
   summaryOpen,
@@ -314,7 +314,7 @@ const PeriodSummary = ({
                 onClick={(e) => { e.stopPropagation(); setByDriverModalOpen(true) }}
                 className="period-summary__stat-btn"
               >
-                {loading ? <CSpinner size="sm" /> : `${byDriver.length} conductores`}
+                {loading ? <Spinner size="sm" /> : `${byDriver.length} conductores`}
               </CButton>
             </StatCard>
 

@@ -1,5 +1,4 @@
 import React from 'react'
-import { CButton, CSpinner } from '@coreui/react'
 import { useForm } from 'react-hook-form'
 import {
   CLASSIFICATION_OPTIONS,
@@ -12,6 +11,7 @@ import {
 import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
+import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 
 const EMPTY_FORM = {
   type: 'Outcoming',
@@ -54,291 +54,237 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
     formState: { errors },
   } = useForm({ defaultValues: initial ?? EMPTY_FORM })
 
-  const name = watch('name')
   const type = watch('type')
   const period = watch('period')
   const active = watch('active') ?? true
   const important = watch('important') ?? false
   const isEdit = !!initial?.id
   const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}195)`
-  const onSubmit = (data) => onSave(data)
 
   return (
-    <div className="payment-form">
-      <div className="payment-form__header">
-        <span className="payment-form__title">
-          {isEdit ? 'Editar cuenta maestra' : 'Nueva cuenta maestra'}
-        </span>
-      </div>
-      <div className="payment-form__body">
-        <div className="payment-form__field">
-          <label className="payment-form__label">Nombre *</label>
-          <input
-            className="payment-form__input"
-            type="text"
-            placeholder="Nombre de la cuenta"
-            {...register('name', { required: 'El nombre es obligatorio' })}
-          />
-          {fieldError(errors.name)}
-        </div>
+    <StandardForm
+      title={isEdit ? 'Editar cuenta maestra' : 'Nueva cuenta maestra'}
+      onCancel={onCancel}
+      onSave={handleSubmit(onSave)}
+      saving={saving}
+    >
+      <StandardField label="Nombre *">
+        <input
+          className={SF.input}
+          type="text"
+          placeholder="Nombre de la cuenta"
+          {...register('name', { required: 'El nombre es obligatorio' })}
+        />
+        {fieldError(errors.name)}
+      </StandardField>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">
+      <StandardField
+        label={
+          <>
             Nombre Contable NIIF
             <span style={{ fontSize: 11, color: '#6c757d', fontWeight: 400, marginLeft: 6 }}>
               — nombre según plan de cuentas
             </span>
-          </label>
-          <input
-            className="payment-form__input"
-            type="text"
-            placeholder="Ej: Arrendamientos — inmueble"
-            {...register('accountingName')}
-          />
-        </div>
+          </>
+        }
+      >
+        <input
+          className={SF.input}
+          type="text"
+          placeholder="Ej: Arrendamientos — inmueble"
+          {...register('accountingName')}
+        />
+      </StandardField>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">Descripción</label>
-          <input
-            className="payment-form__input"
-            type="text"
-            placeholder="Descripción corta"
-            {...register('description')}
-          />
-        </div>
+      <StandardField label="Descripción">
+        <input
+          className={SF.input}
+          type="text"
+          placeholder="Descripción corta"
+          {...register('description')}
+        />
+      </StandardField>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">Notas</label>
-          <textarea
-            className="payment-form__input"
-            placeholder="Comentarios u observaciones adicionales…"
-            rows={3}
-            style={{ resize: 'vertical', lineHeight: 1.5 }}
-            {...register('notes')}
-          />
-        </div>
+      <StandardField label="Notas">
+        <textarea
+          className={SF.textarea}
+          placeholder="Comentarios u observaciones adicionales…"
+          rows={3}
+          style={{ resize: 'vertical', lineHeight: 1.5 }}
+          {...register('notes')}
+        />
+      </StandardField>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <div className="payment-form__field">
-            <label className="payment-form__label">Tipo</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('type')}
-            >
-              {ACCOUNT_MASTER_TYPES.map((o) => (
-                <option key={o} value={o}>
-                  {ACCOUNT_MASTER_TYPE_LABELS[o]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="payment-form__field">
-            <label className="payment-form__label">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Tipo">
+          <select className={SF.select} {...register('type')}>
+            {ACCOUNT_MASTER_TYPES.map((o) => (
+              <option key={o} value={o}>
+                {ACCOUNT_MASTER_TYPE_LABELS[o]}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+        <StandardField
+          label={
+            <>
               Código PUC *
               <span style={{ fontSize: 10, color: '#6c757d', fontWeight: 400, marginLeft: 4 }}>
                 (clase {ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'})
               </span>
-            </label>
-            <input
-              className="payment-form__input"
-              type="text"
-              placeholder={codePlaceholder}
-              {...register('code')}
-            />
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <div className="payment-form__field">
-            <label className="payment-form__label">Naturaleza</label>
-            <input
-              className="payment-form__input"
-              type="text"
-              value={ACCOUNT_MASTER_NATURE[type] ?? '—'}
-              readOnly
-              style={{ background: '#f8f9fa', color: '#6c757d', cursor: 'default' }}
-            />
-          </div>
-
-          <div className="payment-form__field">
-            <label className="payment-form__label">Período</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('period')}
-            >
-              {PERIOD_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <div className="payment-form__field">
-            <label className="payment-form__label">Clasificación</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('classification')}
-            >
-              {CLASSIFICATION_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="payment-form__field">
-            <label className="payment-form__label">Categoría</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('category')}
-            >
-              <option value="">Sin categoría</option>
-              {ACCOUNT_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-          <div className="payment-form__field">
-            <label className="payment-form__label">Día máximo de pago</label>
-            <input
-              className="payment-form__input"
-              type="number"
-              min={1}
-              max={31}
-              {...register('maxDatePay')}
-            />
-          </div>
-
-          <div className="payment-form__field">
-            <label className="payment-form__label">Método de pago</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('paymentMethod')}
-            >
-              {PAYMENT_METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {PERIOD_WITH_MONTH.includes(period) && (
-          <div className="payment-form__field">
-            <label className="payment-form__label">Mes de inicio / aplica</label>
-            <select
-              className="payment-form__input payment-form__input--select"
-              {...register('monthStartAt')}
-            >
-              {MONTH_NAMES.map((m, i) => (
-                <option key={m} value={m}>
-                  {monthLabels[i]}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="payment-form__field">
-          <label className="payment-form__label">Valor por defecto (COP)</label>
+            </>
+          }
+        >
           <input
-            className="payment-form__input"
-            type="number"
-            placeholder="0 — opcional"
-            min="0"
-            {...register('defaultValue')}
+            className={SF.input}
+            type="text"
+            placeholder={codePlaceholder}
+            {...register('code')}
           />
-        </div>
+        </StandardField>
+      </div>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Naturaleza">
+          <input
+            className={SF.readonly}
+            type="text"
+            value={ACCOUNT_MASTER_NATURE[type] ?? '—'}
+            readOnly
+            style={{ background: '#f8f9fa', color: '#6c757d', cursor: 'default' }}
+          />
+        </StandardField>
+        <StandardField label="Período">
+          <select className={SF.select} {...register('period')}>
+            {PERIOD_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Clasificación">
+          <select className={SF.select} {...register('classification')}>
+            {CLASSIFICATION_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+        <StandardField label="Categoría">
+          <select className={SF.select} {...register('category')}>
+            <option value="">Sin categoría</option>
+            {ACCOUNT_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Día máximo de pago">
+          <input className={SF.input} type="number" min={1} max={31} {...register('maxDatePay')} />
+        </StandardField>
+        <StandardField label="Método de pago">
+          <select className={SF.select} {...register('paymentMethod')}>
+            {PAYMENT_METHODS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
+
+      {PERIOD_WITH_MONTH.includes(period) && (
+        <StandardField label="Mes de inicio / aplica">
+          <select className={SF.select} {...register('monthStartAt')}>
+            {MONTH_NAMES.map((m, i) => (
+              <option key={m} value={m}>
+                {monthLabels[i]}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      )}
+
+      <StandardField label="Valor por defecto (COP)">
+        <input
+          className={SF.input}
+          type="number"
+          placeholder="0 — opcional"
+          min="0"
+          {...register('defaultValue')}
+        />
+      </StandardField>
+
+      <StandardField
+        label={
+          <>
             Deuda total a pagar (COP)
             <span style={{ fontSize: 11, color: '#6c757d', fontWeight: 400, marginLeft: 6 }}>
               — dejar vacío si no es una deuda
             </span>
-          </label>
-          <input
-            className="payment-form__input"
-            type="number"
-            placeholder="0 — opcional"
-            min="0"
-            {...register('targetAmount')}
-          />
-        </div>
+          </>
+        }
+      >
+        <input
+          className={SF.input}
+          type="number"
+          placeholder="0 — opcional"
+          min="0"
+          {...register('targetAmount')}
+        />
+      </StandardField>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">Definición</label>
-          <input
-            className="payment-form__input"
-            type="text"
-            placeholder="Ej: Indefinidos"
-            {...register('definition')}
-          />
-        </div>
+      <StandardField label="Definición">
+        <input
+          className={SF.input}
+          type="text"
+          placeholder="Ej: Indefinidos"
+          {...register('definition')}
+        />
+      </StandardField>
 
-        <div className="payment-form__field">
-          <label className="payment-form__label">Estado</label>
-          <select
-            className="payment-form__input payment-form__input--select"
-            value={active ? 'true' : 'false'}
-            onChange={(e) => setValue('active', e.target.value === 'true')}
-          >
-            <option value="true">Activo</option>
-            <option value="false">Inactivo</option>
-          </select>
-        </div>
-
-        <div
-          className="payment-form__field"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' }}
-          onClick={() => setValue('important', !important)}
+      <StandardField label="Estado">
+        <select
+          className={SF.select}
+          value={active ? 'true' : 'false'}
+          onChange={(e) => setValue('active', e.target.value === 'true')}
         >
-          <input
-            type="checkbox"
-            checked={important}
-            onChange={(e) => setValue('important', e.target.checked)}
-            style={{
-              width: 18,
-              height: 18,
-              accentColor: '#e03131',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <label className="payment-form__label" style={{ marginBottom: 0, cursor: 'pointer' }}>
-            <span style={{ color: '#e03131', marginRight: 4 }}>★</span>Importante
-          </label>
-        </div>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </StandardField>
+
+      <div
+        className="payment-form__field"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        onClick={() => setValue('important', !important)}
+      >
+        <input
+          type="checkbox"
+          checked={important}
+          onChange={(e) => setValue('important', e.target.checked)}
+          style={{
+            width: 18,
+            height: 18,
+            accentColor: '#e03131',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <label className="payment-form__label" style={{ marginBottom: 0, cursor: 'pointer' }}>
+          <span style={{ color: '#e03131', marginRight: 4 }}>★</span>Importante
+        </label>
       </div>
-
-      <div className="payment-form__actions">
-        <CButton
-          className="payment-form__btn payment-form__btn--cancel"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancelar
-        </CButton>
-        <CButton
-          className="payment-form__btn payment-form__btn--save"
-          onClick={handleSubmit(onSubmit)}
-          disabled={saving || !name?.trim()}
-        >
-          {saving ? <CSpinner size="sm" /> : 'Guardar'}
-        </CButton>
-      </div>
-    </div>
+    </StandardForm>
   )
 }

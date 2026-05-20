@@ -7,7 +7,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CBadge,
   CFormSelect,
   CRow,
@@ -17,6 +16,7 @@ import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
 import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
 import { monthToRange } from 'src/utils/dateRange'
 import './masters.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const MONTHS = [
   'Enero',
@@ -162,7 +162,7 @@ const Resumen = () => {
         <CCardBody className="p-3">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : (
             <StandardGrid

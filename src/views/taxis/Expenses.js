@@ -8,7 +8,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CBadge,
   CButton,
   CCollapse,
@@ -43,6 +42,7 @@ import {
 //]
 
 import { fmt } from 'src/utils/formatters'
+import Spinner from 'src/components/shared/Spinner'
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -366,7 +366,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
         )}
         {processingFile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
-            <CSpinner size="sm" />
+            <Spinner size="sm" />
             <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando…</span>
           </div>
         )}
@@ -571,7 +571,7 @@ const Gastos = () => {
                 Por categoría
               </div>
               {fetching && !expenses ? (
-                <CSpinner size="sm" />
+                <Spinner size="sm" />
               ) : byCategory.length === 0 ? (
                 <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
                   Sin registros
@@ -738,7 +738,7 @@ const Gastos = () => {
         <CCardBody>
           {fetching && !expenses ? (
             <div className="d-flex justify-content-center py-5">
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : (
             <StandardGrid

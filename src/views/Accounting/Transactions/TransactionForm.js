@@ -1,8 +1,8 @@
 import React from 'react'
-import { CButton, CSpinner } from '@coreui/react'
 import { useForm } from 'react-hook-form'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
 import { EMPTY_FORM } from './helpers'
+import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 
 const fieldError = (err) =>
   err ? (
@@ -29,119 +29,88 @@ export default function TransactionForm({ initial, saving, onSave, onCancel }) {
   }
 
   return (
-    <div className="payment-form">
-      <div className="payment-form__header">
-        <span className="payment-form__title">
-          {isEdit ? 'Editar transacción' : 'Nueva transacción'}
-        </span>
-      </div>
-      <div className="payment-form__body">
-        {initial?.accountMasterName && (
-          <div className="payment-form__field">
-            <label className="payment-form__label">Cuenta maestra</label>
-            <div
-              style={{
-                padding: '8px 12px',
-                background: '#eef4ff',
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#1e3a5f',
-              }}
-            >
-              {initial.accountMasterImportant && (
-                <span style={{ color: '#e03131', fontSize: 13, marginRight: 4 }}>★</span>
-              )}
-              {initial.accountMasterName}
-            </div>
+    <StandardForm
+      title={isEdit ? 'Editar transacción' : 'Nueva transacción'}
+      onCancel={onCancel}
+      onSave={handleSubmit(onSubmit)}
+      saving={saving}
+    >
+      {initial?.accountMasterName && (
+        <StandardField label="Cuenta maestra">
+          <div
+            style={{
+              padding: '8px 12px',
+              background: '#eef4ff',
+              borderRadius: 6,
+              fontSize: 13,
+              fontWeight: 600,
+              color: '#1e3a5f',
+            }}
+          >
+            {initial.accountMasterImportant && (
+              <span style={{ color: '#e03131', fontSize: 13, marginRight: 4 }}>★</span>
+            )}
+            {initial.accountMasterName}
           </div>
-        )}
-        <div className="payment-form__field">
-          <label className="payment-form__label">Tipo</label>
-          <select
-            className="payment-form__input payment-form__input--select"
-            {...register('type', {
-              onChange: () => setValue('category', ''),
-            })}
-          >
-            <option value="expense">Gasto</option>
-            <option value="income">Ingreso</option>
-          </select>
-        </div>
-        <div className="payment-form__field">
-          <label className="payment-form__label">Categoría</label>
-          <select
-            className="payment-form__input payment-form__input--select"
-            {...register('category')}
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="payment-form__field">
-          <label className="payment-form__label">Descripción</label>
-          <input
-            className="payment-form__input"
-            type="text"
-            placeholder="Descripción del movimiento"
-            {...register('description')}
-          />
-        </div>
-        <div className="payment-form__field">
-          <label className="payment-form__label">Monto (COP)</label>
-          <input
-            className="payment-form__input"
-            type="number"
-            placeholder="0"
-            min="0"
-            {...register('amount', { required: 'El monto es obligatorio' })}
-          />
-          {fieldError(errors.amount)}
-        </div>
-        <div className="payment-form__field">
-          <label className="payment-form__label">Fecha</label>
-          <input
-            className="payment-form__input"
-            type="date"
-            {...register('date', { required: 'La fecha es obligatoria' })}
-          />
-          {fieldError(errors.date)}
-        </div>
-        <div className="payment-form__field">
-          <label className="payment-form__label">Método de pago</label>
-          <select
-            className="payment-form__input payment-form__input--select"
-            {...register('paymentMethod')}
-          >
-            <option value="">Sin método</option>
-            {PAYMENT_METHODS.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="payment-form__actions">
-        <CButton
-          className="payment-form__btn payment-form__btn--cancel"
-          onClick={onCancel}
-          disabled={saving}
+        </StandardField>
+      )}
+      <StandardField label="Tipo">
+        <select
+          className={SF.select}
+          {...register('type', {
+            onChange: () => setValue('category', ''),
+          })}
         >
-          Cancelar
-        </CButton>
-        <CButton
-          className="payment-form__btn payment-form__btn--save"
-          onClick={handleSubmit(onSubmit)}
-          disabled={saving}
-        >
-          {saving ? <CSpinner size="sm" /> : 'Guardar'}
-        </CButton>
-      </div>
-    </div>
+          <option value="expense">Gasto</option>
+          <option value="income">Ingreso</option>
+        </select>
+      </StandardField>
+      <StandardField label="Categoría">
+        <select className={SF.select} {...register('category')}>
+          <option value="">Sin categoría</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </StandardField>
+      <StandardField label="Descripción">
+        <input
+          className={SF.input}
+          type="text"
+          placeholder="Descripción del movimiento"
+          {...register('description')}
+        />
+      </StandardField>
+      <StandardField label="Monto (COP)">
+        <input
+          className={SF.input}
+          type="number"
+          placeholder="0"
+          min="0"
+          {...register('amount', { required: 'El monto es obligatorio' })}
+        />
+        {fieldError(errors.amount)}
+      </StandardField>
+      <StandardField label="Fecha">
+        <input
+          className={SF.input}
+          type="date"
+          {...register('date', { required: 'La fecha es obligatoria' })}
+        />
+        {fieldError(errors.date)}
+      </StandardField>
+      <StandardField label="Método de pago">
+        <select className={SF.select} {...register('paymentMethod')}>
+          <option value="">Sin método</option>
+          {PAYMENT_METHODS.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </StandardField>
+    </StandardForm>
   )
 }

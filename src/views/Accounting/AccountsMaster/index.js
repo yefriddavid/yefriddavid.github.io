@@ -11,7 +11,6 @@ import {
   CModalBody,
   CModalHeader,
   CModalTitle,
-  CSpinner,
 } from '@coreui/react'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import {
@@ -25,6 +24,7 @@ import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSee
 import AccountMasterForm from './AccountMasterForm'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function AccountsMaster() {
   const dispatch = useDispatch()
@@ -123,7 +123,7 @@ export default function AccountsMaster() {
                   gap: 6,
                 }}
               >
-                <CSpinner size="sm" /> Cargando… {seedProgress}%
+                <Spinner size="sm" /> Cargando… {seedProgress}%
               </span>
             )}
             {needsPatch && !patching && data !== null && data.length > 0 && (
@@ -141,7 +141,7 @@ export default function AccountsMaster() {
                   gap: 6,
                 }}
               >
-                <CSpinner size="sm" /> Actualizando… {patchProgress}%
+                <Spinner size="sm" /> Actualizando… {patchProgress}%
               </span>
             )}
             <input
@@ -201,7 +201,7 @@ export default function AccountsMaster() {
         <CCardBody style={{ padding: 0 }}>
           {fetching && !data ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : (
             <StandardGrid

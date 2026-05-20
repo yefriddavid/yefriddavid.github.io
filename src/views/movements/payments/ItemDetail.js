@@ -10,7 +10,6 @@ import {
   CModalHeader,
   CModalTitle,
   CRow,
-  CSpinner,
 } from '@coreui/react'
 import { connect } from 'react-redux'
 import * as paymentActions from '../../../actions/cashflow/paymentActions'
@@ -27,6 +26,7 @@ import {
 import { setCache, clearCache } from '../../../services/voucherCache'
 
 import './ItemDetail.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const currencyCode = 'COP'
 const myCode = 'es-CO'
@@ -391,7 +391,7 @@ const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
           onClick={handleSave}
           disabled={saving}
         >
-          {saving ? <CSpinner size="sm" /> : t('common.save')}
+          {saving ? <Spinner size="sm" /> : t('common.save')}
         </CButton>
       </div>
     </div>

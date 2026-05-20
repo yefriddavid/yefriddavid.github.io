@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { CCardImage, CSpinner } from '@coreui/react'
+import { CCardImage } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 function VaucherControlViewer({ payment }) {
   const { t } = useTranslation()
@@ -10,7 +11,7 @@ function VaucherControlViewer({ payment }) {
     return (
       <center>
         <br />
-        <CSpinner color="info" />
+        <Spinner color="info" />
       </center>
     )
   }

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { CAlert, CButton, CListGroup, CListGroupItem, CSpinner, CBadge } from '@coreui/react'
+import { CAlert, CButton, CListGroup, CListGroupItem, CBadge } from '@coreui/react'
 import { cilBell } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { getNotifyHours, saveNotifyHours, DEFAULT_HOURS } from 'src/services/idb/picoPlacaConfig'
+import Spinner from 'src/components/shared/Spinner'
 
 function getPermissionBadge(permission) {
   if (permission === 'granted') return <CBadge color="success">Concedido</CBadge>
@@ -11,7 +12,7 @@ function getPermissionBadge(permission) {
 }
 
 function getSwStatusBadge(registered) {
-  if (registered === null) return <CSpinner size="sm" />
+  if (registered === null) return <Spinner size="sm" />
   return registered ? (
     <CBadge color="success">Activo</CBadge>
   ) : (
@@ -152,7 +153,7 @@ const NotificationSettings = () => {
             {getPermissionBadge(permission)}
             {permission === 'default' && (
               <CButton size="sm" color="primary" onClick={requestPermission} disabled={requesting}>
-                {requesting ? <CSpinner size="sm" /> : 'Solicitar'}
+                {requesting ? <Spinner size="sm" /> : 'Solicitar'}
               </CButton>
             )}
           </div>
@@ -226,7 +227,7 @@ const NotificationSettings = () => {
         </span>
       </div>
       {notifyHours === null ? (
-        <CSpinner size="sm" />
+        <Spinner size="sm" />
       ) : (
         <>
           <div className="d-flex flex-wrap gap-2 mb-3">
@@ -255,7 +256,7 @@ const NotificationSettings = () => {
               onClick={handleSaveHours}
               disabled={!hoursDirty || savingHours || notifyHours.length === 0}
             >
-              {savingHours ? <CSpinner size="sm" /> : 'Guardar'}
+              {savingHours ? <Spinner size="sm" /> : 'Guardar'}
             </CButton>
             <CButton size="sm" color="secondary" variant="outline" onClick={handleResetHours}>
               Restablecer

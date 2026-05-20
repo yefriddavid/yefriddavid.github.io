@@ -17,7 +17,8 @@ import * as accountActions from '../../../actions/cashflow/accountActions'
 import { Notification } from './Alert'
 import './Payments.scss'
 import moment from 'src/utils/moment'
-import { CButton, CSpinner } from '@coreui/react'
+import { CButton } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 const INITIAL_FILTERS = {
   year: moment().format('Y'),
@@ -169,7 +170,7 @@ const Payments = () => {
         </CButton>
         {isFetching && data && (
           <div className="payments-fetching">
-            <CSpinner size="sm" color="primary" />
+            <Spinner size="sm" color="primary" />
             <span>{t('common.updating')}</span>
           </div>
         )}
@@ -177,7 +178,7 @@ const Payments = () => {
 
       {!data ? (
         <div className="payments-loading">
-          <CSpinner color="primary" />
+          <Spinner color="primary" />
           <span>{t('common.loading')}</span>
         </div>
       ) : (

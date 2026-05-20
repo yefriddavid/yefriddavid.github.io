@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CSpinner } from '@coreui/react'
 import { onAuthChange, signOut } from '../../services/firebase/auth'
 import { deleteSession } from '../../services/firebase/security/sessions'
 import { clearProfile } from '../../actions/authActions'
 import { useDispatch } from 'react-redux'
 import './SelectApp.scss'
 import { FinanceIcon, TaxiIcon, DomoticaIcon } from 'src/components/AppIcons'
+import Spinner from 'src/components/shared/Spinner'
 
 const ArrowRight = () => (
   <svg
@@ -74,7 +74,7 @@ const SelectApp = () => {
   if (firebaseUser === undefined) {
     return (
       <div className="select-app__loader">
-        <CSpinner color="light" />
+        <Spinner color="light" />
       </div>
     )
   }

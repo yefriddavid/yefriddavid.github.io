@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { CCard, CCardBody, CCardHeader, CSpinner, CBadge, CButton, CCollapse } from '@coreui/react'
+import { CCard, CCardBody, CCardHeader, CBadge, CButton, CCollapse } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
@@ -11,6 +11,7 @@ import StandardForm, { StandardField, SF } from 'src/components/shared/StandardF
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY = { name: '', percentage: '' }
 
@@ -111,7 +112,7 @@ const Partners = () => {
         <div className="d-flex align-items-center gap-2">
           <strong>Socios</strong>
           <CBadge color="secondary">{partners.length}</CBadge>
-          {fetching && <CSpinner size="sm" />}
+          {fetching && <Spinner size="sm" />}
         </div>
         <CButton
           size="sm"
@@ -144,7 +145,7 @@ const Partners = () => {
       <CCardBody className="p-0">
         {loading ? (
           <div className="d-flex justify-content-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : (
           <StandardGrid

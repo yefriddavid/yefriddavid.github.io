@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react'
-import { CSpinner } from '@coreui/react'
 import { useForm } from 'react-hook-form'
 import { fieldLabel, fieldInput } from './helpers'
 import FileUploadField from 'src/components/shared/FileUploadField'
+import Spinner from 'src/components/shared/Spinner'
 
 const fieldError = (err) =>
   err ? (
@@ -203,7 +203,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
             }}
           >
             {saving ? (
-              <CSpinner
+              <Spinner
                 size="sm"
                 style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
               />

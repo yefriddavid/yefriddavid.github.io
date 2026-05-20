@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { CSpinner } from '@coreui/react'
 import {
   fmt,
   uid,
@@ -13,6 +12,7 @@ import {
   btnPrimary,
   btnGhost,
 } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function ProjectSheet({ initial, saving, onSave, onClose }) {
   const isEdit = !!initial?.id
@@ -564,7 +564,7 @@ export default function ProjectSheet({ initial, saving, onSave, onClose }) {
             disabled={saving || !description.trim()}
           >
             {saving ? (
-              <CSpinner
+              <Spinner
                 size="sm"
                 style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
               />

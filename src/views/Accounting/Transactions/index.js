@@ -13,7 +13,6 @@ import {
   CModalBody,
   CModalHeader,
   CModalTitle,
-  CSpinner,
 } from '@coreui/react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
@@ -26,6 +25,7 @@ import MaestroRow from './MaestroRow'
 import AnnualView from './AnnualView'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function Transactions() {
   const dispatch = useDispatch()
@@ -341,7 +341,7 @@ export default function Transactions() {
             <>
               {fetchingMasters && !masters ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-                  <CSpinner color="primary" />
+                  <Spinner color="primary" />
                 </div>
               ) : applicableMasters.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 40, color: '#6c757d', fontSize: 13 }}>
@@ -553,7 +553,7 @@ export default function Transactions() {
 
               {fetching && !data ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-                  <CSpinner color="primary" />
+                  <Spinner color="primary" />
                 </div>
               ) : (
                 <StandardGrid
@@ -653,7 +653,7 @@ export default function Transactions() {
                           }}
                         >
                           {attachProcessing && attachingTx?.id === row.id ? (
-                            <CSpinner size="sm" style={{ width: 10, height: 10 }} />
+                            <Spinner size="sm" style={{ width: 10, height: 10 }} />
                           ) : (
                             '📎'
                           )}
@@ -725,7 +725,7 @@ export default function Transactions() {
             <>
               {fetchingMasters && !masters ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-                  <CSpinner color="primary" />
+                  <Spinner color="primary" />
                 </div>
               ) : (
                 <AnnualView masters={masters} transactions={data} year={year} />

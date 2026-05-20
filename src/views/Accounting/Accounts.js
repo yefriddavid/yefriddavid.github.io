@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
-import { CButton, CCard, CCardBody, CCardHeader, CSpinner } from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader } from '@coreui/react'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as accountActions from 'src/actions/cashflow/accountActions'
+import Spinner from 'src/components/shared/Spinner'
 
 const Accounts = () => {
   const dispatch = useDispatch()
@@ -31,7 +32,7 @@ const Accounts = () => {
           onClick={fetchData}
           disabled={fetching}
         >
-          {fetching ? <CSpinner size="sm" /> : 'Refrescar'}
+          {fetching ? <Spinner size="sm" /> : 'Refrescar'}
         </CButton>
       </CCardHeader>
       <CCardBody style={{ padding: 0 }}>

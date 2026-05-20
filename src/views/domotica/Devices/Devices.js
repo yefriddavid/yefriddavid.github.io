@@ -11,10 +11,10 @@ import {
   CModalBody,
   CModalHeader,
   CModalTitle,
-  CSpinner,
   CBadge,
 } from '@coreui/react'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as deviceActions from 'src/actions/domotica/domoticaDeviceActions'
 import {
   DOMOTICA_DEVICE_TYPES as DEVICE_TYPES,
@@ -23,6 +23,7 @@ import {
   DOMOTICA_DEVICE_STATUS_LABEL as STATUS_LABEL,
 } from 'src/constants/domotica'
 import './Devices.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY_FORM = {
   name: '',
@@ -55,25 +56,27 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
   } = useForm({ defaultValues: initial })
 
   return (
-    <div className="device-form">
-      {initial.id && <div className="device-form__id">ID: {initial.id}</div>}
-
-      <div className="device-form__row">
-        <label className="device-form__label">Nombre *</label>
+    <StandardForm
+      title={initial.id ? 'Editar dispositivo' : 'Nuevo dispositivo'}
+      subtitle={initial.id ? `ID: ${initial.id}` : undefined}
+      onCancel={onCancel}
+      onSave={handleSubmit(onSave)}
+      saving={saving}
+    >
+      <StandardField label="Nombre *">
         <input
-          className="device-form__input"
+          className={SF.input}
           type="text"
           placeholder="esp8266-battery"
           autoFocus
           {...register('name', { required: 'El nombre es obligatorio' })}
         />
         {fieldError(errors.name)}
-      </div>
+      </StandardField>
 
-      <div className="device-form__cols">
-        <div className="device-form__row">
-          <label className="device-form__label">Tipo</label>
-          <select className="device-form__input" {...register('type')}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Tipo">
+          <select className={SF.select} {...register('type')}>
             <option value="">— Seleccionar —</option>
             {DEVICE_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -81,87 +84,77 @@ const DeviceForm = ({ initial, onSave, onCancel, saving }) => {
               </option>
             ))}
           </select>
-        </div>
-        <div className="device-form__row">
-          <label className="device-form__label">Estado</label>
-          <select className="device-form__input" {...register('status')}>
+        </StandardField>
+        <StandardField label="Estado">
+          <select className={SF.select} {...register('status')}>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
                 {STATUS_LABEL[s]}
               </option>
             ))}
           </select>
-        </div>
+        </StandardField>
       </div>
 
-      <div className="device-form__cols">
-        <div className="device-form__row">
-          <label className="device-form__label">IP</label>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="IP">
           <input
-            className="device-form__input"
+            className={SF.input}
             type="text"
             placeholder="192.168.1.100"
             {...register('ipAddress')}
           />
-        </div>
-        <div className="device-form__row">
-          <label className="device-form__label">Ubicación</label>
+        </StandardField>
+        <StandardField label="Ubicación">
           <input
-            className="device-form__input"
+            className={SF.input}
             type="text"
             placeholder="Terraza, sala…"
             {...register('location')}
           />
-        </div>
+        </StandardField>
       </div>
 
-      <div className="device-form__row">
-        <label className="device-form__label">ID Interno</label>
-        <div className="device-form__id-wrap">
+      <StandardField label="ID Interno">
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
-            className="device-form__input device-form__input--mono"
+            className={SF.input}
             type="text"
             placeholder="ej. aB3xZ9k"
             maxLength={7}
+            style={{ fontFamily: 'monospace', letterSpacing: '0.08em' }}
             {...register('internalId')}
           />
           <button
             type="button"
-            className="device-form__gen-btn"
+            style={{
+              flexShrink: 0,
+              padding: '7px 12px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              border: '1px solid var(--cui-border-color)',
+              borderRadius: 6,
+              background: 'var(--cui-tertiary-bg)',
+              color: 'var(--cui-body-color)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
             onClick={() => setValue('internalId', generateInternalId())}
           >
             Generar
           </button>
         </div>
-      </div>
+      </StandardField>
 
-      <div className="device-form__row">
-        <label className="device-form__label">Notas</label>
+      <StandardField label="Notas">
         <textarea
-          className="device-form__input"
+          className={SF.textarea}
           rows={2}
           placeholder="Observaciones opcionales"
           {...register('notes')}
         />
-      </div>
-
-      <div className="device-form__actions">
-        <button
-          className="device-form__btn device-form__btn--cancel"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancelar
-        </button>
-        <button
-          className="device-form__btn device-form__btn--save"
-          onClick={handleSubmit(onSave)}
-          disabled={saving}
-        >
-          {saving ? <CSpinner size="sm" /> : 'Guardar'}
-        </button>
-      </div>
-    </div>
+      </StandardField>
+    </StandardForm>
   )
 }
 
@@ -228,7 +221,7 @@ const Devices = () => {
               disabled={fetching}
               onClick={() => dispatch(deviceActions.fetchRequest())}
             >
-              {fetching ? <CSpinner size="sm" /> : 'Refrescar'}
+              {fetching ? <Spinner size="sm" /> : 'Refrescar'}
             </CButton>
             <CButton color="primary" size="sm" onClick={openCreate}>
               + Nuevo
@@ -272,11 +265,6 @@ const Devices = () => {
 
       {/* Create / Edit modal */}
       <CModal visible={!!modal} onClose={closeModal} size="lg">
-        <CModalHeader>
-          <CModalTitle>
-            {modal?.mode === 'create' ? 'Nuevo dispositivo' : 'Editar dispositivo'}
-          </CModalTitle>
-        </CModalHeader>
         <CModalBody style={{ padding: 0 }}>
           {modal && (
             <DeviceForm

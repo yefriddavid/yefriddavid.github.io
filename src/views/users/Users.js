@@ -6,7 +6,6 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CSpinner,
   CBadge,
   CAlert,
   CButton,
@@ -26,6 +25,7 @@ import {
   USER_ROLE_LABELS as ROLE_LABELS,
   USER_ROLE_COLORS as ROLE_COLORS,
 } from 'src/constants/admin'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY = {
   username: '',
@@ -179,7 +179,7 @@ const SessionsDetail = React.memo(({ data: user }) => {
   if (fetching) {
     return (
       <div style={{ padding: 12 }}>
-        <CSpinner size="sm" /> Cargando sesiones...
+        <Spinner size="sm" /> Cargando sesiones...
       </div>
     )
   }
@@ -329,7 +329,7 @@ const Users = () => {
     <CCard>
       <CCardHeader className="d-flex align-items-center gap-2">
         <strong>Usuarios</strong>
-        {fetching && <CSpinner size="sm" />}
+        {fetching && <Spinner size="sm" />}
         <div className="ms-auto d-flex gap-2">
           {isSuperAdmin &&
             (showForm ? (

@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CButton, CModal, CModalBody, CModalHeader, CModalTitle, CSpinner } from '@coreui/react'
+import { CButton, CModal, CModalBody, CModalHeader, CModalTitle } from '@coreui/react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import { fetchAccounts } from 'src/services/api/accounts'
 import { EXPENSE_CATEGORIES } from 'src/constants/cashFlow'
 import { fmt, guessCategory, toISODate } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function MigrationModal({ onClose, onDone }) {
   const dispatch = useDispatch()
@@ -85,7 +86,7 @@ export default function MigrationModal({ onClose, onDone }) {
 
         {status === 'loading' && (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
             <p style={{ marginTop: 12 }}>Consultando API legacy…</p>
           </div>
         )}
@@ -177,7 +178,7 @@ export default function MigrationModal({ onClose, onDone }) {
 
         {status === 'migrating' && (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
             <p style={{ marginTop: 12 }}>Guardando en Firebase… {importProgress}%</p>
             <div
               style={{

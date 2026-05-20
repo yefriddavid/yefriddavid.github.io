@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react'
-import { CCard, CBadge, CButton, CSpinner } from '@coreui/react'
+import { CCard, CBadge, CButton } from '@coreui/react'
 import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
 import moment from 'moment'
 import './ErrorLogs.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const classifyContext = (context = '') => {
   if (context === 'window.onerror') return 'danger'
@@ -240,7 +241,7 @@ const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh }) => {
           <span className="el__subtitle">System_error_logs</span>
         </div>
         <CButton color="primary" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="el__refresh-btn">
-          {loading ? <CSpinner size="sm" /> : '↺'}&nbsp; Recargar
+          {loading ? <Spinner size="sm" /> : '↺'}&nbsp; Recargar
         </CButton>
       </div>
 

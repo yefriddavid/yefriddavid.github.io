@@ -8,7 +8,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CBadge,
   CButton,
   CRow,
@@ -30,6 +29,7 @@ import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 
 
@@ -220,7 +220,7 @@ const Distributions = () => {
             Cancelar
           </CButton>
           <CButton color="primary" onClick={handleMarkPaid} disabled={loadingDist}>
-            {loadingDist ? <CSpinner size="sm" /> : 'Confirmar pago'}
+            {loadingDist ? <Spinner size="sm" /> : 'Confirmar pago'}
           </CButton>
         </CModalFooter>
       </CModal>
@@ -280,7 +280,7 @@ const Distributions = () => {
           <div className="d-flex align-items-center gap-2">
             <strong>Repartición de ganancias</strong>
             {distribution && <CBadge color="secondary">{paymentRows.length} socios</CBadge>}
-            {loadingDist && <CSpinner size="sm" />}
+            {loadingDist && <Spinner size="sm" />}
           </div>
 
           {/* Period selector */}
@@ -342,7 +342,7 @@ const Distributions = () => {
         <CCardBody className="p-0">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : partners.length === 0 ? (
             <div className="text-center py-5 no-partners-msg">

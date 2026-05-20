@@ -22,10 +22,10 @@ import {
   cilReload,
   cilBook,
 } from '@coreui/icons'
-import { CSpinner } from '@coreui/react'
 import AppModal from 'src/components/shared/AppModal'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
 import './SerialConsole.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const BAUD_RATES = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
 
@@ -477,7 +477,7 @@ const SerialConsole = () => {
             >
               {isConnecting ? (
                 <>
-                  <CSpinner size="sm" /> Conectando…
+                  <Spinner size="sm" /> Conectando…
                 </>
               ) : (
                 <>

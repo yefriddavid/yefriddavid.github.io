@@ -4,7 +4,6 @@ import {
   CButton,
   CListGroup,
   CListGroupItem,
-  CSpinner,
   CProgress,
   CBadge,
   CTable,
@@ -15,6 +14,7 @@ import {
 import { cilReload } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { fetchCollectionCounts, SPARK_LIMITS } from 'src/services/firebase/admin/usageMetrics'
+import Spinner from 'src/components/shared/Spinner'
 
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B'
@@ -127,7 +127,7 @@ const StorageSettings = () => {
       <h6 className="text-secondary mb-3">Almacenamiento local (este dispositivo)</h6>
       {localLoading ? (
         <div className="text-center py-3">
-          <CSpinner size="sm" />
+          <Spinner size="sm" />
         </div>
       ) : storageInfo ? (
         <CListGroup className="mb-4">
@@ -155,7 +155,7 @@ const StorageSettings = () => {
               onClick={clearCaches}
               disabled={clearing}
             >
-              {clearing ? <CSpinner size="sm" /> : 'Limpiar'}
+              {clearing ? <Spinner size="sm" /> : 'Limpiar'}
             </CButton>
           </CListGroupItem>
         </CListGroup>
@@ -209,7 +209,7 @@ const StorageSettings = () => {
       </p>
       {fbLoading && !fbRows ? (
         <div className="text-center py-3">
-          <CSpinner size="sm" />
+          <Spinner size="sm" />
         </div>
       ) : fbRows ? (
         <>

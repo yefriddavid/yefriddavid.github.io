@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
-import { CSpinner } from '@coreui/react'
 import { cilCalendar } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
@@ -20,6 +19,7 @@ import AdHocExpenseModal from './AdHocExpenseModal'
 import AdHocSection from './AdHocSection'
 import PeriodNotes from './PeriodNotes'
 import './AccountStatus.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 export { fmt, isApplicableToMonth, getStatus }
 
@@ -455,7 +455,7 @@ export default function AccountStatus() {
         {/* List */}
         {loading ? (
           <div className="as-loading-container">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="as-empty-container">

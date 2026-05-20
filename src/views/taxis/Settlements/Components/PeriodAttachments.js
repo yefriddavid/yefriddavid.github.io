@@ -9,12 +9,12 @@ import {
   CModalBody,
   CModalHeader,
   CModalTitle,
-  CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilPencil, cilFullscreen } from '@coreui/icons'
 import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
+import Spinner from 'src/components/shared/Spinner'
 
 const PeriodAttachments = ({ period }) => {
   const dispatch = useDispatch()
@@ -288,7 +288,7 @@ const PeriodAttachments = ({ period }) => {
                 />
                 <div style={{ display: 'flex', gap: 8 }}>
                   <CButton color="primary" size="sm" onClick={handleSave} disabled={saving}>
-                    {saving ? <CSpinner size="sm" /> : 'Guardar soporte'}
+                    {saving ? <Spinner size="sm" /> : 'Guardar soporte'}
                   </CButton>
                   <CButton color="secondary" variant="outline" size="sm" onClick={handleCancel}>
                     <CIcon icon={cilX} size="sm" />
@@ -311,7 +311,7 @@ const PeriodAttachments = ({ period }) => {
               onClick={() => inputRef.current?.click()}
             >
               {converting ? (
-                <CSpinner size="sm" color="primary" />
+                <Spinner size="sm" color="primary" />
               ) : (
                 <>
                   <CIcon icon={cilPlus} style={{ marginRight: 6, opacity: 0.5 }} />

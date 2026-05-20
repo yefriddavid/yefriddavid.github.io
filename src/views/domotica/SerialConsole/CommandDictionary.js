@@ -13,7 +13,7 @@ import DataGrid, {
   Toolbar,
   Item,
 } from 'devextreme-react/data-grid'
-import { CButton, CSpinner, CToast, CToastBody, CToaster } from '@coreui/react'
+import { CButton, CToast, CToastBody, CToaster } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCopy, cilPlus, cilTrash, cilPencil, cilCheck, cilCloudDownload } from '@coreui/icons'
 import SKYPATROL_COMMANDS from './skypatrolCommands'
@@ -21,6 +21,7 @@ import { DOMOTICA_SERIAL_CATEGORIES as CATEGORIES } from 'src/constants/domotica
 import * as actions from 'src/actions/domotica/domoticaCommandDictionaryActions'
 import CommandProfilesPanel from './CommandProfilesPanel'
 import './CommandDictionary.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY_CMD = {
   category: 'Personalizado',
@@ -183,7 +184,7 @@ const CommandDictionary = () => {
   if (fetching && !data) {
     return (
       <div className="d-flex justify-content-center py-5">
-        <CSpinner color="primary" />
+        <Spinner color="primary" />
       </div>
     )
   }
@@ -292,7 +293,7 @@ const CommandDictionary = () => {
                 onClick={saveForm}
                 disabled={saving || !form.command.trim() || !form.name.trim()}
               >
-                {saving ? <CSpinner size="sm" /> : 'Guardar'}
+                {saving ? <Spinner size="sm" /> : 'Guardar'}
               </button>
             </div>
           </div>
@@ -336,7 +337,7 @@ const CommandDictionary = () => {
               title="Importa todos los comandos Skypatrol TT8750 a Firebase"
             >
               {seeding ? (
-                <CSpinner size="sm" className="me-1" />
+                <Spinner size="sm" className="me-1" />
               ) : (
                 <CIcon icon={cilCloudDownload} size="sm" className="me-1" />
               )}

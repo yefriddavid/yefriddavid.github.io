@@ -1,7 +1,8 @@
 import React from 'react'
-import { CButton, CSpinner } from '@coreui/react'
+import { CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilSun, cilSync } from '@coreui/icons'
+import Spinner from 'src/components/shared/Spinner'
 
 const SolarHeader = ({ online, relativeTime, loading, onRefresh }) => (
   <div className="solar-panel__header">
@@ -23,7 +24,7 @@ const SolarHeader = ({ online, relativeTime, loading, onRefresh }) => (
       >
         {loading ? (
           <>
-            <CSpinner size="sm" className="me-1" />
+            <Spinner size="sm" className="me-1" />
             Actualizando…
           </>
         ) : (

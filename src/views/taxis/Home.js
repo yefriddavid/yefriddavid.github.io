@@ -3,7 +3,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CRow,
   CCol,
   CFormSelect,
@@ -41,6 +40,7 @@ import {
   TAXI_DRIVER_AVATAR_COLORS as AVATAR_COLORS,
 } from 'src/constants/taxi'
 import './Home.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const MONTHS = [
   'Enero',
@@ -290,7 +290,7 @@ const TaxisHome = () => {
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center taxis-home__loader">
-        <CSpinner color="primary" />
+        <Spinner color="primary" />
       </div>
     )
   }
@@ -685,7 +685,7 @@ const TaxisHome = () => {
                 <CCardBody>
                   {trendLoading && (
                     <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
-                      <CSpinner color="primary" />
+                      <Spinner color="primary" />
                     </div>
                   )}
                   {!trendLoading && trendData && (

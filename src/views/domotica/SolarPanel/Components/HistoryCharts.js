@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CCard, CCardBody, CButton, CSpinner } from '@coreui/react'
+import { CCard, CCardBody, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilSync } from '@coreui/icons'
 import * as domoticaTransactionActions from 'src/actions/domotica/domoticaTransactionActions'
@@ -14,6 +14,7 @@ import {
 } from 'src/selectors/domoticaSelectors'
 import VoltageChart from './VoltageChart'
 import CurrentChart from './CurrentChart'
+import Spinner from 'src/components/shared/Spinner'
 
 const PRESETS = [
   { key: '24h', label: 'Últ. 24h', hours: 24 },
@@ -56,7 +57,7 @@ const ChartSection = ({ label, lastAt, fetching, onRefresh, children }) => (
         )}
       </span>
       <CButton size="sm" color="primary" variant="outline" disabled={fetching} onClick={onRefresh}>
-        {fetching ? <CSpinner size="sm" /> : <CIcon icon={cilSync} />}
+        {fetching ? <Spinner size="sm" /> : <CIcon icon={cilSync} />}
       </CButton>
     </div>
     <CCard className="solar-panel__chart-card">

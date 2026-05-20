@@ -1,5 +1,6 @@
 import React from 'react'
-import { CCardImage, CSpinner } from '@coreui/react'
+import { CCardImage } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 function VaucherControlViewer({ payment }) {
   const { vaucher } = payment
@@ -8,7 +9,7 @@ function VaucherControlViewer({ payment }) {
     return (
       <center>
         <br />
-        <CSpinner color="info" />
+        <Spinner color="info" />
       </center>
     )
   }

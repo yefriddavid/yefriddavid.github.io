@@ -2,7 +2,8 @@ import React, { Suspense, useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { CSpinner, useColorModes } from '@coreui/react'
+import { useColorModes } from '@coreui/react'
+import Spinner from './components/shared/Spinner'
 import ErrorBoundary from './components/shared/ErrorBoundary'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { fetchProfile } from './actions/authActions'
@@ -131,11 +132,7 @@ const App = () => {
       )}
       <ErrorBoundary>
         <Suspense
-          fallback={
-            <div className="pt-3 text-center">
-              <CSpinner color="primary" variant="grow" />
-            </div>
-          }
+          fallback={<Spinner mode="section" variant="grow" />}
         >
           <Routes>
             <Route path="/login" element={<Login />} />

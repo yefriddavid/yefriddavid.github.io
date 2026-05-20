@@ -8,7 +8,6 @@ import {
   CModalBody,
   CModalHeader,
   CModalTitle,
-  CSpinner,
   CBadge,
   CButton,
 } from '@coreui/react'
@@ -17,6 +16,7 @@ import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as txActions from 'src/actions/domotica/domoticaTransactionActions'
 import { DOMOTICA_CLEANUP_TYPE_OPTIONS as TYPE_OPTIONS } from 'src/constants/domotica'
 import './Cleanup.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const toLocalDatetimeValue = (date) => {
   const d = new Date(date)
@@ -125,7 +125,7 @@ export default function Cleanup() {
               disabled={!rangeValid || cleanupPreviewing || cleanupDeleting}
               onClick={handlePreview}
             >
-              {cleanupPreviewing ? <CSpinner size="sm" className="me-2" /> : null}
+              {cleanupPreviewing ? <Spinner size="sm" className="me-2" /> : null}
               {cleanupPreviewing ? 'Buscando…' : 'Previsualizar documentos'}
             </CButton>
           </div>
@@ -163,7 +163,7 @@ export default function Cleanup() {
                     onClick={() => setConfirmOpen(true)}
                     className="cleanup__delete-btn"
                   >
-                    {cleanupDeleting ? <CSpinner size="sm" className="me-2" /> : null}
+                    {cleanupDeleting ? <Spinner size="sm" className="me-2" /> : null}
                     {cleanupDeleting
                       ? 'Eliminando…'
                       : `Eliminar ${cleanupCount} documento${cleanupCount !== 1 ? 's' : ''}`}

@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react'
-import { CSpinner } from '@coreui/react'
 import { useForm } from 'react-hook-form'
 import { ACCOUNT_CATEGORIES } from 'src/constants/cashFlow'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import { fieldLabel, fieldInput } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 const fieldError = (err) =>
   err ? (
@@ -267,7 +267,7 @@ export default function AdHocExpenseModal({
               marginBottom: 8,
             }}
           >
-            <CSpinner size="sm" />
+            <Spinner size="sm" />
             <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando archivo…</span>
           </div>
         )}
@@ -365,7 +365,7 @@ export default function AdHocExpenseModal({
             }}
           >
             {saving ? (
-              <CSpinner
+              <Spinner
                 size="sm"
                 style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
               />

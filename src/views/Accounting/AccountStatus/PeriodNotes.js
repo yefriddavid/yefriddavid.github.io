@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { CSpinner } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function PeriodNotes({
   period: _period,
@@ -89,7 +89,7 @@ export default function PeriodNotes({
           {/* Notes list */}
           {fetching ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <CSpinner size="sm" />
+              <Spinner size="sm" />
             </div>
           ) : notes.length === 0 ? (
             <div
@@ -202,7 +202,7 @@ export default function PeriodNotes({
               }}
             >
               {saving ? (
-                <CSpinner
+                <Spinner
                   size="sm"
                   style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
                 />

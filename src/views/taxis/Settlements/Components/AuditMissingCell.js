@@ -1,7 +1,7 @@
 import React from 'react'
-import { CSpinner } from '@coreui/react'
 import { fmt } from './utils'
 import './Audit.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 export const IssueEntry = ({
   label,
@@ -188,7 +188,7 @@ const AuditMissingCell = ({
         ))}
 
       {loadingDay === day.dateStr && (
-        <CSpinner size="sm" color="primary" style={{ width: 14, height: 14, alignSelf: 'center' }} />
+        <Spinner size="sm" color="primary" style={{ width: 14, height: 14, alignSelf: 'center' }} />
       )}
     </div>
   </td>

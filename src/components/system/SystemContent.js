@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { CContainer, CSpinner } from '@coreui/react'
+import { CContainer } from '@coreui/react'
+import Spinner from '../shared/Spinner'
 import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
@@ -25,15 +26,7 @@ const SystemContent = () => {
   }, [dispatch])
 
   if (firebaseUser === undefined) {
-    return (
-      <CContainer
-        className="px-2"
-        fluid
-        style={{ display: 'flex', justifyContent: 'center', paddingTop: '2rem' }}
-      >
-        <CSpinner color="primary" />
-      </CContainer>
-    )
+    return <Spinner mode="page" />
   }
 
   if (!firebaseUser) {
@@ -48,7 +41,7 @@ const SystemContent = () => {
 
   return (
     <CContainer className="px-2" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
+      <Suspense fallback={<Spinner mode="section" />}>
         <Routes>
           {systemRoutes.map((route, idx) => {
             const Component = route.element

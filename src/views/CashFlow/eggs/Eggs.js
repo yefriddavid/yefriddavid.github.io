@@ -8,11 +8,11 @@ import {
   CModalFooter,
   CModalHeader,
   CModalTitle,
-  CSpinner,
 } from '@coreui/react'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as eggActions from 'src/actions/cashflow/eggActions'
+import Spinner from 'src/components/shared/Spinner'
 
 const today = () => new Date().toISOString().split('T')[0]
 const EMPTY = { name: '', date: today(), quantity: '', price: '', total: '' }
@@ -768,7 +768,7 @@ export default function Eggs() {
       {/* List */}
       {fetching && !eggs ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-          <CSpinner color="primary" />
+          <Spinner color="primary" />
         </div>
       ) : viewMode === 'grid' ? (
         <StandardGrid
@@ -972,7 +972,7 @@ export default function Eggs() {
             }
             onClick={handleSubmit}
           >
-            {saving ? <CSpinner size="sm" className="me-1" /> : null}
+            {saving ? <Spinner size="sm" className="me-1" /> : null}
             {editingId ? 'Guardar' : 'Crear'}
           </CButton>
         </CModalFooter>

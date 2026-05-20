@@ -1,7 +1,7 @@
 import React from 'react'
-import { CSpinner } from '@coreui/react'
 import InlinePaymentMethod from '../InlinePaymentMethod'
 import { fmt } from './helpers'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function MaestroRow({
   account,
@@ -132,7 +132,7 @@ export default function MaestroRow({
                       alignItems: 'center',
                     }}
                   >
-                    {isAttaching ? <CSpinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
+                    {isAttaching ? <Spinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
                   </button>
                 )}
                 <button

@@ -7,7 +7,6 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CSpinner,
   CBadge,
   CAlert,
   CButton,
@@ -23,6 +22,7 @@ import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/Det
 import { fmt } from 'src/utils/formatters'
 import StatusBadge from 'src/components/shared/StatusBadge'
 import './masters.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY = {
   name: '',
@@ -258,7 +258,7 @@ const Conductores = () => {
         )}
         {fetching && !records ? (
           <div className="d-flex justify-content-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : (
           <StandardGrid

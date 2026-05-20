@@ -1,5 +1,5 @@
 import React from 'react'
-import { CSpinner } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function ProjectCardActions({
   project,
@@ -188,7 +188,7 @@ export default function ProjectCardActions({
             gap: 4,
           }}
         >
-          {syncing ? <CSpinner size="sm" /> : '☁️ Sync'}
+          {syncing ? <Spinner size="sm" /> : '☁️ Sync'}
         </button>
         <button
           onClick={() => onDelete(project)}

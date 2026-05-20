@@ -7,7 +7,6 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CSpinner,
   CBadge,
   CButton,
   CFormSelect,
@@ -39,6 +38,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import { buildAuditExporters } from './auditExport'
 
 import PeriodSelector from 'src/components/shared/PeriodSelector'
+import Spinner from 'src/components/shared/Spinner'
 
 const Taxis = () => {
   const { t, i18n } = useTranslation()
@@ -631,7 +631,7 @@ const Taxis = () => {
             justifyContent: 'center',
           }}
         >
-          <CSpinner color="light" style={{ width: 48, height: 48 }} />
+          <Spinner color="light" style={{ width: 48, height: 48 }} />
         </div>
       )}
 
@@ -817,7 +817,7 @@ const Taxis = () => {
         <CCardBody style={{ padding: 0 }}>
           {loading ? (
             <div className="d-flex justify-content-center py-5">
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : viewMode === 'detail' ? (
             <StandardGrid

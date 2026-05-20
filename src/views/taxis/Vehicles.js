@@ -8,7 +8,6 @@ import {
   CCard,
   CCardHeader,
   CCardBody,
-  CSpinner,
   CBadge,
   CButton,
   CCollapse,
@@ -33,6 +32,7 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import './masters.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const MONTHS = [
   'Enero',
@@ -299,7 +299,7 @@ const Vehiculos = () => {
         <CCardBody>
           {fetching && !records ? (
             <div className="d-flex justify-content-center py-5">
-              <CSpinner color="primary" />
+              <Spinner color="primary" />
             </div>
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
@@ -477,7 +477,7 @@ const Vehiculos = () => {
             disabled={restrictSaving}
             onClick={handleSaveRestrictions}
           >
-            {restrictSaving ? <CSpinner size="sm" /> : 'Guardar'}
+            {restrictSaving ? <Spinner size="sm" /> : 'Guardar'}
           </CButton>
         </CModalFooter>
       </CModal>

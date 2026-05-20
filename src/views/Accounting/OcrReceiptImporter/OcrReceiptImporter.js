@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { CModal, CModalHeader, CModalTitle, CModalBody, CSpinner } from '@coreui/react'
+import { CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
 import { applyOcrRules, findAccountByIdentifier, parseRawAmount } from '../ocrAccountRules'
 import "./OcrReceiptImporter.scss"
+import Spinner from 'src/components/shared/Spinner'
 
 // ── Confirmation modal ─────────────────────────────────────────────────────────
 function ConfirmModal({
@@ -247,7 +248,7 @@ export default function OcrReceiptImporter({ masters, monthStr, onConfirm }) {
       >
         {processing ? (
           <>
-            <CSpinner size="sm" style={{ color: '#6366f1', width: 14, height: 14 }} />
+            <Spinner size="sm" style={{ color: '#6366f1', width: 14, height: 14 }} />
             OCR {progress}%
           </>
         ) : (

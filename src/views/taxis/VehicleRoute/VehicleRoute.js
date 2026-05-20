@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { CCard, CCardHeader, CCardBody, CRow, CCol, CSpinner, CAlert } from '@coreui/react'
+import { CCard, CCardHeader, CCardBody, CRow, CCol, CAlert } from '@coreui/react'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as vehicleRouteActions from 'src/actions/taxi/vehicleRouteActions'
 import { haversineKm, haversineKmh } from 'src/utils/geoUtils'
@@ -10,6 +10,7 @@ import RouteControls from './RouteControls'
 import RouteSummary from './RouteSummary'
 import 'leaflet/dist/leaflet.css'
 import './VehicleRoute.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const DEFAULT_CENTER = [-1.6635, -78.6536]
 
@@ -161,7 +162,7 @@ const VehicleRoute = () => {
 
             {fetching ? (
               <div className="empty-state">
-                <CSpinner color="primary" />
+                <Spinner color="primary" />
                 <span className="small">Cargando ruta…</span>
               </div>
             ) : routePoints.length > 0 ? (

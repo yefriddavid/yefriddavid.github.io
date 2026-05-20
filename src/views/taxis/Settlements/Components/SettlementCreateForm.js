@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import {
   CButton,
-  CSpinner,
   CFormLabel,
   CRow,
   CCol,
 } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 const fieldError = (err) =>
   err ? (
@@ -141,7 +141,7 @@ const SettlementCreateForm = ({ drivers, vehicles, vehiclesMap, loading, onSave 
               disabled={loading || !!picoPlacaWarning}
               style={{ width: '100%' }}
             >
-              {loading ? <CSpinner size="sm" /> : t('common.save')}
+              {loading ? <Spinner size="sm" /> : t('common.save')}
             </CButton>
           </CCol>
         </CRow>

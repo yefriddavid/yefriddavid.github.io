@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import { CSpinner } from '@coreui/react'
 import './AppModal.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 /**
  * AppModal — branded modal wrapper for CashFlow.
@@ -137,7 +137,7 @@ export default function AppModal({
                   disabled={confirmDisabled || confirmLoading}
                 >
                   {confirmLoading ? (
-                    <CSpinner size="sm" className="app-modal__spinner" />
+                    <Spinner size="sm" className="app-modal__spinner" />
                   ) : (
                     confirmLabel
                   )}

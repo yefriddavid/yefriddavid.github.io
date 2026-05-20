@@ -8,8 +8,8 @@ import {
   CButton,
   CFormInput,
   CFormLabel,
-  CSpinner,
 } from '@coreui/react'
+import Spinner from 'src/components/shared/Spinner'
 
 const labelStyle = { fontSize: 11, fontWeight: 700, color: '#868e96', letterSpacing: '0.05em' }
 
@@ -62,7 +62,7 @@ const TradeDetailModal = ({ detailModal, editForm, setEditForm, onClose, onSave,
         Cancelar
       </CButton>
       <CButton color="primary" onClick={onSave} disabled={saving}>
-        {saving ? <CSpinner size="sm" /> : 'Guardar'}
+        {saving ? <Spinner size="sm" /> : 'Guardar'}
       </CButton>
     </CModalFooter>
   </CModal>

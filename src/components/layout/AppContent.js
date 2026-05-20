@@ -1,14 +1,14 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { CContainer, CSpinner } from '@coreui/react'
+import { CContainer } from '@coreui/react'
+import Spinner from '../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
 import { validateSession } from '../../services/firebase/security/sessions'
 import routes from '../../routes'
 import useNotifications from '../../hooks/useNotifications'
-import './AppContent.scss'
 
 const AppContent = () => {
   // undefined = Firebase still resolving, null = signed out, object = signed in
@@ -58,9 +58,7 @@ const AppContent = () => {
   // ── Waiting for Firebase to resolve auth state ───────────────────────────────
   if (firebaseUser === undefined) {
     return (
-      <CContainer className="px-2 app-content-loader" fluid>
-        <CSpinner color="primary" />
-      </CContainer>
+      <Spinner mode="page" />
     )
   }
 
@@ -86,7 +84,7 @@ const AppContent = () => {
   return (
     <CContainer className="px-2" fluid>
       <ErrorBoundary module="vista">
-        <Suspense fallback={<CSpinner color="primary" />}>
+        <Suspense fallback={<Spinner mode="section" />}>
           <Routes>
             {routes.map((route, idx) => {
               const Component = route.element

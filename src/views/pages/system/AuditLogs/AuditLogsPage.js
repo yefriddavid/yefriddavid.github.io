@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { CCard, CBadge, CSpinner, CButton } from '@coreui/react'
+import { CCard, CBadge, CButton } from '@coreui/react'
 import DataGrid, { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
 import moment from 'moment'
 import { getAuditLogs } from 'src/services/firebase/system/auditLogs'
+import Spinner from 'src/components/shared/Spinner'
 
 const OP_COLOR = { CREATE: 'success', UPDATE: 'warning', DELETE: 'danger' }
 
@@ -58,7 +59,7 @@ const AuditLogsPage = () => {
           <span style={{ fontFamily: 'monospace', fontSize: 11, opacity: 0.4 }}>System_audit_logs</span>
         </div>
         <CButton color="primary" variant="outline" size="sm" onClick={load} disabled={loading}>
-          {loading ? <CSpinner size="sm" /> : '↺'}&nbsp;Recargar
+          {loading ? <Spinner size="sm" /> : '↺'}&nbsp;Recargar
         </CButton>
       </div>
 
@@ -78,7 +79,7 @@ const AuditLogsPage = () => {
       <CCard style={{ borderRadius: 12, overflow: 'hidden' }}>
         {loading && (
           <div style={{ padding: 40, textAlign: 'center' }}>
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         )}
         {!loading && logs.length === 0 && (

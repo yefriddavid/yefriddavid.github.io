@@ -5,12 +5,12 @@ import {
   CModalTitle,
   CModalBody,
   CButton,
-  CSpinner,
   CBadge,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilReload } from '@coreui/icons'
 import './VersionModal.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 /* eslint-disable no-undef */
 const LOCAL_HASH = __COMMIT_HASH__
@@ -117,7 +117,7 @@ const VersionModal = ({ visible, onClose }) => {
 
         {loading ? (
           <div className="version-modal__spinner-wrap">
-            <CSpinner size="sm" />
+            <Spinner size="sm" />
           </div>
         ) : fetchError ? (
           <div className="version-modal__error">Error: {fetchError}</div>
@@ -153,7 +153,7 @@ const VersionModal = ({ visible, onClose }) => {
         >
           {updating ? (
             <>
-              <CSpinner size="sm" className="me-2" />
+              <Spinner size="sm" className="me-2" />
               Actualizando…
             </>
           ) : (

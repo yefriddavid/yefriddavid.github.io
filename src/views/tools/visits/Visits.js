@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { CCard, CCardBody, CCardHeader, CSpinner, CBadge } from '@coreui/react'
+import { CCard, CCardBody, CCardHeader, CBadge } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash } from '@coreui/icons'
 import { db } from 'src/services/firebase/settings'
 import { collection, getDocs, orderBy, query, limit, deleteDoc, doc } from 'firebase/firestore'
 import './Visits.scss'
+import Spinner from 'src/components/shared/Spinner'
 
 const parseUA = (ua = '') => {
   if (!ua) return ''
@@ -204,7 +205,7 @@ const Visits = () => {
       <CCardBody style={{ padding: '16px' }}>
         {loading ? (
           <div className="d-flex justify-content-center py-5">
-            <CSpinner color="primary" />
+            <Spinner color="primary" />
           </div>
         ) : (
           <StandardGrid keyExpr="id" dataSource={visits} noDataText="Sin registros aún.">

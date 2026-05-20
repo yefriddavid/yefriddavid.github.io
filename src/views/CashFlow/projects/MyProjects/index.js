@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CSpinner } from '@coreui/react'
 import * as actions from 'src/actions/cashflow/myProjectActions'
 import { fmt, uid, now, totalOf } from './helpers'
 import ProjectSheet from './ProjectSheet'
 import ProjectCard from './ProjectCard'
+import Spinner from 'src/components/shared/Spinner'
 
 export default function MyProjects() {
   const dispatch = useDispatch()
@@ -130,7 +130,7 @@ export default function MyProjects() {
               justifyContent: 'center',
             }}
           >
-            {importing ? <CSpinner size="sm" /> : '☁️'}
+            {importing ? <Spinner size="sm" /> : '☁️'}
           </button>
           <button
             onClick={() => setSheet('new')}
@@ -196,7 +196,7 @@ export default function MyProjects() {
         >
           {syncingAll ? (
             <>
-              <CSpinner size="sm" /> Sincronizando…
+              <Spinner size="sm" /> Sincronizando…
             </>
           ) : (
             `☁️ Sincronizar todo (${unsyncedCount} pendiente${unsyncedCount !== 1 ? 's' : ''})`
@@ -207,7 +207,7 @@ export default function MyProjects() {
       {/* List */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-          <CSpinner color="primary" />
+          <Spinner color="primary" />
         </div>
       ) : projects.length === 0 ? (
         <div

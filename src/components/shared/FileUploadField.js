@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { CSpinner } from '@coreui/react'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
+import Spinner from 'src/components/shared/Spinner'
 
 /**
  * A shared component for file uploads with preview/clear functionality.
@@ -83,7 +83,7 @@ const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
             color: '#6c757d',
           }}
         >
-          <CSpinner size="sm" color="secondary" />
+          <Spinner size="sm" color="secondary" />
           Procesando...
         </div>
       )}
