@@ -31,6 +31,7 @@ import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/Det
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import useLocaleData from 'src/hooks/useLocaleData'
+import useIsMobile from 'src/hooks/useIsMobile'
 import {
   TAXI_EXPENSE_CATEGORIES as CATEGORIES,
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATS,
@@ -178,7 +179,11 @@ const MultiCheckDropdown = ({ options, selected, onChange, placeholder }) => {
 }
 
 const fieldError = (err) =>
-  err ? <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>{err.message}</span> : null
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
 
 const fmtInput = (n) =>
   n != null && n !== '' && Number(n) > 0
@@ -378,7 +383,12 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
             <img
               src={receipt}
               alt="comprobante"
-              style={{ width: '100%', borderRadius: 8, border: '1px solid #dee2e6', display: 'block' }}
+              style={{
+                width: '100%',
+                borderRadius: 8,
+                border: '1px solid #dee2e6',
+                display: 'block',
+              }}
             />
             <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 4 }}>
               <button
@@ -399,7 +409,10 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
               </button>
               <button
                 type="button"
-                onClick={() => { setValue('receipt', null); setValue('receiptName', '') }}
+                onClick={() => {
+                  setValue('receipt', null)
+                  setValue('receiptName', '')
+                }}
                 style={{
                   padding: '3px 8px',
                   borderRadius: 5,
@@ -424,9 +437,204 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
   )
 }
 
+const ExpenseCardList = ({
+  records,
+  plateToDriver,
+  onEdit,
+  onClone,
+  onDelete,
+  onViewReceipt,
+  dispatch,
+}) => {
+  if (records.length === 0) {
+    return (
+      <div
+        style={{
+          padding: '32px 0',
+          textAlign: 'center',
+          color: 'var(--cui-secondary-color)',
+          fontSize: 13,
+        }}
+      >
+        Sin gastos para este periodo.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
+      {records.map((row) => (
+        <div
+          key={row.id}
+          style={{
+            border: '1px solid var(--cui-border-color)',
+            borderRadius: 10,
+            padding: '12px 14px',
+            background: 'var(--cui-body-bg)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }}
+        >
+          {/* top row: category + date + amount */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#7c3aed',
+                  background: 'rgba(109,40,217,0.08)',
+                  borderRadius: 4,
+                  padding: '1px 7px',
+                  alignSelf: 'flex-start',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.category}
+              </span>
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: 'var(--cui-body-color)',
+                  lineHeight: 1.3,
+                }}
+              >
+                {row.description}
+              </span>
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              {fmt(row.amount)}
+            </span>
+          </div>
+
+          {/* meta row: plate + driver + date */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {row.plate && (
+              <span
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--cui-body-color)',
+                }}
+              >
+                {row.plate}
+              </span>
+            )}
+            {plateToDriver[row.plate] && (
+              <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
+                {plateToDriver[row.plate]}
+              </span>
+            )}
+            <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)', marginLeft: 'auto' }}>
+              {row.date}
+            </span>
+          </div>
+
+          {/* bottom row: paid toggle + actions */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 2,
+            }}
+          >
+            <button
+              onClick={() =>
+                dispatch(taxiExpenseActions.togglePaidRequest({ id: row.id, paid: !row.paid }))
+              }
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                borderRadius: 4,
+                padding: '3px 9px',
+                border: 'none',
+                cursor: 'pointer',
+                background: row.paid ? '#d1fae5' : '#fff3cd',
+                color: row.paid ? '#065f46' : '#7c5e00',
+              }}
+            >
+              {row.paid ? '✓ Pagado' : '⏳ Pendiente'}
+            </button>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {row.receipt && (
+                <button
+                  onClick={() => onViewReceipt({ src: row.receipt, name: row.receiptName })}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#0891b2',
+                    cursor: 'pointer',
+                    padding: '4px 7px',
+                    fontSize: 15,
+                  }}
+                  title="Ver comprobante"
+                >
+                  📎
+                </button>
+              )}
+              <button
+                onClick={() => onEdit(row)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--cui-primary)',
+                  cursor: 'pointer',
+                  padding: '4px 7px',
+                  fontSize: 15,
+                }}
+                title="Editar"
+              >
+                ✎
+              </button>
+              <button
+                onClick={() => onClone(row)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#1971c2',
+                  cursor: 'pointer',
+                  padding: '4px 7px',
+                }}
+                title="Clonar"
+              >
+                <CIcon icon={cilCopy} size="sm" />
+              </button>
+              <button
+                onClick={() => onDelete(row.id)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#e03131',
+                  cursor: 'pointer',
+                  padding: '4px 7px',
+                }}
+                title="Eliminar"
+              >
+                <CIcon icon={cilTrash} size="sm" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const Gastos = () => {
   const { t } = useTranslation()
   const { monthLabels: MONTHS } = useLocaleData()
+  const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const { data: expenses, fetching, isError, error } = useSelector((s) => s.taxiExpense)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
@@ -632,8 +840,8 @@ const Gastos = () => {
               variant="outline"
               onClick={() => setShowCreate((p) => !p)}
             >
-              <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />{' '}
-              {showCreate ? 'Cancelar' : 'Nuevo gasto'}
+              <CIcon icon={!isMobile && showCreate ? cilX : cilPlus} size="sm" />{' '}
+              {!isMobile && showCreate ? 'Cancelar' : 'Nuevo gasto'}
             </CButton>
           </div>
           {/* Filters row */}
@@ -716,7 +924,7 @@ const Gastos = () => {
           </div>
         </CCardHeader>
 
-        <CCollapse visible={showCreate}>
+        <CCollapse visible={!isMobile && showCreate}>
           <div
             style={{
               padding: '20px 24px',
@@ -740,6 +948,16 @@ const Gastos = () => {
             <div className="d-flex justify-content-center py-5">
               <Spinner color="primary" />
             </div>
+          ) : isMobile ? (
+            <ExpenseCardList
+              records={filtered}
+              plateToDriver={plateToDriver}
+              onEdit={handleEdit}
+              onClone={openClone}
+              onDelete={handleDelete}
+              onViewReceipt={setReceiptViewer}
+              dispatch={dispatch}
+            />
           ) : (
             <StandardGrid
               style={{ margin: 0 }}
@@ -945,9 +1163,7 @@ const Gastos = () => {
                         {data.nextDate && (
                           <DetailRow label="Próximo servicio" value={data.nextDate} />
                         )}
-                        {data.payedAt && (
-                          <DetailRow label="Fecha de pago" value={data.payedAt} />
-                        )}
+                        {data.payedAt && <DetailRow label="Fecha de pago" value={data.payedAt} />}
                         <DetailRow label="Comentario" value={data.comment} />
                         {data.receipt && (
                           <div style={{ marginTop: 8 }}>
@@ -977,6 +1193,44 @@ const Gastos = () => {
           )}
         </CCardBody>
       </CCard>
+      {/* Create modal — mobile only */}
+      {isMobile && showCreate && (
+        <CModal visible onClose={() => setShowCreate(false)} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Nuevo gasto</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <ExpenseForm
+              initial={EMPTY}
+              vehicles={vehicles}
+              title=""
+              onSave={handleCreate}
+              onCancel={() => setShowCreate(false)}
+              saving={fetching}
+            />
+          </CModalBody>
+        </CModal>
+      )}
+      {/* Edit modal — mobile only */}
+      {isMobile && editingRow && (
+        <CModal visible onClose={handleEditCancel} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Editar gasto</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <ExpenseForm
+              key={editingRow.id}
+              initial={editingRow}
+              vehicles={vehicles}
+              title=""
+              subtitle={editingRow.description}
+              onSave={handleEditSave}
+              onCancel={handleEditCancel}
+              saving={fetching}
+            />
+          </CModalBody>
+        </CModal>
+      )}
       {/* Clone modal */}
       <CModal visible={!!cloneSource} onClose={() => setCloneSource(null)} alignment="center">
         <CModalHeader>
