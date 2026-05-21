@@ -1,0 +1,1 @@
+System.register(["./index-legacy-DOrYlIbl.js"],function(e,t){"use strict";return{setters:[null],execute:function(){e("f",e=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(e??0)),e("a",(e,t=2)=>new Intl.NumberFormat("es-CO",{maximumFractionDigits:t}).format(e??0))}}});

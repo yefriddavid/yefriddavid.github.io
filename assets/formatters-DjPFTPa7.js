@@ -1,0 +1,1 @@
+import"./index-z1Jo38eM.js";const a=t=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(t!=null?t:0),e=(t,m=2)=>new Intl.NumberFormat("es-CO",{maximumFractionDigits:m}).format(t!=null?t:0);export{e as a,a as f};

@@ -1,0 +1,1 @@
+import{cb as o,t as l,R as m,O as n,P as a}from"./index-z1Jo38eM.js";const e=o.forwardRef((s,r)=>{var{children:c,className:t}=s,d=l(s,["children","className"]);return m.createElement("div",Object.assign({className:n("card-body",t)},d,{ref:r}),c)});e.propTypes={children:a.node,className:a.string};e.displayName="CCardBody";export{e as C};

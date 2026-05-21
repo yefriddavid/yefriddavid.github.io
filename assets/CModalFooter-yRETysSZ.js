@@ -1,0 +1,1 @@
+import{cb as l,t as d,R as m,O as n,P as s}from"./index-z1Jo38eM.js";const a=l.forwardRef((e,r)=>{var{children:o,className:t}=e,c=d(e,["children","className"]);return m.createElement("div",Object.assign({className:n("modal-footer",t)},c,{ref:r}),o)});a.propTypes={children:s.node,className:s.string};a.displayName="CModalFooter";export{a as C};

@@ -1,0 +1,1 @@
+import{cb as n}from"./index-z1Jo38eM.js";const s=640,c=()=>{const[o,r]=n.useState(()=>window.innerWidth<s);return n.useEffect(()=>{const e=window.matchMedia("(max-width: ".concat(s-1,"px)")),t=i=>r(i.matches);return e.addEventListener("change",t),()=>e.removeEventListener("change",t)},[]),o};export{c as u};
