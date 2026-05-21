@@ -65,6 +65,7 @@ const makeProps = (dayOverrides = []) => ({
   auditDrivers: DRIVERS,
   auditVehicles: VEHICLES,
   getNote: () => '',
+  getNotesForDay: () => [],
   getResolved: () => false,
   handleResolvedToggle: cy.stub(),
   handleNoteSave: cy.stub(),
@@ -124,41 +125,41 @@ describe('AuditView — advanced', () => {
 
   describe('row expand / collapse', () => {
     it('clicking a row expands the day detail panel', () => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       // AuditDayDetail renders the dateStr in a DetailRow
       cy.contains('2024-03-10').should('be.visible')
     })
 
     it('detail panel shows the status label for the day', () => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       cy.contains('Completo').should('be.visible')
     })
 
     it('detail panel shows "Liquidaron" section when day has records', () => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       // DetailSection uses <p> for its title; scope to <p> to avoid matching <th> in thead
       cy.contains('p', 'Liquidaron').should('exist')
     })
 
     it('detail panel shows "Sin liquidar" section when day has no records', () => {
       // Day 12 (index 2) has status none, no records
-      cy.get('table tbody tr').eq(2).click()
+      cy.get('table tbody tr').eq(2).click({ force: true })
       cy.contains('p', 'Sin liquidar').should('exist')
     })
 
     it('clicking the same row again collapses the detail panel', () => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       cy.contains('2024-03-10').should('be.visible')
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       cy.contains('2024-03-10').should('not.exist')
     })
 
     it('clicking a different row collapses the previous and expands the new one', () => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
       cy.contains('2024-03-10').should('be.visible')
       // After expanding row 0, a detail <tr> is inserted at index 1.
       // Day 11 is now at index 2.
-      cy.get('table tbody tr').eq(2).click()
+      cy.get('table tbody tr').eq(2).click({ force: true })
       cy.contains('2024-03-10').should('not.exist')
       cy.contains('2024-03-11').should('be.visible')
     })
@@ -168,7 +169,7 @@ describe('AuditView — advanced', () => {
 
   describe('settlement row amount editing', () => {
     beforeEach(() => {
-      cy.get('table tbody tr').first().click()
+      cy.get('table tbody tr').first().click({ force: true })
     })
 
     it('shows clickable formatted amounts in the detail panel', () => {

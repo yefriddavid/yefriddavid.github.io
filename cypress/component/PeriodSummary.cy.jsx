@@ -163,11 +163,10 @@ describe('PeriodSummary', () => {
     it('net turns red when result is negative', () => {
       // total(100000) - totalExpensesPaid(200000) = -100000 → red
       cy.mount(<PeriodSummary {...defaultProps} total={100000} totalExpensesPaid={200000} />)
-      // "Neto" label is a <div>; its next sibling is the value <div> with the color style.
-      // Browser serializes #e03131 as rgb(224, 49, 49).
-      cy.contains('Neto').next()
+      // StatCard sets --stat-card-color on the .stat-card container div.
+      cy.contains('Neto').closest('.stat-card')
         .should('have.attr', 'style')
-        .and('match', /#e03131|rgb\(224,\s*49,\s*49\)/)
+        .and('match', /--stat-card-color:\s*#e03131/)
     })
   })
 
@@ -287,9 +286,9 @@ describe('PeriodSummary', () => {
   // ── Pending modal ─────────────────────────────────────────────────────────
 
   describe('pending modal', () => {
-    it('pending card shows "--" when not current period', () => {
+    it('pending card shows "—" when not current period', () => {
       cy.mount(<PeriodSummary {...defaultProps} isCurrentPeriod={false} />)
-      cy.contains('Por cobrar (conductores)').parent().contains('--').should('exist')
+      cy.contains('Por cobrar (conductores)').parent().contains('—').should('exist')
     })
 
     it('opens pending modal with all pending rows', () => {
