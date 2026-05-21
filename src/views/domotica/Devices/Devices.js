@@ -19,6 +19,7 @@ import { cilPlus, cilX } from '@coreui/icons'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as deviceActions from 'src/actions/domotica/domoticaDeviceActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import {
   DOMOTICA_DEVICE_TYPES as DEVICE_TYPES,
   DOMOTICA_DEVICE_STATUS_OPTIONS as STATUS_OPTIONS,
@@ -189,6 +190,7 @@ const Devices = () => {
   const handleCreate = (form) => {
     setSaving(true)
     dispatch(deviceActions.createRequest(form))
+    dispatch(pushNotification({ type: 'success', message: 'Dispositivo creado correctamente.' }))
     setSaving(false)
     setShowForm(false)
   }
@@ -196,6 +198,9 @@ const Devices = () => {
   const handleUpdate = (form, id) => {
     setSaving(true)
     dispatch(deviceActions.updateRequest({ ...form, id }))
+    dispatch(
+      pushNotification({ type: 'success', message: 'Dispositivo actualizado correctamente.' }),
+    )
     setSaving(false)
     gridRef.current?.instance.collapseAll(-1)
   }

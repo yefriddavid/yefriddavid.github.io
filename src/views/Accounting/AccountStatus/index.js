@@ -6,6 +6,7 @@ import CIcon from '@coreui/icons-react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import * as accountStatusNoteActions from 'src/actions/cashflow/accountStatusNoteActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { selectCumulativePaymentsMap } from 'src/selectors/cashflowSelectors'
 import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
@@ -211,19 +212,25 @@ export default function AccountStatus() {
 
   const handleSavePayment = (payload) => {
     dispatch(transactionActions.createRequest(payload))
+    dispatch(pushNotification({ type: 'success', message: 'Pago registrado correctamente.' }))
   }
 
   const handleSaveAdHoc = (payload) => {
     dispatch(transactionActions.createRequest(payload))
+    dispatch(pushNotification({ type: 'success', message: 'Transacción creada correctamente.' }))
   }
 
   const handleUpdateAdHoc = (payload) => {
     dispatch(transactionActions.updateRequest(payload))
+    dispatch(
+      pushNotification({ type: 'success', message: 'Transacción actualizada correctamente.' }),
+    )
     setEditingAdHoc(null)
   }
 
   const handleUpdate = (transaction) => {
     dispatch(transactionActions.updateRequest(transaction))
+    dispatch(pushNotification({ type: 'success', message: 'Transacción actualizada.' }))
   }
 
   const handleDelete = (transaction) => {
@@ -241,15 +248,18 @@ export default function AccountStatus() {
         active: false,
       }),
     )
+    dispatch(pushNotification({ type: 'success', message: 'Cuenta duplicada correctamente.' }))
     setDetail(null)
   }
 
   const handleAddNote = (text) => {
     dispatch(accountStatusNoteActions.createRequest({ period: monthStr, text }))
+    dispatch(pushNotification({ type: 'success', message: 'Nota agregada.' }))
   }
 
   const handleToggleNote = (note) => {
     dispatch(accountStatusNoteActions.updateRequest({ id: note.id, checked: !note.checked }))
+    dispatch(pushNotification({ type: 'success', message: 'Nota actualizada.' }))
   }
 
   const handleDeleteNote = (note) => {
@@ -300,12 +310,12 @@ export default function AccountStatus() {
       <div className="as-left-panel">
         {/* Month navigator */}
         <div className="as-month-navigator">
-          <button onClick={prevMonth} className="nav-btn">‹</button>
+          <button onClick={prevMonth} className="nav-btn">
+            ‹
+          </button>
 
           <div className="current-period">
-            <div className="month-name">
-              {monthLabels[month - 1]}
-            </div>
+            <div className="month-name">{monthLabels[month - 1]}</div>
             <div className="year-name">{year}</div>
             <div className="current-day">
               <CIcon icon={cilCalendar} size="sm" />{' '}
@@ -315,7 +325,9 @@ export default function AccountStatus() {
             </div>
           </div>
 
-          <button onClick={nextMonth} className="nav-btn">›</button>
+          <button onClick={nextMonth} className="nav-btn">
+            ›
+          </button>
         </div>
 
         {/* Summary strip */}
@@ -340,21 +352,10 @@ export default function AccountStatus() {
               type: 'overdue',
             },
           ].map((s) => (
-            <div
-              key={s.label}
-              className={`summary-card summary-card--${s.type}`}
-            >
-              <div className="summary-value">
-                {s.value}
-              </div>
-              <div className="summary-label">
-                {s.label}
-              </div>
-              {s.total > 0 && (
-                <div className="summary-total">
-                  {fmt(s.total)}
-                </div>
-              )}
+            <div key={s.label} className={`summary-card summary-card--${s.type}`}>
+              <div className="summary-value">{s.value}</div>
+              <div className="summary-label">{s.label}</div>
+              {s.total > 0 && <div className="summary-total">{fmt(s.total)}</div>}
             </div>
           ))}
         </div>
@@ -362,9 +363,7 @@ export default function AccountStatus() {
         {/* Total */}
         <div className="as-total-strip">
           <span className="total-label">Total:</span>
-          <span className="total-value">
-            {fmt(totalPaid + totalPending + totalOverdue)}
-          </span>
+          <span className="total-value">{fmt(totalPaid + totalPending + totalOverdue)}</span>
         </div>
 
         {/* Period notes */}
@@ -379,8 +378,8 @@ export default function AccountStatus() {
             onDelete={handleDeleteNote}
           />
         )}
-      {/* OCR importer  */}
-          <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
+        {/* OCR importer  */}
+        <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
           <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
         </div>
       </div>
@@ -393,11 +392,11 @@ export default function AccountStatus() {
             const balance = totalIncome - totalExpenses
             const isPositive = balance >= 0
             return (
-              <div className={`as-balance-strip as-balance-strip--${isPositive ? 'positive' : 'negative'}`}>
+              <div
+                className={`as-balance-strip as-balance-strip--${isPositive ? 'positive' : 'negative'}`}
+              >
                 <div className="balance-info">
-                  <span className="balance-label">
-                    Ingresos − Egresos
-                  </span>
+                  <span className="balance-label">Ingresos − Egresos</span>
                   <span className="balance-formula">
                     {fmt(totalIncome)} − {fmt(totalExpenses)}
                   </span>

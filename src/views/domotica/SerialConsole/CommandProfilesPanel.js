@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import CIcon from '@coreui/icons-react'
 import {
-  cilPlus, cilTrash, cilPencil, cilChevronBottom, cilChevronRight,
-  cilCopy, cilArrowTop, cilArrowBottom,
+  cilPlus,
+  cilTrash,
+  cilPencil,
+  cilChevronBottom,
+  cilChevronRight,
+  cilCopy,
+  cilArrowTop,
+  cilArrowBottom,
 } from '@coreui/icons'
 import * as actions from 'src/actions/domotica/domoticaCommandProfileActions'
 import Spinner from 'src/components/shared/Spinner'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 
 const EMPTY_PROFILE = { name: '', description: '', deviceModel: '' }
 const EMPTY_ITEM = { value: '', notes: '' }
@@ -19,30 +26,32 @@ const CommandProfilesPanel = () => {
   const dictionary = useSelector((s) => s.domoticaCommandDictionary.data)
 
   const [expanded, setExpanded] = useState(null)
-  const [profileForm, setProfileForm] = useState(null)   // null | { mode:'create'|'edit', data }
-  const [itemForm, setItemForm] = useState(null)          // null | { profileId, mode, data, editId }
+  const [profileForm, setProfileForm] = useState(null) // null | { mode:'create'|'edit', data }
+  const [itemForm, setItemForm] = useState(null) // null | { profileId, mode, data, editId }
 
   useEffect(() => {
     dispatch(actions.fetchProfilesRequest())
   }, [dispatch])
 
   const toggleProfile = (id) => {
-    if (expanded === id) { setExpanded(null); return }
+    if (expanded === id) {
+      setExpanded(null)
+      return
+    }
     setExpanded(id)
     if (!profileItems[id]) dispatch(actions.fetchItemsRequest({ profileId: id }))
   }
 
-  const openCreateProfile = () =>
-    setProfileForm({ mode: 'create', data: { ...EMPTY_PROFILE } })
+  const openCreateProfile = () => setProfileForm({ mode: 'create', data: { ...EMPTY_PROFILE } })
 
-  const openEditProfile = (profile) =>
-    setProfileForm({ mode: 'edit', data: { ...profile } })
+  const openEditProfile = (profile) => setProfileForm({ mode: 'edit', data: { ...profile } })
 
   const saveProfile = () => {
     const { mode, data } = profileForm
     if (!data.name.trim()) return
     if (mode === 'create') dispatch(actions.createProfileRequest(data))
     else dispatch(actions.updateProfileRequest(data))
+    dispatch(pushNotification({ type: 'success', message: 'Perfil guardado correctamente.' }))
     setProfileForm(null)
   }
 
@@ -73,11 +82,11 @@ const CommandProfilesPanel = () => {
     } else {
       dispatch(actions.updateItemRequest({ id: editId, profileId, ...data }))
     }
+    dispatch(pushNotification({ type: 'success', message: 'Comando guardado correctamente.' }))
     setItemForm(null)
   }
 
-  const deleteItem = (profileId, id) =>
-    dispatch(actions.deleteItemRequest({ id, profileId }))
+  const deleteItem = (profileId, id) => dispatch(actions.deleteItemRequest({ id, profileId }))
 
   const moveItem = (profileId, index, dir) => {
     const items = [...(profileItems[profileId] ?? [])]
@@ -151,7 +160,10 @@ const CommandProfilesPanel = () => {
             }
           />
           <div className="cp-form__actions">
-            <button className="cp-form__btn cp-form__btn--cancel" onClick={() => setProfileForm(null)}>
+            <button
+              className="cp-form__btn cp-form__btn--cancel"
+              onClick={() => setProfileForm(null)}
+            >
               Cancelar
             </button>
             <button
@@ -168,9 +180,7 @@ const CommandProfilesPanel = () => {
       {/* ── Profile list ── */}
       <div className="cp-panel__list">
         {(profiles ?? []).length === 0 && !profileForm && (
-          <div className="cp-empty">
-            Sin perfiles. Crea uno con el botón&nbsp;+
-          </div>
+          <div className="cp-empty">Sin perfiles. Crea uno con el botón&nbsp;+</div>
         )}
 
         {(profiles ?? []).map((profile) => {
@@ -212,12 +222,12 @@ const CommandProfilesPanel = () => {
 
               {isExpanded && (
                 <div className="cp-profile__body">
-                  {profile.description && (
-                    <p className="cp-profile__desc">{profile.description}</p>
-                  )}
+                  {profile.description && <p className="cp-profile__desc">{profile.description}</p>}
 
                   {isLoadingItems && (
-                    <div className="cp-items__loading"><Spinner size="sm" /></div>
+                    <div className="cp-items__loading">
+                      <Spinner size="sm" />
+                    </div>
                   )}
 
                   {!isLoadingItems && items.length > 0 && (
@@ -293,7 +303,9 @@ const CommandProfilesPanel = () => {
                         >
                           <option value="">← Desde diccionario (opcional)</option>
                           {getDictSuggestions().map((s, i) => (
-                            <option key={i} value={s.value}>{s.label}</option>
+                            <option key={i} value={s.value}>
+                              {s.label}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -315,7 +327,10 @@ const CommandProfilesPanel = () => {
                         }
                       />
                       <div className="cp-form__actions">
-                        <button className="cp-form__btn cp-form__btn--cancel" onClick={() => setItemForm(null)}>
+                        <button
+                          className="cp-form__btn cp-form__btn--cancel"
+                          onClick={() => setItemForm(null)}
+                        >
                           Cancelar
                         </button>
                         <button
@@ -332,10 +347,7 @@ const CommandProfilesPanel = () => {
                   {!itemForm && (
                     <div className="cp-profile__footer">
                       {items.length > 1 && (
-                        <button
-                          className="cp-text-btn"
-                          onClick={() => copyAllItems(profile.id)}
-                        >
+                        <button className="cp-text-btn" onClick={() => copyAllItems(profile.id)}>
                           <CIcon icon={cilCopy} size="sm" /> Copiar todos
                         </button>
                       )}

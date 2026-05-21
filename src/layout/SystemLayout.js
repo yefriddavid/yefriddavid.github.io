@@ -2,6 +2,7 @@ import React from 'react'
 import { AppHeader, AppFooter } from '../components/index'
 import SystemSidebar from '../components/system/SystemSidebar'
 import SystemContent from '../components/system/SystemContent'
+import NotificationToaster from '../components/shared/NotificationToaster'
 
 const SystemLayout = () => {
   document.title = 'System'
@@ -16,6 +17,7 @@ const SystemLayout = () => {
         </div>
         <AppFooter />
       </div>
+      <NotificationToaster />
     </div>
   )
 }

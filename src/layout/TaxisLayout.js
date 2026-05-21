@@ -3,6 +3,7 @@ import { AppHeader, AppFooter } from '../components/index'
 import TaxisSidebar from '../components/taxis/TaxisSidebar'
 import TaxisContent from '../components/taxis/TaxisContent'
 import TaxiQuickAssistant from '../components/taxis/TaxiQuickAssistant/Index'
+import NotificationToaster from '../components/shared/NotificationToaster'
 
 const TaxisLayout = () => {
   document.title = 'Gestión de Taxis'
@@ -18,6 +19,7 @@ const TaxisLayout = () => {
         <AppFooter />
       </div>
       <TaxiQuickAssistant />
+      <NotificationToaster />
     </div>
   )
 }

@@ -40,6 +40,20 @@ const taxiExpenseSlice = createSlice({
         state.fetching = false
         state.isError = true
       })
+      .addCase(taxiExpenseActions.beginRequestUpdate, (state) => {
+        state.fetching = true
+      })
+      .addCase(taxiExpenseActions.successRequestUpdate, (state, { payload }) => {
+        state.fetching = false
+        if (state.data) {
+          state.data = state.data.map((e) => (e.id === payload.id ? { ...payload } : e))
+        }
+      })
+      .addCase(taxiExpenseActions.errorRequestUpdate, (state, { payload }) => {
+        state.error = payload
+        state.fetching = false
+        state.isError = true
+      })
       .addCase(taxiExpenseActions.beginRequestDelete, (state) => {
         state.fetching = false
       })

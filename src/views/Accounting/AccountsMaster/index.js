@@ -15,6 +15,7 @@ import {
 } from 'src/constants/accounting'
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import AccountMasterForm from './AccountMasterForm'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -56,11 +57,13 @@ export default function AccountsMaster() {
 
   const handleCreate = (payload) => {
     dispatch(accountsMasterActions.createRequest(payload))
+    dispatch(pushNotification({ type: 'success', message: 'Cuenta creada correctamente.' }))
     setShowForm(false)
   }
 
   const handleUpdate = (payload) => {
     dispatch(accountsMasterActions.updateRequest(payload))
+    dispatch(pushNotification({ type: 'success', message: 'Cuenta actualizada correctamente.' }))
     gridRef.current?.instance.collapseAll(-1)
   }
 
@@ -404,9 +407,10 @@ export default function AccountsMaster() {
               alignment="center"
               cellRender={({ value, data: row }) => (
                 <span
-                  onClick={() =>
+                  onClick={() => {
                     dispatch(accountsMasterActions.updateRequest({ ...row, active: !row.active }))
-                  }
+                    dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
+                  }}
                   style={{
                     fontSize: 11,
                     fontWeight: 700,

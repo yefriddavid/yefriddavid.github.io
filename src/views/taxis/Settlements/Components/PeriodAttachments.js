@@ -13,6 +13,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilPencil, cilFullscreen } from '@coreui/icons'
 import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { processAttachmentFile } from 'src/utils/fileHelpers'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -60,6 +61,7 @@ const PeriodAttachments = ({ period }) => {
         description: pendingDescription.trim(),
       }),
     )
+    dispatch(pushNotification({ type: 'success', message: 'Soporte agregado correctamente.' }))
     setPendingImage(null)
     setPendingDescription('')
     if (inputRef.current) inputRef.current.value = ''
@@ -81,6 +83,7 @@ const PeriodAttachments = ({ period }) => {
     dispatch(
       taxiPeriodAttachmentActions.updateRequest({ id, description: editingDescription.trim() }),
     )
+    dispatch(pushNotification({ type: 'success', message: 'Descripción actualizada.' }))
     setEditingId(null)
   }
 

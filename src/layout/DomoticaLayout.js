@@ -2,6 +2,7 @@ import React from 'react'
 import { AppHeader, AppFooter } from '../components/index'
 import DomoticaSidebar from '../components/domotica/DomoticaSidebar'
 import DomoticaContent from '../components/domotica/DomoticaContent'
+import NotificationToaster from '../components/shared/NotificationToaster'
 
 const DomoticaLayout = () => {
   document.title = 'Domótica'
@@ -16,6 +17,7 @@ const DomoticaLayout = () => {
         </div>
         <AppFooter />
       </div>
+      <NotificationToaster />
     </div>
   )
 }

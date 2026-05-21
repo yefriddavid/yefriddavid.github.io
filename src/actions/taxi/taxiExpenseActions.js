@@ -15,6 +15,11 @@ export const beginRequestDelete = createAction('begin request delete taxi expens
 export const successRequestDelete = createAction('request delete taxi expense success')
 export const errorRequestDelete = createAction('request delete taxi expense error')
 
+export const updateRequest = createAction('request update taxi expense')
+export const beginRequestUpdate = createAction('begin request update taxi expense')
+export const successRequestUpdate = createAction('request update taxi expense success')
+export const errorRequestUpdate = createAction('request update taxi expense error')
+
 export const togglePaidRequest = createAction('request toggle paid taxi expense')
 export const successRequestTogglePaid = createAction('toggle paid taxi expense success')
 export const errorRequestTogglePaid = createAction('toggle paid taxi expense error')

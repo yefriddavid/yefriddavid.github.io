@@ -18,6 +18,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import * as usersActions from 'src/actions/usersActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import { LANDING_PAGES } from 'src/constants/commons'
 import {
@@ -124,8 +125,7 @@ const UserForm = ({ initial, onSave, onCancel, saving, title, isNew }) => {
               placeholder="••••••••"
               autoComplete="new-password"
               {...register('confirmPassword', {
-                validate: (val) =>
-                  val === getValues('password') || 'Las contraseñas no coinciden',
+                validate: (val) => val === getValues('password') || 'Las contraseñas no coinciden',
               })}
             />
             {fieldError(errors.confirmPassword)}
@@ -190,7 +190,14 @@ const SessionsDetail = React.memo(({ data: user }) => {
 
   return (
     <div style={{ padding: '12px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 8,
+        }}
+      >
         <div style={{ fontWeight: 700, fontSize: 13, color: '#1e3a5f' }}>
           Sesiones activas ({sessions.length})
         </div>
@@ -266,7 +273,9 @@ const UserDetail = React.memo(({ data: user, onSave, saving }) => {
 
 const Users = () => {
   const dispatch = useDispatch()
-  const { data, fetching, isError, error, resetLoading, resetError, resetSuccess } = useSelector((s) => s.users)
+  const { data, fetching, isError, error, resetLoading, resetError, resetSuccess } = useSelector(
+    (s) => s.users,
+  )
   const profile = useSelector((s) => s.profile.data)
   const isSuperAdmin = profile?.role === 'superAdmin'
   const gridRef = useRef(null)
@@ -282,13 +291,13 @@ const Users = () => {
 
   const handleCreate = (form) => {
     dispatch(usersActions.createRequest(form))
+    dispatch(pushNotification({ type: 'success', message: 'Usuario creado correctamente.' }))
     setShowForm(false)
   }
 
   const handleUpdate = (form) => {
     dispatch(usersActions.updateRequest(form))
-    // Al ser en el MasterDetail, no cerramos nada manualmente,
-    // el grid se actualizará cuando el saga termine.
+    dispatch(pushNotification({ type: 'success', message: 'Usuario actualizado correctamente.' }))
   }
 
   const handleDelete = (row) => {
@@ -321,7 +330,10 @@ const Users = () => {
 
   useEffect(() => {
     if (resetSuccess) {
-      setResetMsg({ type: 'success', text: `Contraseña de "${resetSuccess}" actualizada exitosamente. Recuerda correr task auth:sync para sincronizar Firebase Auth.` })
+      setResetMsg({
+        type: 'success',
+        text: `Contraseña de "${resetSuccess}" actualizada exitosamente. Recuerda correr task auth:sync para sincronizar Firebase Auth.`,
+      })
       setTimeout(() => setResetMsg(null), 4000)
     }
   }, [resetSuccess])
@@ -411,7 +423,10 @@ const Users = () => {
                 size="sm"
                 color="secondary"
                 variant="outline"
-                onClick={() => { setResetTarget(null); setResetMsg(null) }}
+                onClick={() => {
+                  setResetTarget(null)
+                  setResetMsg(null)
+                }}
               >
                 Cancelar
               </CButton>

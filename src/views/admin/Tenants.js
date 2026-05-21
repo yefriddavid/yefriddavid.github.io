@@ -17,11 +17,9 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash, cilX } from '@coreui/icons'
 import * as tenantsActions from 'src/actions/tenantsActions'
 import * as usersActions from 'src/actions/usersActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
-import {
-  ADMIN_PLANS as PLANS,
-  ADMIN_PLAN_COLORS as PLAN_COLORS,
-} from 'src/constants/admin'
+import { ADMIN_PLANS as PLANS, ADMIN_PLAN_COLORS as PLAN_COLORS } from 'src/constants/admin'
 import Spinner from 'src/components/shared/Spinner'
 
 const EMPTY = {
@@ -230,11 +228,13 @@ const Tenants = () => {
 
   const handleCreate = (form) => {
     dispatch(tenantsActions.createRequest(form))
+    dispatch(pushNotification({ type: 'success', message: 'Tenant creado correctamente.' }))
     setShowForm(false)
   }
 
   const handleUpdate = (form) => {
     dispatch(tenantsActions.updateRequest(form))
+    dispatch(pushNotification({ type: 'success', message: 'Tenant actualizado correctamente.' }))
   }
 
   const handleDelete = (row) => {

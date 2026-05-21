@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CCardBody, CFormSwitch } from '@coreui/react'
 import * as domoticaCommandActions from 'src/actions/domotica/domoticaCommandActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 
 const CommandRow = ({
   label,
@@ -53,10 +54,12 @@ const CommandPanel = () => {
     const num = Number(value)
     if (value === '' || isNaN(num)) return
     dispatch(domoticaCommandActions.updateRequest({ id, interval: num }))
+    dispatch(pushNotification({ type: 'success', message: 'Intervalo actualizado.' }))
   }
 
   const toggle = (id, checked) => {
     dispatch(domoticaCommandActions.updateRequest({ id, read: checked }))
+    dispatch(pushNotification({ type: 'success', message: 'Configuración actualizada.' }))
   }
 
   return (

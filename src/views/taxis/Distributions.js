@@ -27,11 +27,10 @@ import * as taxiDistributionActions from 'src/actions/taxi/taxiDistributionActio
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
-
-
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -78,8 +77,7 @@ const Distributions = () => {
 
   const distribution = distributions.find((d) => d.period === periodStr) ?? null
 
-  const totalIncome = (settlementsData ?? [])
-    .reduce((acc, r) => acc + (r.amount || 0), 0)
+  const totalIncome = (settlementsData ?? []).reduce((acc, r) => acc + (r.amount || 0), 0)
 
   const periodExpenses = expensesData ?? []
   const totalExpenses = periodExpenses.reduce((acc, r) => acc + (r.amount || 0), 0)
@@ -171,6 +169,7 @@ const Distributions = () => {
         paidDate: payModal.paidDate,
       }),
     )
+    dispatch(pushNotification({ type: 'success', message: 'Pago registrado correctamente.' }))
     setPayModal(null)
   }
 
@@ -230,20 +229,20 @@ const Distributions = () => {
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div className="summary-card__label">
-                Total liquidaciones
+              <div className="summary-card__label">Total liquidaciones</div>
+              <div className="summary-card__value summary-card__value--lg cell-amount--positive">
+                {fmt(totalIncome)}
               </div>
-              <div className="summary-card__value summary-card__value--lg cell-amount--positive">{fmt(totalIncome)}</div>
             </CCardBody>
           </CCard>
         </CCol>
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div className="summary-card__label">
-                Total gastos
+              <div className="summary-card__label">Total gastos</div>
+              <div className="summary-card__value summary-card__value--lg cell-amount--expense">
+                {fmt(totalExpenses)}
               </div>
-              <div className="summary-card__value summary-card__value--lg cell-amount--expense">{fmt(totalExpenses)}</div>
               {totalExpensesPending > 0 && (
                 <div className="summary-card__sub">⏳ {fmt(totalExpensesPending)} pendiente</div>
               )}
@@ -253,10 +252,12 @@ const Distributions = () => {
         <CCol sm={3}>
           <CCard className="text-center">
             <CCardBody>
-              <div className="summary-card__label">
-                Neto disponible
+              <div className="summary-card__label">Neto disponible</div>
+              <div
+                className={`summary-card__value summary-card__value--lg${net >= 0 ? ' cell-amount--blue' : ' cell-amount--expense'}`}
+              >
+                {fmt(net)}
               </div>
-              <div className={`summary-card__value summary-card__value--lg${net >= 0 ? ' cell-amount--blue' : ' cell-amount--expense'}`}>{fmt(net)}</div>
             </CCardBody>
           </CCard>
         </CCol>
@@ -266,7 +267,9 @@ const Distributions = () => {
               <div className="summary-card__label">
                 {distribution ? 'Pendiente de pago' : `% asignado (${totalPercentage}%)`}
               </div>
-              <div className={`summary-card__value summary-card__value--lg${(!distribution && totalPercentage === 100) ? ' cell-amount--positive' : ' cell-amount--pending'}`}>
+              <div
+                className={`summary-card__value summary-card__value--lg${!distribution && totalPercentage === 100 ? ' cell-amount--positive' : ' cell-amount--pending'}`}
+              >
                 {distribution ? fmt(totalPending) : `${totalPercentage}%`}
               </div>
             </CCardBody>

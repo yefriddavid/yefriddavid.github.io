@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { PAYMENT_METHODS } from 'src/constants/cashFlow'
 
 const InlinePaymentMethod = ({ account }) => {
@@ -9,6 +10,7 @@ const InlinePaymentMethod = ({ account }) => {
 
   const handleChange = (e) => {
     dispatch(accountsMasterActions.updateRequest({ ...account, paymentMethod: e.target.value }))
+    dispatch(pushNotification({ type: 'success', message: 'Método de pago actualizado.' }))
     setEditing(false)
   }
 

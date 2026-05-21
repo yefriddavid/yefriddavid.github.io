@@ -9,6 +9,7 @@ import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -93,11 +94,13 @@ const Partners = () => {
 
   const handleSave = ({ name, percentage }) => {
     const pct = Number(percentage)
+    const msg = editingPartner ? 'Socio actualizado correctamente.' : 'Socio creado correctamente.'
     if (editingPartner) {
       dispatch(taxiPartnerActions.updateRequest({ id: editingPartner.id, name, percentage: pct }))
     } else {
       dispatch(taxiPartnerActions.createRequest({ name, percentage: pct }))
     }
+    dispatch(pushNotification({ type: 'success', message: msg }))
     handleCancel()
   }
 
@@ -169,8 +172,20 @@ const Partners = () => {
               allowResizing={false}
               cellRender={({ data }) => (
                 <div className="master-actions">
-                  <button className="master-btn master-btn--primary" onClick={() => openEdit(data)} title="Editar"><CIcon icon={cilPencil} size="sm" /></button>
-                  <button className="master-btn master-btn--danger" onClick={() => handleDelete(data.id)} title="Eliminar"><CIcon icon={cilTrash} size="sm" /></button>
+                  <button
+                    className="master-btn master-btn--primary"
+                    onClick={() => openEdit(data)}
+                    title="Editar"
+                  >
+                    <CIcon icon={cilPencil} size="sm" />
+                  </button>
+                  <button
+                    className="master-btn master-btn--danger"
+                    onClick={() => handleDelete(data.id)}
+                    title="Eliminar"
+                  >
+                    <CIcon icon={cilTrash} size="sm" />
+                  </button>
                 </div>
               )}
             />

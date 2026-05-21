@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import * as contractActions from 'src/actions/contratos/contractActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { IcoDoc, IcoPencil, IcoCheck, IcoClose, IcoArchive, IcoUnarchive } from './icons'
 
 export default function ContractPickerModal({ contracts, onSelect, onClose }) {
@@ -28,6 +29,7 @@ export default function ContractPickerModal({ contracts, onSelect, onClose }) {
       return
     }
     dispatch(contractActions.updateRequest({ id, data: { name: trimmed } }))
+    dispatch(pushNotification({ type: 'success', message: 'Contrato renombrado.' }))
     onSelect({ id, name: trimmed }, true)
     setRenamingId(null)
   }

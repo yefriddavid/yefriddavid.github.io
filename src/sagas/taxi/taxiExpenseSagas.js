@@ -2,6 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as taxiExpenseActions from '../../actions/taxi/taxiExpenseActions'
 import * as expenseService from '../../services/facade/taxi/taxiExpenseFacade'
 import { monthToRange } from '../../utils/dateRange'
+import { push as notify } from '../../reducers/notificationsSlice'
 
 export function* fetchExpenses(action) {
   try {
@@ -19,13 +20,13 @@ export function* createExpense({ payload }) {
   try {
     yield put(taxiExpenseActions.beginRequestCreate())
     const id = yield call(expenseService.createExpense, payload)
-    console.log('[taxiExpense] create success, id:', id)
     yield put(
       taxiExpenseActions.successRequestCreate({ id, ...payload, amount: Number(payload.amount) }),
     )
+    yield put(notify({ type: 'success', message: 'Gasto creado correctamente.' }))
   } catch (e) {
-    console.error('[taxiExpense] create error:', e)
     yield put(taxiExpenseActions.errorRequestCreate(e.message))
+    yield put(notify({ type: 'error', message: `Error al crear el gasto: ${e.message}` }))
   }
 }
 
@@ -34,8 +35,22 @@ export function* deleteExpense({ payload }) {
     yield put(taxiExpenseActions.beginRequestDelete())
     yield call(expenseService.deleteExpense, payload.id)
     yield put(taxiExpenseActions.successRequestDelete(payload))
+    yield put(notify({ type: 'success', message: 'Gasto eliminado.' }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestDelete(e.message))
+    yield put(notify({ type: 'error', message: `Error al eliminar: ${e.message}` }))
+  }
+}
+
+export function* updateExpense({ payload }) {
+  try {
+    yield put(taxiExpenseActions.beginRequestUpdate())
+    yield call(expenseService.updateExpense, payload.id, payload)
+    yield put(taxiExpenseActions.successRequestUpdate(payload))
+    yield put(notify({ type: 'success', message: 'Gasto actualizado correctamente.' }))
+  } catch (e) {
+    yield put(taxiExpenseActions.errorRequestUpdate(e.message))
+    yield put(notify({ type: 'error', message: `Error al actualizar el gasto: ${e.message}` }))
   }
 }
 
@@ -46,6 +61,7 @@ export function* togglePaid({ payload }) {
     yield put(taxiExpenseActions.successRequestTogglePaid({ ...payload, payedAt }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestTogglePaid(e.message))
+    yield put(notify({ type: 'error', message: `Error al actualizar el estado: ${e.message}` }))
   }
 }
 
@@ -53,6 +69,7 @@ export default function* rootSagas() {
   yield all([
     takeLatest(taxiExpenseActions.fetchRequest, fetchExpenses),
     takeLatest(taxiExpenseActions.createRequest, createExpense),
+    takeLatest(taxiExpenseActions.updateRequest, updateExpense),
     takeLatest(taxiExpenseActions.deleteRequest, deleteExpense),
     takeLatest(taxiExpenseActions.togglePaidRequest, togglePaid),
   ])

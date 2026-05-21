@@ -24,7 +24,6 @@ import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
-import { updateExpense } from 'src/services/firebase/taxi/taxiExpenses'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
@@ -676,14 +675,14 @@ const Gastos = () => {
   }
 
   const handleEditSave = (form) => {
-    updateExpense(editingRow.id, {
-      ...editingRow,
-      ...form,
-      amount: Number(form.amount),
-      driverName: plateToDriver[form.plate] || null,
-    }).then(() => {
-      dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
-    })
+    dispatch(
+      taxiExpenseActions.updateRequest({
+        ...editingRow,
+        ...form,
+        amount: Number(form.amount),
+        driverName: plateToDriver[form.plate] || null,
+      }),
+    )
     gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
   }

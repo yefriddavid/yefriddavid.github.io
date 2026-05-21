@@ -22,6 +22,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash, cilBell } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
+import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import './masters.scss'
@@ -145,6 +146,7 @@ const Vehiculos = () => {
   const handleCreate = (form) => {
     if (!form.plate || !form.brand) return
     dispatch(taxiVehicleActions.createRequest(form))
+    dispatch(pushNotification({ type: 'success', message: 'Vehículo creado correctamente.' }))
     setShowCreate(false)
   }
 
@@ -160,6 +162,7 @@ const Vehiculos = () => {
 
   const handleEditSave = (form) => {
     dispatch(taxiVehicleActions.updateRequest({ id: editingRow.id, ...form }))
+    dispatch(pushNotification({ type: 'success', message: 'Vehículo actualizado correctamente.' }))
     gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
   }
@@ -199,7 +202,10 @@ const Vehiculos = () => {
   const onRestrictCellChanged = useCallback((e) => {
     const month = e.key
     const field = e.column.dataField
-    setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: String(e.value ?? '') } }))
+    setRestrictForm((prev) => ({
+      ...prev,
+      [month]: { ...prev[month], [field]: String(e.value ?? '') },
+    }))
   }, [])
 
   const handleSaveRestrictions = () => {
@@ -212,6 +218,9 @@ const Vehiculos = () => {
     )
     dispatch(
       taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: clean }),
+    )
+    dispatch(
+      pushNotification({ type: 'success', message: 'Restricciones guardadas correctamente.' }),
     )
     setRestrictSaving(false)
     setRestrictModal(null)
@@ -357,9 +366,27 @@ const Vehiculos = () => {
                 allowResizing={false}
                 cellRender={({ data }) => (
                   <div className="master-actions">
-                    <button className="master-btn master-btn--warning" onClick={() => openRestrictModal(data)} title="Pico y placa">📅</button>
-                    <button className="master-btn master-btn--primary" onClick={() => handleEdit(data)} title="Editar">✎</button>
-                    <button className="master-btn master-btn--danger" onClick={() => handleDelete(data.id)} title="Eliminar"><CIcon icon={cilTrash} size="sm" /></button>
+                    <button
+                      className="master-btn master-btn--warning"
+                      onClick={() => openRestrictModal(data)}
+                      title="Pico y placa"
+                    >
+                      📅
+                    </button>
+                    <button
+                      className="master-btn master-btn--primary"
+                      onClick={() => handleEdit(data)}
+                      title="Editar"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      className="master-btn master-btn--danger"
+                      onClick={() => handleDelete(data.id)}
+                      title="Eliminar"
+                    >
+                      <CIcon icon={cilTrash} size="sm" />
+                    </button>
                   </div>
                 )}
               />
@@ -380,7 +407,11 @@ const Vehiculos = () => {
                   ) : (
                     <DetailPanel columns={2}>
                       <DetailSection title={t('taxis.drivers.fields.personalData')}>
-                        <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
+                        <DetailRow
+                          label={t('taxis.vehicles.fields.plate')}
+                          value={data.plate}
+                          mono
+                        />
                         <DetailRow
                           label={t('taxis.vehicles.fields.status')}
                           value={
@@ -405,9 +436,7 @@ const Vehiculos = () => {
                               />
                             ))
                           ) : (
-                            <span className="master-empty">
-                              {t('taxis.settlements.noRecords')}
-                            </span>
+                            <span className="master-empty">{t('taxis.settlements.noRecords')}</span>
                           )
                         })()}
                       </DetailSection>
@@ -429,13 +458,36 @@ const Vehiculos = () => {
             dataSource={restrictionsData}
             keyExpr="id"
             style={{ margin: 0 }}
-            editing={{ mode: 'cell', allowUpdating: true, allowAdding: false, allowDeleting: false }}
+            editing={{
+              mode: 'cell',
+              allowUpdating: true,
+              allowAdding: false,
+              allowDeleting: false,
+            }}
             onCellValueChanged={onRestrictCellChanged}
           >
             <Paging enabled={false} />
-            <Column dataField="name" caption="Mes" width={140} allowSorting={false} allowEditing={false} />
-            <Column dataField="d1" caption="Día 1" dataType="number" editorOptions={{ min: 1, max: 31, placeholder: '—' }} allowSorting={false} />
-            <Column dataField="d2" caption="Día 2" dataType="number" editorOptions={{ min: 1, max: 31, placeholder: '—' }} allowSorting={false} />
+            <Column
+              dataField="name"
+              caption="Mes"
+              width={140}
+              allowSorting={false}
+              allowEditing={false}
+            />
+            <Column
+              dataField="d1"
+              caption="Día 1"
+              dataType="number"
+              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
+              allowSorting={false}
+            />
+            <Column
+              dataField="d2"
+              caption="Día 2"
+              dataType="number"
+              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
+              allowSorting={false}
+            />
           </StandardGrid>
         </CModalBody>
         <CModalFooter>
