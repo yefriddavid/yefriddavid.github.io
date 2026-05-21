@@ -24,7 +24,11 @@ import {
   reauthenticateWithCredential,
 } from 'firebase/auth'
 import { auth } from 'src/services/firebase/settings'
-import { getUserForAuth, hashPassword } from 'src/services/firebase/security/users'
+import {
+  getUserForAuth,
+  hashPassword,
+  updatePassword as updatePasswordHash,
+} from 'src/services/firebase/security/users'
 import { createSession } from 'src/services/firebase/security/sessions'
 import { clearTenantId } from 'src/services/tenantContext'
 import { authStorage } from 'src/utils/storage'
@@ -54,7 +58,8 @@ export async function signIn(username, password) {
     if (
       firebaseErr.code === 'auth/user-not-found' ||
       firebaseErr.code === 'auth/invalid-credential' ||
-      firebaseErr.code === 'auth/invalid-email'
+      firebaseErr.code === 'auth/invalid-email' ||
+      firebaseErr.code === 'auth/operation-not-allowed'
     ) {
       // ── Step 2: legacy Firestore hash check ─────────────────────────────────
       firestoreUser = await getUserForAuth(username.trim())
@@ -141,14 +146,25 @@ export function onAuthChange(callback) {
 
 /**
  * Changes the current user's password.
- * Requires the current password for re-authentication.
+ * Handles both Firebase Auth sessions and legacy-only (Firestore hash) sessions.
+ * Always keeps the Firestore hash in sync with Firebase Auth.
  */
 export async function changePassword(username, currentPassword, newPassword) {
   const user = auth.currentUser
-  if (!user) throw new Error('No hay sesión activa')
 
-  // Re-authenticate to confirm identity before sensitive operation
-  const credential = EmailAuthProvider.credential(toAuthEmail(username), currentPassword)
-  await reauthenticateWithCredential(user, credential)
-  await firebaseUpdatePassword(user, newPassword)
+  if (user) {
+    // Firebase Auth session — reauthenticate then update Firebase Auth password
+    const credential = EmailAuthProvider.credential(toAuthEmail(username), currentPassword)
+    await reauthenticateWithCredential(user, credential)
+    await firebaseUpdatePassword(user, newPassword)
+  } else {
+    // Legacy-only session (no Firebase Auth) — verify against Firestore hash
+    const profile = await getUserForAuth(username)
+    if (!profile) throw new Error('Usuario no encontrado')
+    const inputHash = await hashPassword(currentPassword)
+    if (inputHash !== profile.passwordHash) throw new Error('Contraseña actual incorrecta')
+  }
+
+  // Keep Firestore hash in sync so the hybrid login fallback stays consistent
+  await updatePasswordHash(username, newPassword)
 }

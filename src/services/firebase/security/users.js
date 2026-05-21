@@ -107,12 +107,15 @@ export const setUserTenant = async (username, tenantId) => {
   await firestoreCall(() => updateDoc(doc(db, COL, username), { tenantId: tenantId ?? null }))
 }
 
-// Admin: sends password reset — placeholder for when Firebase Auth is enabled
-export const sendUserPasswordReset = async (_email) => {
-  throw new Error('Requiere activar Firebase Authentication en la consola de Firebase')
-}
-
-// Own password change via hash update
-export const changeOwnPassword = async (username, _currentPassword, newPassword) => {
-  await updatePassword(username, newPassword)
+// Admin: sets a new password for a user.
+// Updates Firestore hash + stores AES-encrypted password in `salt` for local Firebase Auth sync.
+export const adminSetPassword = async (username, newPassword) => {
+  const { encryptPassword } = await import('src/utils/cryptoHelper')
+  const [passwordHash, salt] = await Promise.all([
+    hashPassword(newPassword),
+    encryptPassword(newPassword),
+  ])
+  await firestoreCall(() =>
+    updateDoc(doc(db, COL, username), { passwordHash, salt }),
+  )
 }

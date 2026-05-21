@@ -19,7 +19,6 @@ import { cilPlus, cilX, cilTrash } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import * as usersActions from 'src/actions/usersActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
-import { sendUserPasswordReset } from 'src/services/firebase/security/users'
 import { LANDING_PAGES } from 'src/constants/commons'
 import {
   USER_ROLES as ROLES,
@@ -267,13 +266,15 @@ const UserDetail = React.memo(({ data: user, onSave, saving }) => {
 
 const Users = () => {
   const dispatch = useDispatch()
-  const { data, fetching, isError, error } = useSelector((s) => s.users)
+  const { data, fetching, isError, error, resetLoading, resetError, resetSuccess } = useSelector((s) => s.users)
   const profile = useSelector((s) => s.profile.data)
   const isSuperAdmin = profile?.role === 'superAdmin'
   const gridRef = useRef(null)
 
   const [showForm, setShowForm] = useState(false)
   const [resetMsg, setResetMsg] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
+  const [resetPw, setResetPw] = useState('')
 
   useEffect(() => {
     dispatch(usersActions.fetchRequest())
@@ -295,19 +296,35 @@ const Users = () => {
     dispatch(usersActions.deleteRequest({ username: row.username }))
   }
 
-  const handlePasswordReset = async (row) => {
-    if (!row.email) {
-      setResetMsg({ type: 'danger', text: 'El usuario no tiene email registrado' })
+  const openResetForm = (row) => {
+    setResetTarget(row.username)
+    setResetPw('')
+    setResetMsg(null)
+  }
+
+  const handlePasswordReset = () => {
+    if (!resetPw || resetPw.length < 6) {
+      setResetMsg({ type: 'danger', text: 'Mínimo 6 caracteres' })
       return
     }
-    try {
-      await sendUserPasswordReset(row.email)
-      setResetMsg({ type: 'success', text: `Email de recuperación enviado a ${row.email}` })
-    } catch (e) {
-      setResetMsg({ type: 'danger', text: e.message })
-    }
-    setTimeout(() => setResetMsg(null), 4000)
+    dispatch(usersActions.adminResetPasswordRequest({ username: resetTarget, password: resetPw }))
+    setResetTarget(null)
+    setResetPw('')
   }
+
+  useEffect(() => {
+    if (resetError) {
+      setResetMsg({ type: 'danger', text: resetError })
+      setTimeout(() => setResetMsg(null), 4000)
+    }
+  }, [resetError])
+
+  useEffect(() => {
+    if (resetSuccess) {
+      setResetMsg({ type: 'success', text: `Contraseña de "${resetSuccess}" actualizada exitosamente. Recuerda correr task auth:sync para sincronizar Firebase Auth.` })
+      setTimeout(() => setResetMsg(null), 4000)
+    }
+  }, [resetSuccess])
 
   const toggleRow = (row) => {
     if (!gridRef.current) return
@@ -368,6 +385,40 @@ const Users = () => {
           </CAlert>
         )}
 
+        <CCollapse visible={!!resetTarget}>
+          <div className="p-3 border-bottom" style={{ maxWidth: 360 }}>
+            <div className="fw-semibold small mb-2">
+              Establecer nueva contraseña para: <strong>{resetTarget}</strong>
+            </div>
+            <div className="d-flex gap-2 align-items-center">
+              <input
+                className="form-control form-control-sm"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={resetPw}
+                onChange={(e) => setResetPw(e.target.value)}
+                autoComplete="new-password"
+              />
+              <CButton
+                size="sm"
+                color="warning"
+                onClick={handlePasswordReset}
+                disabled={!!resetLoading}
+              >
+                {resetLoading ? <Spinner size="sm" /> : 'Guardar'}
+              </CButton>
+              <CButton
+                size="sm"
+                color="secondary"
+                variant="outline"
+                onClick={() => { setResetTarget(null); setResetMsg(null) }}
+              >
+                Cancelar
+              </CButton>
+            </div>
+          </div>
+        </CCollapse>
+
         <CCollapse visible={showForm}>
           <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
             <UserForm
@@ -427,8 +478,8 @@ const Users = () => {
                       size="sm"
                       color="warning"
                       variant="outline"
-                      title="Enviar email de recuperación"
-                      onClick={() => handlePasswordReset(row)}
+                      title="Establecer nueva contraseña"
+                      onClick={() => openResetForm(row)}
                     >
                       Reset pw
                     </CButton>

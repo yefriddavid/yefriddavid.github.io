@@ -29,3 +29,7 @@ export const deleteSessionError = createAction('users/deleteSessionError')
 export const deleteAllSessionsRequest = createAction('users/deleteAllSessionsRequest')
 export const deleteAllSessionsSuccess = createAction('users/deleteAllSessionsSuccess')
 export const deleteAllSessionsError = createAction('users/deleteAllSessionsError')
+
+export const adminResetPasswordRequest = createAction('users/adminResetPasswordRequest')
+export const adminResetPasswordSuccess = createAction('users/adminResetPasswordSuccess')
+export const adminResetPasswordError = createAction('users/adminResetPasswordError')

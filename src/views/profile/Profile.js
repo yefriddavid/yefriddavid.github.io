@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { CCard, CCardHeader, CCardBody, CButton, CBadge, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
 import { authStorage } from 'src/utils/storage'
-import { changeOwnPassword } from 'src/services/firebase/security/users'
+import { changePassword } from 'src/services/firebase/auth'
 import { LANDING_PAGES } from 'src/constants/commons'
 import {
   USER_ROLE_LABELS as ROLE_LABELS,
@@ -79,7 +79,7 @@ const Profile = () => {
     }
     setPwLoading(true)
     try {
-      await changeOwnPassword(profile.username, pwForm.current, pwForm.next)
+      await changePassword(profile.username, pwForm.current, pwForm.next)
       setPwSuccess(true)
       setPwForm({ current: '', next: '', confirm: '' })
       setTimeout(() => {

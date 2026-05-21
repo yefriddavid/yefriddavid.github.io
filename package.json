@@ -35,6 +35,8 @@
     "cy:run-legacy": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005\"",
     "cy:run": "cypress run --config baseUrl=https://localhost:3000",
     "cy:run:raw": "cypress run --config baseUrl=http://localhost:3005",
+    "test:login:unit": "vitest run src/reducers/__tests__/loginReducer.test.js src/views/login/__tests__/Login.test.jsx src/services/firebase/__tests__/auth.test.js src/services/firebase/security/__tests__/users.test.js",
+    "cy:login": "start-server-and-test serve:test 3005 \"cypress run --config baseUrl=http://localhost:3005 --spec cypress/e2e/login.cy.js\"",
     "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
     "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\"",
     "cli:build": "node cli/build.mjs",

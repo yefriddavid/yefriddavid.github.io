@@ -52,6 +52,12 @@ tasks:
     desc: Open Cypress component test runner
     cmd: npm run cy:comp:open
 
+  test:login:
+    desc: Run all login tests — unit (reducer, view, auth service, users service) + e2e Cypress
+    cmds:
+      - npm run test:login:unit
+      - npm run cy:login
+
   copy-to-test:
     desc: Copy production build to test environment
     cmd: npm run copy-to-test
@@ -98,3 +104,11 @@ tasks:
   cli:finance:account-status:
     desc: "Monthly account status — requires --tenant <id>; optional: --month <1-12> --year <n> --type Incoming|Outcoming|all --user <u> --pass <p> --format table|json"
     cmd: npm run cli -- finance account-status {{.CLI_ARGS}}
+
+  auth:sync:
+    desc: Sync Firestore users → Firebase Auth (creates/updates accounts from salt field)
+    cmd: python3 scripts/sync-firebase-auth.py
+
+  auth:sync:dry:
+    desc: Preview Firebase Auth sync without writing (dry run)
+    cmd: python3 scripts/sync-firebase-auth.py --dry-run

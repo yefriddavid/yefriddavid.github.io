@@ -29,5 +29,20 @@ export default createCRUDReducer('users', actions, {
           s.sessions[username].data = []
         }
       })
+      .addCase(actions.adminResetPasswordRequest, (s) => {
+        s.resetLoading = true
+        s.resetError = null
+        s.resetSuccess = null
+      })
+      .addCase(actions.adminResetPasswordSuccess, (s, { payload: { username } }) => {
+        s.resetLoading = false
+        s.resetError = null
+        s.resetSuccess = username
+      })
+      .addCase(actions.adminResetPasswordError, (s, { payload: { error } }) => {
+        s.resetLoading = false
+        s.resetError = error
+        s.resetSuccess = null
+      })
   },
 }).reducer

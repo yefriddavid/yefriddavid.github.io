@@ -70,6 +70,15 @@ function* deleteAllSessionsSaga({ payload: username }) {
   }
 }
 
+function* adminResetPasswordSaga({ payload: { username, password } }) {
+  try {
+    yield call(service.adminSetPassword, username, password)
+    yield put(actions.adminResetPasswordSuccess({ username }))
+  } catch (e) {
+    yield put(actions.adminResetPasswordError({ username, error: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchUsers),
@@ -79,5 +88,6 @@ export default function* rootSagas() {
     takeLatest(actions.fetchSessionsRequest, fetchSessions),
     takeLatest(actions.deleteSessionRequest, deleteSessionSaga),
     takeLatest(actions.deleteAllSessionsRequest, deleteAllSessionsSaga),
+    takeLatest(actions.adminResetPasswordRequest, adminResetPasswordSaga),
   ])
 }
