@@ -14,7 +14,9 @@
   justify-content: center;
   box-shadow: 0 4px 20px rgba(109, 40, 217, 0.45);
   z-index: 1060;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: scale(1.1);
@@ -83,7 +85,9 @@
   line-height: 1;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 
   &:hover {
     color: white;
@@ -143,7 +147,10 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   text-align: left;
 
   &:hover {
@@ -171,7 +178,9 @@
   color: var(--cui-body-color);
   font-size: 13px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:focus {
     border-color: #7c3aed;
@@ -197,7 +206,9 @@
   font-size: 13px;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:focus {
     border-color: #7c3aed;
@@ -247,7 +258,9 @@
   border-radius: 7px;
   font-size: 12px;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 
   &:hover {
     color: var(--cui-body-color);

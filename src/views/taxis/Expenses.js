@@ -530,9 +530,9 @@ const ExpenseCardList = ({
                 {row.plate}
               </span>
             )}
-            {plateToDriver[row.plate] && (
+            {(row.driverName || plateToDriver[row.plate]) && (
               <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
-                {plateToDriver[row.plate]}
+                {row.driverName || plateToDriver[row.plate]}
               </span>
             )}
             <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)', marginLeft: 'auto' }}>
@@ -665,7 +665,9 @@ const Gastos = () => {
   }, [editingRow])
 
   const handleCreate = (form) => {
-    dispatch(taxiExpenseActions.createRequest(form))
+    dispatch(
+      taxiExpenseActions.createRequest({ ...form, driverName: plateToDriver[form.plate] || null }),
+    )
     setShowCreate(false)
   }
 
@@ -674,11 +676,14 @@ const Gastos = () => {
   }
 
   const handleEditSave = (form) => {
-    updateExpense(editingRow.id, { ...editingRow, ...form, amount: Number(form.amount) }).then(
-      () => {
-        dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
-      },
-    )
+    updateExpense(editingRow.id, {
+      ...editingRow,
+      ...form,
+      amount: Number(form.amount),
+      driverName: plateToDriver[form.plate] || null,
+    }).then(() => {
+      dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
+    })
     gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
   }
@@ -702,6 +707,7 @@ const Gastos = () => {
         date: cloneForm.date,
         plate: cloneForm.plate,
         category: cloneForm.category,
+        driverName: plateToDriver[cloneForm.plate] || null,
       }),
     )
     setCloneSource(null)
@@ -992,7 +998,7 @@ const Gastos = () => {
                 caption="Conductor"
                 width={140}
                 cellRender={({ data }) => {
-                  const driverName = plateToDriver[data.plate]
+                  const driverName = data.driverName || plateToDriver[data.plate]
                   return driverName ? (
                     <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
                       {driverName}

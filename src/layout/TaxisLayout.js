@@ -2,7 +2,7 @@ import React from 'react'
 import { AppHeader, AppFooter } from '../components/index'
 import TaxisSidebar from '../components/taxis/TaxisSidebar'
 import TaxisContent from '../components/taxis/TaxisContent'
-import TaxiQuickAssistant from '../components/taxis/TaxiQuickAssistant'
+import TaxiQuickAssistant from '../components/taxis/TaxiQuickAssistant/Index'
 
 const TaxisLayout = () => {
   document.title = 'Gestión de Taxis'

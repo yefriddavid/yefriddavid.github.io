@@ -6,197 +6,18 @@ import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import { TAXI_EXPENSE_CATEGORIES } from 'src/constants/taxi'
 import { fmt } from 'src/utils/formatters'
+import {
+  TYPE_VEHICLE,
+  TYPE_DRIVER,
+  TYPE_SETTLEMENT,
+  TYPE_EXPENSE,
+  TYPE_LABELS,
+  TYPE_DISPLAY_NAME,
+  STEPS,
+} from './constants'
+import { today, fmtDateDisplay, getPicoPlacaWarning } from './utils'
+import WandIcon from './WandIcon'
 import './TaxiQuickAssistant.scss'
-
-const TYPE_VEHICLE = 'vehicle'
-const TYPE_DRIVER = 'driver'
-const TYPE_SETTLEMENT = 'settlement'
-const TYPE_EXPENSE = 'expense'
-
-const TYPE_LABELS = {
-  [TYPE_VEHICLE]: '🚕 Vehículo',
-  [TYPE_DRIVER]: '👤 Conductor',
-  [TYPE_SETTLEMENT]: '💵 Liquidación',
-  [TYPE_EXPENSE]: '💸 Gasto',
-}
-
-const TYPE_DISPLAY_NAME = {
-  [TYPE_VEHICLE]: 'Vehículo',
-  [TYPE_DRIVER]: 'Conductor',
-  [TYPE_SETTLEMENT]: 'Liquidación',
-  [TYPE_EXPENSE]: 'Gasto',
-}
-
-const today = () => new Date().toISOString().split('T')[0]
-
-const fmtDateDisplay = (iso) => {
-  if (!iso) return iso
-  const [y, m, d] = iso.split('-')
-  return `${d}/${m}/${y}`
-}
-
-const getPicoPlacaWarning = (plate, date, vehiclesMap) => {
-  if (!plate || !date) return null
-  const [, monthStr, dayStr] = date.split('-')
-  const month = parseInt(monthStr, 10)
-  const day = parseInt(dayStr, 10)
-  const vehicle = vehiclesMap.get(plate)
-  const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
-  if (restr && new Set([restr.d1, restr.d2].filter(Boolean).map(Number)).has(day)) {
-    return `⚠ Pico y placa: ${plate} no puede circular el día ${day}`
-  }
-  return null
-}
-
-const STEPS = {
-  [TYPE_VEHICLE]: [
-    {
-      id: 'plate',
-      question: '¿Cuál es la placa?',
-      inputType: 'text',
-      placeholder: 'ABC-123',
-      required: true,
-    },
-    {
-      id: 'brand',
-      question: '¿La marca?',
-      inputType: 'text',
-      placeholder: 'Renault',
-      required: true,
-    },
-    {
-      id: 'model',
-      question: '¿El modelo?',
-      inputType: 'text',
-      placeholder: 'Logan',
-      required: false,
-    },
-    {
-      id: 'year',
-      question: '¿El año?',
-      inputType: 'number',
-      placeholder: String(new Date().getFullYear()),
-      required: false,
-    },
-  ],
-  [TYPE_DRIVER]: [
-    {
-      id: 'name',
-      question: '¿Nombre completo del conductor?',
-      inputType: 'text',
-      placeholder: 'Juan Pérez',
-      required: true,
-    },
-    {
-      id: 'idNumber',
-      question: '¿Número de cédula?',
-      inputType: 'text',
-      placeholder: '123456789',
-      required: true,
-    },
-    {
-      id: 'phone',
-      question: '¿Teléfono de contacto?',
-      inputType: 'text',
-      placeholder: '300 000 0000',
-      required: false,
-    },
-    {
-      id: 'defaultAmount',
-      question: '¿Valor de liquidación normal?',
-      inputType: 'number',
-      placeholder: '85000',
-      required: false,
-    },
-    {
-      id: 'defaultVehicle',
-      question: '¿Taxi asignado por defecto?',
-      inputType: 'vehicle-select',
-      required: false,
-    },
-  ],
-  [TYPE_SETTLEMENT]: [
-    {
-      id: 'driver',
-      question: '¿Qué conductor vas a liquidar?',
-      inputType: 'driver-select',
-      required: true,
-    },
-    { id: 'date', question: '¿La fecha?', inputType: 'date', required: true },
-    {
-      id: 'amount',
-      question: '¿El valor de la liquidación?',
-      inputType: 'number',
-      placeholder: '85000',
-      required: true,
-    },
-    {
-      id: 'comment',
-      question: '¿Algún comentario?',
-      inputType: 'text',
-      placeholder: 'Opcional...',
-      required: false,
-    },
-  ],
-  [TYPE_EXPENSE]: [
-    {
-      id: 'category',
-      question: '¿Qué categoría de gasto?',
-      inputType: 'category-select',
-      required: true,
-    },
-    {
-      id: 'description',
-      question: '¿Descripción del gasto?',
-      inputType: 'text',
-      placeholder: 'Ej: Cambio de llantas',
-      required: true,
-    },
-    {
-      id: 'amount',
-      question: '¿Cuánto costó?',
-      inputType: 'number',
-      placeholder: '150000',
-      required: true,
-    },
-    { id: 'date', question: '¿La fecha del gasto?', inputType: 'date', required: true },
-    {
-      id: 'plate',
-      question: '¿A qué taxi corresponde?',
-      inputType: 'vehicle-select',
-      required: false,
-    },
-    {
-      id: 'comment',
-      question: '¿Algún comentario?',
-      inputType: 'text',
-      placeholder: 'Opcional...',
-      required: false,
-    },
-  ],
-}
-
-const WandIcon = () => (
-  <svg
-    width="21"
-    height="21"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z" />
-    <path d="m14 7 3 3" />
-    <path d="M5 6v4" />
-    <path d="M19 14v4" />
-    <path d="M10 2v2" />
-    <path d="M7 8H3" />
-    <path d="M21 16h-4" />
-    <path d="M11 3H9" />
-  </svg>
-)
 
 const TaxiQuickAssistant = () => {
   const dispatch = useDispatch()
@@ -315,6 +136,9 @@ const TaxiQuickAssistant = () => {
         }),
       )
     } else if (type === TYPE_EXPENSE) {
+      const expenseDriver = data.plate
+        ? (drivers ?? []).find((d) => d.defaultVehicle === data.plate)?.name || null
+        : null
       dispatch(
         taxiExpenseActions.createRequest({
           category: data.category,
@@ -322,6 +146,7 @@ const TaxiQuickAssistant = () => {
           amount: Number(data.amount),
           date: data.date,
           plate: data.plate || null,
+          driverName: expenseDriver,
           comment: data.comment || null,
         }),
       )
@@ -356,7 +181,6 @@ const TaxiQuickAssistant = () => {
     const nextStep = steps[nextIdx]
     setStepIdx(nextIdx)
 
-    // pre-fill next input based on context
     let nextInputVal = ''
     if (type === TYPE_SETTLEMENT && nextStep.id === 'date') nextInputVal = today()
     if (type === TYPE_SETTLEMENT && nextStep.id === 'amount' && newData.amount)
@@ -364,7 +188,6 @@ const TaxiQuickAssistant = () => {
     if (type === TYPE_EXPENSE && nextStep.id === 'date') nextInputVal = today()
     setInputVal(nextInputVal)
 
-    // build bot message with context after driver selection
     let botMsg = nextStep.question
     if (type === TYPE_SETTLEMENT && step.id === 'driver') {
       const driver = (drivers ?? []).find((d) => d.name === value)
