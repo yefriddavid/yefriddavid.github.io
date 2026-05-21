@@ -3,17 +3,28 @@ import { useDispatch, useSelector } from 'react-redux'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
+import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
+import { TAXI_EXPENSE_CATEGORIES } from 'src/constants/taxi'
 import { fmt } from 'src/utils/formatters'
 import './TaxiQuickAssistant.scss'
 
 const TYPE_VEHICLE = 'vehicle'
 const TYPE_DRIVER = 'driver'
 const TYPE_SETTLEMENT = 'settlement'
+const TYPE_EXPENSE = 'expense'
 
 const TYPE_LABELS = {
   [TYPE_VEHICLE]: '🚕 Vehículo',
   [TYPE_DRIVER]: '👤 Conductor',
   [TYPE_SETTLEMENT]: '💵 Liquidación',
+  [TYPE_EXPENSE]: '💸 Gasto',
+}
+
+const TYPE_DISPLAY_NAME = {
+  [TYPE_VEHICLE]: 'Vehículo',
+  [TYPE_DRIVER]: 'Conductor',
+  [TYPE_SETTLEMENT]: 'Liquidación',
+  [TYPE_EXPENSE]: 'Gasto',
 }
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -118,6 +129,42 @@ const STEPS = {
       inputType: 'number',
       placeholder: '85000',
       required: true,
+    },
+    {
+      id: 'comment',
+      question: '¿Algún comentario?',
+      inputType: 'text',
+      placeholder: 'Opcional...',
+      required: false,
+    },
+  ],
+  [TYPE_EXPENSE]: [
+    {
+      id: 'category',
+      question: '¿Qué categoría de gasto?',
+      inputType: 'category-select',
+      required: true,
+    },
+    {
+      id: 'description',
+      question: '¿Descripción del gasto?',
+      inputType: 'text',
+      placeholder: 'Ej: Cambio de llantas',
+      required: true,
+    },
+    {
+      id: 'amount',
+      question: '¿Cuánto costó?',
+      inputType: 'number',
+      placeholder: '150000',
+      required: true,
+    },
+    { id: 'date', question: '¿La fecha del gasto?', inputType: 'date', required: true },
+    {
+      id: 'plate',
+      question: '¿A qué taxi corresponde?',
+      inputType: 'vehicle-select',
+      required: false,
     },
     {
       id: 'comment',
@@ -267,16 +314,20 @@ const TaxiQuickAssistant = () => {
           comment: data.comment || null,
         }),
       )
+    } else if (type === TYPE_EXPENSE) {
+      dispatch(
+        taxiExpenseActions.createRequest({
+          category: data.category,
+          description: data.description,
+          amount: Number(data.amount),
+          date: data.date,
+          plate: data.plate || null,
+          comment: data.comment || null,
+        }),
+      )
     }
     setDone(true)
-    setTimeout(() => {
-      const labels = {
-        [TYPE_VEHICLE]: 'Vehículo',
-        [TYPE_DRIVER]: 'Conductor',
-        [TYPE_SETTLEMENT]: 'Liquidación',
-      }
-      pushBot(`✓ ${labels[type]} creado correctamente.`)
-    }, 350)
+    setTimeout(() => pushBot(`✓ ${TYPE_DISPLAY_NAME[type]} creado correctamente.`), 350)
   }
 
   const advance = (value, display) => {
@@ -310,6 +361,7 @@ const TaxiQuickAssistant = () => {
     if (type === TYPE_SETTLEMENT && nextStep.id === 'date') nextInputVal = today()
     if (type === TYPE_SETTLEMENT && nextStep.id === 'amount' && newData.amount)
       nextInputVal = newData.amount
+    if (type === TYPE_EXPENSE && nextStep.id === 'date') nextInputVal = today()
     setInputVal(nextInputVal)
 
     // build bot message with context after driver selection
@@ -343,67 +395,74 @@ const TaxiQuickAssistant = () => {
     if (e.key === 'Enter') handleSubmitInput()
   }
 
+  const renderSelect = (placeholder, options, onChange) => (
+    <div className="tqa__input-area">
+      <select ref={inputRef} className="tqa__select" defaultValue="" onChange={onChange}>
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options}
+      </select>
+    </div>
+  )
+
   const renderInputArea = () => {
     if (!currentStep || done) return null
     const { inputType, placeholder, required } = currentStep
 
+    if (inputType === 'category-select') {
+      return renderSelect(
+        'Selecciona una categoría...',
+        TAXI_EXPENSE_CATEGORIES.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        )),
+        (e) => {
+          const val = e.target.value
+          if (val) advance(val, val)
+        },
+      )
+    }
+
     if (inputType === 'driver-select') {
-      return (
-        <div className="tqa__input-area">
-          <select
-            ref={inputRef}
-            className="tqa__select"
-            defaultValue=""
-            onChange={(e) => {
-              const val = e.target.value
-              if (!val) return
-              advance(val, val)
-            }}
-          >
-            <option value="" disabled>
-              Selecciona un conductor...
-            </option>
-            {activeDrivers.map((d) => (
-              <option key={d.id} value={d.name}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </div>
+      return renderSelect(
+        'Selecciona un conductor...',
+        activeDrivers.map((d) => (
+          <option key={d.id} value={d.name}>
+            {d.name}
+          </option>
+        )),
+        (e) => {
+          const val = e.target.value
+          if (val) advance(val, val)
+        },
       )
     }
 
     if (inputType === 'vehicle-select') {
-      return (
-        <div className="tqa__input-area">
-          <select
-            ref={inputRef}
-            className="tqa__select"
-            defaultValue=""
-            onChange={(e) => {
-              const val = e.target.value
-              if (val === '__skip') {
-                handleSkip()
-                return
-              }
-              const v = (vehicles ?? []).find((x) => x.plate === val)
-              const display = v ? `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` : val
-              advance(val || null, display)
-            }}
-          >
-            <option value="" disabled>
-              Selecciona un taxi...
+      return renderSelect(
+        'Selecciona un taxi...',
+        <>
+          {(vehicles ?? []).map((v) => (
+            <option key={v.id} value={v.plate}>
+              {v.plate}
+              {v.brand ? ` · ${v.brand}` : ''}
+              {v.active === false ? ' (Inactivo)' : ''}
             </option>
-            {(vehicles ?? []).map((v) => (
-              <option key={v.id} value={v.plate}>
-                {v.plate}
-                {v.brand ? ` · ${v.brand}` : ''}
-                {v.active === false ? ' (Inactivo)' : ''}
-              </option>
-            ))}
-            {!required && <option value="__skip">— Ninguno / Omitir —</option>}
-          </select>
-        </div>
+          ))}
+          {!required && <option value="__skip">— Ninguno / Omitir —</option>}
+        </>,
+        (e) => {
+          const val = e.target.value
+          if (val === '__skip') {
+            handleSkip()
+            return
+          }
+          const v = (vehicles ?? []).find((x) => x.plate === val)
+          const display = v ? `${v.plate}${v.brand ? ` · ${v.brand}` : ''}` : val
+          advance(val || null, display)
+        },
       )
     }
 
@@ -469,7 +528,7 @@ const TaxiQuickAssistant = () => {
 
           {!type && (
             <div className="tqa__choices">
-              {[TYPE_VEHICLE, TYPE_DRIVER, TYPE_SETTLEMENT].map((t) => (
+              {[TYPE_VEHICLE, TYPE_DRIVER, TYPE_SETTLEMENT, TYPE_EXPENSE].map((t) => (
                 <button key={t} className="tqa__choice-btn" onClick={() => handleChooseType(t)}>
                   {TYPE_LABELS[t]}
                 </button>
