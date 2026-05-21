@@ -66,3 +66,19 @@ tasks:
       - task: lint
       - task: test
       - task: build
+
+  cli:build:
+    desc: Bundle the CLI (cli/dist/index.js)
+    cmd: npm run cli:build
+
+  cli:domotica:voltage:
+    desc: "Voltage history — options: --from <date> --to <date> --limit <n> --format table|json"
+    cmd: npm run cli -- voltage {{.CLI_ARGS}}
+
+  cli:taxi:drivers:
+    desc: "List tapsi drivers — requires --tenant <id>; optional: --inactive --format table|json"
+    cmd: npm run cli -- drivers {{.CLI_ARGS}}
+
+  cli:taxi:vehicles:
+    desc: "List tapsi vehicles — requires --tenant <id>; optional: --inactive --format table|json"
+    cmd: npm run cli -- vehicles {{.CLI_ARGS}}

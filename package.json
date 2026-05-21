@@ -36,7 +36,9 @@
     "cy:run": "cypress run --config baseUrl=https://localhost:3000",
     "cy:run:raw": "cypress run --config baseUrl=http://localhost:3005",
     "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
-    "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\""
+    "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\"",
+    "cli:build": "node cli/build.mjs",
+    "cli": "node cli/dist/index.js"
   },
   "dependencies": {
     "@coreui/chartjs": "^4.0.0",
@@ -99,10 +101,14 @@
     "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
     "cross-env": "^10.1.0",
     "cypress": "^15.13.1",
     "cypress-multi-reporters": "^2.0.5",
     "cypress-parallel": "^0.15.0",
+    "dotenv": "^16.6.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
