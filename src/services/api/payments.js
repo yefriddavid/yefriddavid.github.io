@@ -1,10 +1,9 @@
 import { axios } from './utilApi'
-
-const token = localStorage.getItem('token')
+import { authStorage } from 'src/utils/storage'
 
 export const fetchPayments = async (params) => {
   const bodyFormData = new FormData()
-  bodyFormData.append('token', token)
+  bodyFormData.append('token', authStorage.getToken())
   bodyFormData.append('action', 'getAccountPayments')
 
   const keys = Object.keys(params)
@@ -22,7 +21,7 @@ export const fetchPayments = async (params) => {
 
 export const fetchAccounts = async (params) => {
   const bodyFormData = new FormData()
-  bodyFormData.append('token', token)
+  bodyFormData.append('token', authStorage.getToken())
   bodyFormData.append('action', 'getAccounts')
 
   const keys = Object.keys(params)
@@ -39,7 +38,7 @@ export const fetchAccounts = async (params) => {
 }
 export const createPayment = async (params) => {
   const bodyFormData = new FormData()
-  bodyFormData.append('token', token)
+  bodyFormData.append('token', authStorage.getToken())
   // bodyFormData.append('action', 'getAccounts')
   bodyFormData.append('action', 'addAccountPayment')
 
@@ -58,7 +57,7 @@ export const createPayment = async (params) => {
 
 export const deletePayment = async ({ paymentId }) => {
   const bodyFormData = new FormData()
-  bodyFormData.append('token', token)
+  bodyFormData.append('token', authStorage.getToken())
   bodyFormData.append('action', 'deletePayment')
   bodyFormData.append('paymentId', paymentId)
 

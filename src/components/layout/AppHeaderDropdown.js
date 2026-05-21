@@ -14,6 +14,7 @@ import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../actions/authActions'
 import { deleteSession } from '../../services/firebase/security/sessions'
 import { signOut } from '../../services/firebase/auth'
+import { authStorage, uiStorage } from 'src/utils/storage'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import VersionModal from './VersionModal'
 import { USER_ROLE_LABELS as ROLE_LABELS } from 'src/constants/admin'
@@ -28,13 +29,11 @@ const AppHeaderDropdown = () => {
   const profile = useSelector((s) => s.profile.data)
   const [versionOpen, setVersionOpen] = useState(false)
 
-  const AVATAR_KEY = 'cached-avatar'
-
-  const [cachedAvatar, setCachedAvatar] = useState(() => localStorage.getItem(AVATAR_KEY))
+  const [cachedAvatar, setCachedAvatar] = useState(() => uiStorage.getAvatar())
 
   useEffect(() => {
     if (profile?.avatar) {
-      localStorage.setItem(AVATAR_KEY, profile.avatar)
+      uiStorage.setAvatar(profile.avatar)
       setCachedAvatar(profile.avatar)
     }
   }, [profile?.avatar])
@@ -43,9 +42,9 @@ const AppHeaderDropdown = () => {
   const displayName = profile?.name || profile?.username || null
 
   const logout = async () => {
-    const sessionId = localStorage.getItem('sessionId')
+    const sessionId = authStorage.getSessionId()
     if (sessionId) deleteSession(sessionId).catch(() => {})
-    localStorage.removeItem(AVATAR_KEY)
+    uiStorage.clearAvatar()
     await signOut()
     dispatch(clearProfile())
     navigate('/login')

@@ -7,9 +7,10 @@ import dotenv from 'dotenv'
 import { resolve } from 'path'
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { initializeAuth, inMemoryPersistence } from 'firebase/auth'
 import { getDatabase } from 'firebase/database'
 
-dotenv.config({ path: resolve(process.cwd(), '.env.development') })
+dotenv.config({ path: resolve(process.cwd(), '.env.production') })
 
 const domoticaConfig = {
   apiKey: process.env.VITE_DOMOTICA_API_KEY,
@@ -38,9 +39,18 @@ export const rtdbDomotica = getDatabase(domoticaApp)
 const taxiApp = initializeApp(taxiConfig, 'taxi')
 export const dbTaxi = getFirestore(taxiApp)
 
-// Stubs — not used in CLI
-export const db = null
-export const auth = null
+const cashflowConfig = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
+}
+const cashflowApp = initializeApp(cashflowConfig, 'cashflow')
+export const db = getFirestore(cashflowApp)
+export const auth = initializeAuth(cashflowApp, { persistence: inMemoryPersistence })
 export const messaging = null
 export const rtdb = null
 export const FIREBASE_API_KEY = process.env.VITE_FIREBASE_API_KEY

@@ -27,6 +27,7 @@ import { auth } from 'src/services/firebase/settings'
 import { getUserForAuth, hashPassword } from 'src/services/firebase/security/users'
 import { createSession } from 'src/services/firebase/security/sessions'
 import { clearTenantId } from 'src/services/tenantContext'
+import { authStorage } from 'src/utils/storage'
 
 // ── Convention ─────────────────────────────────────────────────────────────────
 
@@ -108,10 +109,7 @@ export async function signIn(username, password) {
 export async function signOut() {
   await firebaseSignOut(auth).catch(() => {})
   clearTenantId()
-  localStorage.removeItem('token')
-  localStorage.removeItem('username')
-  localStorage.removeItem('sessionId')
-  localStorage.removeItem('landingPage')
+  authStorage.clearSession()
 }
 
 /**

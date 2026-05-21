@@ -26,6 +26,7 @@ const StandardForm = ({
   onCancel,
   onSave,
   saving = false,
+  disabled = false,
   saveLabel,
   cancelLabel,
   children,
@@ -51,7 +52,7 @@ const StandardForm = ({
         <button
           className="payment-form__btn payment-form__btn--save"
           onClick={onSave}
-          disabled={saving}
+          disabled={saving || disabled}
         >
           {saving ? <Spinner size="sm" /> : resolvedSaveLabel}
         </button>

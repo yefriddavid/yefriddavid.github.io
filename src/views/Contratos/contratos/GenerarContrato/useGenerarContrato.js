@@ -8,6 +8,7 @@ import * as contractActions from 'src/actions/contratos/contractActions'
 import * as contractNoteActions from 'src/actions/contratos/contractNoteActions'
 import * as contractAttachmentActions from 'src/actions/contratos/contractAttachmentActions'
 import { generateContractPdf, buildContractHtml } from '../contractPdf'
+import { authStorage } from 'src/utils/storage'
 import { generateActaEntregaPdf, buildActaEntregaHtml } from '../templates/actaEntrega'
 import { generateInventarioPdf, buildInventarioHtml } from '../templates/inventario'
 import {
@@ -53,7 +54,7 @@ export function useGenerarContrato() {
   const attachmentFetching = useSelector((s) => s.contratoAttachment.fetching)
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) navigate('/login', { replace: true })
+    if (!authStorage.getToken()) navigate('/login', { replace: true })
   }, [navigate])
 
   useEffect(() => {

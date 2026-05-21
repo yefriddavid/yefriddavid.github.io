@@ -12,6 +12,12 @@ vi.mock('@coreui/react', () => ({
   CSpinner: ({ size }) => <span data-testid={`spinner-${size}`} />,
 }))
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => ({ 'common.save': 'Guardar', 'common.cancel': 'Cancelar' })[key] ?? key,
+  }),
+}))
+
 vi.mock('src/constants/cashFlow', () => ({
   EXPENSE_CATEGORIES: ['Alimentación', 'Transporte', 'Hogar'],
   INCOME_CATEGORIES: ['Salario', 'Freelance'],

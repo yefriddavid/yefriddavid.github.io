@@ -12,6 +12,12 @@ vi.mock('@coreui/react', () => ({
   CSpinner: ({ size }) => <span data-testid={`spinner-${size}`} />,
 }))
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => ({ 'common.save': 'Guardar', 'common.cancel': 'Cancelar' })[key] ?? key,
+  }),
+}))
+
 vi.mock('src/constants/accounting', () => ({
   CLASSIFICATION_OPTIONS: ['dispensable', 'indispensable'],
   PERIOD_OPTIONS: ['Mensuales', 'Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A'],
@@ -193,11 +199,16 @@ describe('AccountMasterForm', () => {
   describe('save validation', () => {
     it('calls onSave when name is filled', async () => {
       renderForm()
-      fireEvent.change(screen.getByPlaceholderText('Nombre de la cuenta'), {
-        target: { value: 'Servicios EPM' },
+      await act(async () => {
+        fireEvent.change(screen.getByPlaceholderText('Nombre de la cuenta'), {
+          target: { value: 'Servicios EPM' },
+        })
       })
       await act(async () => fireEvent.click(screen.getByText('Guardar')))
-      expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({ name: 'Servicios EPM' }))
+      expect(mockOnSave).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Servicios EPM' }),
+        expect.anything(),
+      )
     })
 
     it('does not call onSave when name is empty', () => {
@@ -221,10 +232,12 @@ describe('AccountMasterForm', () => {
       expect(saveBtn.disabled).toBe(true)
     })
 
-    it('Guardar button is enabled when name is provided', () => {
+    it('Guardar button is enabled when name is provided', async () => {
       renderForm()
-      fireEvent.change(screen.getByPlaceholderText('Nombre de la cuenta'), {
-        target: { value: 'Nombre válido' },
+      await act(async () => {
+        fireEvent.change(screen.getByPlaceholderText('Nombre de la cuenta'), {
+          target: { value: 'Nombre válido' },
+        })
       })
       const saveBtn = screen.getByText('Guardar')
       expect(saveBtn.disabled).toBe(false)

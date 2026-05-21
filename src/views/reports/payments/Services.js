@@ -1,14 +1,14 @@
 import axios from 'axios'
+import { authStorage } from 'src/utils/storage'
 //import { CreatePaymentVaucher } from './Database'
 
 const url =
   'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
-const token = localStorage.getItem('token')
 
 const fetchAccounts = async (params) => {
   try {
     const bodyFormData = new FormData()
-    bodyFormData.append('token', token)
+    bodyFormData.append('token', authStorage.getToken())
     bodyFormData.append('action', 'getAccounts')
 
     const keys = Object.keys(params)
@@ -26,7 +26,7 @@ const fetchAccounts = async (params) => {
 const fetchAccountPayments = async (params) => {
   try {
     const bodyFormData = new FormData()
-    bodyFormData.append('token', token)
+    bodyFormData.append('token', authStorage.getToken())
     bodyFormData.append('action', 'getAccountPayments')
 
     const keys = Object.keys(params)
@@ -44,7 +44,7 @@ const fetchAccountPayments = async (params) => {
 const addAccountPayment = async (params) => {
   try {
     const bodyFormData = new FormData()
-    bodyFormData.append('token', token)
+    bodyFormData.append('token', authStorage.getToken())
     bodyFormData.append('action', 'addAccountPayment')
 
     const keys = Object.keys(params)

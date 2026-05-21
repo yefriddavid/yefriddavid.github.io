@@ -2,6 +2,7 @@ import React from 'react'
 import { AppHeader, AppFooter } from '../components/index'
 import TaxisSidebar from '../components/taxis/TaxisSidebar'
 import TaxisContent from '../components/taxis/TaxisContent'
+import TaxiQuickAssistant from '../components/taxis/TaxiQuickAssistant'
 
 const TaxisLayout = () => {
   document.title = 'Gestión de Taxis'
@@ -16,6 +17,7 @@ const TaxisLayout = () => {
         </div>
         <AppFooter />
       </div>
+      <TaxiQuickAssistant />
     </div>
   )
 }

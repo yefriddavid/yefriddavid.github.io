@@ -70,6 +70,7 @@ describe('AuditView', () => {
       auditDrivers: DRIVERS,
       auditVehicles: VEHICLES,
       getNote: () => '',
+      getNotesForDay: () => [],
       getResolved: () => false,
       handleResolvedToggle: cy.stub().as('resolvedToggle'),
       handleNoteSave: cy.stub().as('noteSave'),

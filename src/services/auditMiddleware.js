@@ -1,4 +1,5 @@
 import { writeAuditLog } from './firebase/system/auditLogs'
+import { authStorage } from 'src/utils/storage'
 
 // Matches createCRUDActions success write patterns
 const WRITE_SUFFIXES = ['/createSuccess', '/updateSuccess', '/deleteSuccess']
@@ -28,7 +29,7 @@ export const auditMiddleware = (store) => (next) => (action) => {
       actionType: action.type,
       entity: action.type.split('/')[0],
       payload: safeSerialize(action.payload),
-      username: state.profile?.data?.username ?? localStorage.getItem('username') ?? null,
+      username: state.profile?.data?.username ?? authStorage.getUsername() ?? null,
       route: window.location.hash,
     })
   }

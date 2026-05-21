@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { uiStorage } from 'src/utils/storage'
 
-const savedTheme = localStorage.getItem('app-theme') || 'yellow'
-const savedSidebarShow = localStorage.getItem('sidebar-show')
-const savedHeaderShow = localStorage.getItem('header-show')
+const savedTheme = uiStorage.getTheme()
+const savedSidebarShow = uiStorage.getSidebarShow()
+const savedHeaderShow = uiStorage.getHeaderShow()
 
 const uiSlice = createSlice({
   name: 'ui',
@@ -14,10 +15,9 @@ const uiSlice = createSlice({
   },
   reducers: {
     setUi: (state, { payload }) => {
-      if (payload.appTheme) localStorage.setItem('app-theme', payload.appTheme)
-      if (payload.sidebarShow !== undefined)
-        localStorage.setItem('sidebar-show', payload.sidebarShow)
-      if (payload.headerShow !== undefined) localStorage.setItem('header-show', payload.headerShow)
+      if (payload.appTheme) uiStorage.setTheme(payload.appTheme)
+      if (payload.sidebarShow !== undefined) uiStorage.setSidebarShow(payload.sidebarShow)
+      if (payload.headerShow !== undefined) uiStorage.setHeaderShow(payload.headerShow)
       return { ...state, ...payload }
     },
   },

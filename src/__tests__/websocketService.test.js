@@ -71,6 +71,7 @@ describe('constructor', () => {
 
   it('connects on window focus when socket is null', () => {
     const ws = new WebSocketService('wss://example.com')
+    ws.listeners.add(vi.fn()) // _recover bails when listeners is empty
     const connectSpy = vi.spyOn(ws, 'connect')
 
     window.dispatchEvent(new Event('focus'))
@@ -81,6 +82,7 @@ describe('constructor', () => {
 
   it('reconnects on window focus when socket is CLOSED', () => {
     const ws = new WebSocketService('wss://example.com')
+    ws.listeners.add(vi.fn()) // _recover bails when listeners is empty
     ws.socket = { readyState: MockWebSocket.CLOSED }
     const connectSpy = vi.spyOn(ws, 'connect')
 

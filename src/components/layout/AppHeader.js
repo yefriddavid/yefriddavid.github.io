@@ -25,7 +25,6 @@ import {
   cilSun,
 } from '@coreui/icons'
 
-const USER_MODE_KEY = 'app-theme-mode'
 
 const getTimeBasedScheme = () => {
   const h = new Date().getHours()
@@ -38,11 +37,12 @@ import LanguageSwitcher from '../shared/LanguageSwitcher'
 import useVersionCheck from '../../hooks/useVersionCheck'
 import './AppHeader.scss'
 import { setUi } from 'src/reducers/uiReducer'
+import { uiStorage } from 'src/utils/storage'
 
 const AppHeader = () => {
   const headerRef = useRef()
   const { setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-  const [userMode, setUserMode] = useState(() => localStorage.getItem(USER_MODE_KEY) || 'auto')
+  const [userMode, setUserMode] = useState(() => uiStorage.getThemeMode())
 
   useEffect(() => {
     const apply = () => setColorMode(userMode === 'auto' ? getTimeBasedScheme() : userMode)
@@ -53,7 +53,7 @@ const AppHeader = () => {
   }, [userMode])
 
   const handleMode = (mode) => {
-    localStorage.setItem(USER_MODE_KEY, mode)
+    uiStorage.setThemeMode(mode)
     setUserMode(mode)
   }
 
@@ -87,14 +87,14 @@ const AppHeader = () => {
     const onFsChange = () => {
       const active = !!document.fullscreenElement
       setIsFullscreen(active)
-      localStorage.setItem('fullscreen', active)
+      uiStorage.setFullscreen(active)
     }
     document.addEventListener('fullscreenchange', onFsChange)
     return () => document.removeEventListener('fullscreenchange', onFsChange)
   }, [])
 
   useEffect(() => {
-    if (localStorage.getItem('fullscreen') === 'true' && !document.fullscreenElement) {
+    if (uiStorage.getFullscreen() && !document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {})
     }
   }, [])

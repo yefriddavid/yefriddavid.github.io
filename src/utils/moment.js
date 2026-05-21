@@ -1,7 +1,8 @@
 import moment from 'moment'
 import 'moment/locale/es'
+import { prefStorage } from './storage'
 
-moment.locale(localStorage.getItem('lang') || 'es')
+moment.locale(prefStorage.getLang())
 
 export default moment
 

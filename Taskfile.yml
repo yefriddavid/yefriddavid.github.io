@@ -75,6 +75,10 @@ tasks:
     desc: "Voltage history — options: --from <date> --to <date> --limit <n> --format table|json"
     cmd: npm run cli -- voltage {{.CLI_ARGS}}
 
+  cli:domotica:current:
+    desc: "Current history — options: --from <date> --to <date> --limit <n> --format table|json"
+    cmd: npm run cli -- current {{.CLI_ARGS}}
+
   cli:taxi:drivers:
     desc: "List tapsi drivers — requires --tenant <id>; optional: --inactive --format table|json"
     cmd: npm run cli -- drivers {{.CLI_ARGS}}
@@ -82,3 +86,15 @@ tasks:
   cli:taxi:vehicles:
     desc: "List tapsi vehicles — requires --tenant <id>; optional: --inactive --format table|json"
     cmd: npm run cli -- vehicles {{.CLI_ARGS}}
+
+  cli:sys:tenants:
+    desc: "List tenants — --user <u> --pass <p>; optional: --inactive --format table|json"
+    cmd: npm run cli -- sys tenants {{.CLI_ARGS}}
+
+  cli:sys:users:
+    desc: "List users — --user <u> --pass <p>; optional: --tenant <id> --inactive --format table|json"
+    cmd: npm run cli -- sys users {{.CLI_ARGS}}
+
+  cli:finance:account-status:
+    desc: "Monthly account status — requires --tenant <id>; optional: --month <1-12> --year <n> --type Incoming|Outcoming|all --user <u> --pass <p> --format table|json"
+    cmd: npm run cli -- finance account-status {{.CLI_ARGS}}

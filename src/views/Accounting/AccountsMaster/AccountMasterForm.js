@@ -51,8 +51,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
-  } = useForm({ defaultValues: initial ?? EMPTY_FORM })
+    formState: { errors, isValid },
+  } = useForm({ defaultValues: initial ?? EMPTY_FORM, mode: 'onChange' })
 
   const type = watch('type')
   const period = watch('period')
@@ -67,6 +67,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
       onCancel={onCancel}
       onSave={handleSubmit(onSave)}
       saving={saving}
+      disabled={!isValid}
     >
       <StandardField label="Nombre *">
         <input

@@ -1,12 +1,11 @@
 //import axios from 'axios'
 import { axios } from './utilApi'
-
-const token = localStorage.getItem('token')
+import { authStorage } from 'src/utils/storage'
 
 export const fetchAccounts = async (params) => {
   //try {
   const bodyFormData = new FormData()
-  bodyFormData.append('token', token)
+  bodyFormData.append('token', authStorage.getToken())
   bodyFormData.append('action', 'getAccounts')
 
   const keys = Object.keys(params)

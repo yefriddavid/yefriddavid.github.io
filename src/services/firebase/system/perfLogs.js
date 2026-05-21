@@ -1,6 +1,7 @@
 import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from 'firebase/firestore'
 import { db, COL_SYSTEM_PERF_LOGS } from '../settings'
 import { firestoreCall } from '../firebaseClient'
+import { authStorage } from 'src/utils/storage'
 
 const SLOW_THRESHOLD_MS = 2000
 
@@ -35,7 +36,7 @@ export const measureAndLog = async (label, operation) => {
         label,
         durationMs: ms,
         route: window.location.hash,
-        username: localStorage.getItem('username'),
+        username: authStorage.getUsername(),
         slow: true,
       })
     }
@@ -46,7 +47,7 @@ export const measureAndLog = async (label, operation) => {
       label,
       durationMs: ms,
       route: window.location.hash,
-      username: localStorage.getItem('username'),
+      username: authStorage.getUsername(),
       slow: ms > SLOW_THRESHOLD_MS,
       error: err?.message ?? String(err),
     })

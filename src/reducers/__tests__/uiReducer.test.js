@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import reducer, { setUi } from '../uiReducer'
 
 describe('uiReducer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
   it('returns state with known shape', () => {
     const s = reducer(undefined, { type: '@@INIT' })
     expect(typeof s.sidebarShow).toBe('boolean')
@@ -33,14 +36,14 @@ describe('uiReducer', () => {
     it('persists sidebarShow to localStorage', () => {
       const spy = vi.spyOn(localStorage, 'setItem')
       reducer(undefined, setUi({ sidebarShow: false }))
-      expect(spy).toHaveBeenCalledWith('sidebar-show', false)
+      expect(spy).toHaveBeenCalledWith('sidebar-show', 'false')
       spy.mockRestore()
     })
 
     it('persists headerShow to localStorage', () => {
       const spy = vi.spyOn(localStorage, 'setItem')
       reducer(undefined, setUi({ headerShow: false }))
-      expect(spy).toHaveBeenCalledWith('header-show', false)
+      expect(spy).toHaveBeenCalledWith('header-show', 'false')
       spy.mockRestore()
     })
 

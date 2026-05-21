@@ -36,6 +36,7 @@ const SelectApp = React.lazy(() => import('./views/selectApp/SelectApp'))
 
 import * as accountsMasterActions from './actions/cashflow/accountsMasterActions'
 import { reportError } from './services/errorReporter'
+import { authStorage } from './utils/storage'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -65,8 +66,8 @@ const App = () => {
 
   // Restore profile on page refresh when already authenticated
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const username = localStorage.getItem('username')
+    const token = authStorage.getToken()
+    const username = authStorage.getUsername()
     if (token && username) dispatch(fetchProfile(username))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

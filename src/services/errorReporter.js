@@ -1,6 +1,6 @@
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from './firebase/settings'
-import { COL_SYSTEM_ERROR_LOGS } from './firebase/settings'
+import { db, COL_SYSTEM_ERROR_LOGS } from './firebase/settings'
+import { authStorage } from 'src/utils/storage'
 
 const BUFFER_SIZE = 10
 
@@ -44,7 +44,7 @@ export async function reportError(error, context = 'unknown', extra = {}) {
       message: error?.message ?? String(error),
       stack: error?.stack ?? null,
       url: window.location.href,
-      username: localStorage.getItem('username'),
+      username: authStorage.getUsername(),
       recentActions: [...actionBuffer],
       ...safeSerialize(extra),
     })

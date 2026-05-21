@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import withRouter from '../../context/searchParamsContext'
 import { fetchProfile } from '../../actions/authActions'
 import { signIn } from '../../services/firebase/auth'
+import { authStorage } from 'src/utils/storage'
 import { checkFirebaseConnectivity } from '../../services/firebase/healthCheck'
 import { useForm } from 'react-hook-form'
 import './Login.scss'
@@ -57,6 +58,39 @@ const IconCash = () => (
     >
       ADM
     </text>
+  </svg>
+)
+
+const IconEye = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+const IconEyeOff = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+    <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
 )
 
@@ -116,6 +150,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [shake, setShake] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const shakeTimerRef = useRef(null)
 
   useEffect(() => {
@@ -159,10 +194,7 @@ const Login = () => {
         sessionId,
         token,
       } = await signIn(username.trim(), password)
-      localStorage.setItem('token', token)
-      localStorage.setItem('username', uname)
-      localStorage.setItem('landingPage', landingPage)
-      localStorage.setItem('sessionId', sessionId)
+      authStorage.setSession({ token, username: uname, landingPage, sessionId })
       if (rememberMe) {
         setCookie('username', username)
         setCookie('password', password)
@@ -234,13 +266,21 @@ const Login = () => {
                 <IconLock />
               </span>
               <input
-                className="login-page__input"
-                type="password"
+                className="login-page__input login-page__input--has-eye"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 autoComplete="current-password"
                 onKeyDown={handleKeyDown}
                 {...register('password', { required: 'Ingresa tu contraseña' })}
               />
+              <button
+                type="button"
+                className="login-page__eye-btn"
+                onClick={() => setShowPassword((v) => !v)}
+                tabIndex={-1}
+              >
+                {showPassword ? <IconEyeOff /> : <IconEye />}
+              </button>
             </div>
             {fieldError(errors.password)}
           </div>

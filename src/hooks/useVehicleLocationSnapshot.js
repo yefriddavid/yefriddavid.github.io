@@ -5,6 +5,7 @@ import { signOut } from 'firebase/auth'
 import { db, auth } from 'src/services/firebase/settings'
 import { getTenantId } from 'src/services/tenantContext'
 import * as currentPositionsActions from 'src/actions/taxi/currentPositionsActions'
+import { authStorage } from 'src/utils/storage'
 
 const COL = 'Taxi_vehicle_location_history'
 
@@ -51,10 +52,7 @@ export function useVehicleLocationSnapshot() {
         console.error('useVehicleLocationSnapshot:', error.code, error.message)
         if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
           signOut(auth).catch(() => {})
-          localStorage.removeItem('token')
-          localStorage.removeItem('username')
-          localStorage.removeItem('sessionId')
-          localStorage.removeItem('landingPage')
+          authStorage.clearSession()
           window.location.hash = '#/login'
         }
         // Transient errors (unavailable, deadline-exceeded): Firestore retries automatically

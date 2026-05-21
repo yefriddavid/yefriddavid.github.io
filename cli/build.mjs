@@ -16,7 +16,11 @@ await esbuild.build({
       name: 'vite-aliases',
       setup(build) {
         // Mirror the Vite alias: 'src/' → <root>/src/
+        // Intercept Node-unsafe modules before they reach esbuild's file resolver.
         build.onResolve({ filter: /^src\// }, async (args) => {
+          if (args.path === 'src/constants/commons') {
+            return { path: resolve(__dirname, 'shims/commons.js') }
+          }
           const result = await build.resolve('./' + args.path.slice(4), {
             resolveDir: srcRoot,
             kind: args.kind,
@@ -28,6 +32,13 @@ await esbuild.build({
         build.onResolve({ filter: /\/settings$/ }, (args) => {
           if (args.resolveDir.includes('src/services/firebase')) {
             return { path: resolve(__dirname, 'shims/settings.js') }
+          }
+        })
+
+        // Redirect relative ./commons imports (e.g. from within src/constants/)
+        build.onResolve({ filter: /\/commons$/ }, (args) => {
+          if (args.resolveDir.includes('src/constants')) {
+            return { path: resolve(__dirname, 'shims/commons.js') }
           }
         })
       },

@@ -5,6 +5,7 @@ import Spinner from '../shared/Spinner'
 import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
+import { authStorage } from 'src/utils/storage'
 import systemRoutes from '../../routes.system'
 
 const SystemContent = () => {
@@ -16,10 +17,7 @@ const SystemContent = () => {
       setFirebaseUser(user)
       if (!user) {
         dispatch(clearProfile())
-        localStorage.removeItem('token')
-        localStorage.removeItem('username')
-        localStorage.removeItem('sessionId')
-        localStorage.removeItem('landingPage')
+        authStorage.clearSession()
       }
     })
     return unsubscribe

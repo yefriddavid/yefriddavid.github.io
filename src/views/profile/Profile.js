@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { CCard, CCardHeader, CCardBody, CButton, CBadge, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
+import { authStorage } from 'src/utils/storage'
 import { changeOwnPassword } from 'src/services/firebase/security/users'
 import { LANDING_PAGES } from 'src/constants/commons'
 import {
@@ -53,7 +54,7 @@ const Profile = () => {
 
   const saveEdit = () => {
     dispatch(authActions.updateProfile({ username: profile.username, ...form }))
-    localStorage.setItem('landingPage', form.landingPage || '/finance/dashboard')
+    authStorage.setLandingPage(form.landingPage || '/finance/dashboard')
     setEditing(false)
     setForm(null)
   }

@@ -37,6 +37,10 @@ vi.mock('../../../services/firebase/auth', () => ({
   signIn: (...args) => mockSignIn(...args),
 }))
 
+vi.mock('../../../services/firebase/healthCheck', () => ({
+  checkFirebaseConnectivity: vi.fn(() => Promise.resolve(true)),
+}))
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 import { getCookie, setCookie, deleteCookie } from 'cookies-next'
@@ -46,7 +50,7 @@ const renderLogin = () => render(<Login />)
 
 const getUsername = () => screen.getByPlaceholderText('username')
 const getPassword = () => screen.getByPlaceholderText('••••••••')
-const getSubmitBtn = () => screen.getByRole('button')
+const getSubmitBtn = () => screen.getByRole('button', { name: /ingresa/i })
 const getRememberCheck = () => screen.getByRole('checkbox')
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

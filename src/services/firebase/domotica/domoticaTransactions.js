@@ -37,10 +37,11 @@ const mapDoc = (d) => {
 }
 
 export const fetchTransactionHistory = async ({ type, startDate, endDate } = {}) => {
-  const constraints = [where('type', '==', type), orderBy('createdAt', 'asc'), limit(500)]
-
-  if (startDate) constraints.push(where('createdAt', '>=', startDate))
-  if (endDate) constraints.push(where('createdAt', '<=', endDate))
+  const constraints = []
+  if (type) constraints.push(where('type', '==', type))
+  if (startDate) constraints.push(where('createdAt', '>=', Timestamp.fromDate(new Date(startDate))))
+  if (endDate) constraints.push(where('createdAt', '<=', Timestamp.fromDate(new Date(endDate))))
+  constraints.push(orderBy('createdAt', 'asc'), limit(500))
 
   const q = query(collection(db, COL_DOMOTICA_TRANSACTIONS), ...constraints)
   let data = []
@@ -49,7 +50,7 @@ export const fetchTransactionHistory = async ({ type, startDate, endDate } = {})
     data = snap.docs.map(mapDoc)
     return data
   } catch (e) {
-    console.log(e)
+    console.error('[fetchTransactionHistory]', e)
   }
   return data
 }

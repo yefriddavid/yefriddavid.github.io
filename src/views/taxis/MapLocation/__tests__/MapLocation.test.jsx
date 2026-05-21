@@ -26,7 +26,7 @@ vi.mock('../MapControls', () => ({
 }))
 
 vi.mock('src/services/websocketService', () => ({
-  taxiWebSocket: { subscribe: vi.fn(() => vi.fn()) },
+  taxiWebSocket: { subscribe: vi.fn(() => vi.fn()), onStatus: vi.fn(() => vi.fn()) },
 }))
 
 vi.mock('@coreui/icons-react', () => ({ default: () => <span /> }))
@@ -38,6 +38,8 @@ vi.mock('@coreui/icons', () => ({
   cilLocationPin: 'pin',
   cilTrash: 'trash',
   cilReload: 'reload',
+  cilChevronRight: 'chevron-right',
+  cilChevronLeft: 'chevron-left',
 }))
 vi.mock('@coreui/react', () => ({
   CCard: ({ children, className }) => <div className={className}>{children}</div>,

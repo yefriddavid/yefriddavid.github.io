@@ -5,6 +5,7 @@ import Spinner from '../shared/Spinner'
 import { useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
+import { authStorage } from 'src/utils/storage'
 import taxisRoutes from '../../routes.taxis'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
@@ -17,10 +18,7 @@ const TaxisContent = () => {
       setFirebaseUser(user)
       if (!user) {
         dispatch(clearProfile())
-        localStorage.removeItem('token')
-        localStorage.removeItem('username')
-        localStorage.removeItem('sessionId')
-        localStorage.removeItem('landingPage')
+        authStorage.clearSession()
       }
     })
     return unsubscribe

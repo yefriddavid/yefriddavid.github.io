@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { onAuthChange, signOut } from '../../services/firebase/auth'
+import { authStorage } from 'src/utils/storage'
 import { deleteSession } from '../../services/firebase/security/sessions'
 import { clearProfile } from '../../actions/authActions'
 import { useDispatch } from 'react-redux'
@@ -64,7 +65,7 @@ const SelectApp = () => {
   }, [navigate])
 
   const handleLogout = async () => {
-    const sessionId = localStorage.getItem('sessionId')
+    const sessionId = authStorage.getSessionId()
     if (sessionId) deleteSession(sessionId).catch(() => {})
     await signOut()
     dispatch(clearProfile())

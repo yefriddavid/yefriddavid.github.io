@@ -15,6 +15,7 @@ vi.mock('@coreui/react', () => ({
   CCard: ({ children }) => <div>{children}</div>,
   CCardBody: ({ children }) => <div>{children}</div>,
   CCardHeader: ({ children }) => <div>{children}</div>,
+  CCollapse: ({ visible, children }) => (visible ? <div>{children}</div> : null),
   CModal: ({ visible, children }) => (visible ? <div data-testid="modal">{children}</div> : null),
   CModalBody: ({ children }) => <div>{children}</div>,
   CModalHeader: ({ children }) => <div>{children}</div>,
@@ -268,8 +269,7 @@ describe('Transactions', () => {
   describe('transaction form modal', () => {
     it('opens create form when + Nueva transacción is clicked', () => {
       render(<Transactions />)
-      fireEvent.click(screen.getByText('+ Nueva transacción'))
-      expect(screen.getByTestId('modal')).toBeTruthy()
+      fireEvent.click(screen.getByText(/Nueva transacción/))
       expect(screen.getByTestId('transaction-form')).toBeTruthy()
     })
 
@@ -280,12 +280,12 @@ describe('Transactions', () => {
       })
       render(<Transactions />)
       fireEvent.click(screen.getByText(`Pagar ${masterA.name}`))
-      expect(screen.getByTestId('modal')).toBeTruthy()
+      expect(screen.getByTestId('transaction-form')).toBeTruthy()
     })
 
     it('dispatches createRequest and closes modal on save', () => {
       render(<Transactions />)
-      fireEvent.click(screen.getByText('+ Nueva transacción'))
+      fireEvent.click(screen.getByText(/Nueva transacción/))
       fireEvent.click(screen.getByText('Guardar'))
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'TX_CREATE' }))
       expect(screen.queryByTestId('modal')).toBeNull()
@@ -293,9 +293,9 @@ describe('Transactions', () => {
 
     it('closes modal on cancel', () => {
       render(<Transactions />)
-      fireEvent.click(screen.getByText('+ Nueva transacción'))
-      fireEvent.click(screen.getByText('Cancelar'))
-      expect(screen.queryByTestId('modal')).toBeNull()
+      fireEvent.click(screen.getByText(/Nueva transacción/))
+      fireEvent.click(screen.getAllByText('Cancelar')[0])
+      expect(screen.queryByTestId('transaction-form')).toBeNull()
     })
   })
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react'
 import { LANGUAGES } from '../../i18n'
 import moment from 'src/utils/moment'
+import { prefStorage } from 'src/utils/storage'
 import './LanguageSwitcher.scss'
 
 const LanguageSwitcher = () => {
@@ -12,7 +13,7 @@ const LanguageSwitcher = () => {
   const changeLanguage = (code) => {
     moment.locale(code)
     i18n.changeLanguage(code)
-    localStorage.setItem('lang', code)
+    prefStorage.setLang(code)
   }
 
   return (

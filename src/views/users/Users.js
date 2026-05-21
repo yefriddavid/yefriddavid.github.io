@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { authStorage } from 'src/utils/storage'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
@@ -154,7 +155,7 @@ const formatUA = (ua) => {
 
 const SessionsDetail = React.memo(({ data: user }) => {
   const dispatch = useDispatch()
-  const currentSessionId = localStorage.getItem('sessionId')
+  const currentSessionId = authStorage.getSessionId()
   const sessionsState = useSelector((s) => s.users.sessions[user.username])
   const sessions = sessionsState?.data ?? []
   const fetching = sessionsState?.fetching ?? false

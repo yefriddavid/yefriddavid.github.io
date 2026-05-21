@@ -6,6 +6,7 @@ import Spinner from '../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../actions/authActions'
 import { onAuthChange } from '../../services/firebase/auth'
+import { authStorage } from 'src/utils/storage'
 import { validateSession } from '../../services/firebase/security/sessions'
 import routes from '../../routes'
 import useNotifications from '../../hooks/useNotifications'
@@ -16,7 +17,7 @@ const AppContent = () => {
   const role = useSelector((s) => s.profile.data?.role ?? null)
   const landingPage =
     useSelector((s) => s.profile.data?.landingPage) ||
-    localStorage.getItem('landingPage') ||
+    authStorage.getLandingPage() ||
     '/finance/dashboard'
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -29,10 +30,7 @@ const AppContent = () => {
       setFirebaseUser(user)
       if (!user) {
         dispatch(clearProfile())
-        localStorage.removeItem('token')
-        localStorage.removeItem('username')
-        localStorage.removeItem('sessionId')
-        localStorage.removeItem('landingPage')
+        authStorage.clearSession()
       }
     })
     return unsubscribe
@@ -41,7 +39,7 @@ const AppContent = () => {
   // ── Validate Firestore session on auth resolve (prevents stolen sessions) ────
   useEffect(() => {
     if (!firebaseUser) return
-    const sessionId = localStorage.getItem('sessionId')
+    const sessionId = authStorage.getSessionId()
     if (!sessionId) return
     validateSession(sessionId)
       .then((valid) => {

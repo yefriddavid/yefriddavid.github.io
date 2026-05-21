@@ -13,6 +13,7 @@ import {
 } from '@coreui/react'
 import { DocsLink } from 'src/components'
 import axios from 'axios'
+import { authStorage } from 'src/utils/storage'
 
 function JsonTable() {
   const [data, setData] = useState([])
@@ -25,7 +26,7 @@ function JsonTable() {
           'https://script.google.com/macros/s/AKfycbwOS916agIRqJAsraUBueji2cWmrKCceoVkaSpxhoKvvkc0jewAeQ5ZMNA7Ks_syf7BNQ/exec'
 
         const bodyFormData = new FormData()
-        bodyFormData.append('token', localStorage.getItem('token'))
+        bodyFormData.append('token', authStorage.getToken())
         bodyFormData.append('action', 'getAccounts')
         //bodyFormData.append('year', '2024')
         //bodyFormData.append('month', '12')

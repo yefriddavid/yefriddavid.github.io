@@ -16,6 +16,7 @@
 
 import { signOut } from 'firebase/auth'
 import { auth } from './settings'
+import { authStorage } from 'src/utils/storage'
 
 // ── Error normalization ────────────────────────────────────────────────────────
 
@@ -46,10 +47,7 @@ async function handleAuthFailure() {
   } catch {
     // ignore signOut errors
   }
-  localStorage.removeItem('token')
-  localStorage.removeItem('username')
-  localStorage.removeItem('sessionId')
-  localStorage.removeItem('landingPage')
+  authStorage.clearSession()
   // Redirect to login — works with HashRouter
   window.location.hash = '#/login'
 }
@@ -89,7 +87,7 @@ export async function firestoreCall(operation, { retries = 1, label } = {}) {
       const ms = Math.round(performance.now() - start)
       if (ms > 2000 && label) {
         import('./system/perfLogs').then(({ writePerfLog }) =>
-          writePerfLog({ label, durationMs: ms, route: window.location.hash, username: localStorage.getItem('username'), slow: true })
+          writePerfLog({ label, durationMs: ms, route: window.location.hash, username: authStorage.getUsername(), slow: true })
         )
       }
       return result
@@ -115,7 +113,7 @@ export async function firestoreCall(operation, { retries = 1, label } = {}) {
   const ms = Math.round(performance.now() - start)
   if (label) {
     import('./system/perfLogs').then(({ writePerfLog }) =>
-      writePerfLog({ label, durationMs: ms, route: window.location.hash, username: localStorage.getItem('username'), slow: ms > 2000, error: lastErr?.message })
+      writePerfLog({ label, durationMs: ms, route: window.location.hash, username: authStorage.getUsername(), slow: ms > 2000, error: lastErr?.message })
     )
   }
   throw normalizeError(lastErr)

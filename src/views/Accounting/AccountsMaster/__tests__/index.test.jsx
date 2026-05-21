@@ -17,13 +17,14 @@ vi.mock('@coreui/react', () => ({
   CCard: ({ children, className }) => <div className={className}>{children}</div>,
   CCardBody: ({ children }) => <div>{children}</div>,
   CCardHeader: ({ children }) => <div>{children}</div>,
+  CCollapse: ({ visible, children }) => (visible ? <div>{children}</div> : null),
   CModal: ({ visible, children }) => (visible ? <div data-testid="modal">{children}</div> : null),
   CModalBody: ({ children }) => <div>{children}</div>,
   CModalHeader: ({ children }) => <div>{children}</div>,
   CModalTitle: ({ children }) => <div>{children}</div>,
 }))
 
-vi.mock('devextreme-react/data-grid', () => ({ Column: () => null }))
+vi.mock('devextreme-react/data-grid', () => ({ Column: () => null, MasterDetail: () => null }))
 
 vi.mock('src/components/shared/StandardGrid/Index', () => ({
   default: ({ dataSource }) => (
@@ -218,30 +219,29 @@ describe('AccountsMaster', () => {
   describe('create', () => {
     it('opens form modal when + Nueva cuenta is clicked', () => {
       render(<AccountsMaster />)
-      fireEvent.click(screen.getByText('+ Nueva cuenta'))
-      expect(screen.getByTestId('modal')).toBeTruthy()
+      fireEvent.click(screen.getByText(/Nueva cuenta/))
       expect(screen.getByTestId('account-master-form')).toBeTruthy()
     })
 
     it('dispatches createRequest on form save', () => {
       render(<AccountsMaster />)
-      fireEvent.click(screen.getByText('+ Nueva cuenta'))
+      fireEvent.click(screen.getByText(/Nueva cuenta/))
       fireEvent.click(screen.getByText('Guardar'))
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'MASTER_CREATE' }))
     })
 
     it('closes modal after save', () => {
       render(<AccountsMaster />)
-      fireEvent.click(screen.getByText('+ Nueva cuenta'))
+      fireEvent.click(screen.getByText(/Nueva cuenta/))
       fireEvent.click(screen.getByText('Guardar'))
       expect(screen.queryByTestId('modal')).toBeNull()
     })
 
     it('closes modal on cancel', () => {
       render(<AccountsMaster />)
-      fireEvent.click(screen.getByText('+ Nueva cuenta'))
-      fireEvent.click(screen.getByText('Cancelar'))
-      expect(screen.queryByTestId('modal')).toBeNull()
+      fireEvent.click(screen.getByText(/Nueva cuenta/))
+      fireEvent.click(screen.getAllByText('Cancelar')[0])
+      expect(screen.queryByTestId('account-master-form')).toBeNull()
     })
   })
 
