@@ -183,9 +183,8 @@ const DriverListView = ({ records, vehicles, onEdit, onDelete, onToggleActive })
       {paged.map((driver) => {
         const active = driver.active !== false
         const vehicle = (vehicles ?? []).find((v) => v.plate === driver.defaultVehicle)
-        const vehicleLabel = vehicle
-          ? `${vehicle.plate}${vehicle.brand ? ` · ${vehicle.brand}` : ''}`
-          : driver.defaultVehicle || null
+        const vehiclePlate = vehicle?.plate ?? driver.defaultVehicle ?? null
+        const vehicleBrand = vehicle?.brand ?? null
 
         return (
           <li key={driver.id} className={`driver-list__item${active ? '' : ' driver-list__item--inactive'}`}>
@@ -207,11 +206,20 @@ const DriverListView = ({ records, vehicles, onEdit, onDelete, onToggleActive })
               </div>
             </div>
             <div className="driver-list__meta">
-              {driver.idNumber && <span>CC {driver.idNumber}</span>}
-              {driver.phone && <span><span className="driver-list__meta-label">Cel </span>{driver.phone}</span>}
-              {vehicleLabel && <span className="driver-list__plate">{vehicleLabel}</span>}
+              {(driver.idNumber || driver.phone) && (
+                <div className="driver-list__meta-row">
+                  {driver.idNumber && <span>CC {driver.idNumber}</span>}
+                  {driver.phone && <span><span className="driver-list__meta-label">Cel </span>{driver.phone}</span>}
+                </div>
+              )}
+              {vehiclePlate && (
+                <div className="driver-list__meta-row">
+                  <span className="driver-list__plate">{vehiclePlate}</span>
+                  {vehicleBrand && <span className="driver-list__brand">{vehicleBrand}</span>}
+                </div>
+              )}
               {(driver.defaultAmount > 0 || driver.defaultAmountSunday > 0) && (
-                <span className="driver-list__amounts">
+                <div className="driver-list__meta-row">
                   {driver.defaultAmount > 0 && (
                     <span>
                       <span className="driver-list__meta-label">Liq </span>
@@ -224,7 +232,7 @@ const DriverListView = ({ records, vehicles, onEdit, onDelete, onToggleActive })
                       {fmt(driver.defaultAmountSunday)}
                     </span>
                   )}
-                </span>
+                </div>
               )}
             </div>
           </li>

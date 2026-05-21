@@ -260,12 +260,16 @@
 
   &__meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px 10px;
+    flex-direction: column;
+    gap: 2px;
     font-size: 11px;
     color: var(--cui-secondary-color);
+  }
 
-    > span { white-space: nowrap; }
+  &__meta-row {
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
   }
 
   &__plate {
@@ -274,10 +278,8 @@
     color: var(--cui-body-color);
   }
 
-  &__amounts {
-    display: inline-flex;
-    gap: 10px;
-    white-space: nowrap;
+  &__brand {
+    color: var(--cui-secondary-color);
   }
 
   &__meta-label {
