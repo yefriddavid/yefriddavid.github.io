@@ -19,28 +19,18 @@ import {
   CFormCheck,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX, cilTrash, cilBell } from '@coreui/icons'
+import { cilPlus, cilX, cilTrash, cilBell, cilPencil } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
-import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
+import useIsMobile from 'src/hooks/useIsMobile'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
 const MONTHS = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
 const EMPTY = { plate: '', brand: '', model: '', year: '', active: true }
@@ -124,9 +114,130 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
   )
 }
 
+const VehicleCardList = ({ records, driversByPlateMap, onEdit, onDelete, onToggleActive, onOpenRestrictions }) => {
+  if (records.length === 0) {
+    return (
+      <div
+        style={{
+          padding: '32px 0',
+          textAlign: 'center',
+          color: 'var(--cui-secondary-color)',
+          fontSize: 13,
+        }}
+      >
+        Sin vehículos registrados.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
+      {records.map((vehicle) => {
+        const active = vehicle.active !== false
+        const drivers = driversByPlateMap[vehicle.plate] ?? []
+        const ppSummary = currentMonthSummary(vehicle.restrictions)
+
+        return (
+          <div
+            key={vehicle.id}
+            style={{
+              border: '1px solid var(--cui-border-color)',
+              borderRadius: 10,
+              padding: '12px 14px',
+              background: 'var(--cui-body-bg)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              opacity: active ? 1 : 0.65,
+            }}
+          >
+            {/* plate + status */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, letterSpacing: 1 }}>
+                {vehicle.plate}
+              </span>
+              <CBadge color={active ? 'success' : 'danger'} style={{ fontSize: 10 }}>
+                {active ? 'Activo' : 'Inactivo'}
+              </CBadge>
+            </div>
+
+            {/* brand / model / year */}
+            {(vehicle.brand || vehicle.model || vehicle.year) && (
+              <div style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
+                {[vehicle.brand, vehicle.model, vehicle.year].filter(Boolean).join(' · ')}
+              </div>
+            )}
+
+            {/* drivers */}
+            {drivers.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {drivers.map((name) => (
+                  <CBadge key={name} color="info" style={{ fontWeight: 400 }}>
+                    {name}
+                  </CBadge>
+                ))}
+              </div>
+            )}
+
+            {/* pico y placa this month */}
+            {ppSummary !== '—' && (
+              <div style={{ fontSize: 11, color: '#e67700', fontWeight: 600 }}>
+                📅 P&P este mes: {ppSummary}
+              </div>
+            )}
+
+            {/* actions */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+              <button
+                onClick={() => onToggleActive(vehicle)}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  borderRadius: 4,
+                  padding: '4px 10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: active ? '#d1fae5' : '#fee2e2',
+                  color: active ? '#065f46' : '#991b1b',
+                }}
+              >
+                {active ? '✓ Activo' : '✗ Inactivo'}
+              </button>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button
+                  onClick={() => onOpenRestrictions(vehicle)}
+                  style={{ background: 'none', border: 'none', color: '#e67700', cursor: 'pointer', padding: '4px 8px', fontSize: 15 }}
+                  title="Pico y placa"
+                >
+                  📅
+                </button>
+                <button
+                  onClick={() => onEdit(vehicle)}
+                  style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '4px 8px' }}
+                  title="Editar"
+                >
+                  <CIcon icon={cilPencil} size="sm" />
+                </button>
+                <button
+                  onClick={() => onDelete(vehicle.id)}
+                  style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '4px 8px' }}
+                  title="Eliminar"
+                >
+                  <CIcon icon={cilTrash} size="sm" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 const Vehiculos = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const { data: records, fetching } = useSelector((s) => s.taxiVehicle)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
   const gridRef = useRef()
@@ -144,32 +255,31 @@ const Vehiculos = () => {
   }, [dispatch])
 
   const handleCreate = (form) => {
-    if (!form.plate || !form.brand) return
     dispatch(taxiVehicleActions.createRequest(form))
-    dispatch(pushNotification({ type: 'success', message: 'Vehículo creado correctamente.' }))
     setShowCreate(false)
   }
 
   useEffect(() => {
-    if (editingRow) {
+    if (editingRow && !isMobile) {
       gridRef.current?.instance()?.expandRow(editingRow.id)
     }
-  }, [editingRow])
+  }, [editingRow, isMobile])
 
-  const handleEdit = (row) => {
-    setEditingRow(row)
-  }
+  const handleEdit = (row) => setEditingRow(row)
 
   const handleEditSave = (form) => {
     dispatch(taxiVehicleActions.updateRequest({ id: editingRow.id, ...form }))
-    dispatch(pushNotification({ type: 'success', message: 'Vehículo actualizado correctamente.' }))
-    gridRef.current?.instance()?.collapseRow(editingRow.id)
+    if (!isMobile) gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
   }
 
   const handleEditCancel = () => {
-    gridRef.current?.instance()?.collapseRow(editingRow.id)
+    if (!isMobile) gridRef.current?.instance()?.collapseRow(editingRow.id)
     setEditingRow(null)
+  }
+
+  const handleToggleActive = (vehicle) => {
+    dispatch(taxiVehicleActions.updateRequest({ ...vehicle, active: !(vehicle.active !== false) }))
   }
 
   const handleDelete = (id) => {
@@ -216,12 +326,7 @@ const Vehiculos = () => {
         { d1: v.d1 ? Number(v.d1) : null, d2: v.d2 ? Number(v.d2) : null },
       ]),
     )
-    dispatch(
-      taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: clean }),
-    )
-    dispatch(
-      pushNotification({ type: 'success', message: 'Restricciones guardadas correctamente.' }),
-    )
+    dispatch(taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: clean }))
     setRestrictSaving(false)
     setRestrictModal(null)
   }
@@ -300,7 +405,7 @@ const Vehiculos = () => {
           </div>
         </CCardHeader>
 
-        <CCollapse visible={showCreate}>
+        <CCollapse visible={!isMobile && showCreate}>
           <div className="master-form-panel">
             <VehicleForm
               initial={EMPTY}
@@ -317,6 +422,15 @@ const Vehiculos = () => {
             <div className="d-flex justify-content-center py-5">
               <Spinner color="primary" />
             </div>
+          ) : isMobile ? (
+            <VehicleCardList
+              records={rows}
+              driversByPlateMap={driversByPlateMap}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggleActive={handleToggleActive}
+              onOpenRestrictions={openRestrictModal}
+            />
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
               <Column dataField="plate" caption={t('taxis.vehicles.fields.plate')} />
@@ -407,11 +521,7 @@ const Vehiculos = () => {
                   ) : (
                     <DetailPanel columns={2}>
                       <DetailSection title={t('taxis.drivers.fields.personalData')}>
-                        <DetailRow
-                          label={t('taxis.vehicles.fields.plate')}
-                          value={data.plate}
-                          mono
-                        />
+                        <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
                         <DetailRow
                           label={t('taxis.vehicles.fields.status')}
                           value={
@@ -449,6 +559,45 @@ const Vehiculos = () => {
         </CCardBody>
       </CCard>
 
+      {/* Create modal — mobile */}
+      {isMobile && showCreate && (
+        <CModal visible onClose={() => setShowCreate(false)} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Nuevo vehículo</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <VehicleForm
+              initial={EMPTY}
+              title=""
+              onSave={handleCreate}
+              onCancel={() => setShowCreate(false)}
+              saving={fetching}
+            />
+          </CModalBody>
+        </CModal>
+      )}
+
+      {/* Edit modal — mobile */}
+      {isMobile && editingRow && (
+        <CModal visible onClose={handleEditCancel} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Editar vehículo</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <VehicleForm
+              key={editingRow.id}
+              initial={editingRow}
+              title=""
+              subtitle={editingRow.plate}
+              onSave={handleEditSave}
+              onCancel={handleEditCancel}
+              saving={fetching}
+            />
+          </CModalBody>
+        </CModal>
+      )}
+
+      {/* Pico y placa modal */}
       <CModal visible={!!restrictModal} onClose={() => setRestrictModal(null)} size="lg">
         <CModalHeader>
           <CModalTitle>Pico y placa — {restrictModal?.plate}</CModalTitle>
@@ -467,13 +616,7 @@ const Vehiculos = () => {
             onCellValueChanged={onRestrictCellChanged}
           >
             <Paging enabled={false} />
-            <Column
-              dataField="name"
-              caption="Mes"
-              width={140}
-              allowSorting={false}
-              allowEditing={false}
-            />
+            <Column dataField="name" caption="Mes" width={140} allowSorting={false} allowEditing={false} />
             <Column
               dataField="d1"
               caption="Día 1"
@@ -491,20 +634,10 @@ const Vehiculos = () => {
           </StandardGrid>
         </CModalBody>
         <CModalFooter>
-          <CButton
-            color="secondary"
-            variant="outline"
-            size="sm"
-            onClick={() => setRestrictModal(null)}
-          >
+          <CButton color="secondary" variant="outline" size="sm" onClick={() => setRestrictModal(null)}>
             Cancelar
           </CButton>
-          <CButton
-            color="primary"
-            size="sm"
-            disabled={restrictSaving}
-            onClick={handleSaveRestrictions}
-          >
+          <CButton color="primary" size="sm" disabled={restrictSaving} onClick={handleSaveRestrictions}>
             {restrictSaving ? <Spinner size="sm" /> : 'Guardar'}
           </CButton>
         </CModalFooter>

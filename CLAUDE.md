@@ -127,7 +127,53 @@ Dual backend:
 2. **Firebase Firestore** — Primary data store for all modules. Config in `src/services/providers/firebase/settings.js`. Exports: `db` (Firestore), `auth` (Firebase Auth), `messaging` (FCM).
 
 ### Layout
-`DefaultLayout` (`src/layout/DefaultLayout.js`) wraps all authenticated pages with `AppSidebar + AppHeader + AppContent + AppFooter`. Public pages (login, register, 404) render outside this layout.
+
+The app has multiple layouts, each handling its own section. All are registered in `src/App.js`:
+
+| Layout | Route prefix | File |
+|---|---|---|
+| `DefaultLayout` | `/*` (catch-all) | `src/layout/DefaultLayout.js` |
+| `TaxisLayout` | `/taxis/*` | `src/layout/TaxisLayout.js` |
+| `DomoticaLayout` | `/domotica/*` | `src/layout/DomoticaLayout.js` |
+| `SystemLayout` | `/system/*` | `src/layout/SystemLayout.js` |
+
+Public pages (login, register, 404) render outside any layout.
+
+#### RULE: Every layout must include `NotificationToaster`
+
+`src/components/shared/NotificationToaster.js` reads from `state.notifications` and renders toasts. It must be mounted in **every** layout — if it is missing from a layout, toasts will never appear on any page served by that layout.
+
+```js
+import NotificationToaster from '../components/shared/NotificationToaster'
+// inside return:
+<NotificationToaster />
+```
+
+#### RULE: Toast notifications must be dispatched from sagas, not from views
+
+Dispatching `push` (from `notificationsSlice`) directly in a view handler fires before the async operation completes, so the toast shows even on failure and the timing races with React's re-render cycle. Always dispatch from the saga **after** the service call resolves:
+
+```js
+// ✅ Correct — dispatched from saga after Firestore confirms
+import { push as notify } from '../../reducers/notificationsSlice'
+
+export function* createSomething({ payload }) {
+  try {
+    yield call(service.create, payload)
+    yield put(successAction(payload))
+    yield put(notify({ type: 'success', message: 'Creado correctamente.' }))
+  } catch (e) {
+    yield put(errorAction(e.message))
+    yield put(notify({ type: 'error', message: `Error: ${e.message}` }))
+  }
+}
+
+// ❌ Wrong — dispatched from view before saga completes
+const handleCreate = (form) => {
+  dispatch(createRequest(form))
+  dispatch(push({ type: 'success', message: '...' })) // fires before Firestore responds
+}
+```
 
 ### Styling
 SCSS with CoreUI variables. Custom overrides in `src/scss/_custom.scss` and `src/scss/_variables.scss`. Prettier enforces: no semicolons, single quotes, trailing commas, 100-char line width, 2-space indent.
