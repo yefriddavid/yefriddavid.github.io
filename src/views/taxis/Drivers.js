@@ -163,25 +163,24 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
   )
 }
 
-const DriverCardList = ({ records, vehicles, onEdit, onDelete, onToggleActive }) => {
+const MOBILE_PAGE_SIZE = 10
+
+const DriverListView = ({ records, vehicles, onEdit, onDelete, onToggleActive }) => {
+  const [page, setPage] = useState(0)
+
+  const totalPages = Math.ceil(records.length / MOBILE_PAGE_SIZE)
+  const paged = records.slice(page * MOBILE_PAGE_SIZE, (page + 1) * MOBILE_PAGE_SIZE)
+
   if (records.length === 0) {
     return (
-      <div
-        style={{
-          padding: '32px 0',
-          textAlign: 'center',
-          color: 'var(--cui-secondary-color)',
-          fontSize: 13,
-        }}
-      >
-        Sin conductores aún.
-      </div>
+      <div className="driver-list__empty">Sin conductores aún.</div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
-      {records.map((driver) => {
+    <>
+    <ul className="driver-list">
+      {paged.map((driver) => {
         const active = driver.active !== false
         const vehicle = (vehicles ?? []).find((v) => v.plate === driver.defaultVehicle)
         const vehicleLabel = vehicle
@@ -189,96 +188,71 @@ const DriverCardList = ({ records, vehicles, onEdit, onDelete, onToggleActive })
           : driver.defaultVehicle || null
 
         return (
-          <div
-            key={driver.id}
-            style={{
-              border: '1px solid var(--cui-border-color)',
-              borderRadius: 10,
-              padding: '12px 14px',
-              background: 'var(--cui-body-bg)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
-              opacity: active ? 1 : 0.65,
-            }}
-          >
-            {/* name + status */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--cui-body-color)' }}>
-                {driver.name}
-              </span>
-              <CBadge color={active ? 'success' : 'danger'} style={{ fontSize: 10 }}>
-                {active ? 'Activo' : 'Inactivo'}
-              </CBadge>
-            </div>
-
-            {/* meta */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: 12, color: 'var(--cui-secondary-color)' }}>
-              {driver.idNumber && <span>CC {driver.idNumber}</span>}
-              {driver.phone && <span>📞 {driver.phone}</span>}
-              {vehicleLabel && (
-                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--cui-body-color)' }}>
-                  {vehicleLabel}
-                </span>
-              )}
-            </div>
-
-            {/* amounts */}
-            {(driver.defaultAmount || driver.defaultAmountSunday) && (
-              <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-                {driver.defaultAmount > 0 && (
-                  <span>
-                    <span style={{ color: 'var(--cui-secondary-color)' }}>Liq: </span>
-                    <strong>{fmt(driver.defaultAmount)}</strong>
-                  </span>
-                )}
-                {driver.defaultAmountSunday > 0 && (
-                  <span>
-                    <span style={{ color: 'var(--cui-secondary-color)' }}>Dom: </span>
-                    <strong>{fmt(driver.defaultAmountSunday)}</strong>
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* actions */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-              <button
-                onClick={() => onToggleActive(driver)}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  borderRadius: 4,
-                  padding: '4px 10px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: active ? '#d1fae5' : '#fee2e2',
-                  color: active ? '#065f46' : '#991b1b',
-                }}
-              >
-                {active ? '✓ Activo' : '✗ Inactivo'}
-              </button>
-              <div style={{ display: 'flex', gap: 4 }}>
+          <li key={driver.id} className={`driver-list__item${active ? '' : ' driver-list__item--inactive'}`}>
+            <div className="driver-list__top">
+              <span className="driver-list__name">{driver.name}</span>
+              <div className="driver-list__controls">
                 <button
-                  onClick={() => onEdit(driver)}
-                  style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '4px 8px', fontSize: 16 }}
-                  title="Editar"
+                  className={`driver-list__status${active ? ' driver-list__status--active' : ' driver-list__status--inactive'}`}
+                  onClick={() => onToggleActive(driver)}
                 >
+                  {active ? 'Activo' : 'Inactivo'}
+                </button>
+                <button className="master-btn master-btn--primary" onClick={() => onEdit(driver)} title="Editar">
                   <CIcon icon={cilPencil} size="sm" />
                 </button>
-                <button
-                  onClick={() => onDelete(driver.id)}
-                  style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '4px 8px' }}
-                  title="Eliminar"
-                >
+                <button className="master-btn master-btn--danger" onClick={() => onDelete(driver.id)} title="Eliminar">
                   <CIcon icon={cilTrash} size="sm" />
                 </button>
               </div>
             </div>
-          </div>
+            <div className="driver-list__meta">
+              {driver.idNumber && <span>CC {driver.idNumber}</span>}
+              {driver.phone && <span><span className="driver-list__meta-label">Cel </span>{driver.phone}</span>}
+              {vehicleLabel && <span className="driver-list__plate">{vehicleLabel}</span>}
+              {(driver.defaultAmount > 0 || driver.defaultAmountSunday > 0) && (
+                <span className="driver-list__amounts">
+                  {driver.defaultAmount > 0 && (
+                    <span>
+                      <span className="driver-list__meta-label">Liq </span>
+                      {fmt(driver.defaultAmount)}
+                    </span>
+                  )}
+                  {driver.defaultAmountSunday > 0 && (
+                    <span>
+                      <span className="driver-list__meta-label">Dom </span>
+                      {fmt(driver.defaultAmountSunday)}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+          </li>
         )
       })}
-    </div>
+    </ul>
+    {totalPages > 1 && (
+      <div className="driver-list__pagination">
+        <button
+          className="driver-list__page-btn"
+          onClick={() => setPage((p) => p - 1)}
+          disabled={page === 0}
+        >
+          ‹
+        </button>
+        <span className="driver-list__page-info">
+          {page + 1} / {totalPages}
+        </span>
+        <button
+          className="driver-list__page-btn"
+          onClick={() => setPage((p) => p + 1)}
+          disabled={page >= totalPages - 1}
+        >
+          ›
+        </button>
+      </div>
+    )}
+    </>
   )
 }
 
@@ -378,7 +352,7 @@ const Conductores = () => {
             <Spinner color="primary" />
           </div>
         ) : isMobile ? (
-          <DriverCardList
+          <DriverListView
             records={rows}
             vehicles={vehicles}
             onEdit={handleEdit}

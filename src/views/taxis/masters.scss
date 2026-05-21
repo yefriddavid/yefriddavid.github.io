@@ -197,3 +197,134 @@
   color: var(--cui-secondary-color);
   font-size: 14px;
 }
+
+.driver-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &__empty {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--cui-secondary-color);
+    font-size: 13px;
+  }
+
+  &__item {
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--cui-border-color);
+
+    &:last-child { border-bottom: none; }
+    &--inactive { opacity: 0.55; }
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+
+  &__name {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cui-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  &__status {
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 2px 7px;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 4px;
+
+    &--active  { background: #d1fae5; color: #065f46; }
+    &--inactive { background: #fee2e2; color: #991b1b; }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+    font-size: 11px;
+    color: var(--cui-secondary-color);
+
+    > span { white-space: nowrap; }
+  }
+
+  &__plate {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--cui-body-color);
+  }
+
+  &__amounts {
+    display: inline-flex;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  &__meta-label {
+    font-weight: 400;
+    color: var(--cui-secondary-color);
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--cui-border-color);
+    margin-top: 2px;
+  }
+
+  &__page-btn {
+    background: none;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--cui-body-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    &:not(:disabled):active {
+      background: var(--cui-border-color);
+    }
+  }
+
+  &__page-info {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cui-secondary-color);
+    min-width: 48px;
+    text-align: center;
+  }
+}
