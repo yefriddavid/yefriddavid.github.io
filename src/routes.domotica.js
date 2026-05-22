@@ -13,31 +13,37 @@ const domoticaRoutes = [
   {
     path: '/domotica/home',
     name: 'Home',
+    tKey: 'nav.domoticaHome',
     element: DomoticaHome,
   },
   {
     path: '/domotica/solar',
-    name: 'Panel Solar',
+    name: 'Solar Panel',
+    tKey: 'nav.solar',
     element: SolarPanel,
   },
   {
     path: '/domotica/devices',
-    name: 'Dispositivos',
+    name: 'Devices',
+    tKey: 'nav.devices',
     element: Devices,
   },
   {
     path: '/domotica/serial',
-    name: 'Consola Serial',
+    name: 'Serial Console',
+    tKey: 'nav.serial',
     element: SerialConsole,
   },
   {
     path: '/domotica/commands',
-    name: 'Diccionario de Comandos',
+    name: 'Command Dictionary',
+    tKey: 'nav.commands',
     element: CommandDictionary,
   },
   {
     path: '/domotica/cleanup',
-    name: 'Limpieza',
+    name: 'Cleanup',
+    tKey: 'nav.cleanup',
     element: Cleanup,
   },
 ]

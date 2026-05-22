@@ -9,7 +9,7 @@ const TaxisLayout = () => {
   document.title = 'Gestión de Taxis'
 
   return (
-    <div className="app-layout">
+    <div className="app-layout app-layout--taxis">
       <TaxisSidebar />
       <div className="app-layout__content d-flex flex-column min-vh-100">
         <AppHeader />

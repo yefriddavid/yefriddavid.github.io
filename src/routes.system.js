@@ -14,41 +14,49 @@ const systemRoutes = [
   {
     path: '/system/users',
     name: 'Users',
+    tKey: 'nav.users',
     element: Users,
   },
   {
     path: '/system/settings',
     name: 'Settings',
+    tKey: 'nav.settings',
     element: AppSettings,
   },
   {
     path: '/system/tenants',
     name: 'Tenants',
+    tKey: 'nav.tenants',
     element: Tenants,
   },
   {
     path: '/system/push-subscribers',
     name: 'Push Subscribers',
+    tKey: 'nav.pushSubscribers',
     element: PushSubscribers,
   },
   {
     path: '/system/visits',
     name: 'Visits',
+    tKey: 'nav.visits',
     element: Visits,
   },
   {
     path: '/system/error-logs',
     name: 'Error Logs',
+    tKey: 'nav.errorLogs',
     element: ErrorLogsPage,
   },
   {
     path: '/system/audit-logs',
     name: 'Audit Logs',
+    tKey: 'nav.auditLogs',
     element: AuditLogsPage,
   },
   {
     path: '/system/perf-logs',
     name: 'Performance',
+    tKey: 'nav.perfLogs',
     element: PerfLogsPage,
   },
 ]

@@ -8,7 +8,7 @@ const SystemLayout = () => {
   document.title = 'System'
 
   return (
-    <div className="app-layout">
+    <div className="app-layout app-layout--system">
       <SystemSidebar />
       <div className="app-layout__content d-flex flex-column min-vh-100">
         <AppHeader />

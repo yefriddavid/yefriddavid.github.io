@@ -8,7 +8,7 @@ const DomoticaLayout = () => {
   document.title = 'Domótica'
 
   return (
-    <div className="app-layout">
+    <div className="app-layout app-layout--domotica">
       <DomoticaSidebar />
       <div className="app-layout__content d-flex flex-column min-vh-100">
         <AppHeader />

@@ -13,7 +13,7 @@ const DefaultLayout = () => {
   const headerShow = useSelector((s) => s.ui.headerShow)
 
   return (
-    <div className="app-layout">
+    <div className="app-layout app-layout--finance">
       <AppSidebar />
       <div className="app-layout__content d-flex flex-column min-vh-100">
         {headerShow && <AppHeader />}
