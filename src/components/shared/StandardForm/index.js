@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import Spinner from './Spinner'
-import '../../views/movements/payments/ItemDetail.scss'
+import Spinner from '../Spinner'
+import '../../../views/movements/payments/ItemDetail.scss'
 
 // CSS class helpers for inputs inside StandardField
 export const SF = {

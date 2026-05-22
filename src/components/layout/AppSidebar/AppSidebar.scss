@@ -1,5 +1,5 @@
-@import '../../scss/variables';
-@import '../../scss/custom'; // To get access to app-theme mixin if I want to reuse it, but it might be better to just move the styles.
+@import '../../../scss/variables';
+@import '../../../scss/custom'; // To get access to app-theme mixin if I want to reuse it, but it might be better to just move the styles.
 
 // ── App accent colors (change here to retheme each sidebar) ──────────
 $taxis-accent:    #ffc107;

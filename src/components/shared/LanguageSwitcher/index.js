@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react'
-import { LANGUAGES } from '../../i18n'
+import { LANGUAGES } from '../../../i18n'
 import moment from 'src/utils/moment'
 import { prefStorage } from 'src/utils/storage'
 import './LanguageSwitcher.scss'

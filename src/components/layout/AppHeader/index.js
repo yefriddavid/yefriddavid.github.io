@@ -31,10 +31,10 @@ const getTimeBasedScheme = () => {
   return h >= 6 && h < 19 ? 'light' : 'dark'
 }
 
-import { AppBreadcrumb } from '../index'
-import AppHeaderDropdown from './AppHeaderDropdown'
-import LanguageSwitcher from '../shared/LanguageSwitcher'
-import useVersionCheck from '../../hooks/useVersionCheck'
+import { AppBreadcrumb } from '../../index'
+import AppHeaderDropdown from '../AppHeaderDropdown'
+import LanguageSwitcher from '../../shared/LanguageSwitcher'
+import useVersionCheck from '../../../hooks/useVersionCheck'
 import './AppHeader.scss'
 import { setUi } from 'src/reducers/uiReducer'
 import { uiStorage } from 'src/utils/storage'

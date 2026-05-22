@@ -17,7 +17,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash, cilPencil } from '@coreui/icons'
-import StandardList, { SL } from 'src/components/shared/StandardList'
+import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import { useForm } from 'react-hook-form'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'

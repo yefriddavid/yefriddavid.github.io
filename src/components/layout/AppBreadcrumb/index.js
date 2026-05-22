@@ -2,7 +2,7 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-import routes from '../../routes'
+import routes from '../../../routes'
 
 import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
 

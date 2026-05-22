@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail, Paging } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import {
   CCard,
   CCardHeader,
@@ -114,125 +115,6 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
   )
 }
 
-const VehicleCardList = ({ records, driversByPlateMap, onEdit, onDelete, onToggleActive, onOpenRestrictions }) => {
-  if (records.length === 0) {
-    return (
-      <div
-        style={{
-          padding: '32px 0',
-          textAlign: 'center',
-          color: 'var(--cui-secondary-color)',
-          fontSize: 13,
-        }}
-      >
-        Sin vehículos registrados.
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
-      {records.map((vehicle) => {
-        const active = vehicle.active !== false
-        const drivers = driversByPlateMap[vehicle.plate] ?? []
-        const ppSummary = currentMonthSummary(vehicle.restrictions)
-
-        return (
-          <div
-            key={vehicle.id}
-            style={{
-              border: '1px solid var(--cui-border-color)',
-              borderRadius: 10,
-              padding: '12px 14px',
-              background: 'var(--cui-body-bg)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
-              opacity: active ? 1 : 0.65,
-            }}
-          >
-            {/* plate + status */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, letterSpacing: 1 }}>
-                {vehicle.plate}
-              </span>
-              <CBadge color={active ? 'success' : 'danger'} style={{ fontSize: 10 }}>
-                {active ? 'Activo' : 'Inactivo'}
-              </CBadge>
-            </div>
-
-            {/* brand / model / year */}
-            {(vehicle.brand || vehicle.model || vehicle.year) && (
-              <div style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
-                {[vehicle.brand, vehicle.model, vehicle.year].filter(Boolean).join(' · ')}
-              </div>
-            )}
-
-            {/* drivers */}
-            {drivers.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {drivers.map((name) => (
-                  <CBadge key={name} color="info" style={{ fontWeight: 400 }}>
-                    {name}
-                  </CBadge>
-                ))}
-              </div>
-            )}
-
-            {/* pico y placa this month */}
-            {ppSummary !== '—' && (
-              <div style={{ fontSize: 11, color: '#e67700', fontWeight: 600 }}>
-                📅 P&P este mes: {ppSummary}
-              </div>
-            )}
-
-            {/* actions */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-              <button
-                onClick={() => onToggleActive(vehicle)}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  borderRadius: 4,
-                  padding: '4px 10px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: active ? '#d1fae5' : '#fee2e2',
-                  color: active ? '#065f46' : '#991b1b',
-                }}
-              >
-                {active ? '✓ Activo' : '✗ Inactivo'}
-              </button>
-              <div style={{ display: 'flex', gap: 4 }}>
-                <button
-                  onClick={() => onOpenRestrictions(vehicle)}
-                  style={{ background: 'none', border: 'none', color: '#e67700', cursor: 'pointer', padding: '4px 8px', fontSize: 15 }}
-                  title="Pico y placa"
-                >
-                  📅
-                </button>
-                <button
-                  onClick={() => onEdit(vehicle)}
-                  style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '4px 8px' }}
-                  title="Editar"
-                >
-                  <CIcon icon={cilPencil} size="sm" />
-                </button>
-                <button
-                  onClick={() => onDelete(vehicle.id)}
-                  style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '4px 8px' }}
-                  title="Eliminar"
-                >
-                  <CIcon icon={cilTrash} size="sm" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 const Vehiculos = () => {
   const { t } = useTranslation()
@@ -423,13 +305,34 @@ const Vehiculos = () => {
               <Spinner color="primary" />
             </div>
           ) : isMobile ? (
-            <VehicleCardList
-              records={rows}
-              driversByPlateMap={driversByPlateMap}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleActive={handleToggleActive}
-              onOpenRestrictions={openRestrictModal}
+            <StandardCard
+              
+              data={rows}
+              keyExpr="id"
+              emptyText="Sin vehículos registrados."
+              inactive={(v) => v.active === false}
+              renderTitle={(v) => <span className={SC.mono}>{v.plate}</span>}
+              renderBadge={(v) => ({
+                label: v.active !== false ? 'Activo' : 'Inactivo',
+                variant: v.active !== false ? 'active' : 'inactive',
+                onClick: () => handleToggleActive(v),
+              })}
+              renderRows={(v) => {
+                const drivers = driversByPlateMap[v.plate] ?? []
+                const ppSummary = currentMonthSummary(v.restrictions)
+                return [
+                  [[v.brand, v.model, v.year].filter(Boolean).join(' · ') || false],
+                  drivers.length > 0 && drivers.map((name) => (
+                    <CBadge key={name} color="info" style={{ fontWeight: 400, marginRight: 4 }}>{name}</CBadge>
+                  )),
+                  [ppSummary !== '—' && <span style={{ color: '#e67700', fontWeight: 600 }}>📅 P&P: {ppSummary}</span>],
+                ]
+              }}
+              renderActions={(v) => [
+                { label: '📅', color: 'warning', title: 'Pico y placa', onClick: () => openRestrictModal(v) },
+                { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(v) },
+                { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(v.id) },
+              ]}
             />
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>

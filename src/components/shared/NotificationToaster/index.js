@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { dismiss } from '../../reducers/notificationsSlice'
+import { dismiss } from '../../../reducers/notificationsSlice'
 
 const DELAY = { error: 8000, success: 5000, warning: 6000, info: 5000 }
 

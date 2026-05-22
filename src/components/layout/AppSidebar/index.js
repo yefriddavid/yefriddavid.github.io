@@ -15,15 +15,15 @@ import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
 import { FinanceIcon } from 'src/components/AppIcons'
 
-import { AppSidebarNav } from './AppSidebarNav'
-import BrandName from '../BrandName'
-import { signOut } from '../../services/firebase/auth'
+import { AppSidebarNav } from '../AppSidebarNav'
+import BrandName from '../../BrandName'
+import { signOut } from '../../../services/firebase/auth'
 import './AppSidebar.scss'
 
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
-import getNav from '../../_nav'
+import getNav from '../../../_nav'
 import { setUi } from 'src/reducers/uiReducer'
 
 const AppSidebar = () => {

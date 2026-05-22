@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import {
   CCard,
   CCardBody,
@@ -21,7 +22,7 @@ import {
   CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTrash, cilPlus, cilX, cilCopy } from '@coreui/icons'
+import { cilTrash, cilPlus, cilX, cilCopy, cilPencil } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
@@ -436,199 +437,6 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
   )
 }
 
-const ExpenseCardList = ({
-  records,
-  plateToDriver,
-  onEdit,
-  onClone,
-  onDelete,
-  onViewReceipt,
-  dispatch,
-}) => {
-  if (records.length === 0) {
-    return (
-      <div
-        style={{
-          padding: '32px 0',
-          textAlign: 'center',
-          color: 'var(--cui-secondary-color)',
-          fontSize: 13,
-        }}
-      >
-        Sin gastos para este periodo.
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
-      {records.map((row) => (
-        <div
-          key={row.id}
-          style={{
-            border: '1px solid var(--cui-border-color)',
-            borderRadius: 10,
-            padding: '12px 14px',
-            background: 'var(--cui-body-bg)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-          }}
-        >
-          {/* top row: category + date + amount */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 8,
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: '#7c3aed',
-                  background: 'rgba(109,40,217,0.08)',
-                  borderRadius: 4,
-                  padding: '1px 7px',
-                  alignSelf: 'flex-start',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {row.category}
-              </span>
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--cui-body-color)',
-                  lineHeight: 1.3,
-                }}
-              >
-                {row.description}
-              </span>
-            </div>
-            <span style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
-              {fmt(row.amount)}
-            </span>
-          </div>
-
-          {/* meta row: plate + driver + date */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {row.plate && (
-              <span
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: 'var(--cui-body-color)',
-                }}
-              >
-                {row.plate}
-              </span>
-            )}
-            {(row.driverName || plateToDriver[row.plate]) && (
-              <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
-                {row.driverName || plateToDriver[row.plate]}
-              </span>
-            )}
-            <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)', marginLeft: 'auto' }}>
-              {row.date}
-            </span>
-          </div>
-
-          {/* bottom row: paid toggle + actions */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: 2,
-            }}
-          >
-            <button
-              onClick={() =>
-                dispatch(taxiExpenseActions.togglePaidRequest({ id: row.id, paid: !row.paid }))
-              }
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                borderRadius: 4,
-                padding: '3px 9px',
-                border: 'none',
-                cursor: 'pointer',
-                background: row.paid ? '#d1fae5' : '#fff3cd',
-                color: row.paid ? '#065f46' : '#7c5e00',
-              }}
-            >
-              {row.paid ? '✓ Pagado' : '⏳ Pendiente'}
-            </button>
-            <div style={{ display: 'flex', gap: 2 }}>
-              {row.receipt && (
-                <button
-                  onClick={() => onViewReceipt({ src: row.receipt, name: row.receiptName })}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#0891b2',
-                    cursor: 'pointer',
-                    padding: '4px 7px',
-                    fontSize: 15,
-                  }}
-                  title="Ver comprobante"
-                >
-                  📎
-                </button>
-              )}
-              <button
-                onClick={() => onEdit(row)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--cui-primary)',
-                  cursor: 'pointer',
-                  padding: '4px 7px',
-                  fontSize: 15,
-                }}
-                title="Editar"
-              >
-                ✎
-              </button>
-              <button
-                onClick={() => onClone(row)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#1971c2',
-                  cursor: 'pointer',
-                  padding: '4px 7px',
-                }}
-                title="Clonar"
-              >
-                <CIcon icon={cilCopy} size="sm" />
-              </button>
-              <button
-                onClick={() => onDelete(row.id)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#e03131',
-                  cursor: 'pointer',
-                  padding: '4px 7px',
-                }}
-                title="Eliminar"
-              >
-                <CIcon icon={cilTrash} size="sm" />
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 const Gastos = () => {
   const { t } = useTranslation()
@@ -954,14 +762,38 @@ const Gastos = () => {
               <Spinner color="primary" />
             </div>
           ) : isMobile ? (
-            <ExpenseCardList
-              records={filtered}
-              plateToDriver={plateToDriver}
-              onEdit={handleEdit}
-              onClone={openClone}
-              onDelete={handleDelete}
-              onViewReceipt={setReceiptViewer}
-              dispatch={dispatch}
+            <StandardCard
+              
+              data={filtered}
+              keyExpr="id"
+              emptyText="Sin gastos para este periodo."
+              renderTitle={(row) => (
+                <>
+                  <span className={SC.tag}>{row.category}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--cui-body-color)' }}>
+                    {row.description}
+                  </span>
+                </>
+              )}
+              renderValue={(row) => fmt(row.amount)}
+              renderBadge={(row) => ({
+                label: row.paid ? '✓ Pagado' : '⏳ Pendiente',
+                variant: row.paid ? 'active' : 'warning',
+                onClick: () => dispatch(taxiExpenseActions.togglePaidRequest({ id: row.id, paid: !row.paid })),
+              })}
+              renderRows={(row) => [
+                [
+                  row.plate && <span className={SC.mono}>{row.plate}</span>,
+                  row.driverName || plateToDriver[row.plate],
+                  <span style={{ marginLeft: 'auto' }}>{row.date}</span>,
+                ],
+              ]}
+              renderActions={(row) => [
+                row.receipt && { label: '📎', color: 'info', title: 'Ver comprobante', onClick: () => setReceiptViewer({ src: row.receipt, name: row.receiptName }) },
+                { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(row) },
+                { icon: cilCopy, color: 'primary', title: 'Clonar', onClick: () => openClone(row) },
+                { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(row.id) },
+              ].filter(Boolean)}
             />
           ) : (
             <StandardGrid

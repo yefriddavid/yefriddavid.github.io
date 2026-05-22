@@ -175,6 +175,40 @@ const handleCreate = (form) => {
 }
 ```
 
+#### RULE: Every layout component lives in its own folder under `src/components/layout/`
+
+Each component in `src/components/layout/` must have its own dedicated folder containing its JS and SCSS files. **Never place component files loose at the root of `src/components/layout/`.**
+
+```
+src/components/layout/
+  ComponentName/
+    index.js          ← main component (lowercase index for auto-resolution)
+    ComponentName.scss
+```
+
+- ✅ `src/components/layout/AppHeader/index.js`
+- ✅ `src/components/layout/AppSidebar/index.js`
+- ❌ `src/components/layout/AppHeader.js` — loose file at layout root
+- ❌ `src/components/layout/AppSidebar.js` — always create the folder
+
+Imports from outside resolve automatically without explicit `/index`:
+```js
+import AppHeader from '../components/layout/AppHeader'     // ✅ resolves to AppHeader/index.js
+import { AppSidebarNav } from '../layout/AppSidebarNav'    // ✅
+```
+
+Cross-references between sibling layout folders use `../Sibling`, not `./Sibling`. Paths going up beyond `layout/` get an extra `../` compared to when files lived flat:
+```js
+// inside AppHeader/index.js
+import AppHeaderDropdown from '../AppHeaderDropdown'        // ✅ sibling folder
+import LanguageSwitcher from '../../shared/LanguageSwitcher' // ✅ up two levels to components/
+import useVersionCheck from '../../../hooks/useVersionCheck'  // ✅ up three levels to src/
+
+// ❌ Wrong — assumes flat layout root
+import AppHeaderDropdown from './AppHeaderDropdown'
+import LanguageSwitcher from '../shared/LanguageSwitcher'
+```
+
 ### Styling
 SCSS with CoreUI variables. Custom overrides in `src/scss/_custom.scss` and `src/scss/_variables.scss`. Prettier enforces: no semicolons, single quotes, trailing commas, 100-char line width, 2-space indent.
 
@@ -215,6 +249,37 @@ Rules:
 - **Chart.js + CoreUI Charts** — Dashboard charts
 - **React Hook Form** — Form handling and validation (see pattern below)
 - **Moment.js** — Date manipulation
+
+### Shared Components — folder structure
+
+#### RULE: Every shared component lives in its own folder under `src/components/shared/`
+
+Each component in `src/components/shared/` must have its own dedicated folder containing its JS and SCSS files. **Never place component files loose at the root of `src/components/shared/`.**
+
+```
+src/components/shared/
+  ComponentName/
+    index.js          ← main component (lowercase index for auto-resolution)
+    ComponentName.scss
+```
+
+- ✅ `src/components/shared/Spinner/index.js`
+- ✅ `src/components/shared/StandardForm/index.js`
+- ❌ `src/components/shared/Spinner.js` — loose file at shared root
+- ❌ `src/components/shared/MyWidget.js` — always create the folder
+
+Imports resolve automatically without explicit `/index`:
+```js
+import Spinner from 'src/components/shared/Spinner'         // ✅ resolves to Spinner/index.js
+import StandardForm from 'src/components/shared/StandardForm' // ✅
+```
+
+Exception: `StandardGrid` and `StandardList`/`StandardCard` use `Index.js` (uppercase) and must be imported with the explicit `/Index` suffix:
+```js
+import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardList, { SL } from 'src/components/shared/StandardList/Index'
+import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
+```
 
 ### Data Grids and Tables
 
@@ -266,7 +331,7 @@ import { Column, Paging, FilterRow, Toolbar, Item, MasterDetail } from 'devextre
 
 #### RULE: Never use `CSpinner` directly — always use `<Spinner>`
 
-All loading indicators must go through `src/components/shared/Spinner.js`. **Never import `CSpinner` from `@coreui/react`.**
+All loading indicators must go through `src/components/shared/Spinner/index.js`. **Never import `CSpinner` from `@coreui/react`.**
 
 ```js
 import Spinner from 'src/components/shared/Spinner'
@@ -299,7 +364,7 @@ if (firebaseUser === undefined) return <Spinner mode="page" />
 
 #### RULE: All CRUD / panel forms must use `StandardForm`
 
-Every create/edit form rendered as a panel or modal must use the shared component `src/components/shared/StandardForm.js`. **Never recreate the form shell manually.**
+Every create/edit form rendered as a panel or modal must use the shared component `src/components/shared/StandardForm/index.js`. **Never recreate the form shell manually.**
 
 ```js
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
@@ -446,3 +511,68 @@ const onSubmit = (data) => onSave({ ...data, attachment })
 
 nunca usar esto:
 const REGULATORY = ['SOAT', 'RTM', 'Póliza Resp. Civil', 'Tarjeta de Operación'] dentro de las vistas o archivos esto debe ir en settings
+
+### Mobile List Views — StandardList and StandardCard
+
+#### RULE: Use `StandardList` for row lists and `StandardCard` for card grids — never inline mobile lists
+
+All mobile list/card views must use one of the two shared components. **Never write inline `map()` with hand-coded `<div>` or `<li>` markup for mobile records.**
+
+| Component | Use when | Visual style |
+|---|---|---|
+| `StandardList` | Compact scannable rows (master records: drivers, users) | Rows with dividers |
+| `StandardCard` | Rich items with multiple data points (expenses, vehicles, partners) | Bordered cards with gap |
+
+```js
+// List — compact rows with dividers
+import StandardList, { SL } from 'src/components/shared/StandardList/Index'
+
+<StandardList
+  data={records}
+  keyExpr="id"
+  emptyText="Sin conductores."
+  inactive={(d) => d.active === false}
+  renderTitle={(d) => d.name}
+  renderBadge={(d) => ({ label: 'Activo', variant: 'active', onClick: () => toggle(d) })}
+  renderRows={(d) => [
+    [d.idNumber && `CC ${d.idNumber}`, d.phone && <><span className={SL.label}>Cel </span>{d.phone}</>],
+    [(d.plate) && <span className={SL.mono}>{d.plate}</span>],
+  ]}
+  renderActions={(d) => [
+    { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => edit(d) },
+    { icon: cilTrash,  color: 'danger',  title: 'Eliminar', onClick: () => del(d.id) },
+  ]}
+/>
+
+// Card — bordered cards with optional right-side value
+import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
+
+<StandardCard
+  data={records}
+  keyExpr="id"
+  emptyText="Sin gastos."
+  renderTitle={(r) => <><span className={SC.tag}>{r.category}</span>{r.description}</>}
+  renderValue={(r) => fmt(r.amount)}
+  renderBadge={(r) => ({ label: r.paid ? 'Pagado' : 'Pendiente', variant: r.paid ? 'active' : 'warning', onClick: () => toggle(r) })}
+  renderRows={(r) => [[r.plate && <span className={SC.mono}>{r.plate}</span>, r.driver, r.date]]}
+  renderActions={(r) => [
+    { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => edit(r) },
+    { icon: cilTrash,  color: 'danger',  title: 'Eliminar', onClick: () => del(r.id) },
+  ]}
+/>
+```
+
+**Cell helpers (`SL` / `SC`):**
+- `.label` — muted prefix text (`Liq `, `Cel `, `CC `)
+- `.mono`  — monospace + bold (plates, codes)
+- `.muted` — secondary color (brand names, subtitles)
+- `.tag`   — small category pill (SC only)
+
+**`renderActions` accepts:**
+- `{ icon, color, title, onClick }` — renders a `CIcon`
+- `{ label, color, title, onClick }` — renders text or emoji (`'📅'`, `'📎'`)
+
+**`renderBadge` variants:** `'active'` `'inactive'` `'warning'` `'info'` `'default'`
+
+- ❌ Never write a `VehicleCardList`, `ExpenseCardList`, or similar inline component
+- ❌ Never render mobile records as raw `<div style={{...}}>` maps

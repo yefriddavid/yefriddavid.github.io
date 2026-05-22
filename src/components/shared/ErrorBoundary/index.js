@@ -1,6 +1,6 @@
 import React from 'react'
 import { CButton } from '@coreui/react'
-import { reportError } from '../../services/errorReporter'
+import { reportError } from '../../../services/errorReporter'
 
 class ErrorBoundary extends React.Component {
   state = { error: null }

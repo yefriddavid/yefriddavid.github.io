@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import useConnectivity from '../../hooks/useConnectivity'
+import useConnectivity from '../../../hooks/useConnectivity'
 
 const OfflineBanner = () => {
   const online = useConnectivity()

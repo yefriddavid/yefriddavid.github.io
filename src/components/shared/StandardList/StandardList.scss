@@ -14,8 +14,8 @@
     padding: 10px 2px;
     border-bottom: 1px solid var(--cui-border-color);
 
-    &:last-child { border-bottom: none; }
-    &--inactive  { opacity: 0.55; }
+    &:last-child  { border-bottom: none; }
+    &--inactive   { opacity: 0.55; }
   }
 
   &__top {
@@ -43,6 +43,8 @@
     flex-shrink: 0;
   }
 
+  &__top .sl__badge { margin-right: 4px; }
+
   &__badge {
     font-size: 10px;
     font-weight: 600;
@@ -51,11 +53,11 @@
     border: none;
     cursor: pointer;
     white-space: nowrap;
-    margin-right: 4px;
 
     &--active   { background: #d1fae5; color: #065f46; }
     &--inactive { background: #fee2e2; color: #991b1b; }
-    &--warning  { background: #fff3cd; color: #856404; }
+    &--warning  { background: #fff3cd; color: #7c5e00; }
+    &--info     { background: #dbeafe; color: #1e40af; }
     &--default  { background: var(--cui-secondary-bg); color: var(--cui-secondary-color); }
   }
 
@@ -64,10 +66,13 @@
     border: none;
     cursor: pointer;
     padding: 2px 6px;
+    font-size: 14px;
+    line-height: 1;
 
     &--primary { color: var(--cui-primary); }
     &--danger  { color: #e03131; }
     &--warning { color: #e67700; }
+    &--info    { color: #0891b2; }
   }
 
   &__body {
@@ -82,6 +87,7 @@
     font-size: 11px;
     color: var(--cui-secondary-color);
     white-space: nowrap;
+    flex-wrap: wrap;
   }
 
   &__pagination {
@@ -109,7 +115,7 @@
     justify-content: center;
     transition: background 0.15s;
 
-    &:disabled            { opacity: 0.3; cursor: default; }
+    &:disabled              { opacity: 0.3; cursor: default; }
     &:not(:disabled):active { background: var(--cui-border-color); }
   }
 
@@ -122,7 +128,6 @@
   }
 }
 
-// Cell content helpers — use via SL.label / SL.mono / SL.muted
 .sl-label { color: var(--cui-secondary-color); }
 .sl-mono  { font-family: monospace; font-weight: 600; color: var(--cui-body-color); }
 .sl-muted { color: var(--cui-secondary-color); }

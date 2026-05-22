@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardCard from 'src/components/shared/StandardCard/Index'
 import { CCard, CCardBody, CCardHeader, CBadge, CButton, CCollapse, CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash } from '@coreui/icons'
@@ -62,68 +63,6 @@ const PartnerForm = ({ initial, editingId, onSave, onCancel, saving }) => {
   )
 }
 
-const PartnerCardList = ({ partners, onEdit, onDelete }) => {
-  if (partners.length === 0) {
-    return (
-      <div
-        style={{
-          padding: '32px 0',
-          textAlign: 'center',
-          color: 'var(--cui-secondary-color)',
-          fontSize: 13,
-        }}
-      >
-        Sin socios registrados.
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 0' }}>
-      {partners.map((partner) => (
-        <div
-          key={partner.id}
-          style={{
-            border: '1px solid var(--cui-border-color)',
-            borderRadius: 10,
-            padding: '12px 14px',
-            background: 'var(--cui-body-bg)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 8,
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--cui-body-color)' }}>
-              {partner.name}
-            </span>
-            <span style={{ fontSize: 13, color: 'var(--cui-secondary-color)' }}>
-              Participación
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <span style={{ fontSize: 20, fontWeight: 700 }}>{partner.percentage}%</span>
-            <button
-              onClick={() => onEdit(partner)}
-              style={{ background: 'none', border: 'none', color: 'var(--cui-primary)', cursor: 'pointer', padding: '4px 8px' }}
-              title="Editar"
-            >
-              <CIcon icon={cilPencil} size="sm" />
-            </button>
-            <button
-              onClick={() => onDelete(partner.id)}
-              style={{ background: 'none', border: 'none', color: '#e03131', cursor: 'pointer', padding: '4px 8px' }}
-              title="Eliminar"
-            >
-              <CIcon icon={cilTrash} size="sm" />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 const Partners = () => {
   const { t } = useTranslation()
@@ -213,9 +152,19 @@ const Partners = () => {
             <Spinner color="primary" />
           </div>
         ) : isMobile ? (
-          <div style={{ padding: '0 12px' }}>
-            <PartnerCardList partners={partners} onEdit={openEdit} onDelete={handleDelete} />
-          </div>
+          <StandardCard
+            
+            data={partners}
+            keyExpr="id"
+            emptyText="Sin socios registrados."
+            renderTitle={(p) => p.name}
+            renderValue={(p) => `${p.percentage}%`}
+            renderRows={(p) => [[p.percentage != null && 'Participación']]}
+            renderActions={(p) => [
+              { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => openEdit(p) },
+              { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(p.id) },
+            ]}
+          />
         ) : (
           <StandardGrid
             id="paymentsGrid"

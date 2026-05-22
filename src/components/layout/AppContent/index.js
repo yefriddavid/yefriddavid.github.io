@@ -1,15 +1,15 @@
 import React, { Suspense, useEffect, useState } from 'react'
-import ErrorBoundary from '../shared/ErrorBoundary'
+import ErrorBoundary from '../../shared/ErrorBoundary'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { CContainer } from '@coreui/react'
-import Spinner from '../shared/Spinner'
+import Spinner from '../../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearProfile } from '../../actions/authActions'
-import { onAuthChange } from '../../services/firebase/auth'
+import { clearProfile } from '../../../actions/authActions'
+import { onAuthChange } from '../../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
-import { validateSession } from '../../services/firebase/security/sessions'
-import routes from '../../routes'
-import useNotifications from '../../hooks/useNotifications'
+import { validateSession } from '../../../services/firebase/security/sessions'
+import routes from '../../../routes'
+import useNotifications from '../../../hooks/useNotifications'
 
 const AppContent = () => {
   // undefined = Firebase still resolving, null = signed out, object = signed in
