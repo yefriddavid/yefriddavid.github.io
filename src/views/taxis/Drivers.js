@@ -17,6 +17,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash, cilPencil } from '@coreui/icons'
+import StandardList, { SL } from 'src/components/shared/StandardList'
 import { useForm } from 'react-hook-form'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
@@ -163,107 +164,6 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
   )
 }
 
-const MOBILE_PAGE_SIZE = 10
-
-const DriverListView = ({ records, vehicles, onEdit, onDelete, onToggleActive }) => {
-  const [page, setPage] = useState(0)
-
-  const totalPages = Math.ceil(records.length / MOBILE_PAGE_SIZE)
-  const paged = records.slice(page * MOBILE_PAGE_SIZE, (page + 1) * MOBILE_PAGE_SIZE)
-
-  if (records.length === 0) {
-    return (
-      <div className="driver-list__empty">Sin conductores aún.</div>
-    )
-  }
-
-  return (
-    <>
-    <ul className="driver-list">
-      {paged.map((driver) => {
-        const active = driver.active !== false
-        const vehicle = (vehicles ?? []).find((v) => v.plate === driver.defaultVehicle)
-        const vehiclePlate = vehicle?.plate ?? driver.defaultVehicle ?? null
-        const vehicleBrand = vehicle?.brand ?? null
-
-        return (
-          <li key={driver.id} className={`driver-list__item${active ? '' : ' driver-list__item--inactive'}`}>
-            <div className="driver-list__top">
-              <span className="driver-list__name">{driver.name}</span>
-              <div className="driver-list__controls">
-                <button
-                  className={`driver-list__status${active ? ' driver-list__status--active' : ' driver-list__status--inactive'}`}
-                  onClick={() => onToggleActive(driver)}
-                >
-                  {active ? 'Activo' : 'Inactivo'}
-                </button>
-                <button className="master-btn master-btn--primary" onClick={() => onEdit(driver)} title="Editar">
-                  <CIcon icon={cilPencil} size="sm" />
-                </button>
-                <button className="master-btn master-btn--danger" onClick={() => onDelete(driver.id)} title="Eliminar">
-                  <CIcon icon={cilTrash} size="sm" />
-                </button>
-              </div>
-            </div>
-            <div className="driver-list__meta">
-              {(driver.idNumber || driver.phone) && (
-                <div className="driver-list__meta-row">
-                  {driver.idNumber && <span>CC {driver.idNumber}</span>}
-                  {driver.phone && <span><span className="driver-list__meta-label">Cel </span>{driver.phone}</span>}
-                </div>
-              )}
-              {vehiclePlate && (
-                <div className="driver-list__meta-row">
-                  <span className="driver-list__plate">{vehiclePlate}</span>
-                  {vehicleBrand && <span className="driver-list__brand">{vehicleBrand}</span>}
-                </div>
-              )}
-              {(driver.defaultAmount > 0 || driver.defaultAmountSunday > 0) && (
-                <div className="driver-list__meta-row">
-                  {driver.defaultAmount > 0 && (
-                    <span>
-                      <span className="driver-list__meta-label">Liq </span>
-                      {fmt(driver.defaultAmount)}
-                    </span>
-                  )}
-                  {driver.defaultAmountSunday > 0 && (
-                    <span>
-                      <span className="driver-list__meta-label">Dom </span>
-                      {fmt(driver.defaultAmountSunday)}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </li>
-        )
-      })}
-    </ul>
-    {totalPages > 1 && (
-      <div className="driver-list__pagination">
-        <button
-          className="driver-list__page-btn"
-          onClick={() => setPage((p) => p - 1)}
-          disabled={page === 0}
-        >
-          ‹
-        </button>
-        <span className="driver-list__page-info">
-          {page + 1} / {totalPages}
-        </span>
-        <button
-          className="driver-list__page-btn"
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page >= totalPages - 1}
-        >
-          ›
-        </button>
-      </div>
-    )}
-    </>
-  )
-}
-
 const Conductores = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
@@ -360,12 +260,40 @@ const Conductores = () => {
             <Spinner color="primary" />
           </div>
         ) : isMobile ? (
-          <DriverListView
-            records={rows}
-            vehicles={vehicles}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggleActive={handleToggleActive}
+          <StandardList
+            data={rows}
+            keyExpr="id"
+            emptyText="Sin conductores aún."
+            inactive={(d) => d.active === false}
+            renderTitle={(d) => d.name}
+            renderBadge={(d) => ({
+              label: d.active !== false ? 'Activo' : 'Inactivo',
+              variant: d.active !== false ? 'active' : 'inactive',
+              onClick: () => handleToggleActive(d),
+            })}
+            renderRows={(d) => {
+              const v = (vehicles ?? []).find((veh) => veh.plate === d.defaultVehicle)
+              return [
+                [
+                  d.idNumber && `CC ${d.idNumber}`,
+                  d.phone && <><span className={SL.label}>Cel </span>{d.phone}</>,
+                ],
+                [
+                  (v?.plate ?? d.defaultVehicle) && (
+                    <span className={SL.mono}>{v?.plate ?? d.defaultVehicle}</span>
+                  ),
+                  v?.brand && <span className={SL.muted}>{v.brand}</span>,
+                ],
+                [
+                  d.defaultAmount > 0 && <><span className={SL.label}>Liq </span>{fmt(d.defaultAmount)}</>,
+                  d.defaultAmountSunday > 0 && <><span className={SL.label}>Dom </span>{fmt(d.defaultAmountSunday)}</>,
+                ],
+              ]
+            }}
+            renderActions={(d) => [
+              { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(d) },
+              { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(d.id) },
+            ]}
           />
         ) : (
           <StandardGrid
