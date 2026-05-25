@@ -16,6 +16,19 @@ export const ACCOUNT_CATEGORIES = [
 
 export const PAYMENT_METHODS = ['Cash', 'Deel Card', 'Transferencia', 'Débito automático']
 
+export const BANK_NAMES = [
+  'Bancolombia',
+  'Davivienda',
+  'Banco de Bogotá',
+  'BBVA',
+  'Itaú',
+  'Nequi',
+  'Daviplata',
+  'Otro',
+]
+
+export const BANK_ACCOUNT_TYPES = ['Ahorros', 'Corriente', 'Nómina', 'Billetera digital']
+
 export const EXPENSE_CATEGORIES = [
   'Alimentación',
   'Transporte',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, BANK_NAMES, BANK_ACCOUNT_TYPES } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
 import {
@@ -45,6 +45,10 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
       value: account.maxDatePay ? `Día ${account.maxDatePay}` : '—',
     },
     { label: 'Método de pago', value: account.paymentMethod || '—' },
+    { label: 'Banco', value: account.bankName || '—' },
+    { label: 'Tipo de cuenta', value: account.bankAccountType || '—' },
+    { label: 'Número de cuenta', value: account.bankAccountNumber || '—' },
+    { label: 'Titular', value: account.bankAccountHolder || '—' },
     { label: 'Estado', value: account.active ? 'Activa' : 'Inactiva' },
   ]
 
@@ -343,6 +347,68 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Banco / Tipo de cuenta */}
+            <div
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}
+            >
+              <div>
+                <label style={fieldLabel}>BANCO</label>
+                <select
+                  style={{ ...fieldInput, fontSize: 14 }}
+                  value={form.bankName ?? ''}
+                  onChange={set('bankName')}
+                >
+                  <option value="">Sin banco</option>
+                  {BANK_NAMES.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={fieldLabel}>TIPO DE CUENTA</label>
+                <select
+                  style={{ ...fieldInput, fontSize: 14 }}
+                  value={form.bankAccountType ?? ''}
+                  onChange={set('bankAccountType')}
+                >
+                  <option value="">Sin tipo</option>
+                  {BANK_ACCOUNT_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Número de cuenta / Titular */}
+            <div
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}
+            >
+              <div>
+                <label style={fieldLabel}>NÚMERO DE CUENTA</label>
+                <input
+                  style={fieldInput}
+                  type="text"
+                  value={form.bankAccountNumber ?? ''}
+                  onChange={set('bankAccountNumber')}
+                  placeholder="Ej: 123-456789-00"
+                />
+              </div>
+              <div>
+                <label style={fieldLabel}>TITULAR</label>
+                <input
+                  style={fieldInput}
+                  type="text"
+                  value={form.bankAccountHolder ?? ''}
+                  onChange={set('bankAccountHolder')}
+                  placeholder="Nombre del titular"
+                />
               </div>
             </div>
 

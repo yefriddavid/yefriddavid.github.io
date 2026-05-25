@@ -8,7 +8,7 @@ import {
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
 } from 'src/constants/accounting'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS } from 'src/constants/cashFlow'
+import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, BANK_NAMES, BANK_ACCOUNT_TYPES } from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
@@ -31,6 +31,10 @@ const EMPTY_FORM = {
   defaultValue: '',
   active: true,
   important: false,
+  bankName: '',
+  bankAccountType: '',
+  bankAccountNumber: '',
+  bankAccountHolder: '',
 }
 
 export { EMPTY_FORM }
@@ -200,6 +204,48 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
               </option>
             ))}
           </select>
+        </StandardField>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Banco">
+          <select className={SF.select} {...register('bankName')}>
+            <option value="">Sin banco</option>
+            {BANK_NAMES.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+        <StandardField label="Tipo de cuenta">
+          <select className={SF.select} {...register('bankAccountType')}>
+            <option value="">Sin tipo</option>
+            {BANK_ACCOUNT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Número de cuenta">
+          <input
+            className={SF.input}
+            type="text"
+            placeholder="Ej: 123-456789-00"
+            {...register('bankAccountNumber')}
+          />
+        </StandardField>
+        <StandardField label="Titular de la cuenta">
+          <input
+            className={SF.input}
+            type="text"
+            placeholder="Nombre del titular"
+            {...register('bankAccountHolder')}
+          />
         </StandardField>
       </div>
 

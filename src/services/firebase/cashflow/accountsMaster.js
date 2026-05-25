@@ -45,6 +45,10 @@ export const getAccountsMaster = async () => {
         description: data.description ?? null,
         notes: data.notes ?? null,
         definition: data.definition ?? null,
+        bankName: data.bankName ?? null,
+        bankAccountType: data.bankAccountType ?? null,
+        bankAccountNumber: data.bankAccountNumber ?? null,
+        bankAccountHolder: data.bankAccountHolder ?? null,
         created_at: data.created_at?.toDate?.()?.toISOString() ?? null,
       }
     })
