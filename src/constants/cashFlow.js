@@ -24,6 +24,7 @@ export const BANK_NAMES = [
   'Itaú',
   'Nequi',
   'Daviplata',
+  'Av Villas',
   'Otro',
 ]
 
