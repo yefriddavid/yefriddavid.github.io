@@ -15,6 +15,14 @@ import Spinner from 'src/components/shared/Spinner'
 export default function DetailModal({ account, saving, onUpdate, onClone, onClose }) {
   const [tab, setTab] = useState('info')
   const [form, setForm] = useState({ ...account })
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
   const { monthLabels } = useLocaleData()
 
   const set = (field) => (e) => {
@@ -47,7 +55,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
     { label: 'Método de pago', value: account.paymentMethod || '—' },
     { label: 'Banco', value: account.bankName || '—' },
     { label: 'Tipo de cuenta', value: account.bankAccountType || '—' },
-    { label: 'Número de cuenta', value: account.bankAccountNumber || '—' },
+    { label: 'Número de cuenta', value: account.bankAccountNumber || '—', copyable: !!account.bankAccountNumber },
     { label: 'Titular', value: account.bankAccountHolder || '—' },
     { label: 'Estado', value: account.active ? 'Activa' : 'Inactiva' },
   ]
@@ -122,7 +130,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
         {tab === 'info' && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {rows.map(({ label, value }) => (
+              {rows.map(({ label, value, copyable }) => (
                 <div
                   key={label}
                   style={{
@@ -134,17 +142,37 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   }}
                 >
                   <span style={{ fontSize: 13, color: '#6c757d', fontWeight: 500 }}>{label}</span>
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: '#1a1a2e',
-                      fontWeight: 600,
-                      textAlign: 'right',
-                      maxWidth: '60%',
-                    }}
-                  >
-                    {value}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: '#1a1a2e',
+                        fontWeight: 600,
+                        textAlign: 'right',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      {value}
+                    </span>
+                    {copyable && (
+                      <button
+                        onClick={() => handleCopy(value)}
+                        title="Copiar"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '2px 4px',
+                          fontSize: 14,
+                          color: copied ? '#2f9e44' : '#adb5bd',
+                          lineHeight: 1,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {copied ? '✓' : '⎘'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
