@@ -33,6 +33,32 @@ const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  const handlePaste = async () => {
+    setError('')
+    try {
+      const items = await navigator.clipboard.read()
+      const imageItem = items.find((item) => item.types.some((t) => t.startsWith('image/')))
+      if (!imageItem) {
+        setError('No hay imagen en el portapapeles.')
+        return
+      }
+      const imageType = imageItem.types.find((t) => t.startsWith('image/'))
+      const blob = await imageItem.getType(imageType)
+      const file = new File([blob], 'clipboard.png', { type: imageType })
+      setProcessing(true)
+      try {
+        const data = await processAttachmentFile(file)
+        onChange(data, 'clipboard.png')
+      } catch (err) {
+        setError(`Error: ${err.message}`)
+      } finally {
+        setProcessing(false)
+      }
+    } catch {
+      setError('Sin permiso para leer el portapapeles.')
+    }
+  }
+
   return (
     <div className="file-upload-field">
       <input
@@ -44,27 +70,48 @@ const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
       />
 
       {!value && !processing && (
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          style={{
-            width: '100%',
-            padding: '12px',
-            borderRadius: 10,
-            marginBottom: 8,
-            border: '2px dashed #dee2e6',
-            background: '#fafafa',
-            fontSize: 13,
-            color: '#6c757d',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-          }}
-        >
-          <span>📎</span> Adjuntar {label}
-        </button>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: 10,
+              border: '2px dashed #dee2e6',
+              background: '#fafafa',
+              fontSize: 13,
+              color: '#6c757d',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <span>📎</span> Adjuntar {label}
+          </button>
+          <button
+            type="button"
+            onClick={handlePaste}
+            title="Pegar imagen del portapapeles"
+            style={{
+              padding: '12px 16px',
+              borderRadius: 10,
+              border: '2px dashed #dee2e6',
+              background: '#fafafa',
+              fontSize: 13,
+              color: '#6c757d',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span>📋</span> Pegar
+          </button>
+        </div>
       )}
 
       {processing && (
