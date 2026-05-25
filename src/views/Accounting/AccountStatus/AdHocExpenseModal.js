@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { ACCOUNT_CATEGORIES } from 'src/constants/cashFlow'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import { fieldLabel, fieldInput } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -58,7 +58,7 @@ export default function AdHocExpenseModal({
     setFileError('')
     setProcessing(true)
     try {
-      const data = await processAttachmentFile(file)
+      const data = await uploadImage(file)
       setAttachment(data)
       setAttachName(file.name)
     } catch (err) {

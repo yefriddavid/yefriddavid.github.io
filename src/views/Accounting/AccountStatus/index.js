@@ -10,7 +10,7 @@ import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { selectCumulativePaymentsMap } from 'src/selectors/cashflowSelectors'
 import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import OcrReceiptImporter from '../OcrReceiptImporter/OcrReceiptImporter'
 import { fmt, isApplicableToMonth, getStatus, CURRENT_YEAR, CURRENT_MONTH, now } from './helpers'
 import DetailModal from './DetailModal'
@@ -277,7 +277,7 @@ export default function AccountStatus() {
     if (!file || !attachingTx) return
     setAttachProcessing(true)
     try {
-      const data = await processAttachmentFile(file)
+      const data = await uploadImage(file)
       dispatch(
         transactionActions.updateRequest({
           ...attachingTx,

@@ -8,6 +8,7 @@ const Summary = React.lazy(() => import('./views/taxis/Summary'))
 const TaxisHome = React.lazy(() => import('./views/taxis/Home'))
 const Partners = React.lazy(() => import('./views/taxis/Partners'))
 const Distributions = React.lazy(() => import('./views/taxis/Distributions'))
+const DriverDocuments = React.lazy(() => import('./views/taxis/DriverDocuments'))
 const Operations = React.lazy(() => import('./views/taxis/Operations'))
 const MapLocation = React.lazy(() => import('./views/taxis/MapLocation'))
 const VehicleRoute = React.lazy(() => import('./views/taxis/VehicleRoute'))
@@ -78,6 +79,12 @@ const taxisRoutes = [
     name: 'Profit Sharing',
     tKey: 'nav.distributions',
     element: Distributions,
+  },
+  {
+    path: '/taxis/driver-documents',
+    name: 'Driver Documents',
+    tKey: 'nav.driverDocuments',
+    element: DriverDocuments,
   },
 ]
 

@@ -28,12 +28,14 @@ export const getVehicles = async () => {
         year: data.year,
         active: data.active !== false,
         restrictions: data.restrictions ?? {},
+        comment: data.comment ?? '',
+        photos: data.photos ?? [],
       }
     })
     .sort((a, b) => (a.plate ?? '').localeCompare(b.plate ?? ''))
 }
 
-export const addVehicle = async ({ plate, brand, model, year, active }) => {
+export const addVehicle = async ({ plate, brand, model, year, active, comment, photos }) => {
   const ref = await taxiCall(() =>
     addDoc(collection(db, COL), {
       plate: plate.toUpperCase(),
@@ -42,6 +44,8 @@ export const addVehicle = async ({ plate, brand, model, year, active }) => {
       year,
       active: active !== false,
       restrictions: {},
+      comment: comment || null,
+      photos: photos ?? [],
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
     }),
@@ -49,7 +53,7 @@ export const addVehicle = async ({ plate, brand, model, year, active }) => {
   return ref.id
 }
 
-export const updateVehicle = async (id, { plate, brand, model, year, active }) => {
+export const updateVehicle = async (id, { plate, brand, model, year, active, comment, photos }) => {
   await taxiCall(() =>
     updateDoc(doc(db, COL, id), {
       plate: plate.toUpperCase(),
@@ -57,6 +61,8 @@ export const updateVehicle = async (id, { plate, brand, model, year, active }) =
       model,
       year,
       active: active !== false,
+      comment: comment || null,
+      photos: photos ?? [],
     }),
   )
 }

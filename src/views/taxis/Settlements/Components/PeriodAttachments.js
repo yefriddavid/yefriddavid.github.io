@@ -14,7 +14,7 @@ import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilPencil, cilFullscreen } from '@coreui/icons'
 import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
 import { push as pushNotification } from 'src/reducers/notificationsSlice'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import Spinner from 'src/components/shared/Spinner'
 
 const PeriodAttachments = ({ period }) => {
@@ -37,7 +37,7 @@ const PeriodAttachments = ({ period }) => {
     setFileError(null)
     setConverting(true)
     try {
-      const base64 = await processAttachmentFile(file)
+      const base64 = await uploadImage(file)
       setPendingImage(base64)
       setPendingDescription('')
     } catch (e) {

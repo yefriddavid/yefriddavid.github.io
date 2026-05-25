@@ -29,7 +29,7 @@ import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import useLocaleData from 'src/hooks/useLocaleData'
 import useIsMobile from 'src/hooks/useIsMobile'
 import {
@@ -242,7 +242,7 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
     setFileError('')
     setProcessingFile(true)
     try {
-      const data = await processAttachmentFile(file)
+      const data = await uploadImage(file)
       setValue('receipt', data)
       setValue('receiptName', file.name)
     } catch (err) {

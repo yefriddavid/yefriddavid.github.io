@@ -12,7 +12,7 @@ import {
   cilPeople,
   cilTransfer,
 } from '@coreui/icons'
-import { CNavItem } from '@coreui/react'
+import { CNavGroup, CNavItem } from '@coreui/react'
 
 const getTaxisNav = (t) => [
   {
@@ -46,10 +46,21 @@ const getTaxisNav = (t) => [
     icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: t('nav.conductores'),
-    to: '/taxis/drivers',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: t('nav.conductores'),
+        to: '/taxis/drivers',
+      },
+      {
+        component: CNavItem,
+        name: 'Documents',
+        to: '/taxis/driver-documents',
+      },
+    ],
   },
   {
     component: CNavItem,

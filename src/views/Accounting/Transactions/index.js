@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
@@ -183,7 +183,7 @@ export default function Transactions() {
     if (!file || !attachingTx) return
     setAttachProcessing(true)
     try {
-      const fileData = await processAttachmentFile(file)
+      const fileData = await uploadImage(file)
       dispatch(
         transactionActions.updateRequest({
           ...attachingTx,

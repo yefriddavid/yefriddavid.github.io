@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { processAttachmentFile } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import Spinner from 'src/components/shared/Spinner'
 
 /**
  * A shared component for file uploads with preview/clear functionality.
- * Handles base64 conversion via processAttachmentFile.
+ * Handles base64 conversion via the imageFacade.
  */
 const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
   const [processing, setProcessing] = useState(false)
@@ -18,7 +18,7 @@ const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
     setProcessing(true)
     setError('')
     try {
-      const data = await processAttachmentFile(file)
+      const data = await uploadImage(file)
       onChange(data, file.name)
     } catch (err) {
       setError(`Error: ${err.message}`)
@@ -47,7 +47,7 @@ const FileUploadField = ({ value, name, onChange, label = 'archivo' }) => {
       const file = new File([blob], 'clipboard.png', { type: imageType })
       setProcessing(true)
       try {
-        const data = await processAttachmentFile(file)
+        const data = await uploadImage(file)
         onChange(data, 'clipboard.png')
       } catch (err) {
         setError(`Error: ${err.message}`)

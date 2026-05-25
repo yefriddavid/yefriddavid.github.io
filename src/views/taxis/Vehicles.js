@@ -26,6 +26,7 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import useIsMobile from 'src/hooks/useIsMobile'
+import { uploadImages } from 'src/services/facade/imageFacade'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -34,7 +35,7 @@ const MONTHS = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
-const EMPTY = { plate: '', brand: '', model: '', year: '', active: true }
+const EMPTY = { plate: '', brand: '', model: '', year: '', active: true, comment: '', photos: [] }
 
 const emptyRestrictions = () =>
   Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { d1: '', d2: '' }]))
@@ -68,13 +69,23 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
   } = useForm({ defaultValues: initial })
 
   const active = watch('active') ?? true
+  const [photos, setPhotos] = useState(initial?.photos ?? [])
+  const photosInputRef = useRef()
+
+  const handlePhotosChange = async (e) => {
+    const handles = await uploadImages(e.target.files)
+    setPhotos((prev) => [...prev, ...handles])
+    e.target.value = ''
+  }
+
+  const removePhoto = (idx) => setPhotos((prev) => prev.filter((_, i) => i !== idx))
 
   return (
     <StandardForm
       title={title}
       subtitle={subtitle}
       onCancel={onCancel}
-      onSave={handleSubmit(onSave)}
+      onSave={handleSubmit((data) => onSave({ ...data, photos }))}
       saving={saving}
     >
       <StandardField label={t('taxis.vehicles.fields.plate')}>
@@ -110,6 +121,44 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
               : t('taxis.vehicles.fields.inactive')
           }
         />
+      </StandardField>
+      <StandardField label="Comentario">
+        <input className={SF.input} placeholder="Observaciones opcionales" {...register('comment')} />
+      </StandardField>
+      <StandardField label="Fotos">
+        <div className="master-photos-picker">
+          {photos.length > 0 && (
+            <div className="master-photos-picker__grid">
+              {photos.map((p, i) => (
+                <div key={i} className="master-photos-picker__thumb">
+                  <img src={p} alt={`Foto ${i + 1}`} />
+                  <button
+                    type="button"
+                    className="master-photos-picker__remove"
+                    onClick={() => removePhoto(i)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input
+            ref={photosInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handlePhotosChange}
+          />
+          <button
+            type="button"
+            className="master-photo-picker__btn"
+            onClick={() => photosInputRef.current?.click()}
+          >
+            + Agregar fotos
+          </button>
+        </div>
       </StandardField>
     </StandardForm>
   )
@@ -336,6 +385,19 @@ const Vehiculos = () => {
             />
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
+              <Column
+                caption="📷"
+                width={48}
+                allowSorting={false}
+                allowResizing={false}
+                cellRender={({ data: d }) =>
+                  d.photos?.length > 0 ? (
+                    <img src={d.photos[0]} alt="" className="master-photo-thumb" />
+                  ) : (
+                    <span className="master-photo-thumb master-photo-thumb--empty">–</span>
+                  )
+                }
+              />
               <Column dataField="plate" caption={t('taxis.vehicles.fields.plate')} />
               <Column
                 dataField="active"
@@ -355,6 +417,12 @@ const Vehiculos = () => {
                 caption={t('taxis.vehicles.fields.year')}
                 dataType="number"
                 width={80}
+              />
+              <Column
+                dataField="comment"
+                caption="Comentario"
+                minWidth={160}
+                hidingPriority={3}
               />
               <Column
                 caption={t('taxis.vehicles.fields.drivers')}
@@ -436,7 +504,17 @@ const Vehiculos = () => {
                         <DetailRow label={t('taxis.vehicles.fields.brand')} value={data.brand} />
                         <DetailRow label={t('taxis.vehicles.fields.model')} value={data.model} />
                         <DetailRow label={t('taxis.vehicles.fields.year')} value={data.year} />
+                        <DetailRow label="Comentario" value={data.comment || null} />
                       </DetailSection>
+                      {data.photos?.length > 0 && (
+                        <DetailSection title="Fotos">
+                          <div className="master-photos-gallery">
+                            {data.photos.map((p, i) => (
+                              <img key={i} src={p} alt={`Foto ${i + 1}`} className="master-photos-gallery__img" />
+                            ))}
+                          </div>
+                        </DetailSection>
+                      )}
                       <DetailSection title={t('taxis.vehicles.fields.drivers')}>
                         {(() => {
                           const names = driversByPlate(data.plate)

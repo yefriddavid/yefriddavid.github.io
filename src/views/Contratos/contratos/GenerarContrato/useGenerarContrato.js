@@ -25,10 +25,8 @@ import {
   emptyForm,
   buildPayload,
   fillFormFromDoc,
-  compressImage,
-  pdfToSingleImage,
-  MAX_FILE_BYTES,
 } from './helpers'
+import { uploadImage, MAX_IMAGE_BYTES } from 'src/services/facade/imageFacade'
 
 export function useGenerarContrato() {
   const navigate = useNavigate()
@@ -363,7 +361,7 @@ export function useGenerarContrato() {
   const handleAttachFiles = async (files) => {
     if (!currentContract) return
     for (const file of Array.from(files)) {
-      if (file.size > MAX_FILE_BYTES) {
+      if (file.size > MAX_IMAGE_BYTES) {
         showToast(`"${file.name}" supera el límite de 5 MB.`, 'error')
         continue
       }
@@ -374,7 +372,7 @@ export function useGenerarContrato() {
         continue
       }
       try {
-        const data = isPdf ? await pdfToSingleImage(file) : await compressImage(file)
+        const data = await uploadImage(file)
         dispatch(
           contractAttachmentActions.createRequest({
             contractId: currentContract.id,

@@ -24,6 +24,7 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import { fmt } from 'src/utils/formatters'
+import { uploadImage, createPreview } from 'src/services/facade/imageFacade'
 import StatusBadge from 'src/components/shared/StatusBadge'
 import useIsMobile from 'src/hooks/useIsMobile'
 import './masters.scss'
@@ -39,6 +40,8 @@ const EMPTY = {
   active: true,
   startDate: '',
   endDate: '',
+  comment: '',
+  photo: null,
 }
 
 const DriverDetail = ({ data, vehicles }) => {
@@ -50,12 +53,18 @@ const DriverDetail = ({ data, vehicles }) => {
   return (
     <DetailPanel columns={2}>
       <DetailSection title="Datos personales">
+        {data.photo && (
+          <div className="master-photo-detail">
+            <img src={data.photo} alt={data.name} />
+          </div>
+        )}
         <DetailRow label="Nombre" value={data.name} />
         <DetailRow label="Cédula" value={data.idNumber} mono />
         <DetailRow label="Teléfono" value={data.phone} />
         <DetailRow label="Estado" value={data.active !== false ? 'Activo' : 'Inactivo'} />
         <DetailRow label="Fecha inicio" value={data.startDate || null} />
         <DetailRow label="Fecha fin" value={data.endDate || null} />
+        <DetailRow label="Comentario" value={data.comment || null} />
       </DetailSection>
       <DetailSection title="Liquidación por defecto">
         <DetailRow
@@ -89,13 +98,22 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
   } = useForm({ defaultValues: initial })
 
   const active = watch('active') ?? true
+  const [photo, setPhoto] = useState(initial?.photo ?? null)
+  const photoInputRef = useRef()
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const handle = await uploadImage(file)
+    setPhoto(handle)
+  }
 
   return (
     <StandardForm
       title={title}
       subtitle={subtitle}
       onCancel={onCancel}
-      onSave={handleSubmit(onSave)}
+      onSave={handleSubmit((data) => onSave({ ...data, photo }))}
       saving={saving}
     >
       <StandardField label="Nombre">
@@ -159,6 +177,43 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
         >
           {active !== false ? '✓ Activo' : '✗ Inactivo'}
         </button>
+      </StandardField>
+      <StandardField label="Comentario">
+        <input className={SF.input} placeholder="Observaciones opcionales" {...register('comment')} />
+      </StandardField>
+      <StandardField label="Foto">
+        <div className="master-photo-picker">
+          {photo && (
+            <div className="master-photo-picker__preview">
+              <img src={photo} alt="Foto conductor" />
+            </div>
+          )}
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handlePhotoChange}
+          />
+          <div className="master-photo-picker__actions">
+            <button
+              type="button"
+              className="master-photo-picker__btn"
+              onClick={() => photoInputRef.current?.click()}
+            >
+              {photo ? 'Cambiar foto' : '+ Agregar foto'}
+            </button>
+            {photo && (
+              <button
+                type="button"
+                className="master-photo-picker__btn master-photo-picker__btn--remove"
+                onClick={() => setPhoto(null)}
+              >
+                Quitar
+              </button>
+            )}
+          </div>
+        </div>
       </StandardField>
     </StandardForm>
   )
@@ -302,6 +357,20 @@ const Conductores = () => {
             dataSource={rows}
             noDataText="Sin conductores aún."
           >
+            <Column
+              dataField="photo"
+              caption=""
+              width={48}
+              allowSorting={false}
+              allowResizing={false}
+              cellRender={({ value }) =>
+                value ? (
+                  <img src={value} alt="" className="master-photo-thumb" />
+                ) : (
+                  <span className="master-photo-thumb master-photo-thumb--empty">–</span>
+                )
+              }
+            />
             <Column dataField="name" caption={t('taxis.drivers.fields.name')} minWidth={150} />
             <Column
               dataField="idNumber"
@@ -344,6 +413,12 @@ const Conductores = () => {
             >
               <Lookup dataSource={vehicleOptions} valueExpr="plate" displayExpr="label" />
             </Column>
+            <Column
+              dataField="comment"
+              caption="Comentario"
+              minWidth={160}
+              hidingPriority={5}
+            />
             <Column
               dataField="active"
               caption="Estado"

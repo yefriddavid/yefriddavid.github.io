@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { VaucherControlViewer } from './VaucherControlViewer'
 import { fetchAccountPayments } from './Services'
-import { pdfToSingleImage } from 'src/utils/fileHelpers'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import {
   CButton,
   CCol,
@@ -245,7 +245,7 @@ const NewPaymentCard = ({ account, onSave, onCancel, createPayment }) => {
     if (file.type === 'application/pdf') {
       setConverting(true)
       try {
-        const dataUrl = await pdfToSingleImage(file)
+        const dataUrl = await uploadImage(file)
         setVaucher(dataUrl)
       } catch {
       } finally {

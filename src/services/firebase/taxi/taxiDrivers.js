@@ -31,6 +31,8 @@ export const getDrivers = async () => {
         active: data.active !== false,
         startDate: data.startDate ?? null,
         endDate: data.endDate ?? null,
+        comment: data.comment ?? '',
+        photo: data.photo ?? null,
       }
     })
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
@@ -45,6 +47,8 @@ export const addDriver = async ({
   defaultVehicle,
   active,
   startDate,
+  comment,
+  photo,
 }) => {
   const ref = await taxiCall(() =>
     addDoc(collection(db, COL), {
@@ -57,6 +61,8 @@ export const addDriver = async ({
       active: active !== false,
       startDate: startDate || null,
       endDate: null,
+      comment: comment || null,
+      photo: photo ?? null,
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
     }),
@@ -76,6 +82,8 @@ export const updateDriver = async (
     active,
     startDate,
     endDate,
+    comment,
+    photo,
   },
 ) => {
   await taxiCall(() =>
@@ -89,6 +97,8 @@ export const updateDriver = async (
       active: active !== false,
       startDate: startDate || null,
       endDate: endDate || null,
+      comment: comment || null,
+      photo: photo ?? null,
     }),
   )
 }
