@@ -171,6 +171,11 @@ export function buildActaEntregaHtml(p) {
     <li><b>Aceptación:</b> Las partes manifiestan que aceptan los términos del contrato de arrendamiento en tiempo y forma, rigiéndose por lo aquí pactado y lo firmado en el documento principal.</li>
   </ul>
 
+  <h2>4. Convivencia y Uso del Inmueble</h2>
+  <ul>
+    <li><b>Ruidos y Escándalos:</b> Queda expresamente prohibido generar ruidos excesivos, escándalos o cualquier comportamiento que altere la tranquilidad y el orden dentro del inmueble y sus zonas comunes. El arrendatario se compromete a respetar la convivencia con los demás residentes del sector, absteniéndose de realizar actividades ruidosas en horarios nocturnos o que perturben la paz del vecindario.</li>
+  </ul>
+
   <div class="sign-grid">
     <div class="sign-block">
       <p><b>ARRENDATARIO:</b></p>
