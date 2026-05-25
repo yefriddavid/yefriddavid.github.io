@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { fieldLabel, fieldInput } from './helpers'
+import { fieldLabel, fieldInput, fmt } from './helpers'
 import FileUploadField from 'src/components/shared/FileUploadField'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -106,6 +106,11 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
         >
           {account.important && <span style={{ color: '#e03131', fontSize: 13 }}>★</span>}
           {account.name}
+          {account.defaultValue > 0 && (
+            <span style={{ color: '#1e3a5f', fontWeight: 700, marginLeft: 4 }}>
+              · {fmt(account.defaultValue)}
+            </span>
+          )}
         </div>
 
         {/* Amount */}
