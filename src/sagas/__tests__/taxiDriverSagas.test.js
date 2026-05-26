@@ -70,7 +70,8 @@ describe('taxiDriverSagas', () => {
       const gen = createDriver({ payload })
       expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
       expect(gen.next().value).toEqual(call(service.addDriver, payload))
-      gen.next('new-id') // success
+      gen.next('new-id') // successRequestCreate
+      gen.next()         // notify success
       expect(gen.next().done).toBe(true)
     })
 
@@ -92,6 +93,7 @@ describe('taxiDriverSagas', () => {
       expect(gen.next().value).toEqual(put(actions.beginRequestUpdate()))
       expect(gen.next().value).toEqual(call(service.updateDriver, payload.id, payload))
       expect(gen.next().value).toEqual(put(actions.successRequestUpdate(payload)))
+      gen.next() // notify success
       expect(gen.next().done).toBe(true)
     })
 
@@ -113,6 +115,7 @@ describe('taxiDriverSagas', () => {
       expect(gen.next().value).toEqual(put(actions.beginRequestDelete()))
       expect(gen.next().value).toEqual(call(service.deleteDriver, payload.id))
       expect(gen.next().value).toEqual(put(actions.successRequestDelete(payload)))
+      gen.next() // notify success
       expect(gen.next().done).toBe(true)
     })
 

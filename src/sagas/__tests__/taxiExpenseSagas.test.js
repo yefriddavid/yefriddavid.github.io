@@ -44,7 +44,8 @@ describe('taxiExpenseSagas', () => {
       const gen = createExpense({ payload })
       expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
       expect(gen.next().value).toEqual(call(service.createExpense, payload))
-      gen.next('new-id')
+      gen.next('new-id') // successRequestCreate
+      gen.next()         // notify success
       expect(gen.next().done).toBe(true)
     })
 
@@ -65,6 +66,7 @@ describe('taxiExpenseSagas', () => {
       expect(gen.next().value).toEqual(put(actions.beginRequestDelete()))
       expect(gen.next().value).toEqual(call(service.deleteExpense, payload.id))
       expect(gen.next().value).toEqual(put(actions.successRequestDelete(payload)))
+      gen.next() // notify success
       expect(gen.next().done).toBe(true)
     })
 

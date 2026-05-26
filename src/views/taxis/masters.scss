@@ -1,12 +1,23 @@
 .master-form-panel {
   padding: 20px 24px;
   border-bottom: 1px solid var(--cui-border-color);
-  max-width: 380px;
+  max-width: 620px;
 }
 
 .master-edit-panel {
   padding: 16px 24px;
-  max-width: 380px;
+  max-width: 620px;
+}
+
+.master-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cui-secondary-color);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--cui-border-color);
+  margin-top: 4px;
 }
 
 .master-actions {
@@ -335,6 +346,100 @@
 }
 
 // ── Photos gallery (vehicle detail panel) ─────────────────────────
+
+// ── Driver detail tabs ────────────────────────────────────────────────────────
+
+.master-detail-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px 0;
+  border-bottom: 1px solid var(--cui-border-color);
+  margin-bottom: 0;
+}
+
+.master-detail-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--cui-secondary-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+
+  &:hover {
+    color: var(--cui-body-color);
+  }
+
+  &--active {
+    color: var(--cui-primary);
+    border-bottom-color: var(--cui-primary);
+  }
+}
+
+// ── Driver generated docs panel ───────────────────────────────────────────────
+
+.driver-gen-docs {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--cui-border-color);
+  }
+
+  &__count {
+    font-size: 12px;
+    color: var(--cui-secondary-color);
+    flex: 1;
+  }
+
+  &__spinner {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  &__placeholders {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0 2px;
+  }
+
+  &__ph-label {
+    font-size: 11px;
+    color: var(--cui-secondary-color);
+  }
+
+  &__ph-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--cui-tertiary-bg);
+    border: 1px solid var(--cui-border-color);
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--cui-primary);
+    cursor: default;
+  }
+}
+
+// ── Info action button ────────────────────────────────────────────────────────
+
+.master-btn--info {
+  color: var(--cui-info);
+
+  &:hover {
+    background: rgba(var(--cui-info-rgb), 0.1);
+  }
+}
 
 .master-photos-gallery {
   display: flex;

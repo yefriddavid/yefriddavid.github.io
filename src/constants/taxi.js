@@ -80,3 +80,11 @@ export const TAXI_AUDIT_STATUS_DEFS = [
   { key: 'full', tKey: 'statusFull', color: '#2f9e44', bg: 'rgba(47,158,68,0.1)' },
   { key: 'future', tKey: 'statusFuture', color: '#868e96', bg: 'rgba(134,142,150,0.1)' },
 ]
+
+export const DRIVER_DOC_PLACEHOLDERS = [
+  { key: '[NombreConductor]', label: 'Nombre completo' },
+  { key: '[Cedula]', label: 'Cédula' },
+  { key: '[Telefono]', label: 'Teléfono' },
+  { key: '[Vehiculo]', label: 'Vehículo asignado' },
+  { key: '[Fecha]', label: 'Fecha de hoy' },
+]

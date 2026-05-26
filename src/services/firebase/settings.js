@@ -74,6 +74,7 @@ export const COL_TAXI_AUDIT_NOTES = 'Taxi_audit_notas'
 export const COL_TAXI_PERIOD_ATTACHMENTS = 'Taxi_period_attachments'
 export const COL_TAXI_VEHICLE_LOCATION_HISTORY = 'Taxi_vehicle_location_history'
 export const COL_TAXI_DRIVER_DOCUMENTS = 'Taxi_driver_documents'
+export const COL_TAXI_DRIVER_GEN_DOCS = 'Taxi_driver_gen_docs'
 
 // Finance
 export const COL_FINANCE_GRID_TRADES = 'Finance_grid_trades'

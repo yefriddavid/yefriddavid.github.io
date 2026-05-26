@@ -57,7 +57,8 @@ describe('taxiVehicleSagas', () => {
       const gen = createVehicle({ payload })
       expect(gen.next().value).toEqual(put(actions.beginRequestCreate()))
       expect(gen.next().value).toEqual(call(service.addVehicle, payload))
-      gen.next('new-id')
+      gen.next('new-id') // successRequestCreate
+      gen.next()         // notify success
       expect(gen.next().done).toBe(true)
     })
 
@@ -117,6 +118,7 @@ describe('taxiVehicleSagas', () => {
         call(service.updateRestrictions, payload.id, payload.restrictions),
       )
       expect(gen.next().value).toEqual(put(actions.successRequestUpdateRestrictions(payload)))
+      gen.next() // notify success
       expect(gen.next().done).toBe(true)
     })
 

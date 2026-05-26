@@ -17,6 +17,33 @@ vi.mock('@coreui/icons-react', () => ({ default: () => <span data-testid="icon" 
 vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilX: 'x', cilTrash: 'trash' }))
 vi.mock('src/views/taxis/masters.scss', () => ({}))
 
+vi.mock('src/hooks/useIsMobile', () => ({ default: vi.fn(() => false) }))
+
+vi.mock('src/services/facade/imageFacade', () => ({
+  uploadImage: vi.fn(),
+  createPreview: vi.fn(),
+}))
+
+vi.mock('src/components/shared/Spinner', () => ({
+  default: () => <span className="spinner-mock" />,
+}))
+
+vi.mock('src/components/shared/StatusBadge', () => ({
+  default: () => <span data-testid="status-badge" />,
+}))
+
+vi.mock('src/components/shared/StandardList/Index', () => ({
+  __esModule: true,
+  default: ({ data, emptyText }) => (
+    <div data-testid="standard-list">
+      {data?.length > 0
+        ? data.map((d, i) => <div key={d.id ?? i} data-testid="list-row"><span>{d.name}</span></div>)
+        : <span>{emptyText}</span>}
+    </div>
+  ),
+  SL: { mono: '', label: '', muted: '' },
+}))
+
 vi.mock('@coreui/react', () => ({
   CCard: ({ children, className, style }) => (
     <div className={className} style={style}>
@@ -29,7 +56,6 @@ vi.mock('@coreui/react', () => ({
     </div>
   ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
-  CSpinner: () => <span className="spinner-border" />,
   CBadge: ({ children }) => <span>{children}</span>,
   CAlert: ({ children }) => <div>{children}</div>,
   CButton: ({ children, onClick, disabled }) => (
@@ -39,6 +65,10 @@ vi.mock('@coreui/react', () => ({
   ),
   CCollapse: ({ visible, children }) =>
     visible ? <div data-testid="collapse">{children}</div> : null,
+  CModal: ({ visible, children }) => (visible ? <div data-testid="modal">{children}</div> : null),
+  CModalHeader: ({ children }) => <div>{children}</div>,
+  CModalTitle: ({ children }) => <h5>{children}</h5>,
+  CModalBody: ({ children }) => <div>{children}</div>,
   CRow: ({ children }) => <div>{children}</div>,
   CCol: ({ children }) => <div>{children}</div>,
   CFormSelect: ({ children, onChange, value, className }) => (
@@ -154,7 +184,7 @@ describe('Conductores (Drivers)', () => {
 
     it('shows spinner while loading (fetching=true and data=null)', () => {
       renderWithRedux(driverState({ data: null, fetching: true }))
-      expect(document.querySelector('.spinner-border')).toBeTruthy()
+      expect(document.querySelector('.spinner-mock')).toBeTruthy()
     })
   })
 

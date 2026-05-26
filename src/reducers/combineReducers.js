@@ -13,6 +13,7 @@ import taxiAuditNote from './taxi/taxiAuditNoteReducer'
 import taxiPeriodNote from './taxi/taxiPeriodNoteReducer'
 import taxiPeriodAttachment from './taxi/taxiPeriodAttachmentReducer'
 import taxiDriverDocument from './taxi/taxiDriverDocumentReducer'
+import taxiDriverGenDoc from './taxi/taxiDriverGenDocReducer'
 import vehicleLocationHistory from './taxi/vehicleLocationHistoryReducer'
 import currentPositions from './taxi/currentPositionsReducer'
 import vehicleRoute from './taxi/vehicleRouteReducer'
@@ -59,6 +60,7 @@ const combinedReducers = combineReducers({
   taxiPeriodNote,
   taxiPeriodAttachment,
   taxiDriverDocument,
+  taxiDriverGenDoc,
   vehicleLocationHistory,
   currentPositions,
   vehicleRoute,

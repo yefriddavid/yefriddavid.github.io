@@ -141,6 +141,22 @@ export const OCR_RULES = [
     },
   },
 
+  // ── Nequi (Envío a banco) ────────────────────────────────────────────────────
+  {
+    label: 'Nequi',
+    trigger: /nequi|env[ií]o\s+a\s+banco/i,
+    getIdentifier(text) {
+      const m = text.match(/n[uú]mero\s+de\s+cuenta\s*[\n\r:]*\s*(\d+)/i)
+      return m?.[1] ?? null
+    },
+    getAmount(text) {
+      const m = text.match(/¿cu[aá]nto\?\s*[\n\r]*\s*\$?\s*([\d.,\s]+)/i)
+      if (m) return m[1]
+      const f = text.match(/\$\s*([\d.,\s]+)/)
+      return f?.[1] ?? null
+    },
+  },
+
   // ── Predial (Impuesto predial) ───────────────────────────────────────────────
   {
     label: 'Predial',
@@ -163,19 +179,34 @@ export const OCR_RULES = [
   },
 ]
 
+// ── Date parser ────────────────────────────────────────────────────────────────
+
+const MONTH_MAP = {
+  enero: '01', febrero: '02', marzo: '03', abril: '04',
+  mayo: '05', junio: '06', julio: '07', agosto: '08',
+  septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12',
+}
+
+export function extractDateFromText(text) {
+  const m = text.match(
+    /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})/i,
+  )
+  if (!m) return null
+  const day = m[1].padStart(2, '0')
+  const month = MONTH_MAP[m[2].toLowerCase()]
+  const year = m[3]
+  return `${year}-${month}-${day}`
+}
+
 // ── Engine ─────────────────────────────────────────────────────────────────────
 
-/**
- * Runs the rule engine against OCR text.
- * Returns { rule, identifier, rawAmount } for the first matching rule,
- * or null if no rule matches.
- */
 export function applyOcrRules(text) {
   for (const rule of OCR_RULES) {
     if (!rule.trigger.test(text)) continue
     const identifier = rule.getIdentifier(text)
     const rawAmount = rule.getAmount(text)
-    return { rule, identifier, rawAmount }
+    const date = extractDateFromText(text)
+    return { rule, identifier, rawAmount, date }
   }
   return null
 }
@@ -187,5 +218,5 @@ export function applyOcrRules(text) {
 export function findAccountByIdentifier(identifier, masters) {
   if (!identifier || !masters) return null
   const id = identifier.trim()
-  return masters.find((a) => a.name.includes(id)) ?? null
+  return masters.find((a) => a.bankAccountNumber === id || a.name.includes(id)) ?? null
 }

@@ -16,7 +16,7 @@ import {
   CModalBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX, cilTrash, cilPencil } from '@coreui/icons'
+import { cilPlus, cilX, cilTrash, cilPencil, cilDescription } from '@coreui/icons'
 import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import { useForm } from 'react-hook-form'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
@@ -27,6 +27,7 @@ import { fmt } from 'src/utils/formatters'
 import { uploadImage, createPreview } from 'src/services/facade/imageFacade'
 import StatusBadge from 'src/components/shared/StatusBadge'
 import useIsMobile from 'src/hooks/useIsMobile'
+import DriverGenDocsPanel from './DriverGenDocsPanel'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -44,7 +45,7 @@ const EMPTY = {
   photo: null,
 }
 
-const DriverDetail = ({ data, vehicles }) => {
+const DriverDataDetail = ({ data, vehicles }) => {
   const vehicle = (vehicles ?? []).find((v) => v.plate === data.defaultVehicle)
   const vehicleLabel = vehicle
     ? `${vehicle.plate}${vehicle.brand ? ` · ${vehicle.brand}` : ''}`
@@ -78,6 +79,33 @@ const DriverDetail = ({ data, vehicles }) => {
         <DetailRow label="Taxi por defecto" value={vehicleLabel} mono />
       </DetailSection>
     </DetailPanel>
+  )
+}
+
+const DriverDetailTabs = ({ data, vehicles }) => {
+  const [tab, setTab] = useState('datos')
+  return (
+    <div>
+      <div className="master-detail-tabs">
+        <button
+          className={`master-detail-tab${tab === 'datos' ? ' master-detail-tab--active' : ''}`}
+          onClick={() => setTab('datos')}
+        >
+          Datos
+        </button>
+        <button
+          className={`master-detail-tab${tab === 'documentos' ? ' master-detail-tab--active' : ''}`}
+          onClick={() => setTab('documentos')}
+        >
+          <CIcon icon={cilDescription} size="sm" /> Documentos
+        </button>
+      </div>
+      {tab === 'datos' ? (
+        <DriverDataDetail data={data} vehicles={vehicles} />
+      ) : (
+        <DriverGenDocsPanel driver={data} isMobile={false} />
+      )}
+    </div>
   )
 }
 
@@ -116,6 +144,7 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
       onSave={handleSubmit((data) => onSave({ ...data, photo }))}
       saving={saving}
     >
+      <div className="master-section-label">Datos personales</div>
       <StandardField label="Nombre">
         <input
           className={SF.input}
@@ -124,97 +153,111 @@ const DriverForm = ({ initial, vehicles, onSave, onCancel, saving, title, subtit
         />
         {fieldError(errors.name)}
       </StandardField>
-      <StandardField label="Cédula">
-        <input
-          className={SF.input}
-          placeholder="123456789"
-          {...register('idNumber', { required: 'La cédula es obligatoria' })}
-        />
-        {fieldError(errors.idNumber)}
-      </StandardField>
-      <StandardField label="Teléfono">
-        <input className={SF.input} placeholder="300 000 0000" {...register('phone')} />
-      </StandardField>
-      <StandardField label="Liq. normal">
-        <input
-          className={SF.input}
-          type="number"
-          placeholder="85000"
-          {...register('defaultAmount')}
-        />
-      </StandardField>
-      <StandardField label="Liq. domingo">
-        <input
-          className={SF.input}
-          type="number"
-          placeholder="0"
-          {...register('defaultAmountSunday')}
-        />
-      </StandardField>
-      <StandardField label="Taxi por defecto">
-        <select className={SF.select} {...register('defaultVehicle')}>
-          <option value="">— Ninguno —</option>
-          {(vehicles ?? []).map((v) => (
-            <option key={v.id} value={v.plate}>
-              {v.plate}
-              {v.brand ? ` · ${v.brand}` : ''}
-              {v.active === false ? ' (Inactivo)' : ''}
-            </option>
-          ))}
-        </select>
-      </StandardField>
-      <StandardField label="Fecha inicio">
-        <input className={SF.input} type="date" {...register('startDate')} />
-      </StandardField>
-      <StandardField label="Fecha fin">
-        <input className={SF.input} type="date" {...register('endDate')} />
-      </StandardField>
-      <StandardField label="Estado">
-        <button
-          type="button"
-          onClick={() => setValue('active', !active)}
-          className={`master-toggle-btn${active !== false ? ' master-toggle-btn--active' : ' master-toggle-btn--inactive'}`}
-        >
-          {active !== false ? '✓ Activo' : '✗ Inactivo'}
-        </button>
-      </StandardField>
-      <StandardField label="Comentario">
-        <input className={SF.input} placeholder="Observaciones opcionales" {...register('comment')} />
-      </StandardField>
-      <StandardField label="Foto">
-        <div className="master-photo-picker">
-          {photo && (
-            <div className="master-photo-picker__preview">
-              <img src={photo} alt="Foto conductor" />
-            </div>
-          )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        <StandardField label="Cédula">
           <input
-            ref={photoInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handlePhotoChange}
+            className={SF.input}
+            placeholder="123456789"
+            {...register('idNumber', { required: 'La cédula es obligatoria' })}
           />
-          <div className="master-photo-picker__actions">
-            <button
-              type="button"
-              className="master-photo-picker__btn"
-              onClick={() => photoInputRef.current?.click()}
-            >
-              {photo ? 'Cambiar foto' : '+ Agregar foto'}
-            </button>
+          {fieldError(errors.idNumber)}
+        </StandardField>
+        <StandardField label="Teléfono">
+          <input className={SF.input} placeholder="300 000 0000" {...register('phone')} />
+        </StandardField>
+      </div>
+
+      <div className="master-section-label">Liquidación por defecto</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
+        <StandardField label="Liq. normal">
+          <input
+            className={SF.input}
+            type="number"
+            placeholder="85000"
+            {...register('defaultAmount')}
+          />
+        </StandardField>
+        <StandardField label="Liq. domingo">
+          <input
+            className={SF.input}
+            type="number"
+            placeholder="0"
+            {...register('defaultAmountSunday')}
+          />
+        </StandardField>
+        <StandardField label="Taxi por defecto">
+          <select className={SF.select} {...register('defaultVehicle')}>
+            <option value="">— Ninguno —</option>
+            {(vehicles ?? []).map((v) => (
+              <option key={v.id} value={v.plate}>
+                {v.plate}
+                {v.brand ? ` · ${v.brand}` : ''}
+                {v.active === false ? ' (Inactivo)' : ''}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
+
+      <div className="master-section-label">Vigencia y estado</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
+        <StandardField label="Fecha inicio">
+          <input className={SF.input} type="date" {...register('startDate')} />
+        </StandardField>
+        <StandardField label="Fecha fin">
+          <input className={SF.input} type="date" {...register('endDate')} />
+        </StandardField>
+        <StandardField label="Estado">
+          <button
+            type="button"
+            onClick={() => setValue('active', !active)}
+            className={`master-toggle-btn${active !== false ? ' master-toggle-btn--active' : ' master-toggle-btn--inactive'}`}
+          >
+            {active !== false ? '✓ Activo' : '✗ Inactivo'}
+          </button>
+        </StandardField>
+      </div>
+
+      <div className="master-section-label">Observaciones y foto</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 0, alignItems: 'start' }}>
+        <StandardField label="Comentario">
+          <input className={SF.input} placeholder="Observaciones opcionales" {...register('comment')} />
+        </StandardField>
+        <StandardField label="Foto">
+          <div className="master-photo-picker">
             {photo && (
+              <div className="master-photo-picker__preview">
+                <img src={photo} alt="Foto conductor" />
+              </div>
+            )}
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handlePhotoChange}
+            />
+            <div className="master-photo-picker__actions">
               <button
                 type="button"
-                className="master-photo-picker__btn master-photo-picker__btn--remove"
-                onClick={() => setPhoto(null)}
+                className="master-photo-picker__btn"
+                onClick={() => photoInputRef.current?.click()}
               >
-                Quitar
+                {photo ? 'Cambiar' : '+ Foto'}
               </button>
-            )}
+              {photo && (
+                <button
+                  type="button"
+                  className="master-photo-picker__btn master-photo-picker__btn--remove"
+                  onClick={() => setPhoto(null)}
+                >
+                  Quitar
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </StandardField>
+        </StandardField>
+      </div>
     </StandardForm>
   )
 }
@@ -229,6 +272,7 @@ const Conductores = () => {
 
   const [showCreate, setShowCreate] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
+  const [docsDriver, setDocsDriver] = useState(null)
 
   useEffect(() => {
     dispatch(taxiDriverActions.fetchRequest())
@@ -347,6 +391,7 @@ const Conductores = () => {
             }}
             renderActions={(d) => [
               { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(d) },
+              { icon: cilDescription, color: 'info', title: 'Documentos', onClick: () => setDocsDriver(d) },
               { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(d.id) },
             ]}
           />
@@ -466,7 +511,7 @@ const Conductores = () => {
                     />
                   </div>
                 ) : (
-                  <DriverDetail data={data} vehicles={vehicles} />
+                  <DriverDetailTabs data={data} vehicles={vehicles} />
                 )
               }
             />
@@ -510,6 +555,18 @@ const Conductores = () => {
               onCancel={handleEditCancel}
               saving={fetching}
             />
+          </CModalBody>
+        </CModal>
+      )}
+
+      {/* Documents modal — mobile */}
+      {isMobile && docsDriver && (
+        <CModal visible onClose={() => setDocsDriver(null)} size="lg" scrollable>
+          <CModalHeader>
+            <CModalTitle>Documentos — {docsDriver.name}</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <DriverGenDocsPanel driver={docsDriver} isMobile={true} />
           </CModalBody>
         </CModal>
       )}

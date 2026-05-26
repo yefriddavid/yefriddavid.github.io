@@ -380,7 +380,7 @@ export default function AccountStatus() {
         )}
         {/* OCR importer  */}
         <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
-          <OcrReceiptImporter masters={masters} monthStr={monthStr} onConfirm={handleSavePayment} />
+          <OcrReceiptImporter masters={masters} monthStr={monthStr} transactions={transactions} onConfirm={handleSavePayment} />
         </div>
       </div>
 

@@ -10,6 +10,8 @@ vi.mock('@coreui/react', () => ({
 vi.mock('src/constants/cashFlow', () => ({
   ACCOUNT_CATEGORIES: ['Gastos Fijos', 'Servicios', 'Otros'],
   PAYMENT_METHODS: ['Cash', 'Transferencia', 'Débito automático'],
+  BANK_NAMES: ['Bancolombia', 'Davivienda', 'Banco de Bogotá', 'BBVA', 'Itaú', 'Nequi', 'Daviplata', 'Av Villas', 'Otro'],
+  BANK_ACCOUNT_TYPES: ['Ahorros', 'Corriente', 'Nómina', 'Billetera digital'],
 }))
 
 vi.mock('src/utils/moment', () => {

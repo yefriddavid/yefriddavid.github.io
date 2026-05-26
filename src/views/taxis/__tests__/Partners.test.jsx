@@ -20,6 +20,14 @@ vi.mock('@coreui/icons', () => ({
   cilPencil: 'pencil',
   cilTrash: 'trash',
 }))
+vi.mock('src/views/taxis/masters.scss', () => ({}))
+vi.mock('src/views/movements/payments/Payments.scss', () => ({}))
+
+vi.mock('src/hooks/useIsMobile', () => ({ default: vi.fn(() => false) }))
+
+vi.mock('src/components/shared/Spinner', () => ({
+  default: () => <span className="spinner-mock" />,
+}))
 
 vi.mock('@coreui/react', () => ({
   CCard: ({ children, className, style }) => (
@@ -33,7 +41,6 @@ vi.mock('@coreui/react', () => ({
     </div>
   ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
-  CSpinner: () => <span className="spinner-border" />,
   CBadge: ({ children }) => <span>{children}</span>,
   CAlert: ({ children }) => <div>{children}</div>,
   CButton: ({ children, onClick, disabled }) => (
@@ -43,8 +50,24 @@ vi.mock('@coreui/react', () => ({
   ),
   CCollapse: ({ visible, children }) =>
     visible ? <div data-testid="collapse">{children}</div> : null,
+  CModal: ({ visible, children }) => (visible ? <div data-testid="modal">{children}</div> : null),
+  CModalHeader: ({ children }) => <div>{children}</div>,
+  CModalTitle: ({ children }) => <h5>{children}</h5>,
+  CModalBody: ({ children }) => <div>{children}</div>,
   CRow: ({ children }) => <div>{children}</div>,
   CCol: ({ children }) => <div>{children}</div>,
+}))
+
+vi.mock('src/components/shared/StandardCard/Index', () => ({
+  __esModule: true,
+  default: ({ data, emptyText }) => (
+    <div data-testid="standard-card">
+      {data?.length > 0
+        ? data.map((d, i) => <div key={d.id ?? i} data-testid="card-row"><span>{d.name}</span></div>)
+        : <span>{emptyText}</span>}
+    </div>
+  ),
+  SC: { mono: '', tag: '', label: '', muted: '' },
 }))
 
 vi.mock('src/components/shared/StandardGrid/Index', () => ({
