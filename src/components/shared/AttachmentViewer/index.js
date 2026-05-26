@@ -35,9 +35,15 @@ async function share(dataUrl, filename) {
   }
 }
 
+async function copyImageToClipboard(dataUrl) {
+  const blob = base64ToBlob(dataUrl)
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+}
+
 export default function AttachmentViewer({ src, filename, onClose }) {
   const [zoom, setZoom] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleShare = async () => {
     setSharing(true)
@@ -45,7 +51,18 @@ export default function AttachmentViewer({ src, filename, onClose }) {
     setSharing(false)
   }
 
+  const handleCopy = async () => {
+    try {
+      await copyImageToClipboard(src)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // fallback silencioso — el navegador puede denegar el permiso
+    }
+  }
+
   const canShare = !!(navigator.share || navigator.canShare)
+  const canCopy = !!(navigator.clipboard?.write && typeof ClipboardItem !== 'undefined')
 
   return (
     <div className="attachment-viewer" onClick={onClose}>
@@ -59,6 +76,15 @@ export default function AttachmentViewer({ src, filename, onClose }) {
           >
             ⬇
           </button>
+          {canCopy && (
+            <button
+              className={`attachment-viewer__btn${copied ? ' attachment-viewer__btn--copied' : ''}`}
+              onClick={handleCopy}
+              title="Copiar imagen"
+            >
+              {copied ? '✓' : '⎘'}
+            </button>
+          )}
           {canShare && (
             <button
               className={`attachment-viewer__btn${sharing ? ' attachment-viewer__btn--disabled' : ''}`}

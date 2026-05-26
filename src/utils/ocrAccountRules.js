@@ -1,22 +1,28 @@
 /**
  * OCR Receipt Rules
  *
- * Each entry represents a type of payment receipt. When a receipt image is
- * processed, the engine tries each rule in order until one matches.
+ * Each entry in OCR_RULES represents a type of payment receipt (EPM, Nequi, etc.).
+ * The engine (applyOcrRules) tries each rule in order and returns on the first match.
  *
- * Structure of each rule:
- *   label        – Human-readable name for this receipt type
- *   trigger      – Regex tested against the full OCR text to detect this type
- *   getIdentifier(text) – Extracts the contract/reference number that will be
- *                         matched against account master names
- *   getAmount(text)     – Returns the raw amount string (digits + separators)
- *                         from the receipt; null if not found
+ * Rule structure:
+ *   label            – Display name shown to the user in the confirmation step
+ *   trigger          – Regex tested against the full OCR text to detect this receipt type
+ *   getIdentifier()  – Extracts the contract/account number used to match an account master.
+ *                      Matching priority: master.bankAccountNumber === id, then master.name.includes(id)
+ *   getAmount()      – Returns the raw amount string; null if not found
+ *
+ * Date extraction (extractDateFromText) runs automatically on any matched receipt —
+ * no need to add getDate() to each rule. It parses Spanish long-form dates
+ * ("05 de mayo de 2026", "2 De Mayo De 2026") and returns YYYY-MM-DD.
  *
  * To add a new receipt type:
- *   1. Copy an existing entry
- *   2. Set a trigger regex that uniquely identifies it
- *   3. Write getIdentifier() using the label/field that precedes the number
- *   4. Write getAmount() pointing to the "total paid" field
+ *   1. Add an entry to OCR_RULES (copy an existing one as template)
+ *   2. Set trigger to a regex that uniquely identifies this receipt (company name, header, etc.)
+ *   3. Write getIdentifier() to extract the contract/account number from the OCR text
+ *   4. Write getAmount() pointing to the total paid field
+ *   5. In the account master record, set bankAccountNumber to the value getIdentifier() will extract
+ *   6. Add a real receipt image to src/utils/__tests__/fixtures/ocr/ and add a case to
+ *      receiptAnalyzer.integration.test.js to verify end-to-end
  */
 
 // Shared amount parser (used by individual getAmount implementations)
