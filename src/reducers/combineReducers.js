@@ -44,6 +44,7 @@ import domoticaCommandProfile from './domotica/domoticaCommandProfileReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
 import notifications from './notificationsSlice'
 import errorLog from './system/errorLogReducer'
+import inmobiliariaDesign from './inmobiliaria/designReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -91,6 +92,7 @@ const combinedReducers = combineReducers({
   domoticaSolarBattery,
   notifications,
   errorLog,
+  inmobiliariaDesign,
 })
 
 export default combinedReducers

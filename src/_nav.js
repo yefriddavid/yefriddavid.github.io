@@ -135,10 +135,23 @@ const getNav = (t, role) => {
 
 
   items.push({
-    component: CNavItem,
-    name: 'Contratos de alquiler',
-    to: '/contratos/generar',
-    icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+    component: CNavGroup,
+    name: 'Inmobiliaria',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Contratos de alquiler',
+        to: '/contratos/generar',
+        icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Designs',
+        to: '/inmobiliaria/designs',
+        icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
+      },
+    ],
   })
 
 

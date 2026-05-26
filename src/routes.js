@@ -19,6 +19,7 @@ const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects
 const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
 const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
+const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
@@ -133,6 +134,14 @@ const routes = [
     longName: 'Distribución Salarial',
     tKey: 'nav.salaryDistribution',
     element: SalaryDistribution,
+    landingPage: true,
+  },
+  {
+    path: '/inmobiliaria/designs',
+    name: 'Designs',
+    longName: 'Diseños — Inmobiliaria',
+    tKey: 'nav.inmobiliariaDesigns',
+    element: InmobiliariaDesigns,
     landingPage: true,
   },
 ]
