@@ -79,16 +79,19 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
   const propDragging = useRef(false)
   const bldgDragging = useRef(false)
   const lastDragPos = useRef({ x: 0, y: 0 })
+  const [activeCircle, setActiveCircle] = useState(null)
 
   const startPropDrag = (e) => {
     if (!onPropertyDrag) return
     propDragging.current = true
+    setActiveCircle('prop')
     lastDragPos.current = { x: e.clientX, y: e.clientY }
     e.preventDefault()
   }
   const startBldgDrag = (e) => {
     if (!onBuildingDrag) return
     bldgDragging.current = true
+    setActiveCircle('bldg')
     lastDragPos.current = { x: e.clientX, y: e.clientY }
     e.preventDefault()
   }
@@ -105,6 +108,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
   const stopDrag = () => {
     propDragging.current = false
     bldgDragging.current = false
+    setActiveCircle(null)
   }
 
   useEffect(() => {
@@ -328,6 +332,25 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
           {`📱 ${phone}`}
         </text>
       )}
+
+      {/* ── Drag crosshair guides ── */}
+      {activeCircle && (() => {
+        const cx = activeCircle === 'prop' ? 1062 : 878
+        const cy = activeCircle === 'prop' ? 5 : 960
+        return (
+          <>
+            <line x1="0" y1={cy} x2="1080" y2={cy}
+              stroke="rgba(0,180,255,0.55)" strokeWidth="2.5"
+              strokeDasharray="14,8" pointerEvents="none" />
+            <line x1={cx} y1="0" x2={cx} y2="1400"
+              stroke="rgba(0,180,255,0.55)" strokeWidth="2.5"
+              strokeDasharray="14,8" pointerEvents="none" />
+            <circle cx={cx} cy={cy} r="10"
+              fill="none" stroke="rgba(0,180,255,0.8)" strokeWidth="2"
+              pointerEvents="none" />
+          </>
+        )
+      })()}
     </svg>
   )
 })

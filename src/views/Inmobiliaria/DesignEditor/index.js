@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { CButton, CRow, CCol } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilArrowLeft } from '@coreui/icons'
+import { cilArrowLeft, cilFullscreen, cilX, cilCopy, cilCheck } from '@coreui/icons'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/inmobiliaria/designActions'
@@ -68,6 +68,31 @@ const compressPhoto = (file) =>
     img.src = url
   })
 
+const copyToClipboard = (svgEl) => {
+  const clone = svgEl.cloneNode(true)
+  clone.setAttribute('width', SVG_W)
+  clone.setAttribute('height', SVG_H)
+  const svgStr = new XMLSerializer().serializeToString(clone)
+  const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' }))
+  const blobPromise = new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = SVG_W
+      canvas.height = SVG_H
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, SVG_W, SVG_H)
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
+    }
+    img.onerror = reject
+    img.src = url
+  })
+  return navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })])
+}
+
 const downloadFlyer = (svgEl, format, name) => {
   const clone = svgEl.cloneNode(true)
   clone.setAttribute('width', SVG_W)
@@ -107,6 +132,9 @@ const DesignEditorPage = () => {
   const svgRef = useRef(null)
   const photoInputRef = useRef(null)
   const buildingInputRef = useRef(null)
+  const [zoom, setZoom] = useState(100)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const {
     register,
@@ -192,6 +220,23 @@ const DesignEditorPage = () => {
     setValue('buildingPhotoX', (getValues('buildingPhotoX') || 0) + dx)
     setValue('buildingPhotoY', (getValues('buildingPhotoY') || 0) + dy)
   }
+
+  const handleCopyClipboard = async () => {
+    try {
+      await copyToClipboard(svgRef.current)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch (e) {
+      console.error('clipboard write failed', e)
+    }
+  }
+
+  useEffect(() => {
+    if (!fullscreen) return
+    const onKey = (e) => { if (e.key === 'Escape') setFullscreen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [fullscreen])
 
   if (!isNew && loading) return <Spinner mode="section" />
   if (!isNew && !loading && !current) return null
@@ -529,8 +574,51 @@ const DesignEditorPage = () => {
         {/* ── Live preview ── */}
         <CCol md={6}>
           <div className="im-designs__preview-col">
-            <div className="im-designs__preview-label">Vista previa</div>
-            <div className="im-designs__preview-wrap">
+            {/* Canvas toolbar */}
+            <div className="im-designs__canvas-toolbar">
+              <span className="im-designs__canvas-label">Canvas</span>
+              <div className="im-designs__zoom-controls">
+                <button
+                  className="im-designs__canvas-btn"
+                  onClick={() => setZoom((z) => Math.max(50, z - 25))}
+                  disabled={zoom <= 50}
+                  title="Reducir zoom"
+                >−</button>
+                <button
+                  className="im-designs__zoom-value"
+                  onClick={() => setZoom(100)}
+                  title="Restablecer al 100%"
+                >{zoom}%</button>
+                <button
+                  className="im-designs__canvas-btn"
+                  onClick={() => setZoom((z) => Math.min(200, z + 25))}
+                  disabled={zoom >= 200}
+                  title="Ampliar zoom"
+                >+</button>
+              </div>
+              <div className="im-designs__canvas-actions">
+                <button
+                  className={`im-designs__canvas-btn${copied ? ' im-designs__canvas-btn--success' : ''}`}
+                  onClick={handleCopyClipboard}
+                  title="Copiar como imagen"
+                >
+                  <CIcon icon={copied ? cilCheck : cilCopy} />
+                </button>
+                <button
+                  className="im-designs__canvas-btn"
+                  onClick={() => setFullscreen(true)}
+                  title="Pantalla completa (Esc para cerrar)"
+                >
+                  <CIcon icon={cilFullscreen} />
+                </button>
+              </div>
+            </div>
+
+            {/* Flyer */}
+            <div
+              className="im-designs__preview-wrap"
+              style={{ maxWidth: `${Math.round(560 * zoom / 100)}px` }}
+            >
               <FlyerPreview
                 ref={svgRef}
                 values={values}
@@ -538,8 +626,10 @@ const DesignEditorPage = () => {
                 onBuildingDrag={handleBuildingDrag}
               />
             </div>
+
+            {/* Download bar */}
             <div className="im-designs__download-bar">
-              <span className="im-designs__download-label">Descargar como:</span>
+              <span className="im-designs__download-label">Descargar:</span>
               {['png', 'jpg', 'jpeg'].map((fmt) => (
                 <CButton
                   key={fmt}
@@ -553,6 +643,22 @@ const DesignEditorPage = () => {
               ))}
             </div>
           </div>
+
+          {/* Fullscreen overlay */}
+          {fullscreen && (
+            <div className="im-designs__fullscreen-overlay" onClick={() => setFullscreen(false)}>
+              <div className="im-designs__fullscreen-inner" onClick={(e) => e.stopPropagation()}>
+                <button className="im-designs__fullscreen-close" onClick={() => setFullscreen(false)}>
+                  <CIcon icon={cilX} />
+                </button>
+                <FlyerPreview
+                  values={values}
+                  onPropertyDrag={handlePropertyDrag}
+                  onBuildingDrag={handleBuildingDrag}
+                />
+              </div>
+            </div>
+          )}
         </CCol>
       </CRow>
     </div>
