@@ -25,13 +25,12 @@ function* loadPlano({ payload }) {
   }
 }
 
-function* createPlano({ payload: { navigate, ...data } }) {
+function* createPlano({ payload }) {
   try {
     yield put(actions.beginRequestCreate())
-    const id = yield call(service.addPlano, data)
-    yield put(actions.successRequestCreate({ id, ...data }))
+    const id = yield call(service.addPlano, payload)
+    yield put(actions.successRequestCreate({ id, ...payload }))
     yield put(notify({ type: 'success', message: 'Plano creado correctamente.' }))
-    if (navigate) navigate(`/inmobiliaria/planos/${id}`, { replace: true })
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
     yield put(notify({ type: 'error', message: `Error: ${e.message}` }))

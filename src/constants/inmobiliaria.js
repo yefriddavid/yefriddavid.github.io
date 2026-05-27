@@ -1,7 +1,7 @@
 // ─── Planos designer constants ───────────────────────────────────────────────
 
 export const GRID_SIZE = 20 // px per grid cell
-export const WALL_THICKNESS = 8 // px
+export const WALL_THICKNESS = 4 // px
 export const PIXELS_PER_METER = 40 // 2 cells = 1 m
 export const CANVAS_W = 2000
 export const CANVAS_H = 1500
@@ -24,6 +24,13 @@ export const FURNITURE_CATALOG = [
   { type: 'table_dining', label: 'Mesa comedor', category: 'dining', w: 120, h: 80 },
   { type: 'chair', label: 'Silla', category: 'dining', w: 40, h: 40 },
   { type: 'desk', label: 'Escritorio', category: 'office', w: 120, h: 60 },
+  { type: 'patio', label: 'Patio', category: 'outdoor', w: 160, h: 160 },
+  { type: 'jardin', label: 'Jardín', category: 'outdoor', w: 160, h: 160 },
+  { type: 'terraza', label: 'Terraza', category: 'outdoor', w: 160, h: 120 },
+  { type: 'balcon', label: 'Balcón', category: 'outdoor', w: 120, h: 60 },
+  { type: 'acera', label: 'Acera', category: 'outdoor', w: 200, h: 60 },
+  { type: 'frente', label: 'Frente', category: 'outdoor', w: 240, h: 60 },
+  { type: 'garaje', label: 'Garaje', category: 'outdoor', w: 120, h: 200 },
 ]
 
 export const FURNITURE_CATALOG_MAP = Object.fromEntries(FURNITURE_CATALOG.map((f) => [f.type, f]))
@@ -35,6 +42,7 @@ export const FURNITURE_CATEGORIES = [
   { key: 'living', label: 'Sala' },
   { key: 'dining', label: 'Comedor' },
   { key: 'office', label: 'Oficina' },
+  { key: 'outdoor', label: 'Exterior' },
 ]
 
 export const PLANO_TOOLS = [
@@ -53,6 +61,7 @@ export const EMPTY_PLANO = {
   windows: [],
   furniture: [],
   labels: [],
+  zOrder: [],
 }
 
 // ─── Design template constants ────────────────────────────────────────────────

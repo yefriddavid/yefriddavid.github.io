@@ -69,7 +69,15 @@ const Toolbar = ({ tool, onToolChange }) => {
       <div className="pe-toolbar__divider" />
 
       <div className="pe-toolbar__hint">
-        {tool === 'select' && <p>Click para seleccionar · R para rotar · Supr para borrar</p>}
+        {tool === 'select' && (
+          <p>
+            Click · R rotar · Supr borrar
+            <br />
+            Ctrl+C copiar · Ctrl+V pegar
+            <br />
+            Ctrl+D duplicar · ↑↓←→ mover
+          </p>
+        )}
         {tool === 'wall' && <p>Click para inicio · Click para fin · Esc para cancelar</p>}
         {tool === 'door' && <p>Click para colocar · R para rotar</p>}
         {tool === 'window' && <p>Click para colocar · R para rotar</p>}
