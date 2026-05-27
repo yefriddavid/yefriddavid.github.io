@@ -5,8 +5,10 @@ const designSlice = createSlice({
   name: 'inmobiliariaDesign',
   initialState: {
     list: null,
+    current: null,
     selected: null,
     fetching: false,
+    loading: false,
     saving: false,
     error: null,
   },
@@ -18,6 +20,20 @@ const designSlice = createSlice({
       })
       .addCase(actions.clearDesign, (state) => {
         state.selected = null
+        state.current = null
+      })
+
+      .addCase(actions.beginRequestLoad, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(actions.successRequestLoad, (state, { payload }) => {
+        state.current = payload
+        state.loading = false
+      })
+      .addCase(actions.errorRequestLoad, (state, { payload }) => {
+        state.error = payload
+        state.loading = false
       })
 
       .addCase(actions.beginRequestFetch, (state) => {
@@ -59,6 +75,20 @@ const designSlice = createSlice({
         state.saving = false
       })
       .addCase(actions.errorRequestUpdate, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
+
+      .addCase(actions.beginRequestClone, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.successRequestClone, (state, { payload }) => {
+        state.list = state.list
+          ? [...state.list, payload].sort((a, b) => a.name.localeCompare(b.name))
+          : [payload]
+        state.saving = false
+      })
+      .addCase(actions.errorRequestClone, (state, { payload }) => {
         state.error = payload
         state.saving = false
       })

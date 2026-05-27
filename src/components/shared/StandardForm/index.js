@@ -29,6 +29,7 @@ const StandardForm = ({
   disabled = false,
   saveLabel,
   cancelLabel,
+  extraActions,
   children,
 }) => {
   const { t } = useTranslation()
@@ -49,6 +50,7 @@ const StandardForm = ({
         >
           {resolvedCancelLabel}
         </button>
+        {extraActions}
         <button
           className="payment-form__btn payment-form__btn--save"
           onClick={onSave}

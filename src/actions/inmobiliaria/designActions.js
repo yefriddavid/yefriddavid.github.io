@@ -20,5 +20,15 @@ export const beginRequestDelete = createAction('begin delete inmobiliaria design
 export const successRequestDelete = createAction('success delete inmobiliaria design')
 export const errorRequestDelete = createAction('error delete inmobiliaria design')
 
+export const loadRequest = createAction('load inmobiliaria design')
+export const beginRequestLoad = createAction('begin load inmobiliaria design')
+export const successRequestLoad = createAction('success load inmobiliaria design')
+export const errorRequestLoad = createAction('error load inmobiliaria design')
+
+export const cloneRequest = createAction('clone inmobiliaria design')
+export const beginRequestClone = createAction('begin clone inmobiliaria design')
+export const successRequestClone = createAction('success clone inmobiliaria design')
+export const errorRequestClone = createAction('error clone inmobiliaria design')
+
 export const selectDesign = createAction('select inmobiliaria design')
 export const clearDesign = createAction('clear inmobiliaria design')

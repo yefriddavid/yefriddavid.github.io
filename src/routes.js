@@ -20,6 +20,7 @@ const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
 const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
+const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
@@ -143,6 +144,20 @@ const routes = [
     tKey: 'nav.inmobiliariaDesigns',
     element: InmobiliariaDesigns,
     landingPage: true,
+  },
+  {
+    path: '/inmobiliaria/designs/new',
+    name: 'New Design',
+    longName: 'Nuevo Diseño',
+    tKey: 'nav.inmobiliariaDesignNew',
+    element: InmobiliariaDesignEditor,
+  },
+  {
+    path: '/inmobiliaria/designs/:id',
+    name: 'Edit Design',
+    longName: 'Editar Diseño',
+    tKey: 'nav.inmobiliariaDesignEdit',
+    element: InmobiliariaDesignEditor,
   },
 ]
 
