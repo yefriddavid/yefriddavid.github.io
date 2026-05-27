@@ -515,6 +515,14 @@ const DesignEditorPage = () => {
                 </div>
               </StandardField>
             </div>
+            <StandardField label="Observaciones">
+              <textarea
+                className={SF.textarea}
+                rows={3}
+                placeholder="Notas internas, no aparecen en el diseño"
+                {...register('observations')}
+              />
+            </StandardField>
           </StandardForm>
         </CCol>
 
