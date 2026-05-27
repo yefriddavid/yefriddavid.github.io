@@ -261,9 +261,9 @@ const DesignEditorPage = () => {
         <h5 style={{ margin: 0 }}>{isNew ? 'Nuevo diseño' : `Editando: ${current?.name ?? ''}`}</h5>
       </div>
 
-      <CRow>
+      <CRow className="mx-0 g-0">
         {/* ── Form ── */}
-        <CCol md={6}>
+        <CCol md={6} className="pe-md-3">
           <StandardForm
             title={isNew ? 'Datos del panfleto' : 'Editar panfleto'}
             onCancel={() => navigate('/inmobiliaria/designs')}
@@ -293,7 +293,7 @@ const DesignEditorPage = () => {
               {fieldError(errors.name)}
             </StandardField>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--2">
               <StandardField label="Título principal *">
                 <input
                   className={SF.input}
@@ -311,7 +311,7 @@ const DesignEditorPage = () => {
               </StandardField>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--2">
               <StandardField label="Tipo propietario">
                 <input
                   className={SF.input}
@@ -328,7 +328,7 @@ const DesignEditorPage = () => {
               </StandardField>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--2">
               <StandardField label="Requisitos (uno por línea)">
                 <textarea
                   className={SF.textarea}
@@ -347,7 +347,7 @@ const DesignEditorPage = () => {
               </StandardField>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--2">
               <StandardField label="Facilidades (uno por línea)">
                 <textarea
                   className={SF.textarea}
@@ -366,7 +366,7 @@ const DesignEditorPage = () => {
               </StandardField>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--3">
               <StandardField label="Canon de arrendamiento">
                 <input className={SF.input} placeholder="950.000$" {...register('rentAmount')} />
               </StandardField>
@@ -377,7 +377,7 @@ const DesignEditorPage = () => {
                   {...register('servicesIncluded')}
                 />
               </StandardField>
-              <StandardField label="Color texto">
+              <StandardField label="Color canon">
                 <input
                   type="color"
                   style={{
@@ -416,7 +416,7 @@ const DesignEditorPage = () => {
               />
             </StandardField>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div className="im-designs__form-grid im-designs__form-grid--2">
               <StandardField label={`Foto propiedad — zoom ${values.propertyPhotoSize ?? 1100}`}>
                 <div className="im-designs__photo-upload">
                   {values.propertyPhoto ? (
@@ -458,7 +458,6 @@ const DesignEditorPage = () => {
                         min={200}
                         max={2200}
                         step={50}
-                        style={{ width: 70 }}
                         title={`Zoom: ${values.propertyPhotoSize ?? 1100}`}
                         {...register('propertyPhotoSize', { valueAsNumber: true })}
                       />
@@ -532,7 +531,6 @@ const DesignEditorPage = () => {
                         min={100}
                         max={1200}
                         step={50}
-                        style={{ width: 70 }}
                         title={`Zoom: ${values.buildingPhotoSize ?? 700}`}
                         {...register('buildingPhotoSize', { valueAsNumber: true })}
                       />
@@ -577,7 +575,7 @@ const DesignEditorPage = () => {
         </CCol>
 
         {/* ── Live preview ── */}
-        <CCol md={6}>
+        <CCol md={6} className="ps-md-3 mt-3 mt-md-0">
           <div className="im-designs__preview-col">
             {/* Canvas toolbar */}
             <div className="im-designs__canvas-toolbar">
