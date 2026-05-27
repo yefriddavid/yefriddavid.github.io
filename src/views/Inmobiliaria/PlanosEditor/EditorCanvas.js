@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react'
+import React, { useRef, useCallback, useState, useEffect } from 'react'
 import { Stage, Layer, Line, Rect, Text, Arc, Group, Circle, Shape } from 'react-konva'
 import {
   GRID_SIZE,
@@ -606,12 +606,26 @@ const EditorCanvas = ({
   onStageDragEnd,
   onSelect,
   onDragEnd,
-  containerRef,
-  stageSize,
 }) => {
   const stageRef = useRef(null)
+  const containerRef = useRef(null)
+  const [stageSize, setStageSize] = useState({ width: 900, height: 600 })
   const isSelectMode = tool === 'select'
   const isEraserMode = tool === 'eraser'
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const update = () => {
+      const w = el.offsetWidth
+      const h = el.offsetHeight
+      if (w > 0 && h > 0) setStageSize({ width: w, height: h })
+    }
+    const obs = new ResizeObserver(update)
+    obs.observe(el)
+    update()
+    return () => obs.disconnect()
+  }, [])
 
   const handleElementSelect = useCallback(
     (id) => {
