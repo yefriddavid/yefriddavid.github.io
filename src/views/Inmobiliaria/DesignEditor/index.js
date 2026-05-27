@@ -9,6 +9,8 @@ import StandardForm, { StandardField, SF } from 'src/components/shared/StandardF
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/inmobiliaria/designActions'
 import FlyerPreview from '../Designs/FlyerPreview'
+import FlyerPreviewDark from '../Designs/FlyerPreviewDark'
+import FlyerPreviewElegant from '../Designs/FlyerPreviewElegant'
 import '../Designs/Designs.scss'
 
 const EMPTY = {
@@ -35,6 +37,7 @@ const EMPTY = {
   buildingPhotoSize: 700,
   photoLink: '',
   canonColor: '#000000',
+  template: 'orange',
   observations: '',
 }
 
@@ -233,7 +236,9 @@ const DesignEditorPage = () => {
 
   useEffect(() => {
     if (!fullscreen) return
-    const onKey = (e) => { if (e.key === 'Escape') setFullscreen(false) }
+    const onKey = (e) => {
+      if (e.key === 'Escape') setFullscreen(false)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [fullscreen])
@@ -577,24 +582,35 @@ const DesignEditorPage = () => {
             {/* Canvas toolbar */}
             <div className="im-designs__canvas-toolbar">
               <span className="im-designs__canvas-label">Canvas</span>
+              <select className="im-designs__template-select" {...register('template')}>
+                <option value="orange">🟠 Naranja</option>
+                <option value="dark">🌙 Nocturno</option>
+                <option value="elegant">✨ Elegante</option>
+              </select>
               <div className="im-designs__zoom-controls">
                 <button
                   className="im-designs__canvas-btn"
                   onClick={() => setZoom((z) => Math.max(50, z - 25))}
                   disabled={zoom <= 50}
                   title="Reducir zoom"
-                >−</button>
+                >
+                  −
+                </button>
                 <button
                   className="im-designs__zoom-value"
                   onClick={() => setZoom(100)}
                   title="Restablecer al 100%"
-                >{zoom}%</button>
+                >
+                  {zoom}%
+                </button>
                 <button
                   className="im-designs__canvas-btn"
                   onClick={() => setZoom((z) => Math.min(200, z + 25))}
                   disabled={zoom >= 200}
                   title="Ampliar zoom"
-                >+</button>
+                >
+                  +
+                </button>
               </div>
               <div className="im-designs__canvas-actions">
                 <button
@@ -617,14 +633,30 @@ const DesignEditorPage = () => {
             {/* Flyer */}
             <div
               className="im-designs__preview-wrap"
-              style={{ maxWidth: `${Math.round(560 * zoom / 100)}px` }}
+              style={{ maxWidth: `${Math.round((560 * zoom) / 100)}px` }}
             >
-              <FlyerPreview
-                ref={svgRef}
-                values={values}
-                onPropertyDrag={handlePropertyDrag}
-                onBuildingDrag={handleBuildingDrag}
-              />
+              {values.template === 'dark' ? (
+                <FlyerPreviewDark
+                  ref={svgRef}
+                  values={values}
+                  onPropertyDrag={handlePropertyDrag}
+                  onBuildingDrag={handleBuildingDrag}
+                />
+              ) : values.template === 'elegant' ? (
+                <FlyerPreviewElegant
+                  ref={svgRef}
+                  values={values}
+                  onPropertyDrag={handlePropertyDrag}
+                  onBuildingDrag={handleBuildingDrag}
+                />
+              ) : (
+                <FlyerPreview
+                  ref={svgRef}
+                  values={values}
+                  onPropertyDrag={handlePropertyDrag}
+                  onBuildingDrag={handleBuildingDrag}
+                />
+              )}
             </div>
 
             {/* Download bar */}
@@ -648,14 +680,31 @@ const DesignEditorPage = () => {
           {fullscreen && (
             <div className="im-designs__fullscreen-overlay" onClick={() => setFullscreen(false)}>
               <div className="im-designs__fullscreen-inner" onClick={(e) => e.stopPropagation()}>
-                <button className="im-designs__fullscreen-close" onClick={() => setFullscreen(false)}>
+                <button
+                  className="im-designs__fullscreen-close"
+                  onClick={() => setFullscreen(false)}
+                >
                   <CIcon icon={cilX} />
                 </button>
-                <FlyerPreview
-                  values={values}
-                  onPropertyDrag={handlePropertyDrag}
-                  onBuildingDrag={handleBuildingDrag}
-                />
+                {values.template === 'dark' ? (
+                  <FlyerPreviewDark
+                    values={values}
+                    onPropertyDrag={handlePropertyDrag}
+                    onBuildingDrag={handleBuildingDrag}
+                  />
+                ) : values.template === 'elegant' ? (
+                  <FlyerPreviewElegant
+                    values={values}
+                    onPropertyDrag={handlePropertyDrag}
+                    onBuildingDrag={handleBuildingDrag}
+                  />
+                ) : (
+                  <FlyerPreview
+                    values={values}
+                    onPropertyDrag={handlePropertyDrag}
+                    onBuildingDrag={handleBuildingDrag}
+                  />
+                )}
               </div>
             </div>
           )}
