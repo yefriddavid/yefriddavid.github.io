@@ -50,6 +50,7 @@ export const PLANO_TOOLS = [
   { key: 'wall', label: 'Pared' },
   { key: 'door', label: 'Puerta' },
   { key: 'window', label: 'Ventana' },
+  { key: 'ruler', label: 'Cota' },
   { key: 'label', label: 'Etiqueta' },
   { key: 'eraser', label: 'Borrar' },
 ]
@@ -61,6 +62,7 @@ export const EMPTY_PLANO = {
   windows: [],
   furniture: [],
   labels: [],
+  rulers: [],
   zOrder: [],
 }
 

@@ -1079,6 +1079,162 @@ const FurnitureShape = ({
   )
 }
 
+// ── Ruler element ─────────────────────────────────────────────────────────────
+
+const RULER_COLOR = '#e03131'
+const RULER_COLOR_SEL = '#0066ff'
+const TICK_HALF = 10
+const LABEL_OFFSET = 16
+
+const RulerElement = ({
+  ruler,
+  selectedIds,
+  isSelectMode,
+  onSelect,
+  onMoveRuler,
+  onResizeRuler,
+}) => {
+  const isSelected = selectedIds.includes(ruler.id)
+  const { id, x1, y1, x2, y2 } = ruler
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.sqrt(dx * dx + dy * dy)
+  if (len < 2) return null
+
+  const ux = dx / len
+  const uy = dy / len
+  // normal points "left" of direction; in screen coords that's "above" for a left-to-right line
+  const nx = -uy
+  const ny = ux
+
+  const mx = (x1 + x2) / 2
+  const my = (y1 + y2) / 2
+  const distM = len / PIXELS_PER_METER
+  const label =
+    distM % 1 === 0 ? distM.toFixed(0) + ' m' : distM.toFixed(2).replace(/0+$/, '') + ' m'
+
+  let angleDeg = Math.atan2(dy, dx) * (180 / Math.PI)
+  if (angleDeg > 90 || angleDeg < -90) angleDeg += 180
+
+  const color = isSelected ? RULER_COLOR_SEL : RULER_COLOR
+
+  return (
+    <Group id={'el-' + id}>
+      {/* main dimension line */}
+      <Line
+        points={[x1, y1, x2, y2]}
+        stroke={color}
+        strokeWidth={isSelected ? 2 : 1.5}
+        hitStrokeWidth={18}
+        draggable={isSelectMode}
+        onClick={(e) => {
+          e.cancelBubble = true
+          onSelect(id, e.evt.ctrlKey || e.evt.metaKey)
+        }}
+        onDragEnd={(e) => {
+          const rawDx = e.target.x()
+          const rawDy = e.target.y()
+          const snappedDx = snap(x1 + rawDx) - x1
+          const snappedDy = snap(y1 + rawDy) - y1
+          e.target.x(0)
+          e.target.y(0)
+          onMoveRuler(id, snappedDx, snappedDy)
+        }}
+      />
+      {/* perpendicular tick at start */}
+      <Line
+        points={[
+          x1 + nx * TICK_HALF,
+          y1 + ny * TICK_HALF,
+          x1 - nx * TICK_HALF,
+          y1 - ny * TICK_HALF,
+        ]}
+        stroke={color}
+        strokeWidth={2}
+        listening={false}
+      />
+      {/* perpendicular tick at end */}
+      <Line
+        points={[
+          x2 + nx * TICK_HALF,
+          y2 + ny * TICK_HALF,
+          x2 - nx * TICK_HALF,
+          y2 - ny * TICK_HALF,
+        ]}
+        stroke={color}
+        strokeWidth={2}
+        listening={false}
+      />
+      {/* measurement label — offset to the "above" side of the line */}
+      <Text
+        x={mx - nx * LABEL_OFFSET}
+        y={my - ny * LABEL_OFFSET}
+        text={label}
+        fontSize={12}
+        fontStyle="bold"
+        fill={color}
+        rotation={angleDeg}
+        align="center"
+        width={90}
+        offsetX={45}
+        offsetY={6}
+        listening={false}
+      />
+      {/* endpoint handles when selected */}
+      {isSelected && isSelectMode && (
+        <>
+          <Circle
+            x={x1}
+            y={y1}
+            radius={6}
+            fill="white"
+            stroke={color}
+            strokeWidth={2}
+            draggable
+            onClick={(e) => {
+              e.cancelBubble = true
+            }}
+            onDragMove={(e) => {
+              e.target.x(snap(e.target.x()))
+              e.target.y(snap(e.target.y()))
+            }}
+            onDragEnd={(e) => {
+              const ex = snap(e.target.x())
+              const ey = snap(e.target.y())
+              e.target.x(x1)
+              e.target.y(y1)
+              onResizeRuler(id, 'start', ex, ey)
+            }}
+          />
+          <Circle
+            x={x2}
+            y={y2}
+            radius={6}
+            fill="white"
+            stroke={color}
+            strokeWidth={2}
+            draggable
+            onClick={(e) => {
+              e.cancelBubble = true
+            }}
+            onDragMove={(e) => {
+              e.target.x(snap(e.target.x()))
+              e.target.y(snap(e.target.y()))
+            }}
+            onDragEnd={(e) => {
+              const ex = snap(e.target.x())
+              const ey = snap(e.target.y())
+              e.target.x(x2)
+              e.target.y(y2)
+              onResizeRuler(id, 'end', ex, ey)
+            }}
+          />
+        </>
+      )}
+    </Group>
+  )
+}
+
 // ── Wall element (extracted so it can participate in unified z-order) ─────────
 
 const WallElement = ({
@@ -1195,6 +1351,8 @@ const EditorCanvas = React.forwardRef(
       onBatchDragEnd,
       onMoveWall,
       onResizeWall,
+      onMoveRuler,
+      onResizeRuler,
       onResizeElement,
       onRotateElement,
       onMoveLabelOffset,
@@ -1284,12 +1442,11 @@ const EditorCanvas = React.forwardRef(
 
     const multiDrag = { start: multiDragStart, move: multiDragMove, end: multiDragEnd }
 
-    useImperativeHandle(ref, () => ({
-      exportCanvas: (planName) => {
+    useImperativeHandle(ref, () => {
+      const buildDataURL = () => {
         const stage = stageRef.current
-        if (!stage) return
+        if (!stage) return null
 
-        // Compute bounding box of all content to crop empty space
         const p = planoRef.current
         const PADDING = 60
         let minX = Infinity,
@@ -1315,7 +1472,6 @@ const EditorCanvas = React.forwardRef(
           expand(w.x + (w.width ?? 80), w.y + (w.height ?? 20))
         })
         p.furniture.forEach((f) => {
-          // furniture x,y is center
           const hw = (f.width ?? 80) / 2
           const hh = (f.height ?? 80) / 2
           expand(f.x - hw, f.y - hh)
@@ -1324,6 +1480,10 @@ const EditorCanvas = React.forwardRef(
         p.labels.forEach((l) => {
           expand(l.x, l.y)
           expand(l.x + 120, l.y + 20)
+        })
+        ;(p.rulers ?? []).forEach((r) => {
+          expand(r.x1, r.y1)
+          expand(r.x2, r.y2)
         })
 
         let clipX, clipY, clipW, clipH
@@ -1338,10 +1498,6 @@ const EditorCanvas = React.forwardRef(
           clipW = Math.min(CANVAS_W, maxX + PADDING) - clipX
           clipH = Math.min(CANVAS_H, maxY + PADDING) - clipY
         }
-
-        const isLandscape = clipW >= clipH
-        const scaleM = clipW / PIXELS_PER_METER
-        const scaleLabel = `Escala aprox. 1:${Math.round(scaleM)}`
 
         const prevX = stage.x()
         const prevY = stage.y()
@@ -1372,9 +1528,19 @@ const EditorCanvas = React.forwardRef(
         stage.height(prevH)
         stage.draw()
 
-        const win = window.open('', '_blank')
-        if (!win) return
-        win.document.write(`<!DOCTYPE html>
+        return { dataURL, clipW, clipH }
+      }
+
+      return {
+        exportPdf: (planName) => {
+          const result = buildDataURL()
+          if (!result) return
+          const { dataURL, clipW, clipH } = result
+          const isLandscape = clipW >= clipH
+          const scaleLabel = `Escala aprox. 1:${Math.round(clipW / PIXELS_PER_METER)}`
+          const win = window.open('', '_blank')
+          if (!win) return
+          win.document.write(`<!DOCTYPE html>
 <html><head>
   <title>${planName || 'Plano'}</title>
   <style>
@@ -1398,9 +1564,20 @@ const EditorCanvas = React.forwardRef(
   <img src="${dataURL}" />
   <script>window.addEventListener('load',function(){setTimeout(function(){window.print()},200)});<\/script>
 </body></html>`)
-        win.document.close()
-      },
-    }))
+          win.document.close()
+        },
+
+        downloadPng: (planName) => {
+          const result = buildDataURL()
+          if (!result) return
+          const { dataURL } = result
+          const a = document.createElement('a')
+          a.href = dataURL
+          a.download = `${planName || 'plano'}.png`
+          a.click()
+        },
+      }
+    })
 
     useEffect(() => {
       const el = containerRef.current
@@ -1466,6 +1643,7 @@ const EditorCanvas = React.forwardRef(
               const winMap = Object.fromEntries(plano.windows.map((w) => [w.id, w]))
               const furMap = Object.fromEntries(plano.furniture.map((f) => [f.id, f]))
               const lblMap = Object.fromEntries(plano.labels.map((l) => [l.id, l]))
+              const rulMap = Object.fromEntries((plano.rulers ?? []).map((r) => [r.id, r]))
               const zoSet = new Set(plano.zOrder ?? [])
               const legacy = [
                 ...plano.walls.map((w) => w.id),
@@ -1473,6 +1651,7 @@ const EditorCanvas = React.forwardRef(
                 ...plano.windows.map((w) => w.id),
                 ...plano.furniture.map((f) => f.id),
                 ...plano.labels.map((l) => l.id),
+                ...(plano.rulers ?? []).map((r) => r.id),
               ].filter((id) => !zoSet.has(id))
               const order = [...legacy, ...(plano.zOrder ?? [])]
 
@@ -1570,6 +1749,19 @@ const EditorCanvas = React.forwardRef(
                       />
                     </Group>
                   )
+                const rul = rulMap[id]
+                if (rul)
+                  return (
+                    <RulerElement
+                      key={id}
+                      ruler={rul}
+                      selectedIds={selectedIds}
+                      isSelectMode={isSelectMode}
+                      onSelect={handleElementSelect}
+                      onMoveRuler={onMoveRuler}
+                      onResizeRuler={onResizeRuler}
+                    />
+                  )
                 return null
               })
             })()}
@@ -1597,6 +1789,40 @@ const EditorCanvas = React.forwardRef(
                   })}
                   fontSize={12}
                   fill="#0066ff"
+                  fontStyle="bold"
+                  listening={false}
+                />
+              </>
+            )}
+
+            {/* drawing preview (ruler tool) */}
+            {tool === 'ruler' && drawStart && (
+              <>
+                <Circle
+                  x={drawStart.x}
+                  y={drawStart.y}
+                  radius={5}
+                  fill={RULER_COLOR}
+                  opacity={0.7}
+                />
+                <Line
+                  points={[drawStart.x, drawStart.y, mousePos.x, mousePos.y]}
+                  stroke={RULER_COLOR}
+                  strokeWidth={1.5}
+                  opacity={0.6}
+                  listening={false}
+                />
+                <Text
+                  x={(drawStart.x + mousePos.x) / 2 + 8}
+                  y={(drawStart.y + mousePos.y) / 2 - 16}
+                  text={wallLengthM({
+                    x1: drawStart.x,
+                    y1: drawStart.y,
+                    x2: mousePos.x,
+                    y2: mousePos.y,
+                  })}
+                  fontSize={12}
+                  fill={RULER_COLOR}
                   fontStyle="bold"
                   listening={false}
                 />

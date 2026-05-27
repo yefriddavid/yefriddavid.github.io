@@ -13,12 +13,35 @@ import {
 } from 'src/constants/inmobiliaria'
 import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
+import LayersPanel from './LayersPanel'
 import './PlanosEditor.scss'
 
 const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 const isFurnitureTool = (tool) => !!FURNITURE_CATALOG_MAP[tool]
 const isPlanoTool = (tool) => PLANO_TOOLS.some((t) => t.key === tool)
+
+const autoName = (p, kind, subtype = null) => {
+  switch (kind) {
+    case 'wall':
+      return `Pared ${p.walls.length + 1}`
+    case 'door':
+      return `Puerta ${p.doors.length + 1}`
+    case 'window':
+      return `Ventana ${p.windows.length + 1}`
+    case 'ruler':
+      return `Cota ${(p.rulers ?? []).length + 1}`
+    case 'label':
+      return `Texto ${p.labels.length + 1}`
+    case 'furniture': {
+      const def = FURNITURE_CATALOG_MAP[subtype]
+      const count = p.furniture.filter((f) => f.type === subtype).length + 1
+      return `${def?.label ?? subtype} ${count}`
+    }
+    default:
+      return 'Elemento'
+  }
+}
 
 const PlanosEditor = () => {
   const { id } = useParams()
@@ -59,6 +82,7 @@ const PlanosEditor = () => {
         windows: current.windows ?? [],
         furniture: current.furniture ?? [],
         labels: current.labels ?? [],
+        rulers: current.rulers ?? [],
         zOrder: current.zOrder ?? [],
       })
     }
@@ -162,6 +186,7 @@ const PlanosEditor = () => {
       windows: p.windows.filter((w) => w.id !== eid),
       furniture: p.furniture.filter((f) => f.id !== eid),
       labels: p.labels.filter((l) => l.id !== eid),
+      rulers: (p.rulers ?? []).filter((r) => r.id !== eid),
       zOrder: (p.zOrder ?? []).filter((zid) => zid !== eid),
     }))
     setSelectedIds((prev) => prev.filter((x) => x !== eid))
@@ -177,6 +202,7 @@ const PlanosEditor = () => {
       windows: p.windows.filter((w) => !idSet.has(w.id)),
       furniture: p.furniture.filter((f) => !idSet.has(f.id)),
       labels: p.labels.filter((l) => !idSet.has(l.id)),
+      rulers: (p.rulers ?? []).filter((r) => !idSet.has(r.id)),
       zOrder: (p.zOrder ?? []).filter((zid) => !idSet.has(zid)),
     }))
     setSelectedIds([])
@@ -295,6 +321,46 @@ const PlanosEditor = () => {
     }))
   }, [])
 
+  const handleRulerLengthChange = useCallback((rid, meters) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      rulers: (p.rulers ?? []).map((r) => {
+        if (r.id !== rid) return r
+        const ddx = r.x2 - r.x1
+        const ddy = r.y2 - r.y1
+        const len = Math.sqrt(ddx * ddx + ddy * ddy) || 1
+        const newPx = meters * PIXELS_PER_METER
+        return {
+          ...r,
+          x2: snap(r.x1 + (ddx / len) * newPx),
+          y2: snap(r.y1 + (ddy / len) * newPx),
+        }
+      }),
+    }))
+  }, [])
+
+  const handleMoveRuler = useCallback((rid, dx, dy) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      rulers: (p.rulers ?? []).map((r) =>
+        r.id === rid ? { ...r, x1: r.x1 + dx, y1: r.y1 + dy, x2: r.x2 + dx, y2: r.y2 + dy } : r,
+      ),
+    }))
+  }, [])
+
+  const handleResizeRuler = useCallback((rid, endpoint, nx, ny) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      rulers: (p.rulers ?? []).map((r) => {
+        if (r.id !== rid) return r
+        return endpoint === 'start' ? { ...r, x1: nx, y1: ny } : { ...r, x2: nx, y2: ny }
+      }),
+    }))
+  }, [])
+
   const handleBringToFront = useCallback((eid) => {
     pushHistory()
     setPlano((p) => {
@@ -333,6 +399,10 @@ const PlanosEditor = () => {
       (p.labels.find((l) => l.id === eid) && {
         kind: 'label',
         data: p.labels.find((l) => l.id === eid),
+      }) ||
+      ((p.rulers ?? []).find((r) => r.id === eid) && {
+        kind: 'ruler',
+        data: (p.rulers ?? []).find((r) => r.id === eid),
       })
     if (found) {
       clipboardRef.current = found
@@ -402,6 +472,22 @@ const PlanosEditor = () => {
             ],
             zOrder: zo,
           }
+        case 'ruler':
+          return {
+            ...p,
+            rulers: [
+              ...(p.rulers ?? []),
+              {
+                ...item.data,
+                id: newId,
+                x1: item.data.x1 + off,
+                y1: item.data.y1 + off,
+                x2: item.data.x2 + off,
+                y2: item.data.y2 + off,
+              },
+            ],
+            zOrder: zo,
+          }
         default:
           return p
       }
@@ -419,6 +505,9 @@ const PlanosEditor = () => {
       windows: p.windows.map((w) => (w.id === eid ? { ...w, x: w.x + dx, y: w.y + dy } : w)),
       furniture: p.furniture.map((f) => (f.id === eid ? { ...f, x: f.x + dx, y: f.y + dy } : f)),
       labels: p.labels.map((l) => (l.id === eid ? { ...l, x: l.x + dx, y: l.y + dy } : l)),
+      rulers: (p.rulers ?? []).map((r) =>
+        r.id === eid ? { ...r, x1: r.x1 + dx, y1: r.y1 + dy, x2: r.x2 + dx, y2: r.y2 + dy } : r,
+      ),
     }))
   }, [])
 
@@ -456,11 +545,12 @@ const PlanosEditor = () => {
           if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
             pushHistory()
             const newId = uid()
+            const name = autoName(planoRef.current, 'wall')
             setPlano((p) => ({
               ...p,
               walls: [
                 ...p.walls,
-                { id: newId, x1: drawStart.x, y1: drawStart.y, x2: pos.x, y2: pos.y },
+                { id: newId, name, x1: drawStart.x, y1: drawStart.y, x2: pos.x, y2: pos.y },
               ],
               zOrder: [...(p.zOrder ?? []), newId],
             }))
@@ -470,12 +560,40 @@ const PlanosEditor = () => {
         return
       }
 
+      if (tool === 'ruler') {
+        if (!drawStart) {
+          setDrawStart(pos)
+        } else {
+          const dx = pos.x - drawStart.x
+          const dy = pos.y - drawStart.y
+          if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+            pushHistory()
+            const newId = uid()
+            const name = autoName(planoRef.current, 'ruler')
+            setPlano((p) => ({
+              ...p,
+              rulers: [
+                ...(p.rulers ?? []),
+                { id: newId, name, x1: drawStart.x, y1: drawStart.y, x2: pos.x, y2: pos.y },
+              ],
+              zOrder: [...(p.zOrder ?? []), newId],
+            }))
+          }
+          setDrawStart(null)
+        }
+        return
+      }
+
       if (tool === 'door') {
         pushHistory()
         const newId = uid()
+        const name = autoName(planoRef.current, 'door')
         setPlano((p) => ({
           ...p,
-          doors: [...p.doors, { id: newId, x: pos.x, y: pos.y, width: GRID_SIZE * 4, rotation: 0 }],
+          doors: [
+            ...p.doors,
+            { id: newId, name, x: pos.x, y: pos.y, width: GRID_SIZE * 4, rotation: 0 },
+          ],
           zOrder: [...(p.zOrder ?? []), newId],
         }))
         return
@@ -484,11 +602,12 @@ const PlanosEditor = () => {
       if (tool === 'window') {
         pushHistory()
         const newId = uid()
+        const name = autoName(planoRef.current, 'window')
         setPlano((p) => ({
           ...p,
           windows: [
             ...p.windows,
-            { id: newId, x: pos.x, y: pos.y, width: GRID_SIZE * 3, rotation: 0 },
+            { id: newId, name, x: pos.x, y: pos.y, width: GRID_SIZE * 3, rotation: 0 },
           ],
           zOrder: [...(p.zOrder ?? []), newId],
         }))
@@ -500,9 +619,13 @@ const PlanosEditor = () => {
         if (!text?.trim()) return
         pushHistory()
         const newId = uid()
+        const name = autoName(planoRef.current, 'label')
         setPlano((p) => ({
           ...p,
-          labels: [...p.labels, { id: newId, text: text.trim(), x: pos.x, y: pos.y, fontSize: 14 }],
+          labels: [
+            ...p.labels,
+            { id: newId, name, text: text.trim(), x: pos.x, y: pos.y, fontSize: 14 },
+          ],
           zOrder: [...(p.zOrder ?? []), newId],
         }))
         return
@@ -512,11 +635,21 @@ const PlanosEditor = () => {
         pushHistory()
         const newId = uid()
         const def = FURNITURE_CATALOG_MAP[tool]
+        const name = autoName(planoRef.current, 'furniture', tool)
         setPlano((p) => ({
           ...p,
           furniture: [
             ...p.furniture,
-            { id: newId, type: tool, x: pos.x, y: pos.y, width: def.w, height: def.h, rotation: 0 },
+            {
+              id: newId,
+              name,
+              type: tool,
+              x: pos.x,
+              y: pos.y,
+              width: def.w,
+              height: def.h,
+              rotation: 0,
+            },
           ],
           zOrder: [...(p.zOrder ?? []), newId],
         }))
@@ -591,16 +724,29 @@ const PlanosEditor = () => {
     }))
   }, [])
 
+  const handleRenameElement = useCallback((eid, newName) => {
+    setPlano((p) => ({
+      ...p,
+      walls: p.walls.map((w) => (w.id === eid ? { ...w, name: newName } : w)),
+      doors: p.doors.map((d) => (d.id === eid ? { ...d, name: newName } : d)),
+      windows: p.windows.map((w) => (w.id === eid ? { ...w, name: newName } : w)),
+      furniture: p.furniture.map((f) => (f.id === eid ? { ...f, name: newName } : f)),
+      labels: p.labels.map((l) => (l.id === eid ? { ...l, name: newName } : l)),
+    }))
+  }, [])
+
   // ── save ───────────────────────────────────────────────────────────────────
   const handleSave = () => {
-    const { name, walls, doors, windows, furniture, labels, zOrder } = plano
+    const { name, walls, doors, windows, furniture, labels, rulers, zOrder } = plano
     if (isNew) {
-      dispatch(actions.createRequest({ name, walls, doors, windows, furniture, labels, zOrder }))
+      dispatch(
+        actions.createRequest({ name, walls, doors, windows, furniture, labels, rulers, zOrder }),
+      )
     } else {
       dispatch(
         actions.updateRequest({
           id,
-          data: { name, walls, doors, windows, furniture, labels, zOrder },
+          data: { name, walls, doors, windows, furniture, labels, rulers, zOrder },
         }),
       )
     }
@@ -611,6 +757,7 @@ const PlanosEditor = () => {
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null
   const selectedLabel = plano.labels.find((l) => l.id === selectedId) ?? null
   const selectedWall = plano.walls.find((w) => w.id === selectedId) ?? null
+  const selectedRuler = (plano.rulers ?? []).find((r) => r.id === selectedId) ?? null
   const selectedIsFlippable =
     !!selectedId &&
     !selectedWall &&
@@ -623,6 +770,15 @@ const PlanosEditor = () => {
         (
           Math.sqrt(
             (selectedWall.x2 - selectedWall.x1) ** 2 + (selectedWall.y2 - selectedWall.y1) ** 2,
+          ) / PIXELS_PER_METER
+        ).toFixed(2),
+      )
+    : 0
+  const rulerLengthNum = selectedRuler
+    ? parseFloat(
+        (
+          Math.sqrt(
+            (selectedRuler.x2 - selectedRuler.x1) ** 2 + (selectedRuler.y2 - selectedRuler.y1) ** 2,
           ) / PIXELS_PER_METER
         ).toFixed(2),
       )
@@ -719,6 +875,32 @@ const PlanosEditor = () => {
               </select>
             </>
           )}
+          {selectedRuler && (
+            <>
+              <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>Cota:</span>
+              <input
+                key={`rl-${selectedRuler.id}-${rulerLengthNum}`}
+                type="number"
+                className="form-control form-control-sm"
+                style={{ width: 90 }}
+                min={0.5}
+                step={0.5}
+                defaultValue={rulerLengthNum}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const v = parseFloat(e.target.value)
+                    if (!isNaN(v) && v >= 0.5) handleRulerLengthChange(selectedRuler.id, v)
+                    e.target.blur()
+                  }
+                }}
+                onBlur={(e) => {
+                  const v = parseFloat(e.target.value)
+                  if (!isNaN(v) && v >= 0.5) handleRulerLengthChange(selectedRuler.id, v)
+                }}
+              />
+              <span style={{ fontSize: 12, color: '#555' }}>m</span>
+            </>
+          )}
           {selectedId && (
             <>
               <CButton
@@ -788,9 +970,17 @@ const PlanosEditor = () => {
           color="secondary"
           variant="outline"
           size="sm"
-          onClick={() => editorRef.current?.exportCanvas(plano.name)}
+          onClick={() => editorRef.current?.exportPdf(plano.name)}
         >
           🖨 PDF
+        </CButton>
+        <CButton
+          color="secondary"
+          variant="outline"
+          size="sm"
+          onClick={() => editorRef.current?.downloadPng(plano.name)}
+        >
+          🖼 PNG
         </CButton>
         <CButton color="primary" size="sm" onClick={handleSave} disabled={saving}>
           {saving ? <Spinner size="sm" /> : '💾 Guardar'}
@@ -824,9 +1014,17 @@ const PlanosEditor = () => {
           onBatchDragEnd={handleBatchDragEnd}
           onMoveWall={handleMoveWall}
           onResizeWall={handleResizeWall}
+          onMoveRuler={handleMoveRuler}
+          onResizeRuler={handleResizeRuler}
           onResizeElement={handleResizeElement}
           onRotateElement={rotateSelected}
           onMoveLabelOffset={handleMoveLabelOffset}
+        />
+        <LayersPanel
+          plano={plano}
+          selectedIds={selectedIds}
+          onSelect={(id) => handleElementSelect(id, false)}
+          onRename={handleRenameElement}
         />
       </div>
     </div>

@@ -6,6 +6,7 @@ const TOOL_ICONS = {
   wall: '▬',
   door: '⌒',
   window: '⊟',
+  ruler: '↔',
   label: 'T',
   eraser: '✕',
 }
@@ -79,6 +80,7 @@ const Toolbar = ({ tool, onToolChange }) => {
           </p>
         )}
         {tool === 'wall' && <p>Click para inicio · Click para fin · Esc para cancelar</p>}
+        {tool === 'ruler' && <p>Click punto A · Click punto B · Esc para cancelar</p>}
         {tool === 'door' && <p>Click para colocar · R para rotar</p>}
         {tool === 'window' && <p>Click para colocar · R para rotar</p>}
         {tool === 'label' && <p>Click para agregar texto</p>}
