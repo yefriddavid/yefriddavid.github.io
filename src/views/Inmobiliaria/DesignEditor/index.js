@@ -37,6 +37,9 @@ const EMPTY = {
   buildingPhotoSize: 700,
   photoLink: '',
   canonColor: '#000000',
+  orangeAccentColor: '#F07820',
+  darkAccentColor: '#00cfb4',
+  elegantAccentColor: '#e8b84b',
   template: 'orange',
   observations: '',
 }
@@ -585,6 +588,38 @@ const DesignEditorPage = () => {
                 <option value="dark">🌙 Nocturno</option>
                 <option value="elegant">✨ Elegante</option>
               </select>
+              {(() => {
+                const fieldMap = { orange: 'orangeAccentColor', dark: 'darkAccentColor', elegant: 'elegantAccentColor' }
+                const defaultMap = { orange: '#F07820', dark: '#00cfb4', elegant: '#e8b84b' }
+                const tpl = values.template || 'orange'
+                const field = fieldMap[tpl] || 'orangeAccentColor'
+                const val = values[field] || defaultMap[tpl]
+                return (
+                  <>
+                    <input
+                      type="color"
+                      title="Color del tema"
+                      className="im-designs__accent-picker"
+                      value={val}
+                      onChange={(e) => setValue(field, e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      className="im-designs__accent-hex"
+                      value={val}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        if (/^#[0-9a-fA-F]{0,6}$/.test(v)) setValue(field, v)
+                      }}
+                      onBlur={(e) => {
+                        if (!/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setValue(field, defaultMap[tpl])
+                      }}
+                      spellCheck={false}
+                      maxLength={7}
+                    />
+                  </>
+                )
+              })()}
               <div className="im-designs__zoom-controls">
                 <button
                   className="im-designs__canvas-btn"

@@ -2,18 +2,17 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 
 const FONT = 'Arial, Helvetica, sans-serif'
-const TEAL = '#00cfb4'
 const DARK = '#0d1117'
 const DARK2 = '#161b22'
 const WHITE = '#ffffff'
 
-const SectionDark = ({ label, text, y, fontSize }) => {
+const SectionDark = ({ label, text, y, fontSize, accent }) => {
   const lines = text ? text.split('\n').filter(Boolean) : []
   const labelSize = fontSize + 7
   const lineH = fontSize + 6
   return (
     <>
-      <text x={40} y={y} fill={TEAL} fontSize={labelSize} fontWeight="bold" fontFamily={FONT}>
+      <text x={40} y={y} fill={accent} fontSize={labelSize} fontWeight="bold" fontFamily={FONT}>
         {label}
       </text>
       {lines.map((line, i) => (
@@ -25,7 +24,7 @@ const SectionDark = ({ label, text, y, fontSize }) => {
           fontSize={fontSize}
           fontFamily={FONT}
         >
-          <tspan fill={TEAL}>{'▸ '}</tspan>
+          <tspan fill={accent}>{'▸ '}</tspan>
           {line}
         </text>
       ))}
@@ -63,8 +62,11 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
     buildingPhotoSize = 700,
     photoLink = '',
     canonColor = '#000000',
+    darkAccentColor = '#00cfb4',
     sectionFontSize = 17,
   } = values
+
+  const accent = darkAccentColor || '#00cfb4'
 
   const secFS = Math.max(10, Math.min(30, Number(sectionFontSize) || 17))
   const propSize = Number(propertyPhotoSize) || 1100
@@ -121,11 +123,11 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
     QRCode.toDataURL(photoLink, {
       margin: 1,
       width: 200,
-      color: { dark: '#00cfb4', light: '#161b22' },
+      color: { dark: accent, light: '#161b22' },
     })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null))
-  }, [photoLink])
+  }, [photoLink, accent])
 
   // canonColor defaults to black — make it visible on dark bg
   const resolvedCanonColor = canonColor === '#000000' ? WHITE : canonColor
@@ -213,10 +215,10 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
       />
 
       {/* ── Left teal accent bar ── */}
-      <rect x="0" y="0" width="7" height="1400" fill={TEAL} />
+      <rect x="0" y="0" width="7" height="1400" fill={accent} />
 
       {/* ── Hero text overlay ── */}
-      <text x="40" y="388" fill={TEAL} fontSize="26" fontWeight="bold" fontFamily={FONT}>
+      <text x="40" y="388" fill={accent} fontSize="26" fontWeight="bold" fontFamily={FONT}>
         {location}
       </text>
       <text x="40" y="450" fill={WHITE} fontSize="58" fontWeight="bold" fontFamily={FONT}>
@@ -228,16 +230,16 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
       <text x="40" y="534" fill={WHITE} fontSize="40" fontWeight="bold" fontFamily={FONT}>
         {title}
       </text>
-      <text x="40" y="572" fill={TEAL} fontSize="24" fontFamily={FONT}>
+      <text x="40" y="572" fill={accent} fontSize="24" fontFamily={FONT}>
         {neighborhood}
       </text>
 
       {/* ── Section separator ── */}
-      <line x1="40" y1="596" x2="686" y2="596" stroke={TEAL} strokeWidth="1" opacity="0.25" />
+      <line x1="40" y1="596" x2="686" y2="596" stroke={accent} strokeWidth="1" opacity="0.25" />
 
       {/* ── Text sections (left column) ── */}
       {sections.map(({ label, text }) => {
-        const el = <SectionDark key={label} label={label} text={text} y={y} fontSize={secFS} />
+        const el = <SectionDark key={label} label={label} text={text} y={y} fontSize={secFS} accent={accent} />
         y += sectionHeightDark(text, secFS)
         return el
       })}
@@ -250,14 +252,14 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
         height="305"
         rx="14"
         fill={DARK2}
-        stroke={TEAL}
+        stroke={accent}
         strokeWidth="2"
       />
       <text
         x="895"
         y="626"
         textAnchor="middle"
-        fill={TEAL}
+        fill={accent}
         fontWeight="bold"
         fontSize="20"
         fontFamily={FONT}
@@ -281,7 +283,7 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
         height="285"
         rx="14"
         fill={DARK2}
-        stroke={TEAL}
+        stroke={accent}
         strokeWidth="2"
       />
       {buildingPhoto ? (
@@ -361,7 +363,7 @@ const FlyerPreviewDark = forwardRef(({ values = {}, onPropertyDrag, onBuildingDr
       })()}
 
       {/* ── Footer teal band ── */}
-      <rect x="0" y="1314" width="1080" height="86" fill={TEAL} />
+      <rect x="0" y="1314" width="1080" height="86" fill={accent} />
       {phone && (
         <text
           x="540"

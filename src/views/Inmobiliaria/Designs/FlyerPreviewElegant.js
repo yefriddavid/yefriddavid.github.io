@@ -2,18 +2,17 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 
 const FONT = 'Arial, Helvetica, sans-serif'
-const GOLD = '#e8b84b'
 const INDIGO = '#0e0c1e'
 const INDIGO2 = '#1a1635'
 const WHITE = '#ffffff'
 
-const SectionElegant = ({ label, text, y, fontSize }) => {
+const SectionElegant = ({ label, text, y, fontSize, accent }) => {
   const lines = text ? text.split('\n').filter(Boolean) : []
   const labelSize = fontSize + 7
   const lineH = fontSize + 6
   return (
     <>
-      <rect x={40} y={y - labelSize + 4} width="3" height={labelSize - 4} fill={GOLD} />
+      <rect x={40} y={y - labelSize + 4} width="3" height={labelSize - 4} fill={accent} />
       <text x={50} y={y} fill={WHITE} fontSize={labelSize} fontWeight="bold" fontFamily={FONT}>
         {label}
       </text>
@@ -26,7 +25,7 @@ const SectionElegant = ({ label, text, y, fontSize }) => {
           fontSize={fontSize}
           fontFamily={FONT}
         >
-          <tspan fill={GOLD}>{'◆ '}</tspan>
+          <tspan fill={accent}>{'◆ '}</tspan>
           {line}
         </text>
       ))}
@@ -64,8 +63,11 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
     buildingPhotoSize = 700,
     photoLink = '',
     canonColor = '#000000',
+    elegantAccentColor = '#e8b84b',
     sectionFontSize = 17,
   } = values
+
+  const accent = elegantAccentColor || '#e8b84b'
 
   const secFS = Math.max(10, Math.min(30, Number(sectionFontSize) || 17))
   const propSize = Number(propertyPhotoSize) || 1100
@@ -122,13 +124,13 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
     QRCode.toDataURL(photoLink, {
       margin: 1,
       width: 200,
-      color: { dark: '#e8b84b', light: '#1a1635' },
+      color: { dark: accent, light: '#1a1635' },
     })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null))
-  }, [photoLink])
+  }, [photoLink, accent])
 
-  const resolvedCanonColor = canonColor === '#000000' ? GOLD : canonColor
+  const resolvedCanonColor = canonColor === '#000000' ? accent : canonColor
 
   const sections = [
     { label: 'Requisitos', text: requirements },
@@ -137,7 +139,7 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
     { label: 'Inmueble', text: propertyFeatures },
   ]
 
-  let y = 618
+  let y = 638
 
   return (
     <svg
@@ -182,15 +184,15 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
         </linearGradient>
         {/* Gold separator: fades right */}
         <linearGradient id="sep-grad-elegant" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={GOLD} stopOpacity="1" />
-          <stop offset="75%" stopColor={GOLD} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={GOLD} stopOpacity="0" />
+          <stop offset="0%" stopColor={accent} stopOpacity="1" />
+          <stop offset="75%" stopColor={accent} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
         </linearGradient>
       </defs>
 
       {/* ── Top-right corner gold accent triangles ── */}
-      <polygon points="1000,0 1080,0 1080,90" fill={GOLD} opacity="0.12" />
-      <polygon points="1040,0 1080,0 1080,46" fill={GOLD} opacity="0.18" />
+      <polygon points="1000,0 1080,0 1080,90" fill={accent} opacity="0.12" />
+      <polygon points="1040,0 1080,0 1080,46" fill={accent} opacity="0.18" />
 
       {/* ── Hero photo ── */}
       {propertyPhoto ? (
@@ -236,17 +238,17 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
       </text>
 
       {/* ── Gold diagonal band at hero bottom ── */}
-      <polygon points="0,418 1080,368 1080,386 0,436" fill={GOLD} />
+      <polygon points="0,418 1080,368 1080,386 0,436" fill={accent} />
 
       {/* ── Bottom-left corner accent ── */}
-      <polygon points="0,1340 0,1400 62,1400" fill={GOLD} opacity="0.22" />
+      <polygon points="0,1340 0,1400 62,1400" fill={accent} opacity="0.22" />
 
       {/* ── Gold ornament + ownerType ── */}
-      <rect x="50" y="464" width="72" height="3" fill={GOLD} />
+      <rect x="50" y="464" width="72" height="3" fill={accent} />
       <text x="50" y="518" fill={WHITE} fontSize="60" fontWeight="bold" fontFamily={FONT}>
         {ownerType}
       </text>
-      <text x="50" y="562" fill={GOLD} fontSize="34" fontWeight="bold" fontFamily={FONT}>
+      <text x="50" y="562" fill={accent} fontSize="34" fontWeight="bold" fontFamily={FONT}>
         {title}
       </text>
       <text x="50" y="592" fill="rgba(255,255,255,0.55)" fontSize="22" fontFamily={FONT}>
@@ -258,7 +260,7 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
 
       {/* ── Text sections (left column) ── */}
       {sections.map(({ label, text }) => {
-        const el = <SectionElegant key={label} label={label} text={text} y={y} fontSize={secFS} />
+        const el = <SectionElegant key={label} label={label} text={text} y={y} fontSize={secFS} accent={accent} />
         y += sectionHeightElegant(text, secFS)
         return el
       })}
@@ -271,14 +273,14 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
         height="295"
         rx="14"
         fill="none"
-        stroke={GOLD}
+        stroke={accent}
         strokeWidth="1.5"
       />
       <text
         x="872"
         y="482"
         textAnchor="middle"
-        fill={GOLD}
+        fill={accent}
         fontWeight="bold"
         fontSize="17"
         fontFamily={FONT}
@@ -286,12 +288,12 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
       >
         FOTOS
       </text>
-      <line x1="832" y1="489" x2="912" y2="489" stroke={GOLD} strokeWidth="1" opacity="0.45" />
-      <rect x="720" y="498" width="264" height="233" rx="6" fill={WHITE} />
+      <line x1="832" y1="489" x2="912" y2="489" stroke={accent} strokeWidth="1" opacity="0.45" />
+      <rect x="740" y="498" width="264" height="233" rx="6" fill={WHITE} />
       {qrDataUrl ? (
-        <image href={qrDataUrl} x="724" y="502" width="256" height="225" />
+        <image href={qrDataUrl} x="744" y="502" width="256" height="225" />
       ) : (
-        <text x="852" y="618" textAnchor="middle" fill="#666" fontSize="18" fontFamily={FONT}>
+        <text x="872" y="618" textAnchor="middle" fill="#666" fontSize="18" fontFamily={FONT}>
           sin link
         </text>
       )}
@@ -304,7 +306,7 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
         height="285"
         rx="14"
         fill="none"
-        stroke={GOLD}
+        stroke={accent}
         strokeWidth="1.5"
       />
       {buildingPhoto ? (
@@ -342,7 +344,7 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
         const cy = Math.max(y + 18, 1080)
         return (
           <>
-            <rect x="50" y={cy - 2} width="3" height="80" fill={GOLD} opacity="0.6" />
+            <rect x="50" y={cy - 2} width="3" height="80" fill={accent} opacity="0.6" />
             <text
               x="62"
               y={cy + 26}
@@ -381,7 +383,7 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
       })()}
 
       {/* ── Gold footer band ── */}
-      <rect x="0" y="1314" width="1080" height="86" fill={GOLD} />
+      <rect x="0" y="1314" width="1080" height="86" fill={accent} />
       {phone && (
         <text
           x="540"

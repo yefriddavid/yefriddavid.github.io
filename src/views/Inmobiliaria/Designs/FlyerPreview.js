@@ -2,11 +2,10 @@ import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 
 const FONT = 'Arial, Helvetica, sans-serif'
-const ORANGE = '#F07820'
 const BLACK = '#1a1a1a'
 const WHITE = '#ffffff'
 
-const Section = ({ label, text, y, fontSize }) => {
+const Section = ({ label, text, y, fontSize, accent }) => {
   const lines = text ? text.split('\n').filter(Boolean) : []
   const labelSize = fontSize + 9
   const lineH = fontSize + 7
@@ -24,7 +23,7 @@ const Section = ({ label, text, y, fontSize }) => {
           fontSize={fontSize}
           fontFamily={FONT}
         >
-          <tspan fill={ORANGE}>{'• '}</tspan>
+          <tspan fill={accent}>{'• '}</tspan>
           {line}
         </text>
       ))}
@@ -62,8 +61,11 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
     buildingPhotoSize = 700,
     photoLink = '',
     canonColor = '#000000',
+    orangeAccentColor = '#F07820',
     sectionFontSize = 17,
   } = values
+
+  const accent = orangeAccentColor || '#F07820'
 
   const secFS = Math.max(10, Math.min(30, Number(sectionFontSize) || 17))
 
@@ -192,7 +194,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
       {/* ── Orange title bar — square left, rounded right ── */}
       <path
         d="M 0 28 L 774 28 A 18 18 0 0 1 792 46 L 792 130 A 18 18 0 0 1 774 148 L 0 148 Z"
-        fill={ORANGE}
+        fill={accent}
       />
       <text x="30" y="82" fill={BLACK} fontWeight="bold" fontSize="44" fontFamily={FONT}>
         {title}
@@ -202,7 +204,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
       </text>
 
       {/* ── Owner type + neighborhood ── */}
-      <text x="30" y="212" fill={ORANGE} fontWeight="bold" fontSize="62" fontFamily={FONT}>
+      <text x="30" y="212" fill={accent} fontWeight="bold" fontSize="62" fontFamily={FONT}>
         {ownerType}
       </text>
       <text x="30" y="280" fill={BLACK} fontWeight="bold" fontSize="42" fontFamily={FONT}>
@@ -211,7 +213,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
 
       {/* ── Text sections ── */}
       {sections.map(({ label, text }) => {
-        const el = <Section key={label} label={label} text={text} y={y} fontSize={secFS} />
+        const el = <Section key={label} label={label} text={text} y={y} fontSize={secFS} accent={accent} />
         y += sectionHeight(text, secFS)
         return el
       })}
@@ -239,7 +241,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
       )}
 
       {/* ── Orange circle bottom-left ── */}
-      <circle cx="80" cy="1430" r="410" fill={ORANGE} />
+      <circle cx="80" cy="1430" r="410" fill={accent} />
 
       {/* ── Canon section ── */}
       <text x="30" y="1115" fill={canonColor} fontWeight="bold" fontSize="38" fontFamily={FONT}>
@@ -263,7 +265,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
       )}
 
       {/* ── Building photo circle bottom-right ── */}
-      <circle cx="878" cy="960" r="200" fill="transparent" stroke={ORANGE} strokeWidth="14" />
+      <circle cx="878" cy="960" r="200" fill="transparent" stroke={accent} strokeWidth="14" />
       {buildingPhoto ? (
         <>
           <image
@@ -324,7 +326,7 @@ const FlyerPreview = forwardRef(({ values = {}, onPropertyDrag, onBuildingDrag }
           x="780"
           y="1248"
           textAnchor="middle"
-          fill={ORANGE}
+          fill={accent}
           fontSize="54"
           fontWeight="bold"
           fontFamily={FONT}

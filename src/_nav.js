@@ -151,6 +151,12 @@ const getNav = (t, role) => {
         to: '/inmobiliaria/designs',
         icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
       },
+      {
+        component: CNavItem,
+        name: 'Planos',
+        to: '/inmobiliaria/planos',
+        icon: <CIcon icon={cilFolder} customClassName="nav-icon" />,
+      },
     ],
   })
 

@@ -21,6 +21,8 @@ const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
+const InmobiliariaPlanos = React.lazy(() => import('./views/Inmobiliaria/Planos'))
+const InmobiliariaPlanoEditor = React.lazy(() => import('./views/Inmobiliaria/PlanosEditor'))
 
 // Tools
 const IncreaseDecrease = React.lazy(
@@ -158,6 +160,28 @@ const routes = [
     longName: 'Editar Diseño',
     tKey: 'nav.inmobiliariaDesignEdit',
     element: InmobiliariaDesignEditor,
+  },
+  {
+    path: '/inmobiliaria/planos',
+    name: 'Planos',
+    longName: 'Planos — Inmobiliaria',
+    tKey: 'nav.inmobiliariaPlanos',
+    element: InmobiliariaPlanos,
+    landingPage: true,
+  },
+  {
+    path: '/inmobiliaria/planos/new',
+    name: 'New Plano',
+    longName: 'Nuevo Plano',
+    tKey: 'nav.inmobiliariaPlanoNew',
+    element: InmobiliariaPlanoEditor,
+  },
+  {
+    path: '/inmobiliaria/planos/:id',
+    name: 'Edit Plano',
+    longName: 'Editar Plano',
+    tKey: 'nav.inmobiliariaPlanoEdit',
+    element: InmobiliariaPlanoEditor,
   },
 ]
 

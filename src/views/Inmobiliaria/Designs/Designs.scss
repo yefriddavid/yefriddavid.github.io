@@ -190,6 +190,39 @@
     }
   }
 
+  &__accent-hex {
+    width: 72px;
+    height: 28px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 12px;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+    outline: none;
+
+    &:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+  }
+
+  &__accent-picker {
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &::-webkit-color-swatch-wrapper { padding: 0; }
+    &::-webkit-color-swatch { border: none; border-radius: 4px; }
+  }
+
   &__canvas-actions {
     display: flex;
     gap: 4px;
