@@ -6,6 +6,7 @@ import {
   PIXELS_PER_METER,
   CANVAS_W,
   CANVAS_H,
+  RULER_SIZE,
   FURNITURE_CATALOG_MAP,
 } from 'src/constants/inmobiliaria'
 
@@ -22,31 +23,35 @@ const isFurnitureTool = (tool) => !!FURNITURE_CATALOG_MAP[tool]
 
 // ── Grid ──────────────────────────────────────────────────────────────────────
 
-const GridLayer = ({ width, height }) => (
-  <Layer listening={false}>
+const GridShape = ({ width, height, spacingPx, visible }) => {
+  if (!visible) return null
+  return (
     <Shape
       width={width}
       height={height}
       listening={false}
       sceneFunc={(ctx) => {
         const c = ctx._context
+        const major = spacingPx * 5
         c.save()
-        c.strokeStyle = '#e8eaed'
+        c.beginPath()
+        c.rect(0, 0, width, height)
+        c.clip()
+        c.strokeStyle = '#dde1e7'
         c.lineWidth = 0.5
         c.beginPath()
-        for (let x = 0; x <= width; x += GRID_SIZE) {
+        for (let x = 0; x <= width; x += spacingPx) {
           c.moveTo(x, 0)
           c.lineTo(x, height)
         }
-        for (let y = 0; y <= height; y += GRID_SIZE) {
+        for (let y = 0; y <= height; y += spacingPx) {
           c.moveTo(0, y)
           c.lineTo(width, y)
         }
         c.stroke()
-        c.strokeStyle = '#cfd3d9'
+        c.strokeStyle = '#bfc5ce'
         c.lineWidth = 1
         c.beginPath()
-        const major = GRID_SIZE * 5
         for (let x = 0; x <= width; x += major) {
           c.moveTo(x, 0)
           c.lineTo(x, height)
@@ -59,8 +64,108 @@ const GridLayer = ({ width, height }) => (
         c.restore()
       }}
     />
-  </Layer>
-)
+  )
+}
+
+// ── Ruler bars ────────────────────────────────────────────────────────────────
+
+const RulerBars = ({ width, height, spacingPx }) => {
+  // label every 1m minimum; if grid spacing > 1m, match the grid
+  const labelStep = Math.max(PIXELS_PER_METER, spacingPx)
+
+  return (
+    <Shape
+      x={-RULER_SIZE}
+      y={-RULER_SIZE}
+      listening={false}
+      sceneFunc={(ctx) => {
+        const c = ctx._context
+        c.save()
+
+        // corner square
+        c.fillStyle = '#dde1e7'
+        c.fillRect(0, 0, RULER_SIZE, RULER_SIZE)
+
+        // horizontal ruler background
+        c.fillStyle = '#f4f5f7'
+        c.fillRect(RULER_SIZE, 0, width, RULER_SIZE)
+
+        // vertical ruler background
+        c.fillRect(0, RULER_SIZE, RULER_SIZE, height)
+
+        // borders
+        c.strokeStyle = '#bfc6d0'
+        c.lineWidth = 0.5
+        c.strokeRect(RULER_SIZE, 0, width, RULER_SIZE)
+        c.strokeRect(0, RULER_SIZE, RULER_SIZE, height)
+
+        // ── horizontal minor ticks ─────────────────────────────────
+        if (spacingPx < labelStep) {
+          c.strokeStyle = '#c8d2dc'
+          c.lineWidth = 0.5
+          c.beginPath()
+          for (let x = spacingPx; x < width; x += spacingPx) {
+            if (x % labelStep === 0) continue
+            c.moveTo(RULER_SIZE + x, RULER_SIZE - 5)
+            c.lineTo(RULER_SIZE + x, RULER_SIZE)
+          }
+          c.stroke()
+        }
+
+        // ── horizontal major ticks + labels ───────────────────────
+        c.strokeStyle = '#7a8a9a'
+        c.lineWidth = 1
+        c.fillStyle = '#505a68'
+        c.font = '9px sans-serif'
+        c.textAlign = 'center'
+        c.textBaseline = 'top'
+        for (let x = labelStep; x <= width; x += labelStep) {
+          const m = x / PIXELS_PER_METER
+          c.beginPath()
+          c.moveTo(RULER_SIZE + x, RULER_SIZE - 9)
+          c.lineTo(RULER_SIZE + x, RULER_SIZE)
+          c.stroke()
+          c.fillText(`${m}m`, RULER_SIZE + x, 2)
+        }
+
+        // ── vertical minor ticks ───────────────────────────────────
+        if (spacingPx < labelStep) {
+          c.strokeStyle = '#c8d2dc'
+          c.lineWidth = 0.5
+          c.beginPath()
+          for (let y = spacingPx; y < height; y += spacingPx) {
+            if (y % labelStep === 0) continue
+            c.moveTo(RULER_SIZE - 5, RULER_SIZE + y)
+            c.lineTo(RULER_SIZE, RULER_SIZE + y)
+          }
+          c.stroke()
+        }
+
+        // ── vertical major ticks + labels (rotated) ───────────────
+        c.strokeStyle = '#7a8a9a'
+        c.lineWidth = 1
+        for (let y = labelStep; y <= height; y += labelStep) {
+          const m = y / PIXELS_PER_METER
+          c.beginPath()
+          c.moveTo(RULER_SIZE - 9, RULER_SIZE + y)
+          c.lineTo(RULER_SIZE, RULER_SIZE + y)
+          c.stroke()
+          c.save()
+          c.translate(RULER_SIZE / 2, RULER_SIZE + y)
+          c.rotate(-Math.PI / 2)
+          c.textAlign = 'center'
+          c.textBaseline = 'middle'
+          c.fillStyle = '#505a68'
+          c.font = '9px sans-serif'
+          c.fillText(`${m}m`, 0, 0)
+          c.restore()
+        }
+
+        c.restore()
+      }}
+    />
+  )
+}
 
 // ── Wall measurement label ─────────────────────────────────────────────────────
 
@@ -1356,6 +1461,8 @@ const EditorCanvas = React.forwardRef(
       onResizeElement,
       onRotateElement,
       onMoveLabelOffset,
+      gridSpacingPx = GRID_SIZE,
+      gridVisible = true,
     },
     ref,
   ) => {
@@ -1621,10 +1728,8 @@ const EditorCanvas = React.forwardRef(
           onDragEnd={onStageDragEnd}
           style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }}
         >
-          <GridLayer width={CANVAS_W} height={CANVAS_H} />
-
           <Layer>
-            {/* canvas border */}
+            {/* canvas background */}
             <Rect
               x={0}
               y={0}
@@ -1634,6 +1739,13 @@ const EditorCanvas = React.forwardRef(
               stroke="#aaa"
               strokeWidth={1}
               listening={false}
+            />
+            {/* grid — on top of white bg, below all elements */}
+            <GridShape
+              width={CANVAS_W}
+              height={CANVAS_H}
+              spacingPx={gridSpacingPx}
+              visible={gridVisible}
             />
 
             {/* all elements rendered in z-order; elements not in zOrder fall back to default category order */}
@@ -1848,6 +1960,9 @@ const EditorCanvas = React.forwardRef(
                   />
                 )
               })()}
+
+            {/* ruler bars — drawn last so they sit on top, in negative-coord space */}
+            <RulerBars width={CANVAS_W} height={CANVAS_H} spacingPx={gridSpacingPx} />
           </Layer>
         </Stage>
       </div>

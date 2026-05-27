@@ -30,6 +30,44 @@
     color: #6c757d;
   }
 
+  &__topbar-sep {
+    display: inline-block;
+    width: 1px;
+    height: 18px;
+    background: #dee2e6;
+    flex-shrink: 0;
+  }
+
+  &__grid-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background: #f8f9fa;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    color: #495057;
+    flex-shrink: 0;
+    transition: all 0.12s;
+
+    &:hover { background: #e8f0fe; border-color: #4285f4; }
+
+    &--off {
+      background: #fff;
+      color: #adb5bd;
+      border-color: #e0e0e0;
+    }
+  }
+
+  &__grid-select {
+    width: 80px;
+    flex-shrink: 0;
+  }
+
   &__body {
     display: flex;
     flex: 1;

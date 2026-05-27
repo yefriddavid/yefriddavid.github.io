@@ -10,6 +10,8 @@ import {
   PIXELS_PER_METER,
   FURNITURE_CATALOG_MAP,
   PLANO_TOOLS,
+  GRID_PRESETS,
+  RULER_SIZE,
 } from 'src/constants/inmobiliaria'
 import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
@@ -20,6 +22,77 @@ const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 const isFurnitureTool = (tool) => !!FURNITURE_CATALOG_MAP[tool]
 const isPlanoTool = (tool) => PLANO_TOOLS.some((t) => t.key === tool)
+
+// Controlled numeric input — commits on Enter or blur
+// draftRef holds the latest typed value so onBlur never reads a stale closure
+const LengthInput = ({ value, min = 0.5, onCommit }) => {
+  const [display, setDisplay] = useState(String(value))
+  const draftRef = useRef(String(value)) // always current, even before re-render
+  const focusedRef = useRef(false)
+  const committedRef = useRef(false) // prevents double-commit when Enter triggers blur
+
+  useEffect(() => {
+    if (!focusedRef.current) {
+      const s = String(value)
+      draftRef.current = s
+      setDisplay(s)
+    }
+  }, [value])
+
+  const commit = () => {
+    const v = parseFloat(draftRef.current)
+    if (!isNaN(v) && v >= min) {
+      onCommit(v)
+    } else {
+      const s = String(value)
+      draftRef.current = s
+      setDisplay(s)
+    }
+  }
+
+  return (
+    <input
+      type="number"
+      className="form-control form-control-sm"
+      style={{ width: 90 }}
+      min={min}
+      step="any"
+      value={display}
+      onChange={(e) => {
+        draftRef.current = e.target.value
+        setDisplay(e.target.value)
+      }}
+      onFocus={() => {
+        focusedRef.current = true
+        committedRef.current = false
+      }}
+      onBlur={() => {
+        focusedRef.current = false
+        if (committedRef.current) {
+          committedRef.current = false
+          return
+        }
+        commit()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          committedRef.current = true
+          commit()
+          e.target.blur()
+        }
+        if (e.key === 'Escape') {
+          committedRef.current = true
+          const s = String(value)
+          draftRef.current = s
+          setDisplay(s)
+          e.target.blur()
+        }
+        e.stopPropagation()
+      }}
+    />
+  )
+}
 
 const autoName = (p, kind, subtype = null) => {
   switch (kind) {
@@ -57,7 +130,9 @@ const PlanosEditor = () => {
   const [drawStart, setDrawStart] = useState(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [stageScale, setStageScale] = useState(1)
-  const [stagePos, setStagePos] = useState({ x: 0, y: 0 })
+  const [stagePos, setStagePos] = useState({ x: RULER_SIZE + 4, y: RULER_SIZE + 4 })
+  const [gridSpacingPx, setGridSpacingPx] = useState(40) // default: 1 m
+  const [gridVisible, setGridVisible] = useState(true)
   // refs for access inside keyboard handlers without closure issues
   const createdIdRef = useRef(null)
   const planoRef = useRef(plano)
@@ -283,6 +358,17 @@ const PlanosEditor = () => {
     }))
   }, [])
 
+  const handleSnapRuler = useCallback((rid, axis) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      rulers: (p.rulers ?? []).map((r) => {
+        if (r.id !== rid) return r
+        return axis === 'h' ? { ...r, y2: r.y1 } : { ...r, x2: r.x1 }
+      }),
+    }))
+  }, [])
+
   const handleWallLengthChange = useCallback((wid, meters) => {
     pushHistory()
     setPlano((p) => ({
@@ -333,8 +419,8 @@ const PlanosEditor = () => {
         const newPx = meters * PIXELS_PER_METER
         return {
           ...r,
-          x2: snap(r.x1 + (ddx / len) * newPx),
-          y2: snap(r.y1 + (ddy / len) * newPx),
+          x2: Math.round(r.x1 + (ddx / len) * newPx),
+          y2: Math.round(r.y1 + (ddy / len) * newPx),
         }
       }),
     }))
@@ -805,29 +891,34 @@ const PlanosEditor = () => {
         />
 
         <div className="pe-editor__topbar-info">
-          <span>Escala: 1 celda = 0.5 m</span>
+          <span>Snap: 0.5 m</span>
+          <span className="pe-editor__topbar-sep" />
+          <button
+            className={`pe-editor__grid-btn${gridVisible ? '' : ' pe-editor__grid-btn--off'}`}
+            title={gridVisible ? 'Ocultar cuadrícula' : 'Mostrar cuadrícula'}
+            onClick={() => setGridVisible((v) => !v)}
+          >
+            ⊞
+          </button>
+          <select
+            className="form-select form-select-sm pe-editor__grid-select"
+            value={gridSpacingPx}
+            onChange={(e) => setGridSpacingPx(Number(e.target.value))}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            {GRID_PRESETS.map((p) => (
+              <option key={p.px} value={p.px}>
+                {p.label}
+              </option>
+            ))}
+          </select>
           {selectedWall && (
             <>
               <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>Largo:</span>
-              <input
-                key={`wl-${selectedWall.id}-${wallLengthNum}`}
-                type="number"
-                className="form-control form-control-sm"
-                style={{ width: 90 }}
-                min={0.5}
-                step={0.5}
-                defaultValue={wallLengthNum}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const v = parseFloat(e.target.value)
-                    if (!isNaN(v) && v >= 0.5) handleWallLengthChange(selectedWall.id, v)
-                    e.target.blur()
-                  }
-                }}
-                onBlur={(e) => {
-                  const v = parseFloat(e.target.value)
-                  if (!isNaN(v) && v >= 0.5) handleWallLengthChange(selectedWall.id, v)
-                }}
+              <LengthInput
+                key={selectedWall.id}
+                value={wallLengthNum}
+                onCommit={(v) => handleWallLengthChange(selectedWall.id, v)}
               />
               <span style={{ fontSize: 12, color: '#555' }}>m</span>
               <CButton
@@ -878,27 +969,30 @@ const PlanosEditor = () => {
           {selectedRuler && (
             <>
               <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>Cota:</span>
-              <input
-                key={`rl-${selectedRuler.id}-${rulerLengthNum}`}
-                type="number"
-                className="form-control form-control-sm"
-                style={{ width: 90 }}
-                min={0.5}
-                step={0.5}
-                defaultValue={rulerLengthNum}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const v = parseFloat(e.target.value)
-                    if (!isNaN(v) && v >= 0.5) handleRulerLengthChange(selectedRuler.id, v)
-                    e.target.blur()
-                  }
-                }}
-                onBlur={(e) => {
-                  const v = parseFloat(e.target.value)
-                  if (!isNaN(v) && v >= 0.5) handleRulerLengthChange(selectedRuler.id, v)
-                }}
+              <LengthInput
+                key={selectedRuler.id}
+                value={rulerLengthNum}
+                onCommit={(v) => handleRulerLengthChange(selectedRuler.id, v)}
               />
               <span style={{ fontSize: 12, color: '#555' }}>m</span>
+              <CButton
+                size="sm"
+                variant="outline"
+                color="secondary"
+                title="Alinear horizontal"
+                onClick={() => handleSnapRuler(selectedRuler.id, 'h')}
+              >
+                ↔
+              </CButton>
+              <CButton
+                size="sm"
+                variant="outline"
+                color="secondary"
+                title="Alinear vertical"
+                onClick={() => handleSnapRuler(selectedRuler.id, 'v')}
+              >
+                ↕
+              </CButton>
             </>
           )}
           {selectedId && (
@@ -1019,6 +1113,8 @@ const PlanosEditor = () => {
           onResizeElement={handleResizeElement}
           onRotateElement={rotateSelected}
           onMoveLabelOffset={handleMoveLabelOffset}
+          gridSpacingPx={gridSpacingPx}
+          gridVisible={gridVisible}
         />
         <LayersPanel
           plano={plano}

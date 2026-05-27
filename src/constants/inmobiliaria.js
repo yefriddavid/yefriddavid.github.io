@@ -5,6 +5,7 @@ export const WALL_THICKNESS = 4 // px
 export const PIXELS_PER_METER = 40 // 2 cells = 1 m
 export const CANVAS_W = 2000
 export const CANVAS_H = 1500
+export const RULER_SIZE = 20 // px — thickness of the ruler bars
 
 export const FURNITURE_CATALOG = [
   { type: 'bed_single', label: 'Cama sencilla', category: 'bedroom', w: 80, h: 120 },
@@ -65,6 +66,14 @@ export const EMPTY_PLANO = {
   rulers: [],
   zOrder: [],
 }
+
+export const GRID_PRESETS = [
+  { label: '25 cm', px: 10 },
+  { label: '50 cm', px: 20 },
+  { label: '1 m', px: 40 },
+  { label: '2 m', px: 80 },
+  { label: '5 m', px: 200 },
+]
 
 // ─── Design template constants ────────────────────────────────────────────────
 
