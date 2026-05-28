@@ -159,6 +159,8 @@ const PlanosEditor = () => {
         labels: current.labels ?? [],
         rulers: current.rulers ?? [],
         zOrder: current.zOrder ?? [],
+        groups: current.groups ?? [],
+        hiddenIds: current.hiddenIds ?? [],
       })
     }
   }, [current])
@@ -263,6 +265,9 @@ const PlanosEditor = () => {
       labels: p.labels.filter((l) => l.id !== eid),
       rulers: (p.rulers ?? []).filter((r) => r.id !== eid),
       zOrder: (p.zOrder ?? []).filter((zid) => zid !== eid),
+      groups: (p.groups ?? [])
+        .map((g) => ({ ...g, itemIds: g.itemIds.filter((id) => id !== eid) }))
+        .filter((g) => g.itemIds.length > 0),
     }))
     setSelectedIds((prev) => prev.filter((x) => x !== eid))
   }, [])
@@ -279,6 +284,9 @@ const PlanosEditor = () => {
       labels: p.labels.filter((l) => !idSet.has(l.id)),
       rulers: (p.rulers ?? []).filter((r) => !idSet.has(r.id)),
       zOrder: (p.zOrder ?? []).filter((zid) => !idSet.has(zid)),
+      groups: (p.groups ?? [])
+        .map((g) => ({ ...g, itemIds: g.itemIds.filter((id) => !idSet.has(id)) }))
+        .filter((g) => g.itemIds.length > 0),
     }))
     setSelectedIds([])
   }, [])
@@ -303,6 +311,9 @@ const PlanosEditor = () => {
       ),
       furniture: p.furniture.map((f) =>
         f.id === eid ? { ...f, rotation: (f.rotation + deg) % 360 } : f,
+      ),
+      labels: p.labels.map((l) =>
+        l.id === eid ? { ...l, rotation: ((l.rotation ?? 0) + deg) % 360 } : l,
       ),
     }))
   }, [])
@@ -330,10 +341,10 @@ const PlanosEditor = () => {
     setPlano((p) => ({
       ...p,
       doors: p.doors.map((d) =>
-        d.id === eid ? { ...d, width: Math.max(GRID_SIZE * 2, updates.width ?? d.width) } : d,
+        d.id === eid ? { ...d, width: Math.max(GRID_SIZE, updates.width ?? d.width) } : d,
       ),
       windows: p.windows.map((w) =>
-        w.id === eid ? { ...w, width: Math.max(GRID_SIZE * 2, updates.width ?? w.width) } : w,
+        w.id === eid ? { ...w, width: Math.max(GRID_SIZE, updates.width ?? w.width) } : w,
       ),
       furniture: p.furniture.map((f) =>
         f.id === eid
@@ -404,6 +415,30 @@ const PlanosEditor = () => {
         if (w.id !== wid) return w
         return endpoint === 'start' ? { ...w, x1: nx, y1: ny } : { ...w, x2: nx, y2: ny }
       }),
+    }))
+  }, [])
+
+  const handleDoorWidthChange = useCallback((did, meters) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      doors: p.doors.map((d) =>
+        d.id === did
+          ? { ...d, width: Math.max(GRID_SIZE, Math.round(meters * PIXELS_PER_METER)) }
+          : d,
+      ),
+    }))
+  }, [])
+
+  const handleWindowWidthChange = useCallback((wid, meters) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      windows: p.windows.map((w) =>
+        w.id === wid
+          ? { ...w, width: Math.max(GRID_SIZE, Math.round(meters * PIXELS_PER_METER)) }
+          : w,
+      ),
     }))
   }, [])
 
@@ -678,7 +713,7 @@ const PlanosEditor = () => {
           ...p,
           doors: [
             ...p.doors,
-            { id: newId, name, x: pos.x, y: pos.y, width: GRID_SIZE * 4, rotation: 0 },
+            { id: newId, name, x: pos.x, y: pos.y, width: Math.round(0.9 * PIXELS_PER_METER), rotation: 0 },
           ],
           zOrder: [...(p.zOrder ?? []), newId],
         }))
@@ -821,18 +856,145 @@ const PlanosEditor = () => {
     }))
   }, [])
 
+  // ── groups ─────────────────────────────────────────────────────────────────
+  const handleCreateGroup = useCallback((ids) => {
+    const name = window.prompt('Nombre del grupo:', 'Grupo')
+    if (!name?.trim()) return
+    pushHistory()
+    const newId = uid()
+    const idSet = new Set(ids)
+    setPlano((p) => ({
+      ...p,
+      groups: [
+        ...(p.groups ?? []).map((g) => ({
+          ...g,
+          itemIds: g.itemIds.filter((id) => !idSet.has(id)),
+        })).filter((g) => g.itemIds.length > 0),
+        { id: newId, name: name.trim(), itemIds: [...ids] },
+      ],
+    }))
+  }, [])
+
+  const handleRenameGroup = useCallback((gid, name) => {
+    setPlano((p) => ({
+      ...p,
+      groups: (p.groups ?? []).map((g) => (g.id === gid ? { ...g, name } : g)),
+    }))
+  }, [])
+
+  const handleUngroup = useCallback((gid) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      groups: (p.groups ?? []).filter((g) => g.id !== gid),
+    }))
+  }, [])
+
+  const handleToggleVisibility = useCallback((eid) => {
+    setPlano((p) => {
+      const hidden = new Set(p.hiddenIds ?? [])
+      if (hidden.has(eid)) hidden.delete(eid)
+      else hidden.add(eid)
+      return { ...p, hiddenIds: [...hidden] }
+    })
+  }, [])
+
+  const handleToggleGroupVisibility = useCallback((gid) => {
+    setPlano((p) => {
+      const group = (p.groups ?? []).find((g) => g.id === gid)
+      if (!group) return p
+      const hidden = new Set(p.hiddenIds ?? [])
+      const allHidden = group.itemIds.every((id) => hidden.has(id))
+      if (allHidden) group.itemIds.forEach((id) => hidden.delete(id))
+      else group.itemIds.forEach((id) => hidden.add(id))
+      return { ...p, hiddenIds: [...hidden] }
+    })
+  }, [])
+
+  const handleGroupSelect = useCallback((gid) => {
+    const group = (planoRef.current.groups ?? []).find((g) => g.id === gid)
+    if (group) setSelectedIds([...group.itemIds])
+  }, [])
+
+  const handleCloneGroup = useCallback((gid) => {
+    pushHistory()
+    const group = (planoRef.current.groups ?? []).find((g) => g.id === gid)
+    if (!group) return
+    const OFF = GRID_SIZE * 2
+    const idMap = {}
+    group.itemIds.forEach((id) => { idMap[id] = uid() })
+    setPlano((p) => {
+      const newWalls = group.itemIds
+        .map((id) => p.walls.find((w) => w.id === id)).filter(Boolean)
+        .map((w) => ({ ...w, id: idMap[w.id], x1: w.x1 + OFF, y1: w.y1 + OFF, x2: w.x2 + OFF, y2: w.y2 + OFF }))
+      const newDoors = group.itemIds
+        .map((id) => p.doors.find((d) => d.id === id)).filter(Boolean)
+        .map((d) => ({ ...d, id: idMap[d.id], x: d.x + OFF, y: d.y + OFF }))
+      const newWindows = group.itemIds
+        .map((id) => p.windows.find((w) => w.id === id)).filter(Boolean)
+        .map((w) => ({ ...w, id: idMap[w.id], x: w.x + OFF, y: w.y + OFF }))
+      const newFurniture = group.itemIds
+        .map((id) => p.furniture.find((f) => f.id === id)).filter(Boolean)
+        .map((f) => ({ ...f, id: idMap[f.id], x: f.x + OFF, y: f.y + OFF }))
+      const newLabels = group.itemIds
+        .map((id) => p.labels.find((l) => l.id === id)).filter(Boolean)
+        .map((l) => ({ ...l, id: idMap[l.id], x: l.x + OFF, y: l.y + OFF }))
+      const newRulers = group.itemIds
+        .map((id) => (p.rulers ?? []).find((r) => r.id === id)).filter(Boolean)
+        .map((r) => ({ ...r, id: idMap[r.id], x1: r.x1 + OFF, y1: r.y1 + OFF, x2: r.x2 + OFF, y2: r.y2 + OFF }))
+      const newIds = Object.values(idMap)
+      return {
+        ...p,
+        walls: [...p.walls, ...newWalls],
+        doors: [...p.doors, ...newDoors],
+        windows: [...p.windows, ...newWindows],
+        furniture: [...p.furniture, ...newFurniture],
+        labels: [...p.labels, ...newLabels],
+        rulers: [...(p.rulers ?? []), ...newRulers],
+        zOrder: [...(p.zOrder ?? []), ...newIds],
+        groups: [...(p.groups ?? []), { id: uid(), name: group.name + ' (copia)', itemIds: newIds }],
+      }
+    })
+    setSelectedIds(Object.values(idMap))
+  }, [])
+
+  const handleMoveToGroup = useCallback((itemId, groupId) => {
+    pushHistory()
+    setPlano((p) => {
+      let groups = (p.groups ?? []).map((g) => ({
+        ...g,
+        itemIds: g.itemIds.filter((id) => id !== itemId),
+      }))
+      groups = groups.map((g) =>
+        g.id === groupId ? { ...g, itemIds: [...g.itemIds, itemId] } : g,
+      )
+      groups = groups.filter((g) => g.id === groupId || g.itemIds.length > 0)
+      return { ...p, groups }
+    })
+  }, [])
+
+  const handleRemoveFromGroup = useCallback((itemId) => {
+    pushHistory()
+    setPlano((p) => ({
+      ...p,
+      groups: (p.groups ?? [])
+        .map((g) => ({ ...g, itemIds: g.itemIds.filter((id) => id !== itemId) }))
+        .filter((g) => g.itemIds.length > 0),
+    }))
+  }, [])
+
   // ── save ───────────────────────────────────────────────────────────────────
   const handleSave = () => {
-    const { name, walls, doors, windows, furniture, labels, rulers, zOrder } = plano
+    const { name, walls, doors, windows, furniture, labels, rulers, zOrder, groups, hiddenIds } = plano
     if (isNew) {
       dispatch(
-        actions.createRequest({ name, walls, doors, windows, furniture, labels, rulers, zOrder }),
+        actions.createRequest({ name, walls, doors, windows, furniture, labels, rulers, zOrder, groups, hiddenIds }),
       )
     } else {
       dispatch(
         actions.updateRequest({
           id,
-          data: { name, walls, doors, windows, furniture, labels, rulers, zOrder },
+          data: { name, walls, doors, windows, furniture, labels, rulers, zOrder, groups, hiddenIds },
         }),
       )
     }
@@ -844,6 +1006,8 @@ const PlanosEditor = () => {
   const selectedLabel = plano.labels.find((l) => l.id === selectedId) ?? null
   const selectedWall = plano.walls.find((w) => w.id === selectedId) ?? null
   const selectedRuler = (plano.rulers ?? []).find((r) => r.id === selectedId) ?? null
+  const selectedDoor = plano.doors.find((d) => d.id === selectedId) ?? null
+  const selectedWindow = plano.windows.find((w) => w.id === selectedId) ?? null
   const selectedIsFlippable =
     !!selectedId &&
     !selectedWall &&
@@ -868,6 +1032,12 @@ const PlanosEditor = () => {
           ) / PIXELS_PER_METER
         ).toFixed(2),
       )
+    : 0
+  const doorWidthNum = selectedDoor
+    ? parseFloat((selectedDoor.width / PIXELS_PER_METER).toFixed(2))
+    : 0
+  const windowWidthNum = selectedWindow
+    ? parseFloat((selectedWindow.width / PIXELS_PER_METER).toFixed(2))
     : 0
 
   return (
@@ -964,6 +1134,37 @@ const PlanosEditor = () => {
                   </option>
                 ))}
               </select>
+              <LengthInput
+                key={selectedLabel.id + '-rot'}
+                value={selectedLabel.rotation ?? 0}
+                min={-360}
+                onCommit={(v) => handleLabelUpdate(selectedId, { rotation: v % 360 })}
+              />
+              <span style={{ fontSize: 12, color: '#555' }}>°</span>
+            </>
+          )}
+          {selectedDoor && (
+            <>
+              <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>Ancho:</span>
+              <LengthInput
+                key={selectedDoor.id}
+                value={doorWidthNum}
+                min={0.2}
+                onCommit={(v) => handleDoorWidthChange(selectedDoor.id, v)}
+              />
+              <span style={{ fontSize: 12, color: '#555' }}>m</span>
+            </>
+          )}
+          {selectedWindow && (
+            <>
+              <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>Ancho:</span>
+              <LengthInput
+                key={selectedWindow.id}
+                value={windowWidthNum}
+                min={0.2}
+                onCommit={(v) => handleWindowWidthChange(selectedWindow.id, v)}
+              />
+              <span style={{ fontSize: 12, color: '#555' }}>m</span>
             </>
           )}
           {selectedRuler && (
@@ -1115,12 +1316,22 @@ const PlanosEditor = () => {
           onMoveLabelOffset={handleMoveLabelOffset}
           gridSpacingPx={gridSpacingPx}
           gridVisible={gridVisible}
+          hiddenIds={plano.hiddenIds}
         />
         <LayersPanel
           plano={plano}
           selectedIds={selectedIds}
           onSelect={(id) => handleElementSelect(id, false)}
           onRename={handleRenameElement}
+          onGroupCreate={handleCreateGroup}
+          onGroupRename={handleRenameGroup}
+          onUngroup={handleUngroup}
+          onCloneGroup={handleCloneGroup}
+          onGroupSelect={handleGroupSelect}
+          onToggleVisibility={handleToggleVisibility}
+          onToggleGroupVisibility={handleToggleGroupVisibility}
+          onMoveToGroup={handleMoveToGroup}
+          onRemoveFromGroup={handleRemoveFromGroup}
         />
       </div>
     </div>

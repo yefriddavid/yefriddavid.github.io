@@ -291,12 +291,12 @@ const DoorShape = ({
             }}
             onDragMove={(e) => {
               e.cancelBubble = true
-              e.target.x(Math.max(GRID_SIZE * 2, snap(e.target.x())))
+              e.target.x(Math.max(GRID_SIZE, Math.round(e.target.x() / 4) * 4))
               e.target.y(0)
             }}
             onDragEnd={(e) => {
               e.cancelBubble = true
-              const newW = Math.max(GRID_SIZE * 2, snap(e.target.x()))
+              const newW = Math.max(GRID_SIZE, Math.round(e.target.x() / 4) * 4)
               e.target.x(w)
               e.target.y(0)
               onResize(id, { width: newW })
@@ -400,12 +400,12 @@ const WindowShape = ({
             }}
             onDragMove={(e) => {
               e.cancelBubble = true
-              e.target.x(Math.max(GRID_SIZE * 2, snap(e.target.x())))
+              e.target.x(Math.max(GRID_SIZE, Math.round(e.target.x() / 4) * 4))
               e.target.y(d / 2)
             }}
             onDragEnd={(e) => {
               e.cancelBubble = true
-              const newW = Math.max(GRID_SIZE * 2, snap(e.target.x()))
+              const newW = Math.max(GRID_SIZE, Math.round(e.target.x() / 4) * 4)
               e.target.x(w)
               e.target.y(d / 2)
               onResize(id, { width: newW })
@@ -1463,9 +1463,11 @@ const EditorCanvas = React.forwardRef(
       onMoveLabelOffset,
       gridSpacingPx = GRID_SIZE,
       gridVisible = true,
+      hiddenIds,
     },
     ref,
   ) => {
+    const hiddenSet = hiddenIds instanceof Set ? hiddenIds : new Set(hiddenIds ?? [])
     const stageRef = useRef(null)
     const containerRef = useRef(null)
     const [stageSize, setStageSize] = useState({ width: 900, height: 600 })
@@ -1768,6 +1770,7 @@ const EditorCanvas = React.forwardRef(
               const order = [...legacy, ...(plano.zOrder ?? [])]
 
               return order.map((id) => {
+                if (hiddenSet.has(id)) return null
                 const wall = wallMap[id]
                 if (wall)
                   return (
@@ -1835,6 +1838,7 @@ const EditorCanvas = React.forwardRef(
                       id={'el-' + id}
                       x={lbl.x}
                       y={lbl.y}
+                      rotation={lbl.rotation ?? 0}
                       draggable={isSelectMode}
                       onClick={(e) => {
                         e.cancelBubble = true

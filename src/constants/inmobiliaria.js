@@ -65,6 +65,8 @@ export const EMPTY_PLANO = {
   labels: [],
   rulers: [],
   zOrder: [],
+  groups: [],
+  hiddenIds: [],
 }
 
 export const GRID_PRESETS = [
