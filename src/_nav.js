@@ -77,6 +77,12 @@ const getNav = (t, role) => {
           to: '/finance/management/account-status',
           icon: <CIcon icon={cilCheck} customClassName="nav-icon" />,
         },
+        {
+          component: CNavItem,
+          name: 'Declaración de Renta',
+          to: '/finance/management/declaracion-renta',
+          icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+        },
       ],
     })
   }

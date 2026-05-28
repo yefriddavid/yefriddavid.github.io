@@ -12,6 +12,7 @@ const Profile = React.lazy(() => import('./views/profile/Profile'))
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Transactions = React.lazy(() => import('./views/Accounting/Transactions'))
 const AccountStatus = React.lazy(() => import('./views/Accounting/AccountStatus'))
+const DeclaracionRenta = React.lazy(() => import('./views/Accounting/DeclaracionRenta'))
 const Reports = React.lazy(() => import('./views/reports/Reports'))
 
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
@@ -77,6 +78,13 @@ const routes = [
     longName: 'Maestro de Cuentas',
     tKey: 'nav.accountsMaster',
     element: AccountsMaster,
+    landingPage: true,
+  },
+  {
+    path: '/finance/management/declaracion-renta',
+    name: 'Declaracion Renta',
+    longName: 'Declaración de Renta',
+    element: DeclaracionRenta,
     landingPage: true,
   },
   {
