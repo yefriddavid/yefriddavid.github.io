@@ -1079,6 +1079,99 @@ const FurnitureShape = ({
             />
           </>
         )
+      case 'stairs_straight': {
+        const stepCount = Math.max(4, Math.round(h / 12))
+        const stepH = h / stepCount
+        return (
+          <>
+            <Rect x={0} y={0} width={w} height={h} fill="white" stroke={S} strokeWidth={SW} />
+            {Array.from({ length: stepCount - 1 }, (_, i) => (
+              <Line key={i} points={[0, (i + 1) * stepH, w, (i + 1) * stepH]} stroke={S} strokeWidth={0.8} />
+            ))}
+            <Line points={[w / 2, h * 0.15, w / 2, h * 0.85]} stroke="#888" strokeWidth={1} listening={false} />
+            <Line points={[w / 2 - 5, h * 0.25, w / 2, h * 0.15, w / 2 + 5, h * 0.25]} stroke="#888" strokeWidth={1} listening={false} />
+          </>
+        )
+      }
+      case 'stairs_l': {
+        const armW = w / 2
+        const armH = h / 2
+        const stepsV = Math.max(3, Math.round(armH / 12))
+        const stepsH = Math.max(3, Math.round(armW / 12))
+        return (
+          <Shape
+            sceneFunc={(ctx) => {
+              const c = ctx._context
+              c.save()
+              c.beginPath()
+              c.moveTo(0, 0)
+              c.lineTo(w, 0)
+              c.lineTo(w, armH)
+              c.lineTo(armW, armH)
+              c.lineTo(armW, h)
+              c.lineTo(0, h)
+              c.closePath()
+              c.fillStyle = 'white'
+              c.fill()
+              c.strokeStyle = S
+              c.lineWidth = SW
+              c.stroke()
+              c.lineWidth = 0.8
+              for (let i = 1; i < stepsV; i++) {
+                const y = i * (armH / stepsV)
+                c.beginPath(); c.moveTo(0, y); c.lineTo(armW, y); c.stroke()
+              }
+              for (let i = 1; i < stepsH; i++) {
+                const x = armW + i * (armW / stepsH)
+                c.beginPath(); c.moveTo(x, 0); c.lineTo(x, armH); c.stroke()
+              }
+              c.restore()
+            }}
+            width={w}
+            height={h}
+          />
+        )
+      }
+      case 'stairs_spiral': {
+        const cx = w / 2
+        const cy = h / 2
+        const outerR = Math.min(w, h) / 2 - 1
+        const innerR = outerR * 0.22
+        const steps = 12
+        return (
+          <Shape
+            sceneFunc={(ctx) => {
+              const c = ctx._context
+              c.save()
+              c.beginPath()
+              c.arc(cx, cy, outerR, 0, 2 * Math.PI)
+              c.fillStyle = 'white'
+              c.fill()
+              c.strokeStyle = S
+              c.lineWidth = SW
+              c.stroke()
+              c.lineWidth = 0.8
+              for (let i = 0; i < steps; i++) {
+                const angle = (i / steps) * 2 * Math.PI
+                c.beginPath()
+                c.moveTo(cx + innerR * Math.cos(angle), cy + innerR * Math.sin(angle))
+                c.lineTo(cx + outerR * Math.cos(angle), cy + outerR * Math.sin(angle))
+                c.stroke()
+              }
+              c.beginPath()
+              c.arc(cx, cy, innerR, 0, 2 * Math.PI)
+              c.fillStyle = '#e5e7eb'
+              c.fill()
+              c.strokeStyle = S
+              c.lineWidth = 1
+              c.stroke()
+              c.restore()
+            }}
+            width={w}
+            height={h}
+          />
+        )
+      }
       default:
         return <Rect x={0} y={0} width={w} height={h} fill="#f0f0f0" stroke={S} strokeWidth={SW} />
     }

@@ -25,6 +25,9 @@ export const FURNITURE_CATALOG = [
   { type: 'table_dining', label: 'Mesa comedor', category: 'dining', w: 120, h: 80 },
   { type: 'chair', label: 'Silla', category: 'dining', w: 40, h: 40 },
   { type: 'desk', label: 'Escritorio', category: 'office', w: 120, h: 60 },
+  { type: 'stairs_straight', label: 'Escalera recta', category: 'circulation', w: 80, h: 120 },
+  { type: 'stairs_l', label: 'Escalera en L', category: 'circulation', w: 120, h: 120 },
+  { type: 'stairs_spiral', label: 'Escalera caracol', category: 'circulation', w: 80, h: 80 },
   { type: 'patio', label: 'Patio', category: 'outdoor', w: 160, h: 160 },
   { type: 'jardin', label: 'Jardín', category: 'outdoor', w: 160, h: 160 },
   { type: 'terraza', label: 'Terraza', category: 'outdoor', w: 160, h: 120 },
@@ -43,6 +46,7 @@ export const FURNITURE_CATEGORIES = [
   { key: 'living', label: 'Sala' },
   { key: 'dining', label: 'Comedor' },
   { key: 'office', label: 'Oficina' },
+  { key: 'circulation', label: 'Circulación' },
   { key: 'outdoor', label: 'Exterior' },
 ]
 
