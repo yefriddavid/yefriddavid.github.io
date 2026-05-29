@@ -16,6 +16,8 @@ export const STORAGE_KEYS = {
   AVATAR: 'cached-avatar',
   // User preferences
   LANG: 'lang',
+  // Editor preferences
+  PICTURES_ZOOM: 'pictures-zoom',
 }
 
 // ── Auth session ───────────────────────────────────────────────────────────────
@@ -71,4 +73,7 @@ export const uiStorage = {
 export const prefStorage = {
   getLang: () => localStorage.getItem(STORAGE_KEYS.LANG) || 'es',
   setLang: (v) => localStorage.setItem(STORAGE_KEYS.LANG, v),
+
+  getPicturesZoom: () => parseFloat(localStorage.getItem(STORAGE_KEYS.PICTURES_ZOOM)) || 1,
+  setPicturesZoom: (v) => localStorage.setItem(STORAGE_KEYS.PICTURES_ZOOM, String(v)),
 }

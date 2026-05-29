@@ -309,7 +309,32 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
     img.src = url
   }, [canvasW, canvasH, canvas.bg])
 
-  useImperativeHandle(ref, () => ({ exportImage }), [exportImage])
+  const generateThumbnail = useCallback(() => new Promise((resolve) => {
+    const svg = svgRef.current
+    if (!svg) return resolve(null)
+    const serializer = new XMLSerializer()
+    const svgStr = serializer.serializeToString(svg)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    img.onload = () => {
+      const THUMB_W = 320
+      const THUMB_H = Math.round(THUMB_W * (canvasH / canvasW))
+      const c = document.createElement('canvas')
+      c.width = THUMB_W
+      c.height = THUMB_H
+      const ctx = c.getContext('2d')
+      ctx.fillStyle = canvas.bg ?? '#ffffff'
+      ctx.fillRect(0, 0, THUMB_W, THUMB_H)
+      ctx.drawImage(img, 0, 0, THUMB_W, THUMB_H)
+      URL.revokeObjectURL(url)
+      resolve(c.toDataURL('image/jpeg', 0.75))
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
+    img.src = url
+  }), [canvasW, canvasH, canvas.bg])
+
+  useImperativeHandle(ref, () => ({ exportImage, generateThumbnail }), [exportImage, generateThumbnail])
 
   // ── Mouse handlers ──────────────────────────────────────────────────────────
 

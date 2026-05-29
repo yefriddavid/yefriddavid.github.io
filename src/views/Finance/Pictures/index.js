@@ -1,19 +1,38 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { CButton } from '@coreui/react'
+import { CButton, CModal, CModalBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilPencil, cilTrash, cilCopy } from '@coreui/icons'
-import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { Column, Paging, FilterRow } from 'devextreme-react/data-grid'
+import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
 import { PICTURES_UNITS_MAP } from 'src/constants/finance'
+
+const Thumbnail = ({ src, canvas, onClick }) => {
+  const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
+  const w = (canvas?.width ?? 1) * u.pxPerUnit
+  const h = (canvas?.height ?? 1) * u.pxPerUnit
+  const THUMB_W = 96
+  const THUMB_H = Math.round(THUMB_W * (h / w))
+  return (
+    <div
+      onClick={src ? onClick : undefined}
+      style={{ width: THUMB_W, height: THUMB_H, borderRadius: 4, overflow: 'hidden', flexShrink: 0, background: '#e9ecef', border: '1px solid #dee2e6', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'zoom-in' : 'default' }}
+    >
+      {src
+        ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }} />
+        : <span style={{ fontSize: 20, opacity: 0.3 }}>🖼</span>
+      }
+    </div>
+  )
+}
 
 const Pictures = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { list, fetching, saving } = useSelector((s) => s.financePictures)
+  const [preview, setPreview] = useState(null)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
@@ -35,6 +54,11 @@ const Pictures = () => {
     return `${row.canvas?.width ?? '?'} × ${row.canvas?.height ?? '?'} ${u.label}`
   }
 
+  const fmtDate = (iso) => {
+    if (!iso) return null
+    return new Date(iso).toLocaleString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+
   return (
     <div className="pic-list">
       <div className="pic-list__header">
@@ -53,61 +77,52 @@ const Pictures = () => {
       {fetching ? (
         <Spinner mode="section" />
       ) : (
-        <StandardGrid dataSource={list ?? []} keyExpr="id">
-          <FilterRow visible />
-          <Paging defaultPageSize={25} />
-          <Column dataField="name" caption="Nombre" />
-          <Column caption="Tamaño" width={180} cellRender={({ data }) => sizeLabel(data)} />
-          <Column
-            caption="Figuras"
-            width={90}
-            alignment="center"
-            cellRender={({ data }) => data.nodes?.length ?? 0}
-          />
-          <Column
-            caption="Grupos"
-            width={90}
-            alignment="center"
-            cellRender={({ data }) => data.groups?.length ?? 0}
-          />
-          <Column dataField="updatedAt" caption="Última edición" dataType="date" width={160} />
-          <Column
-            caption="Acciones"
-            width={110}
-            cellRender={({ data }) => (
-              <div style={{ display: 'flex', gap: 4 }}>
-                <CButton
-                  size="sm"
-                  color="primary"
-                  variant="ghost"
-                  title="Editar"
-                  onClick={() => navigate(`/finance/pictures/${data.id}`)}
-                >
-                  <CIcon icon={cilPencil} />
-                </CButton>
-                <CButton
-                  size="sm"
-                  color="info"
-                  variant="ghost"
-                  title="Duplicar"
-                  onClick={() => handleDuplicate(data)}
-                >
-                  <CIcon icon={cilCopy} />
-                </CButton>
-                <CButton
-                  size="sm"
-                  color="danger"
-                  variant="ghost"
-                  title="Eliminar"
-                  onClick={() => handleDelete(data)}
-                >
-                  <CIcon icon={cilTrash} />
-                </CButton>
+        <StandardCard
+          data={list ?? []}
+          keyExpr="id"
+          emptyText="Sin cuadros todavía."
+          renderTitle={(r) => (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <Thumbnail src={r.thumbnail} canvas={r.canvas} onClick={() => setPreview(r.thumbnail)} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 }}>
+                <span style={{ fontWeight: 600 }}>{r.name}</span>
+                <span style={{ fontSize: 12, color: '#6c757d' }}>
+                  <span className={SC.label}>Tamaño </span>{sizeLabel(r)}
+                  {r.nodes?.length > 0 && <>{' · '}<span className={SC.label}>Figs </span>{r.nodes.length}</>}
+                </span>
+                {r.createdAt && (
+                  <span style={{ fontSize: 11, color: '#adb5bd' }}>
+                    <span className={SC.label}>Creado </span>{fmtDate(r.createdAt)}
+                  </span>
+                )}
+                {r.updatedAt && (
+                  <span style={{ fontSize: 11, color: '#adb5bd' }}>
+                    <span className={SC.label}>Editado </span>{fmtDate(r.updatedAt)}
+                  </span>
+                )}
               </div>
-            )}
-          />
-        </StandardGrid>
+            </div>
+          )}
+          renderRows={() => []}
+          renderActions={(r) => [
+            { icon: cilPencil, color: 'primary', title: 'Editar',   onClick: () => navigate(`/finance/pictures/${r.id}`) },
+            { icon: cilCopy,   color: 'info',    title: 'Duplicar', onClick: () => handleDuplicate(r) },
+            { icon: cilTrash,  color: 'danger',  title: 'Eliminar', onClick: () => handleDelete(r) },
+          ]}
+        />
       )}
+
+      <CModal visible={!!preview} onClose={() => setPreview(null)} size="xl" alignment="center">
+        <CModalBody style={{ padding: 8, background: '#1a1a1a', textAlign: 'center' }}>
+          {preview && (
+            <img
+              src={preview}
+              alt=""
+              style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: 4 }}
+            />
+          )}
+        </CModalBody>
+      </CModal>
     </div>
   )
 }

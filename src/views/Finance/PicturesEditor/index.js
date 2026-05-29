@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
 import { PICTURES_DEFAULT_CANVAS, PICTURES_UNITS, PICTURES_UNITS_MAP } from 'src/constants/finance'
+import { prefStorage } from 'src/utils/storage'
 import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
 import NodesPanel from './NodesPanel'
@@ -62,7 +63,7 @@ const PicturesEditor = () => {
   const [groups, setGroups] = useState([])
   const [selectedIds, setSelectedIds] = useState([])
   const [tool, setTool] = useState('select')
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useState(() => prefStorage.getPicturesZoom())
   const [dirty, setDirty] = useState(false)
   const [exportFmt, setExportFmt] = useState('png')
   const clipboardRef = useRef([])
@@ -259,8 +260,9 @@ const PicturesEditor = () => {
     groups,
   })
 
-  const handleSave = () => {
-    const payload = buildPayload()
+  const handleSave = async () => {
+    const thumbnail = await canvasRef.current?.generateThumbnail() ?? null
+    const payload = { ...buildPayload(), thumbnail }
     if (isNew) {
       dispatch(actions.createRequest(payload))
     } else {
@@ -362,7 +364,7 @@ const PicturesEditor = () => {
           <select
             style={{ background: '#333', border: '1px solid #555', borderRadius: 3, color: '#e8e8e8', fontSize: 12, padding: '2px 5px' }}
             value={zoom}
-            onChange={(e) => setZoom(parseFloat(e.target.value))}
+            onChange={(e) => { const v = parseFloat(e.target.value); setZoom(v); prefStorage.setPicturesZoom(v) }}
           >
             {[0.25, 0.5, 0.75, 1, 1.5, 2, 3].map((z) => (
               <option key={z} value={z}>{Math.round(z * 100)}%</option>
