@@ -116,6 +116,35 @@ const ShapeElement = ({ node, selected, onMouseDown }) => {
       </g>
     )
   }
+  if (type === 'cota') {
+    const my = y + h / 2
+    const color = node.stroke || '#e03131'
+    const sw = node.strokeWidth ?? 1.5
+    const ah = Math.min(10, w * 0.1)
+    const aw = 3
+    return (
+      <g transform={transform} onMouseDown={onMouseDown} style={base.style} className={base.className}>
+        <line x1={x} y1={y} x2={x} y2={y + h} stroke={color} strokeWidth={sw} />
+        <line x1={x + w} y1={y} x2={x + w} y2={y + h} stroke={color} strokeWidth={sw} />
+        <line x1={x} y1={my} x2={x + w} y2={my} stroke={color} strokeWidth={sw} />
+        <polygon points={`${x},${my} ${x + ah},${my - aw} ${x + ah},${my + aw}`} fill={color} />
+        <polygon points={`${x + w},${my} ${x + w - ah},${my - aw} ${x + w - ah},${my + aw}`} fill={color} />
+        {node.text && (
+          <text
+            x={x + w / 2}
+            y={my - 4}
+            textAnchor="middle"
+            dominantBaseline="auto"
+            fontSize={node.fontSize ?? 11}
+            fill={color}
+            style={{ pointerEvents: 'none', userSelect: 'none' }}
+          >
+            {node.text}
+          </text>
+        )}
+      </g>
+    )
+  }
   if (type === 'text') {
     return (
       <text
@@ -410,7 +439,14 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
         if (dir.includes('w')) { x = snap(orig.x + dx); w = Math.max(4, orig.w - dx) }
         if (dir.includes('n')) { y = snap(orig.y + dy); h = Math.max(4, orig.h - dy) }
 
-        onNodesChange(nodes.map((n) => (n.id === resizing.nodeId ? { ...n, x, y, w, h } : n)))
+        onNodesChange(nodes.map((n) => {
+          if (n.id !== resizing.nodeId) return n
+          const updated = { ...n, x, y, w, h }
+          if (n.type === 'cota') {
+            updated.text = `${(w / u.pxPerUnit).toFixed(1)} ${canvas.unit}`
+          }
+          return updated
+        }))
       }
 
       if (selRect) {
@@ -430,7 +466,11 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
 
         if (rawW > 4 || rawH > 4) {
           const w = rawW < 4 ? 40 : rawW
-          const h = rawH < 4 ? 40 : rawH
+          const h = rawH < 4 ? 20 : rawH
+          const isCota = drawing.type === 'cota'
+          const cotaText = isCota
+            ? `${(w / u.pxPerUnit).toFixed(1)} ${canvas.unit}`
+            : undefined
           const newNode = {
             ...PICTURES_DEFAULT_NODE,
             id: uid(),
@@ -441,6 +481,7 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
             y: rawY,
             w,
             h,
+            ...(isCota && { stroke: '#e03131', fill: '#e03131', fillOpacity: 0, strokeWidth: 1.5, text: cotaText, fontSize: 11 }),
           }
           const updated = [...nodes, newNode]
           onNodesChange(updated)

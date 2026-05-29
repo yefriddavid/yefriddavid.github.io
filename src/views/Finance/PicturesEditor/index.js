@@ -8,6 +8,7 @@ import { prefStorage } from 'src/utils/storage'
 import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
 import NodesPanel from './NodesPanel'
+import DesignChat from './DesignChat'
 import './PicturesEditor.scss'
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
@@ -66,6 +67,7 @@ const PicturesEditor = () => {
   const [zoom, setZoom] = useState(() => prefStorage.getPicturesZoom())
   const [dirty, setDirty] = useState(false)
   const [exportFmt, setExportFmt] = useState('png')
+  const [chatOpen, setChatOpen] = useState(false)
   const clipboardRef = useRef([])
   const canvasRef = useRef(null)
 
@@ -384,6 +386,14 @@ const PicturesEditor = () => {
             ↓ Exportar
           </button>
           <button
+            className={`pic-editor__btn${chatOpen ? ' pic-editor__btn--primary' : ''}`}
+            onClick={() => setChatOpen((v) => !v)}
+            title={import.meta.env.VITE_ANTHROPIC_API_KEY ? 'Asistente de diseño' : 'API key no configurada'}
+            disabled={!import.meta.env.VITE_ANTHROPIC_API_KEY}
+          >
+            ✦ Chat
+          </button>
+          <button
             className="pic-editor__btn pic-editor__btn--primary"
             disabled={saving}
             onClick={handleSave}
@@ -400,6 +410,7 @@ const PicturesEditor = () => {
           onToolChange={setTool}
           selectedNode={selectedNode}
           onNodeChange={handleNodePropertyChange}
+          canvas={canvas}
         />
 
         <EditorCanvas
@@ -422,6 +433,15 @@ const PicturesEditor = () => {
           onGroupsChange={handleGroupsChange}
           onSelect={setSelectedIds}
         />
+
+        {chatOpen && (
+          <DesignChat
+            canvas={canvas}
+            nodes={nodes}
+            onNodesChange={handleNodesChange}
+            onClose={() => setChatOpen(false)}
+          />
+        )}
       </div>
     </div>
   )

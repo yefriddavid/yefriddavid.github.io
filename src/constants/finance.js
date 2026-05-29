@@ -21,6 +21,7 @@ export const PICTURES_SHAPE_TOOLS = [
   { key: 'star', label: 'Estrella', icon: '★' },
   { key: 'line', label: 'Línea H', icon: '─' },
   { key: 'vline', label: 'Línea V', icon: '│' },
+  { key: 'cota', label: 'Cota', icon: '⟺' },
   { key: 'arrow', label: 'Flecha', icon: '→' },
   { key: 'elbow90', label: 'Codo 90°', icon: '⌐' },
   { key: 'elbowRound', label: 'Codo redondo', icon: '⌒' },

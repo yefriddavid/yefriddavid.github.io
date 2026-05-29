@@ -100,9 +100,13 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px 6px;
-  font-size: 14px;
+  padding: 6px 10px;
+  font-size: 18px;
   line-height: 1;
+  border-radius: 6px;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(0,0,0,0.06); }
 
   &--primary { color: var(--cui-primary); }
   &--danger  { color: #e03131; }

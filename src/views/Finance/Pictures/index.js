@@ -101,7 +101,7 @@ const Pictures = () => {
               <Thumbnail src={r.thumbnail} canvas={r.canvas} onClick={() => setPreview(r.thumbnail)} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 }}>
                 {renamingId === r.id ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #4a9eff', borderRadius: 6, boxShadow: '0 0 0 3px rgba(74,158,255,0.15)', overflow: 'hidden', background: '#f8fbff' }} onClick={(e) => e.stopPropagation()}>
                     <input
                       autoFocus
                       value={renameDraft}
@@ -110,12 +110,11 @@ const Pictures = () => {
                         if (e.key === 'Enter') commitRename(r)
                         if (e.key === 'Escape') setRenamingId(null)
                       }}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ fontWeight: 600, fontSize: 14, border: '1px solid #4a9eff', borderRadius: 3, padding: '2px 6px', outline: 'none', flex: 1 }}
+                      style={{ fontWeight: 600, fontSize: 13, border: 'none', padding: '4px 10px', outline: 'none', flex: 1, background: 'transparent', color: '#1a1a2e' }}
                     />
                     <button
                       onClick={(e) => { e.stopPropagation(); commitRename(r) }}
-                      style={{ background: '#4a9eff', border: 'none', borderRadius: 3, color: '#fff', cursor: 'pointer', fontSize: 11, padding: '3px 8px', whiteSpace: 'nowrap' }}
+                      style={{ background: 'linear-gradient(135deg,#4a9eff,#2d7dd2)', border: 'none', borderLeft: '1.5px solid #4a9eff', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, padding: '5px 14px', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}
                     >
                       Guardar
                     </button>

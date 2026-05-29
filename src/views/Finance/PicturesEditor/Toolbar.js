@@ -1,13 +1,13 @@
 import React from 'react'
-import { PICTURES_SHAPE_TOOLS } from 'src/constants/finance'
+import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
 
 const SHAPE_ICONS = {
   select: '↖', rect: '▬', roundRect: '▢', circle: '○', triangle: '△',
   polygon: '⬡', star: '★', line: '─', vline: '│', arrow: '→',
-  elbow90: '⌐', elbowRound: '⌒', text: 'T', eraser: '✕',
+  elbow90: '⌐', elbowRound: '⌒', text: 'T', cota: '⟺', eraser: '✕',
 }
 
-const Inspector = ({ node, onChange }) => {
+const Inspector = ({ node, onChange, canvas }) => {
   if (!node) return null
 
   const set = (key, val) => onChange({ ...node, [key]: val })
@@ -115,7 +115,30 @@ const Inspector = ({ node, onChange }) => {
           />
         </div>
       )}
-      {node.type === 'text' && (
+      {node.type === 'cota' && (() => {
+        const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
+        const lengthInUnits = Math.round((node.w / u.pxPerUnit) * 100) / 100
+        return (
+          <div className="pic-inspector__row">
+            <span className="pic-inspector__label">Longitud</span>
+            <input
+              type="number"
+              className="pic-inspector__input"
+              min={0.1}
+              step={0.1}
+              style={{ width: 65 }}
+              value={lengthInUnits}
+              onChange={(e) => {
+                const v = parseFloat(e.target.value) || 0.1
+                const newW = v * u.pxPerUnit
+                onChange({ ...node, w: newW, text: `${v.toFixed(1)} ${canvas.unit}` })
+              }}
+            />
+            <span style={{ fontSize: 10, color: '#888' }}>{canvas?.unit}</span>
+          </div>
+        )
+      })()}
+      {(node.type === 'text' || node.type === 'cota') && (
         <>
           <div className="pic-inspector__row">
             <span className="pic-inspector__label">Texto</span>
@@ -149,7 +172,7 @@ const Inspector = ({ node, onChange }) => {
   )
 }
 
-const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange }) => (
+const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange, canvas }) => (
   <div className="pic-toolbar">
     <div className="pic-toolbar__section">
       <span className="pic-toolbar__section-label">Herramientas</span>
@@ -173,7 +196,7 @@ const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange }) => (
         <div className="pic-toolbar__divider" />
         <div className="pic-toolbar__section">
           <span className="pic-toolbar__section-label">Propiedades</span>
-          <Inspector node={selectedNode} onChange={onNodeChange} />
+          <Inspector node={selectedNode} onChange={onNodeChange} canvas={canvas} />
         </div>
       </>
     )}
