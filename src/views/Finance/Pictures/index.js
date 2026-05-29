@@ -33,6 +33,8 @@ const Pictures = () => {
   const navigate = useNavigate()
   const { list, fetching, saving } = useSelector((s) => s.financePictures)
   const [preview, setPreview] = useState(null)
+  const [renamingId, setRenamingId] = useState(null)
+  const [renameDraft, setRenameDraft] = useState('')
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
@@ -42,6 +44,19 @@ const Pictures = () => {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {
       dispatch(actions.deleteRequest({ id: row.id }))
     }
+  }
+
+  const startRename = (row) => {
+    setRenamingId(row.id)
+    setRenameDraft(row.name)
+  }
+
+  const commitRename = (row) => {
+    const name = renameDraft.trim()
+    if (name && name !== row.name) {
+      dispatch(actions.updateRequest({ id: row.id, data: { ...row, name } }))
+    }
+    setRenamingId(null)
   }
 
   const handleDuplicate = (row) => {
@@ -85,7 +100,34 @@ const Pictures = () => {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <Thumbnail src={r.thumbnail} canvas={r.canvas} onClick={() => setPreview(r.thumbnail)} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 }}>
-                <span style={{ fontWeight: 600 }}>{r.name}</span>
+                {renamingId === r.id ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input
+                      autoFocus
+                      value={renameDraft}
+                      onChange={(e) => setRenameDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitRename(r)
+                        if (e.key === 'Escape') setRenamingId(null)
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ fontWeight: 600, fontSize: 14, border: '1px solid #4a9eff', borderRadius: 3, padding: '2px 6px', outline: 'none', flex: 1 }}
+                    />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); commitRename(r) }}
+                      style={{ background: '#4a9eff', border: 'none', borderRadius: 3, color: '#fff', cursor: 'pointer', fontSize: 11, padding: '3px 8px', whiteSpace: 'nowrap' }}
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                ) : (
+                  <span
+                    style={{ fontWeight: 600, borderBottom: '1px dashed #adb5bd', cursor: 'text', display: 'inline-block' }}
+                    onDoubleClick={(e) => { e.stopPropagation(); startRename(r) }}
+                  >
+                    {r.name}
+                  </span>
+                )}
                 <span style={{ fontSize: 12, color: '#6c757d' }}>
                   <span className={SC.label}>Tamaño </span>{sizeLabel(r)}
                   {r.nodes?.length > 0 && <>{' · '}<span className={SC.label}>Figs </span>{r.nodes.length}</>}
@@ -105,9 +147,9 @@ const Pictures = () => {
           )}
           renderRows={() => []}
           renderActions={(r) => [
-            { icon: cilPencil, color: 'primary', title: 'Editar',   onClick: () => navigate(`/finance/pictures/${r.id}`) },
-            { icon: cilCopy,   color: 'info',    title: 'Duplicar', onClick: () => handleDuplicate(r) },
-            { icon: cilTrash,  color: 'danger',  title: 'Eliminar', onClick: () => handleDelete(r) },
+            { icon: cilPencil, color: 'primary', title: 'Abrir editor', onClick: () => navigate(`/finance/pictures/${r.id}`) },
+            { icon: cilCopy,   color: 'info',    title: 'Duplicar',     onClick: () => handleDuplicate(r) },
+            { icon: cilTrash,  color: 'danger',  title: 'Eliminar',     onClick: () => handleDelete(r) },
           ]}
         />
       )}
