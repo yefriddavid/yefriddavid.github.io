@@ -64,7 +64,9 @@ const PicturesEditor = () => {
   const [tool, setTool] = useState('select')
   const [zoom, setZoom] = useState(1)
   const [dirty, setDirty] = useState(false)
+  const [exportFmt, setExportFmt] = useState('png')
   const clipboardRef = useRef([])
+  const canvasRef = useRef(null)
 
   // history for undo/redo
   const historyRef = useRef([[]])
@@ -252,6 +254,10 @@ const PicturesEditor = () => {
     setDirty(false)
   }
 
+  const handleExport = () => {
+    canvasRef.current?.exportImage(exportFmt, name || 'picture')
+  }
+
   const handleBack = () => {
     if (dirty && !window.confirm('Hay cambios sin guardar. ¿Salir de todas formas?')) return
     navigate('/finance/pictures')
@@ -341,6 +347,18 @@ const PicturesEditor = () => {
             ))}
           </select>
           {dirty && <span style={{ color: '#f0a030', fontSize: 11 }}>● sin guardar</span>}
+          <select
+            style={{ background: '#333', border: '1px solid #555', borderRadius: 3, color: '#e8e8e8', fontSize: 12, padding: '2px 5px' }}
+            value={exportFmt}
+            onChange={(e) => setExportFmt(e.target.value)}
+          >
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="jpeg">JPEG</option>
+          </select>
+          <button className="pic-editor__btn" onClick={handleExport} title="Exportar imagen">
+            ↓ Exportar
+          </button>
           <button
             className="pic-editor__btn pic-editor__btn--primary"
             disabled={saving}
@@ -361,6 +379,7 @@ const PicturesEditor = () => {
         />
 
         <EditorCanvas
+          ref={canvasRef}
           canvas={canvas}
           nodes={nodes}
           groups={groups}

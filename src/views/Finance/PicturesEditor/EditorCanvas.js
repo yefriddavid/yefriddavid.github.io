@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react'
+import React, { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'react'
 import { PICTURES_RULER_SIZE, PICTURES_UNITS_MAP, PICTURES_DEFAULT_NODE } from 'src/constants/finance'
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
@@ -99,6 +99,9 @@ const ShapeElement = ({ node, selected, onMouseDown }) => {
   }
   if (type === 'line') {
     return <line x1={x} y1={y + h / 2} x2={x + w} y2={y + h / 2} stroke={node.stroke} strokeWidth={node.strokeWidth ?? 2} transform={transform} onMouseDown={onMouseDown} style={base.style} className={base.className} />
+  }
+  if (type === 'vline') {
+    return <line x1={x + w / 2} y1={y} x2={x + w / 2} y2={y + h} stroke={node.stroke} strokeWidth={node.strokeWidth ?? 2} transform={transform} onMouseDown={onMouseDown} style={base.style} className={base.className} />
   }
   if (type === 'arrow') {
     const hw = Math.min(14, w * 0.3)
@@ -237,7 +240,7 @@ const Grid = ({ canvasW, canvasH, gridPx }) => {
 
 // ─── EditorCanvas ─────────────────────────────────────────────────────────────
 
-const EditorCanvas = ({ canvas, nodes, groups, selectedIds, tool, zoom, onNodesChange, onSelect }) => {
+const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, tool, zoom, onNodesChange, onSelect }, ref) => {
   const svgRef = useRef(null)
   const [drawing, setDrawing] = useState(null)
   const [dragging, setDragging] = useState(null)
@@ -273,6 +276,40 @@ const EditorCanvas = ({ canvas, nodes, groups, selectedIds, tool, zoom, onNodesC
     const grp = n.groupId ? groups.find((g) => g.id === n.groupId) : null
     return n.visible !== false && !(grp?.hidden)
   })
+
+  // ── Export ──────────────────────────────────────────────────────────────────
+
+  const exportImage = useCallback((format, filename) => {
+    const svg = svgRef.current
+    if (!svg) return
+    const serializer = new XMLSerializer()
+    const svgStr = serializer.serializeToString(svg)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = canvasW
+      c.height = canvasH
+      const ctx = c.getContext('2d')
+      if (format !== 'png') {
+        ctx.fillStyle = canvas.bg ?? '#ffffff'
+        ctx.fillRect(0, 0, canvasW, canvasH)
+      }
+      ctx.drawImage(img, 0, 0, canvasW, canvasH)
+      URL.revokeObjectURL(url)
+      const mime = format === 'png' ? 'image/png' : 'image/jpeg'
+      const ext = format === 'jpeg' ? 'jpeg' : format
+      const dataUrl = c.toDataURL(mime, 0.95)
+      const a = document.createElement('a')
+      a.href = dataUrl
+      a.download = `${filename}.${ext}`
+      a.click()
+    }
+    img.src = url
+  }, [canvasW, canvasH, canvas.bg])
+
+  useImperativeHandle(ref, () => ({ exportImage }), [exportImage])
 
   // ── Mouse handlers ──────────────────────────────────────────────────────────
 
@@ -407,11 +444,20 @@ const EditorCanvas = ({ canvas, nodes, groups, selectedIds, tool, zoom, onNodesC
 
   // keyboard shortcuts
   useEffect(() => {
+    const ARROW_KEYS = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }
     const handler = (e) => {
+      if (document.activeElement.tagName === 'INPUT') return
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (document.activeElement.tagName === 'INPUT') return
         onNodesChange(nodes.filter((n) => !selectedIds.includes(n.id)))
         onSelect([])
+        return
+      }
+      if (ARROW_KEYS[e.key] && selectedIds.length > 0) {
+        e.preventDefault()
+        const [dx, dy] = ARROW_KEYS[e.key]
+        onNodesChange(
+          nodes.map((n) => (selectedIds.includes(n.id) ? { ...n, x: n.x + dx, y: n.y + dy } : n)),
+        )
       }
     }
     window.addEventListener('keydown', handler)
@@ -526,6 +572,6 @@ const EditorCanvas = ({ canvas, nodes, groups, selectedIds, tool, zoom, onNodesC
       </div>
     </div>
   )
-}
+})
 
 export default EditorCanvas

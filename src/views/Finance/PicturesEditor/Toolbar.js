@@ -3,7 +3,7 @@ import { PICTURES_SHAPE_TOOLS } from 'src/constants/finance'
 
 const SHAPE_ICONS = {
   select: '↖', rect: '▬', roundRect: '▢', circle: '○', triangle: '△',
-  polygon: '⬡', star: '★', line: '╱', arrow: '→',
+  polygon: '⬡', star: '★', line: '─', vline: '│', arrow: '→',
   elbow90: '⌐', elbowRound: '⌒', text: 'T', eraser: '✕',
 }
 
