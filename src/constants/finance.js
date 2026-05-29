@@ -54,3 +54,39 @@ export const PICTURES_DEFAULT_NODE = {
   fontSize: 16,
   fontColor: '#000000',
 }
+
+// ── 3D Scenes ─────────────────────────────────────────────────────────────────
+
+export const SCENES3D_OBJECT_TYPES = [
+  { key: 'box',      label: 'Caja',      icon: '⬛' },
+  { key: 'sphere',   label: 'Esfera',    icon: '⚫' },
+  { key: 'cylinder', label: 'Cilindro',  icon: '⬤' },
+  { key: 'cone',     label: 'Cono',      icon: '△' },
+  { key: 'torus',    label: 'Torus',     icon: '○' },
+  { key: 'plane',    label: 'Plano',     icon: '▬' },
+]
+
+export const SCENES3D_TRANSFORM_MODES = [
+  { key: 'translate', label: 'Mover',   shortcut: 'W' },
+  { key: 'rotate',    label: 'Rotar',   shortcut: 'E' },
+  { key: 'scale',     label: 'Escalar', shortcut: 'R' },
+]
+
+export const SCENES3D_DEFAULT_SCENE = {
+  bg: '#1a1a2e',
+  grid: true,
+  ambientIntensity: 0.5,
+  dirLightIntensity: 1.2,
+  dirLightColor: '#ffffff',
+}
+
+export const SCENES3D_DEFAULT_OBJECT = {
+  position: [0, 0.5, 0],
+  rotation: [0, 0, 0],
+  scale: [1, 1, 1],
+  color: '#4488ff',
+  opacity: 1,
+  wireframe: false,
+  visible: true,
+  locked: false,
+}

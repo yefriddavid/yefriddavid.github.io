@@ -6,6 +6,7 @@ import {
   cilBasket,
   cilBell,
   cilImage,
+  cil3d,
   cilBook,
   cilCalendarCheck,
   cilCarAlt,
@@ -146,6 +147,13 @@ const getNav = (t, role) => {
     name: 'Pictures',
     to: '/finance/pictures',
     icon: <CIcon icon={cilImage} customClassName="nav-icon" />,
+  })
+
+  items.push({
+    component: CNavItem,
+    name: 'Escenas 3D',
+    to: '/finance/scenes3d',
+    icon: <CIcon icon={cil3d} customClassName="nav-icon" />,
   })
 
   items.push({

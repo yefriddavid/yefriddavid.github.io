@@ -22,6 +22,8 @@ const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
 const FinancePictures = React.lazy(() => import('./views/Finance/Pictures'))
 const FinancePicturesEditor = React.lazy(() => import('./views/Finance/PicturesEditor'))
+const FinanceScenes3D = React.lazy(() => import('./views/Finance/Scenes3D'))
+const FinanceScenes3DEditor = React.lazy(() => import('./views/Finance/Scenes3DEditor'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
 const InmobiliariaPlanos = React.lazy(() => import('./views/Inmobiliaria/Planos'))
@@ -147,6 +149,21 @@ const routes = [
     longName: 'Editor de Cuadro',
     tKey: 'nav.pictureEdit',
     element: FinancePicturesEditor,
+  },
+  {
+    path: '/finance/scenes3d',
+    name: 'Scenes 3D',
+    longName: 'Escenas 3D',
+    tKey: 'nav.scenes3d',
+    element: FinanceScenes3D,
+    landingPage: true,
+  },
+  {
+    path: '/finance/scenes3d/:id',
+    name: 'Scenes 3D Editor',
+    longName: 'Editor de Escena 3D',
+    tKey: 'nav.scene3dEdit',
+    element: FinanceScenes3DEditor,
   },
   {
     path: '/finance/tools/adjustments',

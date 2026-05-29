@@ -55,6 +55,8 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mescius/activereportsjs-react": "^5.1.5",
     "@popperjs/core": "^2.11.8",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@reduxjs/toolkit": "^2.5.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.6",
@@ -95,6 +97,7 @@
     "redux-saga": "^1.3.0",
     "simplebar-react": "^3.2.6",
     "tesseract.js": "^7.0.0",
+    "three": "^0.184.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

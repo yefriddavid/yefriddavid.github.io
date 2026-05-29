@@ -47,6 +47,7 @@ import errorLog from './system/errorLogReducer'
 import inmobiliariaDesign from './inmobiliaria/designReducer'
 import inmobiliariaPlanos from './inmobiliaria/planosReducer'
 import financePictures from './finance/picturesReducer'
+import financeScenes3d from './finance/scenes3dReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -97,6 +98,7 @@ const combinedReducers = combineReducers({
   inmobiliariaDesign,
   inmobiliariaPlanos,
   financePictures,
+  financeScenes3d,
 })
 
 export default combinedReducers
