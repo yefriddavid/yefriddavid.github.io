@@ -46,6 +46,7 @@ import notifications from './notificationsSlice'
 import errorLog from './system/errorLogReducer'
 import inmobiliariaDesign from './inmobiliaria/designReducer'
 import inmobiliariaPlanos from './inmobiliaria/planosReducer'
+import financePictures from './finance/picturesReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -95,6 +96,7 @@ const combinedReducers = combineReducers({
   errorLog,
   inmobiliariaDesign,
   inmobiliariaPlanos,
+  financePictures,
 })
 
 export default combinedReducers

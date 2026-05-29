@@ -44,6 +44,7 @@ import sagaDomoticaSolarBattery from './domotica/domoticaSolarBatterySagas'
 import sagaErrorLogs from './system/errorLogSagas'
 import sagaInmobiliariaDesigns from './inmobiliaria/designSagas'
 import sagaInmobiliariaPlanos from './inmobiliaria/planosSagas'
+import sagaFinancePictures from './finance/picturesSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -92,5 +93,6 @@ export default function* rootSagas() {
     sagaErrorLogs(),
     sagaInmobiliariaDesigns(),
     sagaInmobiliariaPlanos(),
+    sagaFinancePictures(),
   ])
 }

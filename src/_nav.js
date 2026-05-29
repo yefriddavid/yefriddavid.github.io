@@ -5,6 +5,7 @@ import {
   cilBarChart,
   cilBasket,
   cilBell,
+  cilImage,
   cilBook,
   cilCalendarCheck,
   cilCarAlt,
@@ -139,6 +140,13 @@ const getNav = (t, role) => {
     })
   }
 
+
+  items.push({
+    component: CNavItem,
+    name: 'Pictures',
+    to: '/finance/pictures',
+    icon: <CIcon icon={cilImage} customClassName="nav-icon" />,
+  })
 
   items.push({
     component: CNavGroup,

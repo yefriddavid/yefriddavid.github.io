@@ -259,3 +259,46 @@ export const makeDomoticaProfileItem = (overrides = {}) => ({
   order: 0,
   ...overrides,
 })
+
+export const makePictureNode = (overrides = {}) => ({
+  id: 'node-1',
+  type: 'rect',
+  name: 'rect 1',
+  groupId: null,
+  visible: true,
+  locked: false,
+  x: 100,
+  y: 80,
+  w: 200,
+  h: 120,
+  rotation: 0,
+  fill: '#4488ff',
+  fillOpacity: 1,
+  stroke: '#2244aa',
+  strokeWidth: 2,
+  sides: 6,
+  points: 5,
+  text: 'Texto',
+  fontSize: 16,
+  fontColor: '#000000',
+  ...overrides,
+})
+
+export const makePicture = (overrides = {}) => ({
+  id: 'pic-1',
+  name: 'Cuadro test',
+  canvas: {
+    width: 20,
+    height: 15,
+    unit: 'cm',
+    dpi: 96,
+    grid: 1,
+    snap: true,
+    bg: '#ffffff',
+  },
+  nodes: [],
+  groups: [],
+  createdAt: '2025-01-01T00:00:00.000Z',
+  updatedAt: '2025-01-01T00:00:00.000Z',
+  ...overrides,
+})

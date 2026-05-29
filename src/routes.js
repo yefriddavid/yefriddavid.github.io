@@ -20,6 +20,8 @@ const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects
 const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
 const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
+const FinancePictures = React.lazy(() => import('./views/Finance/Pictures'))
+const FinancePicturesEditor = React.lazy(() => import('./views/Finance/PicturesEditor'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
 const InmobiliariaPlanos = React.lazy(() => import('./views/Inmobiliaria/Planos'))
@@ -130,6 +132,21 @@ const routes = [
     tKey: 'nav.customGridTrade',
     element: CustomGridTrade,
     landingPage: true,
+  },
+  {
+    path: '/finance/pictures',
+    name: 'Pictures',
+    longName: 'Pictures',
+    tKey: 'nav.pictures',
+    element: FinancePictures,
+    landingPage: true,
+  },
+  {
+    path: '/finance/pictures/:id',
+    name: 'Pictures Editor',
+    longName: 'Editor de Cuadro',
+    tKey: 'nav.pictureEdit',
+    element: FinancePicturesEditor,
   },
   {
     path: '/finance/tools/adjustments',
