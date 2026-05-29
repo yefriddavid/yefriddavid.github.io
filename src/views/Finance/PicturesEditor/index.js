@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
-import { PICTURES_DEFAULT_CANVAS, PICTURES_UNITS } from 'src/constants/finance'
+import { PICTURES_DEFAULT_CANVAS, PICTURES_UNITS, PICTURES_UNITS_MAP } from 'src/constants/finance'
 import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
 import NodesPanel from './NodesPanel'
@@ -237,6 +237,21 @@ const PicturesEditor = () => {
     handleNodesChange(updated)
   }
 
+  const handleRotateCanvas = () => {
+    const u = PICTURES_UNITS_MAP[canvas.unit] ?? PICTURES_UNITS_MAP.cm
+    const canvasH_px = canvas.height * u.pxPerUnit
+    const rotatedNodes = nodes.map((n) => ({
+      ...n,
+      x: canvasH_px - n.y - n.h,
+      y: n.x,
+      w: n.h,
+      h: n.w,
+      rotation: (n.rotation + 90) % 360,
+    }))
+    setCanvas((c) => ({ ...c, width: c.height, height: c.width }))
+    handleNodesChange(rotatedNodes)
+  }
+
   const buildPayload = () => ({
     name,
     canvas,
@@ -300,6 +315,13 @@ const PicturesEditor = () => {
             style={{ width: 60 }}
             onChange={(v) => setCanvas((c) => ({ ...c, height: v }))}
           />
+          <button
+            className="pic-editor__btn"
+            title="Rotar 90°"
+            onClick={handleRotateCanvas}
+          >
+            ↻ 90°
+          </button>
           <select
             value={canvas.unit}
             onChange={(e) => setCanvas((c) => ({ ...c, unit: e.target.value }))}
