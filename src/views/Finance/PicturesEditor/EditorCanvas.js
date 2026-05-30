@@ -97,6 +97,16 @@ const ShapeElement = ({ node, selected, onMouseDown }) => {
   if (type === 'star') {
     return <polygon points={starPoints(cx, cy, r, node.points ?? 5)} {...attrs} {...base} />
   }
+  if (type === 'semicircle') {
+    const rx = w / 2
+    const ry = h
+    const d = `M ${x},${y + h} A ${rx},${ry} 0 0,1 ${x + w},${y + h} Z`
+    return <path d={d} {...attrs} {...base} />
+  }
+  if (type === 'diamond') {
+    const pts = `${x + w / 2},${y} ${x + w},${y + h / 2} ${x + w / 2},${y + h} ${x},${y + h / 2}`
+    return <polygon points={pts} {...attrs} {...base} />
+  }
   if (type === 'line') {
     return <line x1={x} y1={y + h / 2} x2={x + w} y2={y + h / 2} stroke={node.stroke} strokeWidth={node.strokeWidth ?? 2} transform={transform} onMouseDown={onMouseDown} style={base.style} className={base.className} />
   }

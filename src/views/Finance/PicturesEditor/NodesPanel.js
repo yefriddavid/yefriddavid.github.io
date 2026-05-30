@@ -5,7 +5,7 @@ const SHAPE_ICONS = {
   star: '★', line: '╱', arrow: '→', text: 'T', group: '▤',
 }
 
-const NodeRow = ({ node, selected, indented, onSelect, onToggleVisible, onToggleLock, onRename }) => {
+const NodeRow = ({ node, selected, indented, onSelect, onToggleVisible, onToggleLock, onRename, onZOrder }) => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(node.name)
 
@@ -37,6 +37,14 @@ const NodeRow = ({ node, selected, indented, onSelect, onToggleVisible, onToggle
         )}
       </span>
       <span className="pic-node-row__controls">
+        {selected && (
+          <>
+            <button className="pic-node-row__ctrl" title="Al frente"      onClick={(e) => { e.stopPropagation(); onZOrder(node.id, 'front')    }}>⤒</button>
+            <button className="pic-node-row__ctrl" title="Subir un nivel" onClick={(e) => { e.stopPropagation(); onZOrder(node.id, 'forward')  }}>↑</button>
+            <button className="pic-node-row__ctrl" title="Bajar un nivel" onClick={(e) => { e.stopPropagation(); onZOrder(node.id, 'backward') }}>↓</button>
+            <button className="pic-node-row__ctrl" title="Al fondo"       onClick={(e) => { e.stopPropagation(); onZOrder(node.id, 'back')     }}>⤓</button>
+          </>
+        )}
         <button
           className={`pic-node-row__ctrl${node.visible === false ? ' pic-node-row__ctrl--muted' : ''}`}
           title="Visibilidad"
@@ -113,6 +121,18 @@ const NodesPanel = ({ nodes, groups, selectedIds, onNodesChange, onGroupsChange,
 
   const selectNode = (id) => onSelect([id])
 
+  const zOrder = (id, direction) => {
+    const idx = nodes.findIndex((n) => n.id === id)
+    if (idx === -1) return
+    const arr = [...nodes]
+    const [item] = arr.splice(idx, 1)
+    if (direction === 'front')    arr.push(item)
+    if (direction === 'back')     arr.unshift(item)
+    if (direction === 'forward')  arr.splice(Math.min(idx + 1, arr.length), 0, item)
+    if (direction === 'backward') arr.splice(Math.max(idx - 1, 0), 0, item)
+    onNodesChange(arr)
+  }
+
   const ungroupedNodes = [...nodes].reverse().filter((n) => !n.groupId)
 
   return (
@@ -154,6 +174,7 @@ const NodesPanel = ({ nodes, groups, selectedIds, onNodesChange, onGroupsChange,
                     onToggleVisible={toggleVisible}
                     onToggleLock={toggleLock}
                     onRename={renameNode}
+                    onZOrder={zOrder}
                   />
                 ))}
             </React.Fragment>
@@ -171,6 +192,7 @@ const NodesPanel = ({ nodes, groups, selectedIds, onNodesChange, onGroupsChange,
             onToggleVisible={toggleVisible}
             onToggleLock={toggleLock}
             onRename={renameNode}
+            onZOrder={zOrder}
           />
         ))}
       </div>

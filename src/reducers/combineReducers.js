@@ -47,6 +47,7 @@ import errorLog from './system/errorLogReducer'
 import inmobiliariaDesign from './inmobiliaria/designReducer'
 import inmobiliariaPlanos from './inmobiliaria/planosReducer'
 import financePictures from './finance/picturesReducer'
+import financePictureVersions from './finance/pictureVersionsReducer'
 import financeScenes3d from './finance/scenes3dReducer'
 
 const combinedReducers = combineReducers({
@@ -98,6 +99,7 @@ const combinedReducers = combineReducers({
   inmobiliariaDesign,
   inmobiliariaPlanos,
   financePictures,
+  financePictureVersions,
   financeScenes3d,
 })
 

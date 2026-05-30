@@ -130,6 +130,7 @@ const Pictures = () => {
                 <span style={{ fontSize: 12, color: '#6c757d' }}>
                   <span className={SC.label}>Tamaño </span>{sizeLabel(r)}
                   {r.nodes?.length > 0 && <>{' · '}<span className={SC.label}>Figs </span>{r.nodes.length}</>}
+                  {' · '}<span className={SC.label}>Versiones </span>{r.versionCount ?? 0}
                 </span>
                 {r.createdAt && (
                   <span style={{ fontSize: 11, color: '#adb5bd' }}>

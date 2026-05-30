@@ -3,7 +3,7 @@ import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
 
 const SHAPE_ICONS = {
   select: '↖', rect: '▬', roundRect: '▢', circle: '○', triangle: '△',
-  polygon: '⬡', star: '★', line: '─', vline: '│', arrow: '→',
+  polygon: '⬡', star: '★', diamond: '◇', semicircle: '◐', line: '─', vline: '│', arrow: '→',
   elbow90: '⌐', elbowRound: '⌒', text: 'T', cota: '⟺', eraser: '✕',
 }
 
@@ -11,6 +11,7 @@ const Inspector = ({ node, onChange, canvas }) => {
   if (!node) return null
 
   const set = (key, val) => onChange({ ...node, [key]: val })
+  const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
 
   return (
     <div className="pic-inspector">
@@ -52,6 +53,25 @@ const Inspector = ({ node, onChange, canvas }) => {
           onChange={(e) => set('strokeWidth', parseFloat(e.target.value))}
         />
       </div>
+      {node.type === 'circle' && (
+        <div className="pic-inspector__row">
+          <span className="pic-inspector__label">Diámetro</span>
+          <input
+            type="number"
+            className="pic-inspector__input"
+            min={0.1}
+            step={0.1}
+            style={{ width: 65 }}
+            value={Math.round((node.w / u.pxPerUnit) * 100) / 100}
+            onChange={(e) => {
+              const v = Math.max(0.1, parseFloat(e.target.value) || 0.1)
+              const px = v * u.pxPerUnit
+              onChange({ ...node, w: px, h: px })
+            }}
+          />
+          <span style={{ fontSize: 10, color: '#888' }}>{canvas?.unit}</span>
+        </div>
+      )}
       <div className="pic-inspector__row">
         <span className="pic-inspector__label">Rotación</span>
         <input

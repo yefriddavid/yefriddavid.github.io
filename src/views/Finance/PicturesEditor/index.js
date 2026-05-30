@@ -9,6 +9,8 @@ import Toolbar from './Toolbar'
 import EditorCanvas from './EditorCanvas'
 import NodesPanel from './NodesPanel'
 import DesignChat from './DesignChat'
+import VersionsPanel from './VersionsPanel'
+import NamesModal from './NamesModal'
 import './PicturesEditor.scss'
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
@@ -68,8 +70,12 @@ const PicturesEditor = () => {
   const [dirty, setDirty] = useState(false)
   const [exportFmt, setExportFmt] = useState('png')
   const [chatOpen, setChatOpen] = useState(false)
+  const [versionsOpen, setVersionsOpen] = useState(false)
+  const [namesOpen, setNamesOpen] = useState(false)
+  const [autosave, setAutosave] = useState(false)
   const clipboardRef = useRef([])
   const canvasRef = useRef(null)
+  const autosaveTimerRef = useRef(null)
 
   // history for undo/redo
   const historyRef = useRef([[]])
@@ -113,6 +119,7 @@ const PicturesEditor = () => {
       setCanvas({ ...PICTURES_DEFAULT_CANVAS, ...(current.canvas ?? {}) })
       setNodes(current.nodes ?? [])
       setGroups(current.groups ?? [])
+      setAutosave(current.autosave ?? false)
       historyRef.current = [current.nodes ?? []]
       histIdxRef.current = 0
       setDirty(false)
@@ -255,11 +262,20 @@ const PicturesEditor = () => {
     handleNodesChange(rotatedNodes)
   }
 
+  // autosave — fires 2s after last change when enabled and not a new unsaved picture
+  useEffect(() => {
+    if (!autosave || !dirty || isNew) return
+    clearTimeout(autosaveTimerRef.current)
+    autosaveTimerRef.current = setTimeout(() => handleSave(), 2000)
+    return () => clearTimeout(autosaveTimerRef.current)
+  }, [autosave, dirty, nodes, canvas, name])
+
   const buildPayload = () => ({
     name,
     canvas,
     nodes,
     groups,
+    autosave,
   })
 
   const handleSave = async () => {
@@ -275,6 +291,13 @@ const PicturesEditor = () => {
 
   const handleExport = () => {
     canvasRef.current?.exportImage(exportFmt, name || 'picture')
+  }
+
+  const handleRestoreVersion = ({ canvas: c, nodes: n, groups: g }) => {
+    setCanvas({ ...PICTURES_DEFAULT_CANVAS, ...c })
+    handleNodesChange(n ?? [])
+    setGroups(g ?? [])
+    setDirty(true)
   }
 
   const handleBack = () => {
@@ -299,6 +322,14 @@ const PicturesEditor = () => {
           value={name}
           onChange={(e) => { setName(e.target.value); setDirty(true) }}
         />
+        <button
+          className="pic-editor__btn"
+          title="Elegir nombre"
+          onClick={() => setNamesOpen(true)}
+          style={{ fontSize: 14 }}
+        >
+          ✦
+        </button>
         <div className="pic-editor__header-sep" />
 
         {/* canvas config */}
@@ -372,7 +403,20 @@ const PicturesEditor = () => {
               <option key={z} value={z}>{Math.round(z * 100)}%</option>
             ))}
           </select>
-          {dirty && <span style={{ color: '#f0a030', fontSize: 11 }}>● sin guardar</span>}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#aaa', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={autosave}
+              onChange={(e) => {
+                const v = e.target.checked
+                setAutosave(v)
+                if (!isNew) dispatch(actions.updateRequest({ id, data: { ...buildPayload(), autosave: v } }))
+              }}
+            />
+            Autosave
+          </label>
+          {dirty && !autosave && <span style={{ color: '#f0a030', fontSize: 11 }}>● sin guardar</span>}
+          {dirty && autosave && <span style={{ color: '#60c060', fontSize: 11 }}>● guardando…</span>}
           <select
             style={{ background: '#333', border: '1px solid #555', borderRadius: 3, color: '#e8e8e8', fontSize: 12, padding: '2px 5px' }}
             value={exportFmt}
@@ -384,6 +428,14 @@ const PicturesEditor = () => {
           </select>
           <button className="pic-editor__btn" onClick={handleExport} title="Exportar imagen">
             ↓ Exportar
+          </button>
+          <button
+            className="pic-editor__btn"
+            onClick={() => setVersionsOpen(true)}
+            title="Historial de versiones"
+            disabled={isNew}
+          >
+            🕐 Versiones
           </button>
           <button
             className={`pic-editor__btn${chatOpen ? ' pic-editor__btn--primary' : ''}`}
@@ -432,6 +484,24 @@ const PicturesEditor = () => {
           onNodesChange={handleNodesChange}
           onGroupsChange={handleGroupsChange}
           onSelect={setSelectedIds}
+        />
+
+        <NamesModal
+          visible={namesOpen}
+          onClose={() => setNamesOpen(false)}
+          onSelect={(n) => { setName(n); setDirty(true); setNamesOpen(false) }}
+        />
+
+        <VersionsPanel
+          visible={versionsOpen}
+          onClose={() => setVersionsOpen(false)}
+          pictureId={id}
+          pictureName={name}
+          canvas={canvas}
+          nodes={nodes}
+          groups={groups}
+          thumbnail={null}
+          onRestore={handleRestoreVersion}
         />
 
         {chatOpen && (

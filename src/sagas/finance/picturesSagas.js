@@ -1,4 +1,4 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { put, call, all, takeLatest, select } from 'redux-saga/effects'
 import * as actions from '../../actions/finance/picturesActions'
 import * as service from '../../services/facade/finance/picturesFacade'
 import { push as notify } from '../../reducers/notificationsSlice'
@@ -25,8 +25,17 @@ function* loadPicture({ payload }) {
   }
 }
 
+const isDuplicateName = (list, name, excludeId = null) =>
+  (list ?? []).some((p) => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.id !== excludeId)
+
 function* createPicture({ payload }) {
   try {
+    const list = yield select((s) => s.financePictures.list)
+    if (isDuplicateName(list, payload.name)) {
+      yield put(actions.errorRequestCreate('Ya existe un cuadro con ese nombre.'))
+      yield put(notify({ type: 'error', message: `Ya existe un cuadro llamado "${payload.name}".` }))
+      return
+    }
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addPicture, payload)
     yield put(actions.successRequestCreate({ id, ...payload }))
@@ -39,6 +48,12 @@ function* createPicture({ payload }) {
 
 function* updatePicture({ payload: { id, data } }) {
   try {
+    const list = yield select((s) => s.financePictures.list)
+    if (isDuplicateName(list, data.name, id)) {
+      yield put(actions.errorRequestUpdate('Ya existe un cuadro con ese nombre.'))
+      yield put(notify({ type: 'error', message: `Ya existe un cuadro llamado "${data.name}".` }))
+      return
+    }
     yield put(actions.beginRequestUpdate())
     yield call(service.updatePicture, id, data)
     yield put(actions.successRequestUpdate({ id, ...data }))

@@ -19,6 +19,8 @@ export const PICTURES_SHAPE_TOOLS = [
   { key: 'triangle', label: 'Triángulo', icon: '△' },
   { key: 'polygon', label: 'Polígono', icon: '⬡' },
   { key: 'star', label: 'Estrella', icon: '★' },
+  { key: 'diamond', label: 'Rombo', icon: '◇' },
+  { key: 'semicircle', label: 'Medio círculo', icon: '◐' },
   { key: 'line', label: 'Línea H', icon: '─' },
   { key: 'vline', label: 'Línea V', icon: '│' },
   { key: 'cota', label: 'Cota', icon: '⟺' },

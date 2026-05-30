@@ -45,6 +45,7 @@ import sagaErrorLogs from './system/errorLogSagas'
 import sagaInmobiliariaDesigns from './inmobiliaria/designSagas'
 import sagaInmobiliariaPlanos from './inmobiliaria/planosSagas'
 import sagaFinancePictures from './finance/picturesSagas'
+import sagaFinancePictureVersions from './finance/pictureVersionsSagas'
 import sagaFinanceScenes3d from './finance/scenes3dSagas'
 
 export default function* rootSagas() {
@@ -95,6 +96,7 @@ export default function* rootSagas() {
     sagaInmobiliariaDesigns(),
     sagaInmobiliariaPlanos(),
     sagaFinancePictures(),
+    sagaFinancePictureVersions(),
     sagaFinanceScenes3d(),
   ])
 }
