@@ -188,6 +188,66 @@
   }
 }
 
+// ─── Grid controls ───────────────────────────────────────────────────────────
+
+.pic-grid-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+
+    input[type='checkbox'] { cursor: pointer; }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  &__unit {
+    font-size: 11px;
+    color: #888;
+  }
+}
+
+// ─── Color swatches ──────────────────────────────────────────────────────────
+
+.pic-swatches {
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  align-items: center;
+
+  &__item {
+    position: relative;
+  }
+
+  &__swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 3px;
+    border: 1px solid #555;
+    cursor: pointer;
+
+    &:hover { border-color: #999; }
+  }
+
+  &__picker {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+}
+
 // ─── Inspector (shape properties) ────────────────────────────────────────────
 
 .pic-inspector {

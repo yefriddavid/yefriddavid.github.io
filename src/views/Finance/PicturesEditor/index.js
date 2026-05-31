@@ -463,6 +463,7 @@ const PicturesEditor = () => {
           selectedNode={selectedNode}
           onNodeChange={handleNodePropertyChange}
           canvas={canvas}
+          onCanvasChange={setCanvas}
         />
 
         <EditorCanvas

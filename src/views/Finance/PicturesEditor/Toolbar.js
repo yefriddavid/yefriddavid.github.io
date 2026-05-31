@@ -1,5 +1,60 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
+
+const SWATCH_KEY = 'pic_color_swatches'
+const DEFAULT_SWATCHES = ['#1a6bbf', '#e8e8e8', '#000000']
+
+const loadSwatches = () => {
+  try {
+    const raw = sessionStorage.getItem(SWATCH_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length === 3) return parsed
+    }
+  } catch {}
+  return [...DEFAULT_SWATCHES]
+}
+
+const ColorSwatches = ({ selectedNode, onNodeChange }) => {
+  const [swatches, setSwatches] = useState(loadSwatches)
+  const pickerRefs = useRef([])
+
+  const updateSwatch = (i, color) => {
+    const next = swatches.map((c, idx) => (idx === i ? color : c))
+    setSwatches(next)
+    sessionStorage.setItem(SWATCH_KEY, JSON.stringify(next))
+  }
+
+  const handleClick = (i) => {
+    if (selectedNode) {
+      onNodeChange({ ...selectedNode, stroke: swatches[i] })
+    } else {
+      pickerRefs.current[i]?.click()
+    }
+  }
+
+  return (
+    <div className="pic-swatches">
+      {swatches.map((color, i) => (
+        <div key={i} className="pic-swatches__item">
+          <div
+            className="pic-swatches__swatch"
+            style={{ background: color }}
+            title={selectedNode ? `Aplicar ${color} al relleno` : 'Editar color'}
+            onClick={() => handleClick(i)}
+          />
+          <input
+            ref={(el) => { pickerRefs.current[i] = el }}
+            type="color"
+            value={color}
+            onChange={(e) => updateSwatch(i, e.target.value)}
+            className="pic-swatches__picker"
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const SHAPE_ICONS = {
   select: '↖', rect: '▬', roundRect: '▢', circle: '○', triangle: '△',
@@ -192,7 +247,40 @@ const Inspector = ({ node, onChange, canvas }) => {
   )
 }
 
-const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange, canvas }) => (
+const GridControls = ({ canvas, onCanvasChange }) => {
+  const setCanvas = (patch) => onCanvasChange({ ...canvas, ...patch })
+
+  return (
+    <div className="pic-toolbar__section">
+      <div className="pic-grid-controls">
+        <label className="pic-grid-controls__toggle">
+          <input
+            type="checkbox"
+            checked={canvas.showGrid !== false}
+            onChange={(e) => setCanvas({ showGrid: e.target.checked })}
+          />
+          <span className="pic-toolbar__section-label" style={{ margin: 0 }}>Cuadrícula</span>
+        </label>
+        {canvas.showGrid !== false && (
+          <div className="pic-grid-controls__row">
+            <input
+              type="number"
+              className="pic-inspector__input"
+              min={0.1}
+              step={0.1}
+              value={canvas.grid ?? 1}
+              style={{ width: 55 }}
+              onChange={(e) => setCanvas({ grid: Math.max(0.1, parseFloat(e.target.value) || 0.1) })}
+            />
+            <span className="pic-grid-controls__unit">{canvas.unit}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange, canvas, onCanvasChange }) => (
   <div className="pic-toolbar">
     <div className="pic-toolbar__section">
       <span className="pic-toolbar__section-label">Herramientas</span>
@@ -210,6 +298,12 @@ const Toolbar = ({ tool, onToolChange, selectedNode, onNodeChange, canvas }) => 
         ))}
       </div>
     </div>
+
+    <div className="pic-toolbar__divider" />
+    <GridControls canvas={canvas} onCanvasChange={onCanvasChange} />
+
+    <div className="pic-toolbar__divider" />
+    <ColorSwatches selectedNode={selectedNode} onNodeChange={onNodeChange} />
 
     {selectedNode && (
       <>

@@ -265,16 +265,16 @@ const Ruler = ({ length, unit, pxPerUnit, zoom, orientation, size }) => {
 
 // ─── Grid ─────────────────────────────────────────────────────────────────────
 
-const Grid = ({ canvasW, canvasH, gridPx }) => {
-  if (!gridPx || gridPx < 3) return null
+const Grid = ({ canvasW, canvasH, gridPx, show }) => {
+  if (!show || !gridPx || gridPx < 2) return null
   const lines = []
   for (let x = gridPx; x < canvasW; x += gridPx) {
-    lines.push(<line key={`v${x}`} x1={x} y1={0} x2={x} y2={canvasH} stroke="#e0e0e0" strokeWidth={0.4} strokeDasharray="1 3" />)
+    lines.push(<line key={`v${x}`} x1={x} y1={0} x2={x} y2={canvasH} stroke="#c0c0c0" strokeWidth={0.5} />)
   }
   for (let y = gridPx; y < canvasH; y += gridPx) {
-    lines.push(<line key={`h${y}`} x1={0} y1={y} x2={canvasW} y2={y} stroke="#e0e0e0" strokeWidth={0.4} strokeDasharray="1 3" />)
+    lines.push(<line key={`h${y}`} x1={0} y1={y} x2={canvasW} y2={y} stroke="#c0c0c0" strokeWidth={0.5} />)
   }
-  return <g className="pic-canvas__grid">{lines}</g>
+  return <g className="pic-canvas__grid" pointerEvents="none">{lines}</g>
 }
 
 // ─── EditorCanvas ─────────────────────────────────────────────────────────────
@@ -620,7 +620,7 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
             <rect width={canvasW} height={canvasH} fill={canvas.bg ?? '#ffffff'} />
 
             {/* grid */}
-            <Grid canvasW={canvasW} canvasH={canvasH} gridPx={gridPx} />
+            <Grid canvasW={canvasW} canvasH={canvasH} gridPx={gridPx} show={canvas.showGrid !== false} />
 
             {/* shapes */}
             {visibleNodes.map((node) => (

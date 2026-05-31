@@ -37,6 +37,7 @@ export const PICTURES_DEFAULT_CANVAS = {
   unit: 'cm',
   dpi: 96,
   grid: 1,
+  showGrid: true,
   snap: true,
   bg: '#ffffff',
 }
