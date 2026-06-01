@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   CButton,
   CCard,
@@ -10,10 +11,11 @@ import {
   CRow,
 } from '@coreui/react'
 import { Column, Paging, Pager } from 'devextreme-react/data-grid'
-//import StandardGrid from 'src/components/shared/StandardGrid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
+import * as actions from 'src/actions/finance/increaseDecreaseActions'
+import Spinner from 'src/components/shared/Spinner'
 
 const formatToCOP = (value) => {
   if (!value || isNaN(value)) return ''
@@ -41,23 +43,28 @@ const formatPct = (value) => {
 }
 
 const IncreaseDecrease = () => {
+  const dispatch = useDispatch()
+  const { entries, loading, saving } = useSelector((s) => s.increaseDecrease)
+
   const [initialValue, setInitialValue] = useState(107500)
   const [finalValue, setFinalValue] = useState(111490)
   const [inversionValue, setInversionValue] = useState(500)
-  const [items, setItems] = useState([])
+
+  useEffect(() => {
+    dispatch(actions.loadRequest())
+  }, [dispatch])
 
   const diff = Number(finalValue) - Number(initialValue)
   const increaseValue = Number(initialValue) > 0 ? (diff / Number(initialValue)) * 100 : 0
-  const _decreaseValue = diff < 0 ? Math.abs(increaseValue) : null
   const inversionProfit = (Number(inversionValue) * increaseValue) / 100
   const earnUSD = inversionProfit
   const earnCOP = inversionProfit * 4000
 
+  const isProfit = diff >= 0
+
   const handleAdd = () => {
-    setItems((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
+    dispatch(
+      actions.saveRequest({
         initialValue: Number(initialValue),
         finalValue: Number(finalValue),
         diff,
@@ -68,15 +75,13 @@ const IncreaseDecrease = () => {
         loss: diff < 0 ? parseFloat(Math.abs(inversionProfit).toFixed(2)) : null,
         earnUSD: parseFloat(earnUSD.toFixed(2)),
         earnCOP: parseFloat(earnCOP.toFixed(0)),
-      },
-    ])
+      }),
+    )
   }
 
   const handleDelete = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+    dispatch(actions.deleteRequest({ id }))
   }
-
-  const isProfit = diff >= 0
 
   return (
     <CRow className="g-4">
@@ -169,9 +174,15 @@ const IncreaseDecrease = () => {
               </CCol>
 
               <CCol xs={12} sm={4} className="d-flex align-items-end">
-                <CButton color="primary" className="w-100" onClick={handleAdd}>
-                  <CIcon icon={cilPlus} className="me-1" />
-                  Add to List
+                <CButton color="primary" className="w-100" onClick={handleAdd} disabled={saving}>
+                  {saving ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <>
+                      <CIcon icon={cilPlus} className="me-1" />
+                      Add to List
+                    </>
+                  )}
                 </CButton>
               </CCol>
             </CRow>
@@ -184,124 +195,132 @@ const IncreaseDecrease = () => {
         <CCard className="shadow-sm">
           <CCardHeader className="fw-semibold">Comparison List</CCardHeader>
           <CCardBody>
-            <StandardGrid
-              dataSource={items}
-              keyExpr="id"
-              noDataText="No entries yet — fill in the values above and click Add to List."
-            >
-              <Paging defaultPageSize={10} />
-              <Pager showPageSizeSelector showInfo allowedPageSizes={[10, 25, 50]} />
+            {loading ? (
+              <Spinner mode="section" />
+            ) : (
+              <StandardGrid
+                dataSource={entries}
+                keyExpr="id"
+                noDataText="No entries yet — fill in the values above and click Add to List."
+              >
+                <Paging defaultPageSize={10} />
+                <Pager showPageSizeSelector showInfo allowedPageSizes={[10, 25, 50]} />
 
-              <Column
-                dataField="initialValue"
-                caption="Initial Value"
-                format={{ type: 'fixedPoint', precision: 0 }}
-              />
-              <Column
-                dataField="finalValue"
-                caption="Final Value"
-                format={{ type: 'fixedPoint', precision: 0 }}
-              />
-              <Column
-                dataField="diff"
-                caption="Diff"
-                cellRender={({ value }) => (
-                  <span style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}>
-                    {formatToCOP(value)}
-                  </span>
-                )}
-              />
-              <Column
-                dataField="increaseValue"
-                caption="Increase %"
-                cellRender={({ value }) =>
-                  value != null ? (
-                    <span style={{ color: '#2eb85c', fontWeight: 600 }}>{formatPct(value)}</span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                dataField="decreaseValue"
-                caption="Decrease %"
-                cellRender={({ value }) =>
-                  value != null ? (
-                    <span style={{ color: '#e55353', fontWeight: 600 }}>{formatPct(value)}</span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                dataField="inversionValue"
-                caption="Investment"
-                format={{ type: 'fixedPoint', precision: 0 }}
-              />
-              <Column
-                dataField="profit"
-                caption="Profit %"
-                cellRender={({ value }) =>
-                  value != null ? (
-                    <span style={{ color: '#2eb85c', fontWeight: 600 }}>{formatPct(value)}</span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                dataField="loss"
-                caption="Loss %"
-                cellRender={({ value }) =>
-                  value != null ? (
-                    <span style={{ color: '#e55353', fontWeight: 600 }}>{formatPct(value)}</span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                dataField="earnUSD"
-                caption="Earn/Loss USD"
-                cellRender={({ value }) =>
-                  value != null ? (
-                    <span style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}>
-                      {formatToUSD(value)}
-                    </span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                dataField="earnCOP"
-                caption="Earn/Loss COP"
-                cellRender={({ value }) =>
-                  value != null ? (
+                <Column
+                  dataField="initialValue"
+                  caption="Initial Value"
+                  format={{ type: 'fixedPoint', precision: 0 }}
+                />
+                <Column
+                  dataField="finalValue"
+                  caption="Final Value"
+                  format={{ type: 'fixedPoint', precision: 0 }}
+                />
+                <Column
+                  dataField="diff"
+                  caption="Diff"
+                  cellRender={({ value }) => (
                     <span style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}>
                       {formatToCOP(value)}
                     </span>
-                  ) : (
-                    <span className="text-medium-emphasis">—</span>
-                  )
-                }
-              />
-              <Column
-                caption="Actions"
-                width={80}
-                alignment="center"
-                cellRender={({ data }) => (
-                  <CButton
-                    color="danger"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(data.id)}
-                  >
-                    <CIcon icon={cilTrash} />
-                  </CButton>
-                )}
-              />
-            </StandardGrid>
+                  )}
+                />
+                <Column
+                  dataField="increaseValue"
+                  caption="Increase %"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span style={{ color: '#2eb85c', fontWeight: 600 }}>{formatPct(value)}</span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  dataField="decreaseValue"
+                  caption="Decrease %"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span style={{ color: '#e55353', fontWeight: 600 }}>{formatPct(value)}</span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  dataField="inversionValue"
+                  caption="Investment"
+                  format={{ type: 'fixedPoint', precision: 0 }}
+                />
+                <Column
+                  dataField="profit"
+                  caption="Profit %"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span style={{ color: '#2eb85c', fontWeight: 600 }}>{formatPct(value)}</span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  dataField="loss"
+                  caption="Loss %"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span style={{ color: '#e55353', fontWeight: 600 }}>{formatPct(value)}</span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  dataField="earnUSD"
+                  caption="Earn/Loss USD"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span
+                        style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}
+                      >
+                        {formatToUSD(value)}
+                      </span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  dataField="earnCOP"
+                  caption="Earn/Loss COP"
+                  cellRender={({ value }) =>
+                    value != null ? (
+                      <span
+                        style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}
+                      >
+                        {formatToCOP(value)}
+                      </span>
+                    ) : (
+                      <span className="text-medium-emphasis">—</span>
+                    )
+                  }
+                />
+                <Column
+                  caption="Actions"
+                  width={80}
+                  alignment="center"
+                  cellRender={({ data }) => (
+                    <CButton
+                      color="danger"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(data.id)}
+                    >
+                      <CIcon icon={cilTrash} />
+                    </CButton>
+                  )}
+                />
+              </StandardGrid>
+            )}
           </CCardBody>
         </CCard>
       </CCol>

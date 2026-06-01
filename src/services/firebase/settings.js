@@ -79,6 +79,7 @@ export const COL_TAXI_DRIVER_GEN_DOCS = 'Taxi_driver_gen_docs'
 // Finance
 export const COL_FINANCE_GRID_TRADES = 'Finance_grid_trades'
 export const COL_FINANCE_CUSTOM_GRID_TRADES = 'Finance_Custom_Grid_Trades'
+export const COL_FINANCE_INCREASE_DECREASE = 'Finance_Increase_Decrease'
 
 // Contratos
 export const COL_CONTRATOS = 'Contratos_Contratos'

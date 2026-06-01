@@ -47,6 +47,7 @@ import sagaInmobiliariaPlanos from './inmobiliaria/planosSagas'
 import sagaFinancePictures from './finance/picturesSagas'
 import sagaFinancePictureVersions from './finance/pictureVersionsSagas'
 import sagaFinanceScenes3d from './finance/scenes3dSagas'
+import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -98,5 +99,6 @@ export default function* rootSagas() {
     sagaFinancePictures(),
     sagaFinancePictureVersions(),
     sagaFinanceScenes3d(),
+    sagaIncreaseDecrease(),
   ])
 }
