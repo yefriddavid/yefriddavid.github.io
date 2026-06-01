@@ -25,6 +25,16 @@ const formatToCOP = (value) => {
   }).format(parseFloat(value))
 }
 
+const formatToUSD = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return ''
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(parseFloat(value))
+}
+
 const formatPct = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '—'
   return `${parseFloat(value).toFixed(2)}%`
@@ -40,6 +50,7 @@ const IncreaseDecrease = () => {
   const increaseValue = Number(initialValue) > 0 ? (diff / Number(initialValue)) * 100 : 0
   const _decreaseValue = diff < 0 ? Math.abs(increaseValue) : null
   const inversionProfit = (Number(inversionValue) * increaseValue) / 100
+  const earnUSD = inversionProfit
   const earnCOP = inversionProfit * 4000
 
   const handleAdd = () => {
@@ -55,6 +66,8 @@ const IncreaseDecrease = () => {
         inversionValue: Number(inversionValue),
         profit: diff >= 0 ? parseFloat(inversionProfit.toFixed(2)) : null,
         loss: diff < 0 ? parseFloat(Math.abs(inversionProfit).toFixed(2)) : null,
+        earnUSD: parseFloat(earnUSD.toFixed(2)),
+        earnCOP: parseFloat(earnCOP.toFixed(0)),
       },
     ])
   }
@@ -137,7 +150,16 @@ const IncreaseDecrease = () => {
                 </div>
               </CCol>
 
-              <CCol xs={12} sm={8}>
+              <CCol xs={12} sm={4}>
+                <div className="border rounded p-3 text-center">
+                  <div className="text-medium-emphasis small mb-1">Earn / Loss (USD)</div>
+                  <div className={`fs-4 fw-bold ${isProfit ? 'text-success' : 'text-danger'}`}>
+                    {formatToUSD(earnUSD)}
+                  </div>
+                </div>
+              </CCol>
+
+              <CCol xs={12} sm={4}>
                 <div className="border rounded p-3 text-center">
                   <div className="text-medium-emphasis small mb-1">Earn / Loss (COP)</div>
                   <div className={`fs-4 fw-bold ${isProfit ? 'text-success' : 'text-danger'}`}>
@@ -233,6 +255,32 @@ const IncreaseDecrease = () => {
                 cellRender={({ value }) =>
                   value != null ? (
                     <span style={{ color: '#e55353', fontWeight: 600 }}>{formatPct(value)}</span>
+                  ) : (
+                    <span className="text-medium-emphasis">—</span>
+                  )
+                }
+              />
+              <Column
+                dataField="earnUSD"
+                caption="Earn/Loss USD"
+                cellRender={({ value }) =>
+                  value != null ? (
+                    <span style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}>
+                      {formatToUSD(value)}
+                    </span>
+                  ) : (
+                    <span className="text-medium-emphasis">—</span>
+                  )
+                }
+              />
+              <Column
+                dataField="earnCOP"
+                caption="Earn/Loss COP"
+                cellRender={({ value }) =>
+                  value != null ? (
+                    <span style={{ color: value >= 0 ? '#2eb85c' : '#e55353', fontWeight: 600 }}>
+                      {formatToCOP(value)}
+                    </span>
                   ) : (
                     <span className="text-medium-emphasis">—</span>
                   )
