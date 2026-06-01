@@ -23,6 +23,16 @@ function* saveEntry({ payload }) {
   }
 }
 
+function* updateEntry({ payload }) {
+  try {
+    yield call(service.updateEntry, payload)
+    yield put(actions.updateSuccess(payload))
+  } catch (e) {
+    yield put(actions.updateError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 function* deleteEntry({ payload }) {
   try {
     yield call(service.deleteEntry, payload.id)
@@ -37,6 +47,7 @@ export default function* sagaIncreaseDecrease() {
   yield all([
     takeLatest(actions.loadRequest, loadEntries),
     takeEvery(actions.saveRequest, saveEntry),
+    takeEvery(actions.updateRequest, updateEntry),
     takeLatest(actions.deleteRequest, deleteEntry),
   ])
 }

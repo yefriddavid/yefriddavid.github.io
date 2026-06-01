@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   getDocs,
   deleteDoc,
   serverTimestamp,
@@ -44,6 +45,13 @@ export const saveEntry = async (entry) => {
     }),
   )
   return ref.id
+}
+
+export const updateEntry = async (entry) => {
+  const { id, ...data } = entry
+  await firestoreCall(() =>
+    setDoc(doc(collection(db, COL), id), { ...data, updatedAt: serverTimestamp() }, { merge: true }),
+  )
 }
 
 export const deleteEntry = async (id) => {

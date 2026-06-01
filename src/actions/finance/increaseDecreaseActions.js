@@ -8,6 +8,10 @@ export const saveRequest = createAction('save increase decrease entry')
 export const saveSuccess = createAction('save increase decrease entry success')
 export const saveError = createAction('save increase decrease entry error')
 
+export const updateRequest = createAction('update increase decrease entry')
+export const updateSuccess = createAction('update increase decrease entry success')
+export const updateError = createAction('update increase decrease entry error')
+
 export const deleteRequest = createAction('delete increase decrease entry')
 export const deleteSuccess = createAction('delete increase decrease entry success')
 export const deleteError = createAction('delete increase decrease entry error')

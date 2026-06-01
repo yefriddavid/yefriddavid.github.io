@@ -34,6 +34,18 @@ const increaseDecreaseSlice = createSlice({
         state.error = payload
         state.saving = false
       })
+      .addCase(actions.updateRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.updateSuccess, (state, { payload }) => {
+        const idx = state.entries.findIndex((e) => e.id === payload.id)
+        if (idx >= 0) state.entries[idx] = payload
+        state.saving = false
+      })
+      .addCase(actions.updateError, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
       .addCase(actions.deleteRequest, (state) => {
         state.saving = true
       })
