@@ -321,8 +321,10 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
   const exportImage = useCallback((format, filename) => {
     const svg = svgRef.current
     if (!svg) return
+    const clone = svg.cloneNode(true)
+    clone.querySelector('.pic-canvas__grid')?.remove()
     const serializer = new XMLSerializer()
-    const svgStr = serializer.serializeToString(svg)
+    const svgStr = serializer.serializeToString(clone)
     const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const img = new Image()
@@ -331,10 +333,8 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
       c.width = canvasW
       c.height = canvasH
       const ctx = c.getContext('2d')
-      if (format !== 'png') {
-        ctx.fillStyle = canvas.bg ?? '#ffffff'
-        ctx.fillRect(0, 0, canvasW, canvasH)
-      }
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvasW, canvasH)
       ctx.drawImage(img, 0, 0, canvasW, canvasH)
       URL.revokeObjectURL(url)
       const mime = format === 'png' ? 'image/png' : 'image/jpeg'
@@ -346,7 +346,7 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
       a.click()
     }
     img.src = url
-  }, [canvasW, canvasH, canvas.bg])
+  }, [canvasW, canvasH])
 
   const generateThumbnail = useCallback(() => new Promise((resolve) => {
     const svg = svgRef.current
@@ -405,9 +405,20 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
       if (tool !== 'select') return
       if (node.locked) return
       const pt = svgPoint(e)
-      if (!e.shiftKey) onSelect([node.id])
-      else onSelect(selectedIds.includes(node.id) ? selectedIds.filter((i) => i !== node.id) : [...selectedIds, node.id])
-      setDragging({ nodeId: node.id, startX: pt.x, startY: pt.y, origX: node.x, origY: node.y })
+
+      if (e.ctrlKey || e.metaKey || e.shiftKey) {
+        onSelect(selectedIds.includes(node.id)
+          ? selectedIds.filter((i) => i !== node.id)
+          : [...selectedIds, node.id])
+        return
+      }
+
+      const dragIds = selectedIds.includes(node.id) ? selectedIds : [node.id]
+      if (!selectedIds.includes(node.id)) onSelect([node.id])
+      const origPositions = nodes
+        .filter((n) => dragIds.includes(n.id))
+        .reduce((acc, n) => ({ ...acc, [n.id]: { x: n.x, y: n.y } }), {})
+      setDragging({ dragIds, startX: pt.x, startY: pt.y, origPositions })
     },
     [tool, nodes, selectedIds, svgPoint, onNodesChange, onSelect],
   )
@@ -432,9 +443,11 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
         const dx = pt.x - dragging.startX
         const dy = pt.y - dragging.startY
         onNodesChange(
-          nodes.map((n) =>
-            n.id === dragging.nodeId ? { ...n, x: snap(dragging.origX + dx), y: snap(dragging.origY + dy) } : n,
-          ),
+          nodes.map((n) => {
+            const orig = dragging.origPositions[n.id]
+            if (!orig) return n
+            return { ...n, x: snap(orig.x + dx), y: snap(orig.y + dy) }
+          }),
         )
       }
 
@@ -632,13 +645,25 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
               />
             ))}
 
-            {/* selection handles */}
-            {selectedNode && !selectedNode.locked && (
+            {/* selection handles (single) / multi-select overlay */}
+            {selectedIds.length === 1 && selectedNode && !selectedNode.locked && (
               <SelectionHandles
                 node={selectedNode}
                 onHandleDown={(e, dir) => handleHandleDown(e, dir, selectedNode)}
               />
             )}
+            {selectedIds.length > 1 && visibleNodes
+              .filter((n) => selectedIds.includes(n.id))
+              .map((n) => {
+                const cx = n.x + n.w / 2
+                const cy = n.y + n.h / 2
+                return (
+                  <g key={n.id} transform={n.rotation ? `rotate(${n.rotation},${cx},${cy})` : undefined} pointerEvents="none">
+                    <rect x={n.x} y={n.y} width={n.w} height={n.h} fill="rgba(74,158,255,0.07)" stroke="#4a9eff" strokeWidth={1} strokeDasharray="4 3" />
+                  </g>
+                )
+              })
+            }
 
             {/* draw preview */}
             {preview}
