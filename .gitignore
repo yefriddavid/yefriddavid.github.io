@@ -44,3 +44,6 @@ cypress.env.json
 # Local production backups
 prod-backups/
 functions/node_modules
+
+# Generated thumbnails (built by scripts/generate-thumbs.mjs)
+src/assets/inmobiliaria/galleries/*/thumb/

@@ -73,9 +73,9 @@ const GalleryPage = () => {
       </div>
 
       <div className="gp__grid">
-        {gallery.images.map((src, i) => (
+        {gallery.thumbs.map((thumb, i) => (
           <div key={i} className="gp__item" onClick={() => handleOpen(i)}>
-            <img src={src} alt="" loading="lazy" className="gp__img" />
+            <img src={thumb} alt="" loading="lazy" className="gp__img" />
           </div>
         ))}
       </div>

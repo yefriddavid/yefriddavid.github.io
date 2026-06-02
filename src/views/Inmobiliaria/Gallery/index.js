@@ -24,7 +24,7 @@ const GalleryList = () => {
         {GALLERIES.map((g) => (
           <div key={g.folder} className="gl-card">
             <div className="gl-card__cover" style={{ borderTopColor: g.color ?? '#4a9eff' }}>
-              <img src={g.images[0]} alt={g.title} loading="lazy" className="gl-card__cover-img" />
+              <img src={g.thumbs[0]} alt={g.title} loading="lazy" className="gl-card__cover-img" />
               <span className="gl-card__badge">{g.images.length} fotos</span>
             </div>
             <div className="gl-card__body">
