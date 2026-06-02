@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { CButton, CModal, CModalBody } from '@coreui/react'
@@ -8,6 +8,7 @@ import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
 import { PICTURES_UNITS_MAP } from 'src/constants/finance'
+import { onPictureUpdated } from 'src/utils/broadcastChannel'
 
 const Thumbnail = ({ src, canvas, onClick }) => {
   const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
@@ -32,13 +33,22 @@ const Pictures = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { list, fetching, saving } = useSelector((s) => s.financePictures)
-  const [preview, setPreview] = useState(null)
+  const [preview, setPreview] = useState(null) // { id, src }
+  const previewRef = useRef(null)
   const [renamingId, setRenamingId] = useState(null)
   const [renameDraft, setRenameDraft] = useState('')
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
   }, [dispatch])
+
+  useEffect(() => {
+    return onPictureUpdated((picture) => {
+      if (previewRef.current?.id === picture.id && picture.thumbnail) {
+        setPreview({ id: picture.id, src: picture.thumbnail })
+      }
+    })
+  }, [])
 
   const handleDelete = (row) => {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {
@@ -98,7 +108,7 @@ const Pictures = () => {
           emptyText="Sin cuadros todavía."
           renderTitle={(r) => (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <Thumbnail src={r.thumbnail} canvas={r.canvas} onClick={() => setPreview(r.thumbnail)} />
+              <Thumbnail src={r.thumbnail} canvas={r.canvas} onClick={() => { const p = { id: r.id, src: r.thumbnail }; previewRef.current = p; setPreview(p) }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 }}>
                 {renamingId === r.id ? (
                   <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #4a9eff', borderRadius: 6, boxShadow: '0 0 0 3px rgba(74,158,255,0.15)', overflow: 'hidden', background: '#f8fbff' }} onClick={(e) => e.stopPropagation()}>
@@ -154,11 +164,11 @@ const Pictures = () => {
         />
       )}
 
-      <CModal visible={!!preview} onClose={() => setPreview(null)} size="xl" alignment="center">
+      <CModal visible={!!preview} onClose={() => { previewRef.current = null; setPreview(null) }} size="xl" alignment="center">
         <CModalBody style={{ padding: 8, background: '#1a1a1a', textAlign: 'center' }}>
           {preview && (
             <img
-              src={preview}
+              src={preview.src}
               alt=""
               style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: 4 }}
             />

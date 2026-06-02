@@ -15,6 +15,8 @@ import './i18n'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
+const EmptyLayout = React.lazy(() => import('./layout/EmptyLayout'))
+const FinanceLayout = React.lazy(() => import('./layout/FinanceLayout'))
 const DomoticaLayout = React.lazy(() => import('./layout/DomoticaLayout'))
 const TaxisLayout = React.lazy(() => import('./layout/TaxisLayout'))
 const SystemLayout = React.lazy(() => import('./layout/SystemLayout'))
@@ -24,6 +26,7 @@ const SystemLayout = React.lazy(() => import('./layout/SystemLayout'))
 const GenerarContrato = React.lazy(
   () => import('./views/Contratos/contratos/GenerarContrato/index.js'),
 )
+const GalleryPage = React.lazy(() => import('./views/Public/GalleryPage'))
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
@@ -136,14 +139,18 @@ const App = () => {
           fallback={<Spinner mode="section" variant="grow" />}
         >
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/404" element={<Page404 />} />
-            <Route path="/500" element={<Page500 />} />
-            <Route path="/aboutMe" element={<AboutMe />} />
-            <Route path="/hard-refresh" element={<HardRefresh />} />
-            <Route path="/selectApp" element={<SelectApp />} />
-            <Route path="/contratos/generar" element={<GenerarContrato />} />
+            <Route element={<EmptyLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/404" element={<Page404 />} />
+              <Route path="/500" element={<Page500 />} />
+              <Route path="/aboutMe" element={<AboutMe />} />
+              <Route path="/hard-refresh" element={<HardRefresh />} />
+              <Route path="/selectApp" element={<SelectApp />} />
+              <Route path="/contratos/generar" element={<GenerarContrato />} />
+              <Route path="/gallery/:folder" element={<GalleryPage />} />
+            </Route>
+            <Route path="/finance/*" element={<FinanceLayout />} />
             <Route path="/domotica/*" element={<DomoticaLayout />} />
             <Route path="/taxis/*" element={<TaxisLayout />} />
             <Route path="/system/*" element={<SystemLayout />} />

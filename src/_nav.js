@@ -163,6 +163,12 @@ const getNav = (t, role) => {
     items: [
       {
         component: CNavItem,
+        name: 'Galería',
+        to: '/inmobiliaria/gallery',
+        icon: <CIcon icon={cilImage} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
         name: 'Contratos de alquiler',
         to: '/contratos/generar',
         icon: <CIcon icon={cilFile} customClassName="nav-icon" />,

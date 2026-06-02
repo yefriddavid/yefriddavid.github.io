@@ -2,6 +2,7 @@ import { put, call, all, takeLatest, select } from 'redux-saga/effects'
 import * as actions from '../../actions/finance/picturesActions'
 import * as service from '../../services/facade/finance/picturesFacade'
 import { push as notify } from '../../reducers/notificationsSlice'
+import { emitPictureUpdated } from '../../utils/broadcastChannel'
 
 function* fetchPictures() {
   try {
@@ -58,6 +59,7 @@ function* updatePicture({ payload: { id, data } }) {
     yield call(service.updatePicture, id, data)
     yield put(actions.successRequestUpdate({ id, ...data }))
     yield put(notify({ type: 'success', message: 'Cuadro guardado.' }))
+    yield call(emitPictureUpdated, { id, ...data })
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
     yield put(notify({ type: 'error', message: `Error: ${e.message}` }))
