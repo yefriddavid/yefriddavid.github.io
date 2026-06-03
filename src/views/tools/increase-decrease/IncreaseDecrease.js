@@ -12,7 +12,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilPencil, cilTrash, cilX, cilCopy } from '@coreui/icons'
-import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
+import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/increaseDecreaseActions'
 
@@ -245,25 +245,26 @@ const IncreaseDecrease = () => {
               {loading ? (
                 <Spinner mode="section" />
               ) : (
-                <StandardCard
-                  data={entries}
+                <div style={{ paddingLeft: 12 }}>
+                <StandardList
+                  data={[...entries].sort((a, b) => a.initialValue - b.initialValue)}
                   keyExpr="id"
                   emptyText="No entries yet — fill in the values above and click Add to List."
                   renderTitle={(e) => (
                     <>
-                      <span className={SC.label}>Initial </span>
-                      <span className={SC.mono}>{e.initialValue?.toLocaleString()}</span>
-                      <span className={SC.muted}>{' → '}</span>
-                      <span className={SC.label}>Final </span>
-                      <span className={SC.mono}>{e.finalValue?.toLocaleString()}</span>
+                      <span className={SL.mono}>{e.initialValue?.toLocaleString()}</span>
+                      <span className={SL.muted}>{' → '}</span>
+                      <span className={SL.mono}>{e.finalValue?.toLocaleString()}</span>
+                      {'  '}
+                      <span
+                        style={{
+                          color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {formatToUSD(e.earnUSD)}
+                      </span>
                     </>
-                  )}
-                  renderValue={(e) => (
-                    <span
-                      style={{ color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353', fontWeight: 700 }}
-                    >
-                      {formatToUSD(e.earnUSD)}
-                    </span>
                   )}
                   renderBadge={(e) =>
                     e.earnUSD >= 0
@@ -278,14 +279,12 @@ const IncreaseDecrease = () => {
                     return [
                       [
                         <>
-                          <span className={SC.label}>Difference </span>
+                          <span className={SL.label}>Diff </span>
                           <span style={{ color }}>{formatToCOP(e.diff)}</span>
                         </>,
                         <>
-                          <span key="pct-lbl" className={SC.label}>
-                            {gain ? 'Increase ' : 'Decrease '}
-                          </span>
-                          <span key="pct-val" style={{ color }}>
+                          <span className={SL.label}>{gain ? 'Increase ' : 'Decrease '}</span>
+                          <span style={{ color }}>
                             {pctLabel}
                             {formatPct(pctVal)}
                           </span>
@@ -293,20 +292,20 @@ const IncreaseDecrease = () => {
                       ],
                       [
                         <>
-                          <span className={SC.label}>Inv. {gain ? 'Profit ' : 'Loss '}</span>
+                          <span className={SL.label}>Inv. {gain ? 'Profit ' : 'Loss '}</span>
                           <span style={{ color }}>
                             {formatPct(Math.abs(gain ? e.profit : e.loss))}
                           </span>
                         </>,
                         <>
-                          <span className={SC.label}>Earn COP </span>
+                          <span className={SL.label}>Earn COP </span>
                           <span style={{ color }}>{formatToCOP(e.earnCOP)}</span>
                         </>,
                       ],
                       [
                         <>
-                          <span className={SC.label}>Investment </span>
-                          <span className={SC.mono}>{formatToUSD(e.inversionValue)}</span>
+                          <span className={SL.label}>Investment </span>
+                          <span className={SL.mono}>{formatToUSD(e.inversionValue)}</span>
                         </>,
                       ],
                     ]
@@ -332,6 +331,7 @@ const IncreaseDecrease = () => {
                     },
                   ]}
                 />
+                </div>
               )}
             </CCardBody>
           </CCard>
