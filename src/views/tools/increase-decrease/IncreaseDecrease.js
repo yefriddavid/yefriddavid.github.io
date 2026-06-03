@@ -8,17 +8,11 @@ import {
   CCol,
   CFormInput,
   CFormLabel,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilPencil, cilTrash } from '@coreui/icons'
-import { useForm } from 'react-hook-form'
+import { cilPlus, cilPencil, cilTrash, cilX, cilCopy } from '@coreui/icons'
 import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
-import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/increaseDecreaseActions'
 
@@ -68,57 +62,14 @@ const computeFields = ({ initialValue, finalValue, inversionValue }) => {
   }
 }
 
-const fieldError = (err) =>
-  err ? (
-    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
-      {err.message}
-    </span>
-  ) : null
-
-const EntryForm = ({ initial, onSave, onCancel, saving, title }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({ defaultValues: initial })
-
-  return (
-    <StandardForm title={title} onCancel={onCancel} onSave={handleSubmit(onSave)} saving={saving}>
-      <StandardField label="Initial Value">
-        <input
-          className={SF.input}
-          type="number"
-          {...register('initialValue', { required: 'Required' })}
-        />
-        {fieldError(errors.initialValue)}
-      </StandardField>
-      <StandardField label="Final Value">
-        <input
-          className={SF.input}
-          type="number"
-          {...register('finalValue', { required: 'Required' })}
-        />
-        {fieldError(errors.finalValue)}
-      </StandardField>
-      <StandardField label="Investment Amount">
-        <input
-          className={SF.input}
-          type="number"
-          {...register('inversionValue', { required: 'Required' })}
-        />
-        {fieldError(errors.inversionValue)}
-      </StandardField>
-    </StandardForm>
-  )
-}
-
 const IncreaseDecrease = () => {
   const dispatch = useDispatch()
   const { entries, loading, saving } = useSelector((s) => s.increaseDecrease)
 
-  const [initialValue, setInitialValue] = useState(107500)
-  const [finalValue, setFinalValue] = useState(111490)
-  const [inversionValue, setInversionValue] = useState(500)
+  const DEFAULTS = { initialValue: 107500, finalValue: 111490, inversionValue: 500 }
+  const [initialValue, setInitialValue] = useState(DEFAULTS.initialValue)
+  const [finalValue, setFinalValue] = useState(DEFAULTS.finalValue)
+  const [inversionValue, setInversionValue] = useState(DEFAULTS.inversionValue)
   const [editingEntry, setEditingEntry] = useState(null)
 
   useEffect(() => {
@@ -128,14 +79,35 @@ const IncreaseDecrease = () => {
   const computed = computeFields({ initialValue, finalValue, inversionValue })
   const isProfit = computed.diff >= 0
 
-  const handleAdd = () => {
-    dispatch(actions.saveRequest(computed))
+  const handleSubmit = () => {
+    if (editingEntry) {
+      dispatch(actions.updateRequest({ ...computed, id: editingEntry.id }))
+      setEditingEntry(null)
+      setInitialValue(DEFAULTS.initialValue)
+      setFinalValue(DEFAULTS.finalValue)
+      setInversionValue(DEFAULTS.inversionValue)
+    } else {
+      dispatch(actions.saveRequest(computed))
+    }
   }
 
-  const handleEditSave = (formValues) => {
-    const updated = computeFields(formValues)
-    dispatch(actions.updateRequest({ ...updated, id: editingEntry.id }))
+  const handleEditClick = (e) => {
+    setEditingEntry(e)
+    setInitialValue(e.initialValue)
+    setFinalValue(e.finalValue)
+    setInversionValue(e.inversionValue)
+  }
+
+  const handleCancelEdit = () => {
     setEditingEntry(null)
+    setInitialValue(DEFAULTS.initialValue)
+    setFinalValue(DEFAULTS.finalValue)
+    setInversionValue(DEFAULTS.inversionValue)
+  }
+
+  const handleClone = (e) => {
+    const { id: _, createdAt: _c, updatedAt: _u, ...rest } = e
+    dispatch(actions.saveRequest(rest))
   }
 
   const handleDelete = (id) => {
@@ -148,7 +120,14 @@ const IncreaseDecrease = () => {
         {/* Input card */}
         <CCol xs={12} md={5} lg={4}>
           <CCard className="h-100 shadow-sm">
-            <CCardHeader className="fw-semibold">Values</CCardHeader>
+            <CCardHeader className="fw-semibold d-flex align-items-center justify-content-between">
+              <span>{editingEntry ? 'Edit Entry' : 'Values'}</span>
+              {editingEntry && (
+                <CButton color="ghost" size="sm" onClick={handleCancelEdit} title="Cancel">
+                  <CIcon icon={cilX} />
+                </CButton>
+              )}
+            </CCardHeader>
             <CCardBody className="d-flex flex-column gap-3">
               <div>
                 <CFormLabel className="fw-medium mb-1">Initial Value</CFormLabel>
@@ -234,13 +213,18 @@ const IncreaseDecrease = () => {
                 </CCol>
 
                 <CCol xs={12} sm={4} className="d-flex align-items-end">
-                  <CButton color="primary" className="w-100" onClick={handleAdd} disabled={saving}>
+                  <CButton
+                    color={editingEntry ? 'warning' : 'primary'}
+                    className="w-100"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                  >
                     {saving ? (
                       <Spinner size="sm" />
                     ) : (
                       <>
-                        <CIcon icon={cilPlus} className="me-1" />
-                        Add to List
+                        <CIcon icon={editingEntry ? cilPencil : cilPlus} className="me-1" />
+                        {editingEntry ? 'Update Entry' : 'Add to List'}
                       </>
                     )}
                   </CButton>
@@ -267,13 +251,17 @@ const IncreaseDecrease = () => {
                   emptyText="No entries yet — fill in the values above and click Add to List."
                   renderTitle={(e) => (
                     <>
-                      <span className={SC.muted}>{e.initialValue?.toLocaleString()}</span>
-                      {' → '}
-                      <span>{e.finalValue?.toLocaleString()}</span>
+                      <span className={SC.label}>Initial </span>
+                      <span className={SC.mono}>{e.initialValue?.toLocaleString()}</span>
+                      <span className={SC.muted}>{' → '}</span>
+                      <span className={SC.label}>Final </span>
+                      <span className={SC.mono}>{e.finalValue?.toLocaleString()}</span>
                     </>
                   )}
                   renderValue={(e) => (
-                    <span style={{ color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353' }}>
+                    <span
+                      style={{ color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353', fontWeight: 700 }}
+                    >
                       {formatToUSD(e.earnUSD)}
                     </span>
                   )}
@@ -282,39 +270,59 @@ const IncreaseDecrease = () => {
                       ? { label: 'Profit', variant: 'active' }
                       : { label: 'Loss', variant: 'warning' }
                   }
-                  renderRows={(e) => [
-                    [
-                      <>
-                        <span className={SC.label}>Diff </span>
-                        <span style={{ color: e.diff >= 0 ? '#2eb85c' : '#e55353' }}>
-                          {formatToCOP(e.diff)}
-                        </span>
-                      </>,
-                      e.increaseValue != null
-                        ? `+${formatPct(e.increaseValue)}`
-                        : e.decreaseValue != null
-                          ? `-${formatPct(e.decreaseValue)}`
-                          : null,
-                    ],
-                    [
-                      <>
-                        <span className={SC.label}>Inv </span>
-                        {e.inversionValue?.toLocaleString()}
-                      </>,
-                      <>
-                        <span className={SC.label}>COP </span>
-                        <span style={{ color: e.earnCOP >= 0 ? '#2eb85c' : '#e55353' }}>
-                          {formatToCOP(e.earnCOP)}
-                        </span>
-                      </>,
-                    ],
-                  ]}
+                  renderRows={(e) => {
+                    const gain = e.earnUSD >= 0
+                    const color = gain ? '#2eb85c' : '#e55353'
+                    const pctLabel = gain ? '+' : '-'
+                    const pctVal = e.increaseValue != null ? e.increaseValue : e.decreaseValue
+                    return [
+                      [
+                        <>
+                          <span className={SC.label}>Difference </span>
+                          <span style={{ color }}>{formatToCOP(e.diff)}</span>
+                        </>,
+                        <>
+                          <span key="pct-lbl" className={SC.label}>
+                            {gain ? 'Increase ' : 'Decrease '}
+                          </span>
+                          <span key="pct-val" style={{ color }}>
+                            {pctLabel}
+                            {formatPct(pctVal)}
+                          </span>
+                        </>,
+                      ],
+                      [
+                        <>
+                          <span className={SC.label}>Inv. {gain ? 'Profit ' : 'Loss '}</span>
+                          <span style={{ color }}>
+                            {formatPct(Math.abs(gain ? e.profit : e.loss))}
+                          </span>
+                        </>,
+                        <>
+                          <span className={SC.label}>Earn COP </span>
+                          <span style={{ color }}>{formatToCOP(e.earnCOP)}</span>
+                        </>,
+                      ],
+                      [
+                        <>
+                          <span className={SC.label}>Investment </span>
+                          <span className={SC.mono}>{formatToUSD(e.inversionValue)}</span>
+                        </>,
+                      ],
+                    ]
+                  }}
                   renderActions={(e) => [
                     {
                       icon: cilPencil,
                       color: 'primary',
                       title: 'Edit',
-                      onClick: () => setEditingEntry(e),
+                      onClick: () => handleEditClick(e),
+                    },
+                    {
+                      icon: cilCopy,
+                      color: 'info',
+                      title: 'Clone',
+                      onClick: () => handleClone(e),
                     },
                     {
                       icon: cilTrash,
@@ -329,29 +337,6 @@ const IncreaseDecrease = () => {
           </CCard>
         </CCol>
       </CRow>
-
-      {/* Edit modal */}
-      <CModal visible={!!editingEntry} onClose={() => setEditingEntry(null)}>
-        <CModalHeader>
-          <CModalTitle>Edit Entry</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {editingEntry && (
-            <EntryForm
-              key={editingEntry.id}
-              title="Edit Entry"
-              initial={{
-                initialValue: String(editingEntry.initialValue),
-                finalValue: String(editingEntry.finalValue),
-                inversionValue: String(editingEntry.inversionValue),
-              }}
-              onSave={handleEditSave}
-              onCancel={() => setEditingEntry(null)}
-              saving={saving}
-            />
-          )}
-        </CModalBody>
-      </CModal>
     </>
   )
 }

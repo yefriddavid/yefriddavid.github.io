@@ -6,6 +6,12 @@ import './GalleryPage.scss'
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 
 const Lightbox = ({ images, index, onClose, onPrev, onNext }) => {
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    setLoaded(false)
+  }, [index])
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -27,7 +33,14 @@ const Lightbox = ({ images, index, onClose, onPrev, onNext }) => {
       <button className="gp-lightbox__close" onClick={onClose}>✕</button>
       <button className="gp-lightbox__nav gp-lightbox__nav--prev" onClick={onPrev}>‹</button>
       <div className="gp-lightbox__stage">
-        <img key={index} className="gp-lightbox__img" src={images[index]} alt="" />
+        {!loaded && <div className="gp-lightbox__spinner" />}
+        <img
+          key={index}
+          className={`gp-lightbox__img${loaded ? '' : ' gp-lightbox__img--hidden'}`}
+          src={images[index]}
+          alt=""
+          onLoad={() => setLoaded(true)}
+        />
       </div>
       <button className="gp-lightbox__nav gp-lightbox__nav--next" onClick={onNext}>›</button>
       <div className="gp-lightbox__counter">{index + 1} / {images.length}</div>

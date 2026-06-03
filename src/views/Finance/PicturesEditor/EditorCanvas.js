@@ -1,7 +1,31 @@
 import React, { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'react'
 import { PICTURES_RULER_SIZE, PICTURES_UNITS_MAP, PICTURES_DEFAULT_NODE } from 'src/constants/finance'
+import { WOOD_PATTERN_DATA } from './woodPatterns'
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+
+// ─── SVG pattern definitions ──────────────────────────────────────────────────
+
+const WoodPatternDefs = () => (
+  <defs>
+    {WOOD_PATTERN_DATA.map(({ key, w, h, bg, lines }) => (
+      <pattern
+        key={key}
+        id={`pic-pat-${key}`}
+        x="0"
+        y="0"
+        width={w}
+        height={h}
+        patternUnits="userSpaceOnUse"
+      >
+        <rect width={w} height={h} fill={bg} />
+        {lines.map((l, i) => (
+          <path key={i} d={l.d} stroke={l.s} strokeWidth={l.w} fill="none" opacity={l.o} />
+        ))}
+      </pattern>
+    ))}
+  </defs>
+)
 
 // ─── Shape geometry helpers ───────────────────────────────────────────────────
 
@@ -29,8 +53,8 @@ const trianglePoints = (x, y, w, h) =>
   `${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}`
 
 const shapeAttrs = (n) => ({
-  fill: n.fill,
-  fillOpacity: n.fillOpacity ?? 1,
+  fill: n.fillPattern ? `url(#pic-pat-${n.fillPattern})` : n.fill,
+  fillOpacity: n.fillPattern ? 1 : (n.fillOpacity ?? 1),
   stroke: n.stroke,
   strokeWidth: n.strokeWidth ?? 2,
 })
@@ -629,6 +653,8 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
+            <WoodPatternDefs />
+
             {/* background */}
             <rect width={canvasW} height={canvasH} fill={canvas.bg ?? '#ffffff'} />
 

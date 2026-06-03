@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
+import { WOOD_PATTERN_DATA } from './woodPatterns'
 
 const SWATCH_KEY = 'pic_color_swatches'
 const DEFAULT_SWATCHES = ['#1a6bbf', '#e8e8e8', '#000000']
@@ -62,10 +63,62 @@ const SHAPE_ICONS = {
   elbow90: '⌐', elbowRound: '⌒', text: 'T', cota: '⟺', eraser: '✕',
 }
 
+const TextureSwatch = ({ pat, active, onClick }) => (
+  <button
+    title={pat.label}
+    onClick={onClick}
+    style={{
+      border: active ? '2px solid #4a9eff' : '2px solid #555',
+      borderRadius: 4,
+      padding: 0,
+      cursor: 'pointer',
+      background: 'none',
+      outline: 'none',
+      overflow: 'hidden',
+      width: 40,
+      height: 26,
+      flexShrink: 0,
+    }}
+  >
+    <svg width="40" height="26" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern
+          id={`swatch-${pat.key}`}
+          x="0"
+          y="0"
+          width={pat.w}
+          height={pat.h}
+          patternUnits="userSpaceOnUse"
+        >
+          <rect width={pat.w} height={pat.h} fill={pat.bg} />
+          {pat.lines.map((l, i) => (
+            <path key={i} d={l.d} stroke={l.s} strokeWidth={l.w} fill="none" opacity={l.o} />
+          ))}
+        </pattern>
+      </defs>
+      <rect width="40" height="26" fill={`url(#swatch-${pat.key})`} />
+      <text
+        x="20"
+        y="16"
+        textAnchor="middle"
+        fontSize="10"
+        fill="rgba(255,255,255,0.7)"
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        {pat.icon}
+      </text>
+    </svg>
+  </button>
+)
+
 const Inspector = ({ node, onChange, canvas }) => {
   if (!node) return null
 
   const set = (key, val) => onChange({ ...node, [key]: val })
+  const clearPattern = (patch = {}) => {
+    const { fillPattern: _, ...rest } = node
+    onChange({ ...rest, ...patch })
+  }
   const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
 
   return (
@@ -76,18 +129,35 @@ const Inspector = ({ node, onChange, canvas }) => {
           type="color"
           className="pic-inspector__input"
           value={node.fill}
-          onChange={(e) => set('fill', e.target.value)}
+          onChange={(e) => clearPattern({ fill: e.target.value })}
         />
-        <input
-          type="number"
-          className="pic-inspector__input"
-          min={0}
-          max={1}
-          step={0.05}
-          value={node.fillOpacity}
-          style={{ width: 50 }}
-          onChange={(e) => set('fillOpacity', parseFloat(e.target.value))}
-        />
+        {!node.fillPattern && (
+          <input
+            type="number"
+            className="pic-inspector__input"
+            min={0}
+            max={1}
+            step={0.05}
+            value={node.fillOpacity}
+            style={{ width: 50 }}
+            onChange={(e) => set('fillOpacity', parseFloat(e.target.value))}
+          />
+        )}
+      </div>
+      <div className="pic-inspector__row" style={{ flexWrap: 'wrap', gap: 4 }}>
+        <span className="pic-inspector__label">Textura</span>
+        {WOOD_PATTERN_DATA.map((pat) => (
+          <TextureSwatch
+            key={pat.key}
+            pat={pat}
+            active={node.fillPattern === pat.key}
+            onClick={() =>
+              node.fillPattern === pat.key
+                ? clearPattern()
+                : onChange({ ...node, fillPattern: pat.key })
+            }
+          />
+        ))}
       </div>
       <div className="pic-inspector__row">
         <span className="pic-inspector__label">Borde</span>

@@ -59,6 +59,13 @@ export const PICTURES_DEFAULT_NODE = {
   fontColor: '#000000',
 }
 
+export const PICTURES_FILL_PATTERNS = [
+  { key: 'wood-v-light', label: 'Madera vertical clara' },
+  { key: 'wood-v-dark',  label: 'Madera vertical oscura' },
+  { key: 'wood-h-light', label: 'Madera horizontal clara' },
+  { key: 'wood-h-dark',  label: 'Madera horizontal oscura' },
+]
+
 // ── 3D Scenes ─────────────────────────────────────────────────────────────────
 
 export const SCENES3D_OBJECT_TYPES = [
