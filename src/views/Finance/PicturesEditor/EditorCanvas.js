@@ -24,6 +24,28 @@ const WoodPatternDefs = () => (
         ))}
       </pattern>
     ))}
+
+    {/* Acrylic / frosted-glass filter */}
+    <filter id="pic-acrylic" x="-8%" y="-8%" width="116%" height="116%" colorInterpolationFilters="sRGB">
+      {/* blur the shape to simulate background bleed-through */}
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurred" />
+      {/* add a cool blue-white tint */}
+      <feColorMatrix in="blurred" type="matrix"
+        values="0.85 0.05 0.10 0  0.18
+                0.05 0.85 0.10 0  0.20
+                0.05 0.05 0.90 0  0.25
+                0    0    0    0.55 0"
+        result="tinted" />
+      {/* specular highlight — thin bright line at the top */}
+      <feFlood floodColor="white" floodOpacity="0.45" result="highlight" />
+      <feComposite in="highlight" in2="SourceGraphic" operator="in" result="highlightMasked" />
+      {/* merge: tinted blur → original (very transparent) → highlight */}
+      <feMerge>
+        <feMergeNode in="tinted" />
+        <feMergeNode in="SourceGraphic" />
+        <feMergeNode in="highlightMasked" />
+      </feMerge>
+    </filter>
   </defs>
 )
 
@@ -64,8 +86,8 @@ const shapeAttrs = (n) => ({
 const shadowStyle = (s) => {
   if (!s || s <= 0) return {}
   const off = Math.round(s * 1.2)
-  const blur = Math.round(s * 0.8)
-  const alpha = Math.min(0.7, 0.25 + s * 0.025).toFixed(2)
+  const blur = Math.round(s * 1.5)
+  const alpha = Math.min(0.6, 0.2 + s * 0.02).toFixed(2)
   return { filter: `drop-shadow(${off}px ${off}px ${blur}px rgba(0,0,0,${alpha}))` }
 }
 
@@ -96,10 +118,6 @@ const ShapeElement = ({ node, selected, onMouseDown }) => {
     return <polygon points={pts} {...attrs} {...base} />
   }
   if (type === 'elbowRound') {
-    // Curved pipe bend: two concentric arcs sharing the same center of curvature.
-    // Ri = inner bend radius (node.rx), Ro = Ri + aw.
-    // Center of arcs at (x+aw+Ri, y+h-aw-Ri).
-    // Vertical arm runs on the left, horizontal arm runs on the bottom.
     const aw = Math.max(4, Math.min(node.armWidth ?? 24, Math.min(w, h) * 0.8))
     const maxRi = Math.max(1, Math.min(w, h) - aw - 2)
     const Ri = Math.max(1, Math.min(node.rx ?? 12, maxRi))
