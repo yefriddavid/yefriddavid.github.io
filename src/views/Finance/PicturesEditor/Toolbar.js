@@ -423,6 +423,10 @@ const Inspector = ({ node, onChange, canvas }) => {
     const { fillPattern: _, ...rest } = node
     onChange({ ...rest, ...patch })
   }
+  const clearStrokePattern = (patch = {}) => {
+    const { strokePattern: _, ...rest } = node
+    onChange({ ...rest, ...patch })
+  }
   const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
 
   return (
@@ -463,14 +467,31 @@ const Inspector = ({ node, onChange, canvas }) => {
           />
         )}
       </div>
+      <div className="pic-inspector__row" style={{ flexWrap: 'wrap', gap: 4 }}>
+        <span className="pic-inspector__label">Textura borde</span>
+        {ALL_PATTERNS.map((pat) => (
+          <TextureSwatch
+            key={pat.key}
+            pat={pat}
+            active={node.strokePattern === pat.key}
+            onClick={() =>
+              node.strokePattern === pat.key
+                ? clearStrokePattern()
+                : onChange({ ...node, strokePattern: pat.key })
+            }
+          />
+        ))}
+      </div>
       <div className="pic-inspector__row">
         <span className="pic-inspector__label">Borde</span>
-        <input
-          type="color"
-          className="pic-inspector__input"
-          value={node.stroke}
-          onChange={(e) => set('stroke', e.target.value)}
-        />
+        {!node.strokePattern && (
+          <input
+            type="color"
+            className="pic-inspector__input"
+            value={node.stroke}
+            onChange={(e) => clearStrokePattern({ stroke: e.target.value })}
+          />
+        )}
         <input
           type="number"
           className="pic-inspector__input"

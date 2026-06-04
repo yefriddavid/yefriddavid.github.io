@@ -68,6 +68,7 @@ const trianglePoints = (x, y, w, h) =>
 
 const shapeAttrs = (n) => {
   const isAcrylic = n.fillPattern?.startsWith('acrylic')
+  const isStrokeAcrylic = n.strokePattern?.startsWith('acrylic')
   return {
     fill: isAcrylic
       ? `url(#grad-${n.fillPattern})`
@@ -75,7 +76,11 @@ const shapeAttrs = (n) => {
         ? `url(#pic-pat-${n.fillPattern})`
         : n.fill,
     fillOpacity: n.fillPattern ? 1 : (n.fillOpacity ?? 1),
-    stroke: n.stroke,
+    stroke: isStrokeAcrylic
+      ? `url(#grad-${n.strokePattern})`
+      : n.strokePattern
+        ? `url(#pic-pat-${n.strokePattern})`
+        : n.stroke,
     strokeWidth: n.strokeWidth ?? 2,
   }
 }
