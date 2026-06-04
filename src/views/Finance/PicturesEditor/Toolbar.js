@@ -1,6 +1,213 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
 import { WOOD_PATTERN_DATA } from './woodPatterns'
+
+// ── Predeterminados ───────────────────────────────────────────────────────────
+
+const PREDET_KEY = 'pic-color-predef'
+const PREDET_DEFAULTS = [
+  '#E8A020', // amarillo mostaza
+  '#EDE4CC', // crema fondo
+  '#2B7A8A', // verde azulado teal
+  '#D4603A', // naranja terracota
+  '#1A2840', // azul noche
+  '#1A1A1A', // negro
+  '#FFFFFF',  // blanco
+]
+
+const loadPredet = () => {
+  try {
+    const raw = localStorage.getItem(PREDET_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch {}
+  return [...PREDET_DEFAULTS]
+}
+
+const savePredet = (colors) => {
+  try { localStorage.setItem(PREDET_KEY, JSON.stringify(colors)) } catch {}
+}
+
+// ── ColorPicker con tab Predeterminados ───────────────────────────────────────
+
+const ColorPicker = ({ value, onChange, label, canSave = false }) => {
+  const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState('picker')
+  const [predet, setPredet] = useState(loadPredet)
+  const [draft, setDraft] = useState(value)
+  const [popupPos, setPopupPos] = useState({ top: 0, left: 0 })
+  const btnRef = useRef(null)
+  const popupRef = useRef(null)
+  const addRef = useRef(null)
+
+  useEffect(() => { setDraft(value) }, [value])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (
+        btnRef.current && !btnRef.current.contains(e.target) &&
+        popupRef.current && !popupRef.current.contains(e.target)
+      ) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const handleOpen = () => {
+    if (open) { setOpen(false); return }
+    const rect = btnRef.current?.getBoundingClientRect()
+    const popupH = 180
+    if (rect) setPopupPos({ top: rect.top - popupH - 6, left: rect.left })
+    setOpen(true)
+  }
+
+  const applyColor = useCallback((color) => {
+    onChange(color)
+    setOpen(false)
+  }, [onChange])
+
+  const addPredet = (color) => {
+    if (predet.includes(color)) return
+    const next = [color, ...predet]
+    setPredet(next)
+    savePredet(next)
+  }
+
+  const removePredet = (color) => {
+    const next = predet.filter((c) => c !== color)
+    setPredet(next)
+    savePredet(next)
+  }
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        title={label}
+        onClick={handleOpen}
+        style={{
+          width: 26, height: 22, padding: 1,
+          border: '1px solid #555', borderRadius: 3,
+          background: value, cursor: 'pointer', flexShrink: 0,
+        }}
+      />
+      {open && (
+        <div ref={popupRef} style={{
+          position: 'fixed', zIndex: 99999,
+          top: popupPos.top, left: popupPos.left,
+          background: '#1e1e2e', border: '1px solid #444', borderRadius: 6,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)', width: 200, overflow: 'hidden',
+        }}>
+          {/* tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #333' }}>
+            {['picker', 'predet'].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  flex: 1, padding: '6px 4px', fontSize: 11, border: 'none', cursor: 'pointer',
+                  background: tab === t ? '#2d2d3e' : 'transparent',
+                  color: tab === t ? '#e8e8e8' : '#888',
+                  borderBottom: tab === t ? '2px solid #4a9eff' : '2px solid transparent',
+                }}
+              >
+                {t === 'picker' ? 'Color' : 'Predeterminados'}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'picker' && (
+            <div style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="color"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  style={{ width: 36, height: 30, border: '1px solid #555', borderRadius: 4, padding: 2, background: 'none', cursor: 'pointer', flexShrink: 0 }}
+                />
+                <input
+                  type="text"
+                  value={draft}
+                  maxLength={7}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setDraft(v)
+                    if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange(v)
+                  }}
+                  style={{ flex: 1, background: '#2d2d3e', border: '1px solid #444', borderRadius: 4, color: '#e8e8e8', fontSize: 12, padding: '4px 6px', fontFamily: 'monospace' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => applyColor(draft)}
+                  style={{ flex: 1, fontSize: 11, padding: '4px 0', background: '#4a9eff', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                >
+                  Aplicar
+                </button>
+                {canSave && (
+                  <button
+                    onClick={() => { addPredet(draft); applyColor(draft) }}
+                    title="Aplicar y guardar en predeterminados"
+                    style={{ flex: 1, fontSize: 11, padding: '4px 0', background: '#2d5a2d', color: '#aee', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                  >
+                    + Guardar
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'predet' && (
+            <div style={{ padding: 8 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                {predet.map((color) => (
+                  <div key={color} style={{ position: 'relative' }}>
+                    <button
+                      title={color}
+                      onClick={() => applyColor(color)}
+                      style={{
+                        width: 28, height: 28, border: color === value ? '2px solid #4a9eff' : '1px solid #555',
+                        borderRadius: 4, background: color, cursor: 'pointer', display: 'block',
+                      }}
+                    />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removePredet(color) }}
+                      title="Quitar"
+                      style={{
+                        position: 'absolute', top: -5, right: -5, width: 13, height: 13,
+                        borderRadius: '50%', background: '#555', border: 'none', color: '#fff',
+                        fontSize: 9, lineHeight: '13px', textAlign: 'center', cursor: 'pointer', padding: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid #333', paddingTop: 6 }}>
+                <input
+                  ref={addRef}
+                  type="color"
+                  defaultValue="#4488ff"
+                  style={{ width: 26, height: 22, border: '1px solid #555', borderRadius: 3, background: 'none', cursor: 'pointer', padding: 1 }}
+                />
+                <button
+                  onClick={() => addPredet(addRef.current?.value ?? '#4488ff')}
+                  style={{ fontSize: 11, padding: '3px 8px', background: '#2d2d3e', color: '#aaa', border: '1px solid #444', borderRadius: 4, cursor: 'pointer' }}
+                >
+                  + Agregar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
 
 const SWATCH_KEY = 'pic_color_swatches'
 const DEFAULT_SWATCHES = ['#1a6bbf', '#e8e8e8', '#000000']
@@ -18,7 +225,20 @@ const loadSwatches = () => {
 
 const ColorSwatches = ({ selectedNode, onNodeChange }) => {
   const [swatches, setSwatches] = useState(loadSwatches)
-  const pickerRefs = useRef([])
+  const [popup, setPopup] = useState(null) // { idx, pos, mode: 'apply'|'picker' }
+  const [searchQuery, setSearchQuery] = useState('')
+  const [predet] = useState(loadPredet)
+  const [pickerDraft, setPickerDraft] = useState('#000000')
+  const popupRef = useRef(null)
+
+  useEffect(() => {
+    if (!popup) return
+    const handler = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) setPopup(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [popup])
 
   const updateSwatch = (i, color) => {
     const next = swatches.map((c, idx) => (idx === i ? color : c))
@@ -26,34 +246,110 @@ const ColorSwatches = ({ selectedNode, onNodeChange }) => {
     sessionStorage.setItem(SWATCH_KEY, JSON.stringify(next))
   }
 
-  const handleClick = (i) => {
+  const handleSwatchClick = (i, e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const pos = { top: rect.top - 10, left: rect.right + 8 }
     if (selectedNode) {
-      onNodeChange({ ...selectedNode, stroke: swatches[i] })
+      setPopup({ idx: i, pos, mode: 'apply' })
     } else {
-      pickerRefs.current[i]?.click()
+      setPickerDraft(swatches[i])
+      setSearchQuery('')
+      setPopup({ idx: i, pos, mode: 'picker' })
     }
   }
 
+  const applyToNode = (idx, target) => {
+    const color = swatches[idx]
+    let updated = { ...selectedNode }
+    if (target === 'fill'   || target === 'both') updated = { ...updated, fill: color }
+    if (target === 'stroke' || target === 'both') updated = { ...updated, stroke: color }
+    onNodeChange(updated)
+    setPopup(null)
+  }
+
+  const allColors = [...new Set([...predet, ...swatches])]
+  const filteredColors = allColors.filter((c) =>
+    c.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
   return (
-    <div className="pic-swatches">
-      {swatches.map((color, i) => (
-        <div key={i} className="pic-swatches__item">
-          <div
-            className="pic-swatches__swatch"
-            style={{ background: color }}
-            title={selectedNode ? `Aplicar ${color} al relleno` : 'Editar color'}
-            onClick={() => handleClick(i)}
+    <>
+      <div className="pic-swatches">
+        {swatches.map((color, i) => (
+          <button
+            key={i}
+            title={selectedNode ? `Aplicar ${color}` : `Editar swatch ${color}`}
+            onClick={(e) => handleSwatchClick(i, e)}
+            style={{
+              width: 26, height: 22, padding: 1, border: '1px solid #555',
+              borderRadius: 3, background: color, cursor: 'pointer', flexShrink: 0,
+            }}
           />
-          <input
-            ref={(el) => { pickerRefs.current[i] = el }}
-            type="color"
-            value={color}
-            onChange={(e) => updateSwatch(i, e.target.value)}
-            className="pic-swatches__picker"
-          />
+        ))}
+      </div>
+
+      {popup && (
+        <div ref={popupRef} style={{
+          position: 'fixed', zIndex: 99999,
+          top: popup.pos.top, left: popup.pos.left,
+          background: '#1e1e2e', border: '1px solid #444', borderRadius: 6,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.6)', width: 200, overflow: 'hidden',
+        }}>
+
+          {/* modo: aplicar al nodo */}
+          {popup.mode === 'apply' && (
+            <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: 10, color: '#888', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 14, height: 14, background: swatches[popup.idx], borderRadius: 2, border: '1px solid #555', display: 'inline-block' }} />
+                Aplicar {swatches[popup.idx]}
+              </div>
+              {[['fill', 'Relleno'], ['stroke', 'Borde'], ['both', 'Ambos']].map(([target, label]) => (
+                <button key={target} onClick={() => applyToNode(popup.idx, target)} style={{
+                  background: '#2d2d3e', border: '1px solid #444', borderRadius: 4,
+                  color: '#e8e8e8', fontSize: 12, padding: '5px 8px', cursor: 'pointer', textAlign: 'left',
+                }}>
+                  {label}
+                </button>
+              ))}
+              <div style={{ borderTop: '1px solid #333', marginTop: 2, paddingTop: 6 }}>
+                <button onClick={() => { setPickerDraft(swatches[popup.idx]); setSearchQuery(''); setPopup((p) => ({ ...p, mode: 'picker' })) }} style={{
+                  background: 'none', border: 'none', color: '#888', fontSize: 11, cursor: 'pointer', padding: '2px 0',
+                }}>
+                  ✎ Editar color del swatch
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* modo: picker / buscar */}
+          {popup.mode === 'picker' && (
+            <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input type="color" value={pickerDraft} onChange={(e) => setPickerDraft(e.target.value)}
+                  style={{ width: 30, height: 24, border: '1px solid #555', borderRadius: 3, padding: 1, background: 'none', cursor: 'pointer' }} />
+                <input type="text" value={pickerDraft} maxLength={7}
+                  onChange={(e) => { const v = e.target.value; setPickerDraft(v); setSearchQuery(v) }}
+                  style={{ flex: 1, background: '#2d2d3e', border: '1px solid #444', borderRadius: 4, color: '#e8e8e8', fontSize: 12, padding: '3px 6px', fontFamily: 'monospace' }} />
+              </div>
+              <input type="text" placeholder="Buscar…" value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ background: '#2d2d3e', border: '1px solid #444', borderRadius: 4, color: '#e8e8e8', fontSize: 11, padding: '3px 6px' }} />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 100, overflowY: 'auto' }}>
+                {filteredColors.map((color) => (
+                  <button key={color} title={color} onClick={() => { updateSwatch(popup.idx, color); setPopup(null) }}
+                    style={{ width: 26, height: 22, background: color, border: swatches[popup.idx] === color ? '2px solid #4a9eff' : '1px solid #555', borderRadius: 3, cursor: 'pointer' }} />
+                ))}
+              </div>
+              <button onClick={() => { updateSwatch(popup.idx, pickerDraft); setPopup(null) }} style={{
+                background: '#4a9eff', border: 'none', borderRadius: 4, color: '#fff', fontSize: 11, padding: '4px 0', cursor: 'pointer',
+              }}>
+                Aplicar al swatch
+              </button>
+            </div>
+          )}
         </div>
-      ))}
-    </div>
+      )}
+    </>
   )
 }
 
@@ -206,6 +502,21 @@ const Inspector = ({ node, onChange, canvas }) => {
           max={359}
           value={Math.round(node.rotation)}
           onChange={(e) => set('rotation', parseFloat(e.target.value) || 0)}
+        />
+      </div>
+      <div className="pic-inspector__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="pic-inspector__label">3D</span>
+          <span style={{ fontSize: 10, color: '#888' }}>{node.shadow ?? 0}</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={20}
+          step={1}
+          value={node.shadow ?? 0}
+          onChange={(e) => set('shadow', parseInt(e.target.value))}
+          style={{ width: '100%', accentColor: '#4a9eff' }}
         />
       </div>
       {(node.type === 'roundRect' || node.type === 'elbowRound') && (

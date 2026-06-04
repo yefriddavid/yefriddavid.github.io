@@ -61,6 +61,14 @@ const shapeAttrs = (n) => ({
 
 // ─── Shape renderer ───────────────────────────────────────────────────────────
 
+const shadowStyle = (s) => {
+  if (!s || s <= 0) return {}
+  const off = Math.round(s * 1.2)
+  const blur = Math.round(s * 0.8)
+  const alpha = Math.min(0.7, 0.25 + s * 0.025).toFixed(2)
+  return { filter: `drop-shadow(${off}px ${off}px ${blur}px rgba(0,0,0,${alpha}))` }
+}
+
 const ShapeElement = ({ node, selected, onMouseDown }) => {
   const { x, y, w, h, rotation, type } = node
   const cx = x + w / 2
@@ -71,7 +79,7 @@ const ShapeElement = ({ node, selected, onMouseDown }) => {
   const base = {
     transform,
     onMouseDown,
-    style: { cursor: node.locked ? 'not-allowed' : 'move' },
+    style: { cursor: node.locked ? 'not-allowed' : 'move', ...shadowStyle(node.shadow) },
     className: `pic-canvas__shape${selected ? ' pic-canvas__shape--selected' : ''}${node.locked ? ' pic-canvas__shape--locked' : ''}`,
   }
 

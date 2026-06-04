@@ -60,10 +60,11 @@ export const PICTURES_DEFAULT_NODE = {
 }
 
 export const PICTURES_FILL_PATTERNS = [
-  { key: 'wood-v-light', label: 'Madera vertical clara' },
-  { key: 'wood-v-dark',  label: 'Madera vertical oscura' },
-  { key: 'wood-h-light', label: 'Madera horizontal clara' },
-  { key: 'wood-h-dark',  label: 'Madera horizontal oscura' },
+  { key: 'wood-v-light',  label: 'Madera vertical clara' },
+  { key: 'wood-v-dark',   label: 'Madera vertical oscura' },
+  { key: 'wood-v-walnut', label: 'Nogal vertical' },
+  { key: 'wood-h-light',  label: 'Madera horizontal clara' },
+  { key: 'wood-h-dark',   label: 'Madera horizontal oscura' },
 ]
 
 // ── 3D Scenes ─────────────────────────────────────────────────────────────────
