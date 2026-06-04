@@ -55,7 +55,7 @@ export const sendDesignMessage = async ({ messages, canvasConfig, nodes }) => {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
+      max_tokens: 8096,
       system: SYSTEM_PROMPT,
       messages: [
         { role: 'user', content: contextMsg },

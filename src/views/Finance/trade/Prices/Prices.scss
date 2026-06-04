@@ -1,0 +1,252 @@
+.crypto-prices {
+  padding: 1.5rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--cui-body-color);
+  }
+
+  &__select {
+    appearance: none;
+    background: var(--cui-body-bg);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 8px;
+    color: var(--cui-body-color);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.45rem 2.2rem 0.45rem 0.85rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--cui-primary);
+    }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--live {
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+      animation: cp-pulse 1.8s ease-in-out infinite;
+    }
+
+    &--offline {
+      background: var(--cui-secondary-color);
+    }
+  }
+
+  &__status {
+    font-size: 0.75rem;
+    color: var(--cui-secondary-color);
+  }
+
+  &__card {
+    background: var(--cui-body-bg);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 480px;
+    position: relative;
+
+    &:fullscreen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+      background: var(--cui-body-bg);
+      padding: 4rem;
+
+      .crypto-prices__symbol { font-size: 1.2rem; }
+      .crypto-prices__price  { font-size: 7rem; }
+      .crypto-prices__change { font-size: 2rem; }
+      .crypto-prices__stats  { width: 100%; max-width: 640px; }
+      .crypto-prices__stat-label { font-size: 0.9rem; }
+      .crypto-prices__stat-value { font-size: 1.5rem; }
+      .crypto-prices__fullscreen-btn { top: 1.5rem; right: 1.5rem; }
+    }
+  }
+
+  &__fullscreen-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+    background: transparent;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    color: var(--cui-secondary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      color: var(--cui-body-color);
+      border-color: var(--cui-primary);
+      background: var(--cui-primary-bg-subtle, rgba(var(--cui-primary-rgb), 0.08));
+    }
+  }
+
+  &__symbol {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--cui-secondary-color);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  &__price {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--cui-body-color);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.6rem;
+  }
+
+  &__change {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+
+    &--positive {
+      color: #22c55e;
+    }
+
+    &--negative {
+      color: #ef4444;
+    }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    border-top: 1px solid var(--cui-border-color);
+    padding-top: 1.25rem;
+  }
+
+  &__stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cui-secondary-color);
+  }
+
+  &__stat-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--cui-body-color);
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--cui-secondary-color);
+    font-size: 0.9rem;
+    padding: 1.5rem 0;
+  }
+
+  &__mini-list {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__mini-card {
+    background: var(--cui-tertiary-bg, var(--cui-body-bg));
+    border: 1px solid var(--cui-border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    min-width: 140px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+
+    &--active {
+      border-color: var(--cui-primary);
+    }
+
+    &:hover {
+      border-color: var(--cui-primary);
+    }
+  }
+
+  &__mini-symbol {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--cui-secondary-color);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+
+  &__mini-price {
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--cui-body-color);
+  }
+
+  &__mini-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.1rem;
+
+    &--positive {
+      color: #22c55e;
+    }
+
+    &--negative {
+      color: #ef4444;
+    }
+  }
+}
+
+@keyframes cp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

@@ -11,6 +11,7 @@ import {
   cilCarAlt,
   cilCash,
   cilCheck,
+  cilDollar,
   cilFile,
   cilFolder,
   cilGroup,
@@ -135,6 +136,25 @@ const getNav = (t, role) => {
           name: 'Custom Grid Trades',
           to: '/finance/trade/custom-grid',
           icon: <CIcon icon={cilBarChart} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavGroup,
+          name: 'Tools',
+          icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+          items: [
+            {
+              component: CNavItem,
+              name: 'Calculators',
+              to: '/finance/trade/tools',
+              icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Prices',
+              to: '/finance/trade/prices',
+              icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
+            },
+          ],
         },
       ],
     })
