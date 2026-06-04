@@ -34,7 +34,7 @@ const savePredet = (colors) => {
 
 // ── ColorPicker con tab Predeterminados ───────────────────────────────────────
 
-const ColorPicker = ({ value, onChange, label, canSave = false }) => {
+export const ColorPicker = ({ value, onChange, label, canSave = false }) => {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState('picker')
   const [predet, setPredet] = useState(loadPredet)
@@ -62,7 +62,13 @@ const ColorPicker = ({ value, onChange, label, canSave = false }) => {
     if (open) { setOpen(false); return }
     const rect = btnRef.current?.getBoundingClientRect()
     const popupH = 180
-    if (rect) setPopupPos({ top: rect.top - popupH - 6, left: rect.left })
+    if (rect) {
+      const spaceAbove = rect.top
+      const top = spaceAbove >= popupH + 8
+        ? rect.top - popupH - 6
+        : rect.bottom + 6
+      setPopupPos({ top, left: rect.left })
+    }
     setOpen(true)
   }
 

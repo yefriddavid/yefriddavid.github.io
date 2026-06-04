@@ -5,7 +5,7 @@ import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
 import { PICTURES_DEFAULT_CANVAS, PICTURES_UNITS, PICTURES_UNITS_MAP } from 'src/constants/finance'
 import { prefStorage } from 'src/utils/storage'
-import Toolbar from './Toolbar'
+import Toolbar, { ColorPicker } from './Toolbar'
 import EditorCanvas from './EditorCanvas'
 import NodesPanel from './NodesPanel'
 import DesignChat from './DesignChat'
@@ -382,11 +382,11 @@ const PicturesEditor = () => {
             Snap
           </label>
           <span>Fondo</span>
-          <input
-            type="color"
+          <ColorPicker
+            label="Color de fondo"
             value={canvas.bg ?? '#ffffff'}
-            style={{ width: 30, height: 22, padding: 1, border: '1px solid #555', borderRadius: 3, cursor: 'pointer', background: 'transparent' }}
-            onChange={(e) => setCanvas((c) => ({ ...c, bg: e.target.value }))}
+            canSave
+            onChange={(color) => setCanvas((c) => ({ ...c, bg: color }))}
           />
         </div>
 
