@@ -31,6 +31,7 @@ const GalleryPage = React.lazy(() => import('./views/Public/GalleryPage'))
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
+const LoginSuper = React.lazy(() => import('./views/login/LoginSuper'))
 const Register = React.lazy(() => import('./views/register/Register'))
 const Page404 = React.lazy(() => import('./views/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/page500/Page500'))
@@ -141,6 +142,7 @@ const App = () => {
         >
           <Routes>
             <Route element={<EmptyLayout />}>
+              <Route path="/login/super" element={<LoginSuper />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/404" element={<Page404 />} />

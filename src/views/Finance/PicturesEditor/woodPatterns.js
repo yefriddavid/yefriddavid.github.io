@@ -1,3 +1,24 @@
+export const ACRYLIC_PATTERN_DATA = [
+  {
+    key: 'acrylic-green',
+    label: 'Acrílico verde',
+    icon: '◈',
+    w: 4,
+    h: 4,
+    bg: '#b4d820',
+    lines: [],
+  },
+  {
+    key: 'acrylic-black',
+    label: 'Acrílico negro',
+    icon: '◈',
+    w: 4,
+    h: 4,
+    bg: '#141414',
+    lines: [],
+  },
+]
+
 export const WOOD_PATTERN_DATA = [
   {
     key: 'wood-v-light',

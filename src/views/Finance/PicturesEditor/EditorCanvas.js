@@ -1,6 +1,8 @@
 import React, { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'react'
 import { PICTURES_RULER_SIZE, PICTURES_UNITS_MAP, PICTURES_DEFAULT_NODE } from 'src/constants/finance'
-import { WOOD_PATTERN_DATA } from './woodPatterns'
+import { WOOD_PATTERN_DATA, ACRYLIC_PATTERN_DATA } from './woodPatterns'
+
+const ALL_PATTERNS = [...ACRYLIC_PATTERN_DATA, ...WOOD_PATTERN_DATA]
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 
@@ -8,7 +10,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 
 const WoodPatternDefs = () => (
   <defs>
-    {WOOD_PATTERN_DATA.map(({ key, w, h, bg, lines }) => (
+    {ALL_PATTERNS.map(({ key, w, h, bg, lines }) => (
       <pattern
         key={key}
         id={`pic-pat-${key}`}
@@ -25,27 +27,17 @@ const WoodPatternDefs = () => (
       </pattern>
     ))}
 
-    {/* Acrylic / frosted-glass filter */}
-    <filter id="pic-acrylic" x="-8%" y="-8%" width="116%" height="116%" colorInterpolationFilters="sRGB">
-      {/* blur the shape to simulate background bleed-through */}
-      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurred" />
-      {/* add a cool blue-white tint */}
-      <feColorMatrix in="blurred" type="matrix"
-        values="0.85 0.05 0.10 0  0.18
-                0.05 0.85 0.10 0  0.20
-                0.05 0.05 0.90 0  0.25
-                0    0    0    0.55 0"
-        result="tinted" />
-      {/* specular highlight — thin bright line at the top */}
-      <feFlood floodColor="white" floodOpacity="0.45" result="highlight" />
-      <feComposite in="highlight" in2="SourceGraphic" operator="in" result="highlightMasked" />
-      {/* merge: tinted blur → original (very transparent) → highlight */}
-      <feMerge>
-        <feMergeNode in="tinted" />
-        <feMergeNode in="SourceGraphic" />
-        <feMergeNode in="highlightMasked" />
-      </feMerge>
-    </filter>
+    {/* Acrylic gradients — diagonal light top-left → dark bottom-right */}
+    <linearGradient id="grad-acrylic-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stopColor="#d8f440" />
+      <stop offset="35%"  stopColor="#b4d820" />
+      <stop offset="100%" stopColor="#6e8a08" />
+    </linearGradient>
+    <linearGradient id="grad-acrylic-black" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stopColor="#303030" />
+      <stop offset="40%"  stopColor="#141414" />
+      <stop offset="100%" stopColor="#020202" />
+    </linearGradient>
   </defs>
 )
 
@@ -74,12 +66,19 @@ const starPoints = (cx, cy, outerR, nPoints) => {
 const trianglePoints = (x, y, w, h) =>
   `${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}`
 
-const shapeAttrs = (n) => ({
-  fill: n.fillPattern ? `url(#pic-pat-${n.fillPattern})` : n.fill,
-  fillOpacity: n.fillPattern ? 1 : (n.fillOpacity ?? 1),
-  stroke: n.stroke,
-  strokeWidth: n.strokeWidth ?? 2,
-})
+const shapeAttrs = (n) => {
+  const isAcrylic = n.fillPattern?.startsWith('acrylic')
+  return {
+    fill: isAcrylic
+      ? `url(#grad-${n.fillPattern})`
+      : n.fillPattern
+        ? `url(#pic-pat-${n.fillPattern})`
+        : n.fill,
+    fillOpacity: n.fillPattern ? 1 : (n.fillOpacity ?? 1),
+    stroke: n.stroke,
+    strokeWidth: n.strokeWidth ?? 2,
+  }
+}
 
 // ─── Shape renderer ───────────────────────────────────────────────────────────
 

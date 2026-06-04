@@ -348,6 +348,42 @@
   80%       { transform: translateX(5px); }
 }
 
+/* ── Captcha ────────────────────────────────────────────────────── */
+.login-page__captcha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-page__captcha-challenge {
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Courier New', monospace;
+  user-select: none;
+}
+
+.login-page__captcha-input {
+  padding-left: 14px;
+  width: 90px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+
+  /* hide number arrows */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  -moz-appearance: textfield;
+}
+
 /* ── Terminal blink ─────────────────────────────────────────────── */
 .login-page__cursor {
   display: inline-block;

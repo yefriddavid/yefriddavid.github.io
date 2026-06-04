@@ -140,8 +140,15 @@ const fieldError = (err) =>
     </span>
   ) : null
 
+// ── Captcha ────────────────────────────────────────────────────────
+const genCaptcha = () => {
+  const a = Math.floor(Math.random() * 9) + 1
+  const b = Math.floor(Math.random() * 9) + 1
+  return { a, b, answer: a + b }
+}
+
 // ── Component ──────────────────────────────────────────────────────
-const Login = () => {
+const Login = ({ captcha: requireCaptcha = true }) => {
   const cookieUsername = getCookie('username') || ''
   const cookiePassword = getCookie('password') || ''
   const navigate = useNavigate()
@@ -152,6 +159,10 @@ const Login = () => {
   const [shake, setShake] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const shakeTimerRef = useRef(null)
+
+  const [captchaQ, setCaptchaQ] = useState(genCaptcha)
+  const [captchaAnswer, setCaptchaAnswer] = useState('')
+  const [captchaError, setCaptchaError] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -176,6 +187,15 @@ const Login = () => {
 
   const onSubmit = async ({ username, password, rememberMe }) => {
     if (loading) return
+    if (requireCaptcha) {
+      if (parseInt(captchaAnswer, 10) !== captchaQ.answer) {
+        setCaptchaError(true)
+        setCaptchaQ(genCaptcha())
+        setCaptchaAnswer('')
+        return
+      }
+      setCaptchaError(false)
+    }
     setLoading(true)
     setError(null)
     try {
@@ -284,6 +304,33 @@ const Login = () => {
             </div>
             {fieldError(errors.password)}
           </div>
+
+          {requireCaptcha && (
+            <div className="login-page__field">
+              <label className="login-page__label">Verificación</label>
+              <div className="login-page__captcha">
+                <span className="login-page__captcha-challenge">
+                  {captchaQ.a} + {captchaQ.b} =
+                </span>
+                <input
+                  className="login-page__input login-page__captcha-input"
+                  type="number"
+                  placeholder="?"
+                  value={captchaAnswer}
+                  onChange={(e) => {
+                    setCaptchaAnswer(e.target.value)
+                    setCaptchaError(false)
+                  }}
+                  onKeyDown={handleKeyDown}
+                />
+              </div>
+              {captchaError && (
+                <span style={{ fontSize: 11, color: '#ff6b6b', display: 'block', marginTop: 4 }}>
+                  Respuesta incorrecta
+                </span>
+              )}
+            </div>
+          )}
 
           {error && (
             <div

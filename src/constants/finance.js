@@ -60,6 +60,8 @@ export const PICTURES_DEFAULT_NODE = {
 }
 
 export const PICTURES_FILL_PATTERNS = [
+  { key: 'acrylic-green', label: 'Acrílico verde' },
+  { key: 'acrylic-black', label: 'Acrílico negro' },
   { key: 'wood-v-light',  label: 'Madera vertical clara' },
   { key: 'wood-v-dark',   label: 'Madera vertical oscura' },
   { key: 'wood-v-walnut', label: 'Nogal vertical' },

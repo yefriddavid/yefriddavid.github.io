@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { PICTURES_SHAPE_TOOLS, PICTURES_UNITS_MAP } from 'src/constants/finance'
-import { WOOD_PATTERN_DATA } from './woodPatterns'
+import { WOOD_PATTERN_DATA, ACRYLIC_PATTERN_DATA } from './woodPatterns'
+
+const ALL_PATTERNS = [...ACRYLIC_PATTERN_DATA, ...WOOD_PATTERN_DATA]
 
 // ── Predeterminados ───────────────────────────────────────────────────────────
 
@@ -419,6 +421,21 @@ const Inspector = ({ node, onChange, canvas }) => {
 
   return (
     <div className="pic-inspector">
+      <div className="pic-inspector__row" style={{ flexWrap: 'wrap', gap: 4 }}>
+        <span className="pic-inspector__label">Textura</span>
+        {ALL_PATTERNS.map((pat) => (
+          <TextureSwatch
+            key={pat.key}
+            pat={pat}
+            active={node.fillPattern === pat.key}
+            onClick={() =>
+              node.fillPattern === pat.key
+                ? clearPattern()
+                : onChange({ ...node, fillPattern: pat.key })
+            }
+          />
+        ))}
+      </div>
       <div className="pic-inspector__row">
         <span className="pic-inspector__label">Relleno</span>
         <input
@@ -439,21 +456,6 @@ const Inspector = ({ node, onChange, canvas }) => {
             onChange={(e) => set('fillOpacity', parseFloat(e.target.value))}
           />
         )}
-      </div>
-      <div className="pic-inspector__row" style={{ flexWrap: 'wrap', gap: 4 }}>
-        <span className="pic-inspector__label">Textura</span>
-        {WOOD_PATTERN_DATA.map((pat) => (
-          <TextureSwatch
-            key={pat.key}
-            pat={pat}
-            active={node.fillPattern === pat.key}
-            onClick={() =>
-              node.fillPattern === pat.key
-                ? clearPattern()
-                : onChange({ ...node, fillPattern: pat.key })
-            }
-          />
-        ))}
       </div>
       <div className="pic-inspector__row">
         <span className="pic-inspector__label">Borde</span>
