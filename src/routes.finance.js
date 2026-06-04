@@ -15,10 +15,6 @@ const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects
 const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
 const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
-const FinancePictures = React.lazy(() => import('./views/Finance/Pictures'))
-const FinancePicturesEditor = React.lazy(() => import('./views/Finance/PicturesEditor'))
-const FinanceScenes3D = React.lazy(() => import('./views/Finance/Scenes3D'))
-const FinanceScenes3DEditor = React.lazy(() => import('./views/Finance/Scenes3DEditor'))
 const IncreaseDecrease = React.lazy(
   () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
@@ -41,10 +37,6 @@ const financeRoutes = [
   { path: '/assets', element: Assets, landingPage: true },
   { path: '/trade/grid', element: GridTrade, landingPage: true },
   { path: '/trade/custom-grid', element: CustomGridTrade, landingPage: true },
-  { path: '/pictures', element: FinancePictures, landingPage: true },
-  { path: '/pictures/:id', element: FinancePicturesEditor },
-  { path: '/scenes3d', element: FinanceScenes3D, landingPage: true },
-  { path: '/scenes3d/:id', element: FinanceScenes3DEditor },
   { path: '/tools/adjustments', element: IncreaseDecrease, landingPage: true },
   { path: '/tools/salary-distribution', element: SalaryDistribution, landingPage: true },
 ]

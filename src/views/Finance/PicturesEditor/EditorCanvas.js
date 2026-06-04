@@ -372,6 +372,22 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
     img.src = url
   }, [canvasW, canvasH])
 
+  const exportSvg = useCallback((filename) => {
+    const svg = svgRef.current
+    if (!svg) return
+    const clone = svg.cloneNode(true)
+    clone.querySelector('.pic-canvas__grid')?.remove()
+    const serializer = new XMLSerializer()
+    const svgStr = serializer.serializeToString(clone)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename}.svg`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [])
+
   const generateThumbnail = useCallback(() => new Promise((resolve) => {
     const svg = svgRef.current
     if (!svg) return resolve(null)
@@ -397,7 +413,7 @@ const EditorCanvas = React.forwardRef(({ canvas, nodes, groups, selectedIds, too
     img.src = url
   }), [canvasW, canvasH, canvas.bg])
 
-  useImperativeHandle(ref, () => ({ exportImage, generateThumbnail }), [exportImage, generateThumbnail])
+  useImperativeHandle(ref, () => ({ exportImage, exportSvg, generateThumbnail }), [exportImage, exportSvg, generateThumbnail])
 
   // ── Mouse handlers ──────────────────────────────────────────────────────────
 

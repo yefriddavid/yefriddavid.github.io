@@ -52,6 +52,25 @@ export const SystemIcon = ({ size = 22 }) => (
   </svg>
 )
 
+export const MiscelaneaIcon = ({ size = 22 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 3C7.5 3 3 7.5 3 12s4.5 9 9 9" />
+    <path d="M12 3c2.5 0 4.8 1 6.4 2.6" />
+    <path d="M21 12c0 2.5-1 4.8-2.6 6.4" />
+    <path d="M15 9l3-3M9 15l-3 3M15 15l3 3M9 9L6 6" />
+  </svg>
+)
+
 export const DomoticaIcon = ({ size = 22 }) => (
   <svg
     width={size}

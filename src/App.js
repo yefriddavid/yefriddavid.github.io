@@ -17,6 +17,7 @@ import './i18n'
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const EmptyLayout = React.lazy(() => import('./layout/EmptyLayout'))
 const FinanceLayout = React.lazy(() => import('./layout/FinanceLayout'))
+const MiscelaneaLayout = React.lazy(() => import('./layout/MiscelaneaLayout'))
 const DomoticaLayout = React.lazy(() => import('./layout/DomoticaLayout'))
 const TaxisLayout = React.lazy(() => import('./layout/TaxisLayout'))
 const SystemLayout = React.lazy(() => import('./layout/SystemLayout'))
@@ -151,6 +152,7 @@ const App = () => {
               <Route path="/gallery/:folder" element={<GalleryPage />} />
             </Route>
             <Route path="/finance/*" element={<FinanceLayout />} />
+            <Route path="/miscelanea/*" element={<MiscelaneaLayout />} />
             <Route path="/domotica/*" element={<DomoticaLayout />} />
             <Route path="/taxis/*" element={<TaxisLayout />} />
             <Route path="/system/*" element={<SystemLayout />} />

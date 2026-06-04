@@ -4,9 +4,9 @@ import { onAuthChange, signOut } from '../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
 import { deleteSession } from '../../services/firebase/security/sessions'
 import { clearProfile } from '../../actions/authActions'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import './SelectApp.scss'
-import { FinanceIcon, TaxiIcon, DomoticaIcon } from 'src/components/AppIcons'
+import { FinanceIcon, TaxiIcon, DomoticaIcon, SystemIcon, MiscelaneaIcon } from 'src/components/AppIcons'
 import Spinner from 'src/components/shared/Spinner'
 
 const ArrowRight = () => (
@@ -51,10 +51,31 @@ const APPS = [
   },
 ]
 
+const APPS_SUPER_ADMIN = [
+  {
+    id: 'miscelanea',
+    name: 'Miscelánea',
+    description: 'cuadros · escenas 3D',
+    path: '/miscelanea/pictures',
+    accent: '#5b3a8e',
+    icon: MiscelaneaIcon,
+  },
+  {
+    id: 'system',
+    name: 'System',
+    description: 'usuarios · tenants · logs',
+    path: '/system/users',
+    accent: '#2d3748',
+    icon: SystemIcon,
+  },
+]
+
 const SelectApp = () => {
   const [firebaseUser, setFirebaseUser] = useState(undefined)
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const role = useSelector((s) => s.profile.data?.role ?? null)
+  const visibleApps = role === 'superAdmin' ? [...APPS, ...APPS_SUPER_ADMIN] : APPS
 
   useEffect(() => {
     const unsubscribe = onAuthChange((user) => {
@@ -97,7 +118,7 @@ const SelectApp = () => {
       <main className="select-app__apps">
         <p className="select-app__heading">Seleccionar aplicación</p>
         <ul className="select-app__list" role="list">
-          {APPS.map(({ id, name, description, path, accent, icon: Icon }) => (
+          {visibleApps.map(({ id, name, description, path, accent, icon: Icon }) => (
             <li key={id}>
               <button
                 className="select-app__card"

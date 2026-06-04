@@ -92,7 +92,7 @@ const Pictures = () => {
           color="primary"
           size="sm"
           disabled={saving}
-          onClick={() => navigate('/finance/pictures/new')}
+          onClick={() => navigate('/miscelanea/pictures/new')}
         >
           <CIcon icon={cilPlus} className="me-1" />
           Nuevo cuadro
@@ -157,7 +157,7 @@ const Pictures = () => {
           )}
           renderRows={() => []}
           renderActions={(r) => [
-            { icon: cilPencil, color: 'primary', title: 'Abrir editor', onClick: () => navigate(`/finance/pictures/${r.id}`) },
+            { icon: cilPencil, color: 'primary', title: 'Abrir editor', onClick: () => navigate(`/miscelanea/pictures/${r.id}`) },
             { icon: cilCopy,   color: 'info',    title: 'Duplicar',     onClick: () => handleDuplicate(r) },
             { icon: cilTrash,  color: 'danger',  title: 'Eliminar',     onClick: () => handleDelete(r) },
           ]}

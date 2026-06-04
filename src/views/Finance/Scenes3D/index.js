@@ -37,7 +37,7 @@ const Scenes3D = () => {
           color="primary"
           size="sm"
           disabled={saving}
-          onClick={() => navigate('/finance/scenes3d/new')}
+          onClick={() => navigate('/miscelanea/scenes3d/new')}
         >
           <CIcon icon={cilPlus} className="me-1" />
           Nueva escena
@@ -65,7 +65,7 @@ const Scenes3D = () => {
               <div style={{ display: 'flex', gap: 4 }}>
                 <CButton
                   size="sm" color="primary" variant="ghost" title="Editar"
-                  onClick={() => navigate(`/finance/scenes3d/${data.id}`)}
+                  onClick={() => navigate(`/miscelanea/scenes3d/${data.id}`)}
                 >
                   <CIcon icon={cilPencil} />
                 </CButton>

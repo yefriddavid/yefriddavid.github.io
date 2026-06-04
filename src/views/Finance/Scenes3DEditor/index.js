@@ -71,7 +71,7 @@ const Scenes3DEditor = () => {
 
   useEffect(() => {
     if (isNew && current?.id) {
-      navigate(`/finance/scenes3d/${current.id}`, { replace: true })
+      navigate(`/miscelanea/scenes3d/${current.id}`, { replace: true })
     }
   }, [isNew, current, navigate])
 
@@ -166,7 +166,7 @@ const Scenes3DEditor = () => {
 
   const handleBack = () => {
     if (dirty && !window.confirm('Hay cambios sin guardar. ¿Salir de todas formas?')) return
-    navigate('/finance/scenes3d')
+    navigate('/miscelanea/scenes3d')
   }
 
   const selectedObj = selectedId ? objects.find((o) => o.id === selectedId) ?? null : null

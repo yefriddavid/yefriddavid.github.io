@@ -109,7 +109,7 @@ const PicturesEditor = () => {
   // Navigate to it so subsequent saves use updateRequest with a real ID.
   useEffect(() => {
     if (isNew && current?.id) {
-      navigate(`/finance/pictures/${current.id}`, { replace: true })
+      navigate(`/miscelanea/pictures/${current.id}`, { replace: true })
     }
   }, [isNew, current, navigate])
 
@@ -302,7 +302,7 @@ const PicturesEditor = () => {
 
   const handleBack = () => {
     if (dirty && !window.confirm('Hay cambios sin guardar. ¿Salir de todas formas?')) return
-    navigate('/finance/pictures')
+    navigate('/miscelanea/pictures')
   }
 
   const selectedNode =
@@ -428,6 +428,13 @@ const PicturesEditor = () => {
           </select>
           <button className="pic-editor__btn" onClick={handleExport} title="Exportar imagen">
             ↓ Exportar
+          </button>
+          <button
+            className="pic-editor__btn"
+            onClick={() => canvasRef.current?.exportSvg(name || 'picture')}
+            title="Exportar como SVG"
+          >
+            ↓ SVG
           </button>
           <button
             className="pic-editor__btn"

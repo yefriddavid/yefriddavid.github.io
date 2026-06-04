@@ -1,0 +1,16 @@
+import React from 'react'
+
+const Pictures = React.lazy(() => import('./views/Finance/Pictures'))
+const PicturesEditor = React.lazy(() => import('./views/Finance/PicturesEditor'))
+const Scenes3D = React.lazy(() => import('./views/Finance/Scenes3D'))
+const Scenes3DEditor = React.lazy(() => import('./views/Finance/Scenes3DEditor'))
+
+// Paths are relative to the /miscelanea/* parent route (no /miscelanea prefix)
+const miscelaneaRoutes = [
+  { path: '/pictures', element: Pictures, landingPage: true },
+  { path: '/pictures/:id', element: PicturesEditor },
+  { path: '/scenes3d', element: Scenes3D, landingPage: true },
+  { path: '/scenes3d/:id', element: Scenes3DEditor },
+]
+
+export default miscelaneaRoutes
