@@ -40,6 +40,7 @@ const HardRefresh = React.lazy(() => import('./views/hard-refresh/HardRefresh'))
 const SelectApp = React.lazy(() => import('./views/selectApp/SelectApp'))
 
 import * as accountsMasterActions from './actions/cashflow/accountsMasterActions'
+import * as taskActions from './actions/taskActions'
 import { reportError } from './services/errorReporter'
 import { authStorage } from './utils/storage'
 
@@ -64,9 +65,10 @@ const App = () => {
     }
   }, [])
 
-  // Background sync for accounting accounts
+  // Background sync for accounting accounts and tasks
   useEffect(() => {
     dispatch(accountsMasterActions.fetchRequest())
+    dispatch(taskActions.fetchRequest())
   }, [dispatch])
 
   // Restore profile on page refresh when already authenticated

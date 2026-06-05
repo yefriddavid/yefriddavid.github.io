@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   CContainer,
@@ -16,6 +16,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
+  cilCalendar,
   cilClock,
   cilFullscreen,
   cilFullscreenExit,
@@ -57,9 +58,13 @@ const AppHeader = () => {
     setUserMode(mode)
   }
 
+  const navigate = useNavigate()
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
-  const appTheme = useSelector((state) => state.ui.appTheme)
+  const appTheme    = useSelector((state) => state.ui.appTheme)
+  const pendingTasks = useSelector((state) =>
+    (state.task?.data ?? []).filter((t) => !t.done).length
+  )
   const hideHeader = () => dispatch(setUi({ headerShow: false }))
   const hasUpdate = useVersionCheck()
 
@@ -184,6 +189,21 @@ const AppHeader = () => {
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <div className="d-none d-md-flex align-items-center">
+            <CNavItem>
+              <CNavLink
+                as="button"
+                onClick={() => navigate('/miscelanea/tasks')}
+                title={`Tareas pendientes: ${pendingTasks}`}
+                style={{ position: 'relative' }}
+              >
+                <CIcon icon={cilCalendar} size="lg" />
+                {pendingTasks > 0 && (
+                  <span className="header__task-badge">
+                    {pendingTasks > 99 ? '99+' : pendingTasks}
+                  </span>
+                )}
+              </CNavLink>
+            </CNavItem>
             <li className="nav-item py-0">
               <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
             </li>

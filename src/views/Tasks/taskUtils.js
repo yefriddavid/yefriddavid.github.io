@@ -1,21 +1,7 @@
 import moment from 'moment'
+import { TASK_PRIORITY, TASK_FILTER_KEYS, TASK_FILTER_LABELS } from 'src/constants/tasks'
 
-export const PRIORITY = {
-  high:   { label: 'Alta',  color: '#ef4444' },
-  medium: { label: 'Media', color: '#f97316' },
-  low:    { label: 'Baja',  color: '#3b82f6' },
-}
-
-export const FILTER_KEYS = ['all', 'today', 'upcoming', 'overdue', 'high', 'done']
-
-export const FILTER_LABELS = {
-  all:      'Todas',
-  today:    'Hoy',
-  upcoming: 'Próximas',
-  overdue:  'Vencidas',
-  high:     '★ Alta',
-  done:     '✓ Hechas',
-}
+export { TASK_PRIORITY as PRIORITY, TASK_FILTER_KEYS as FILTER_KEYS, TASK_FILTER_LABELS as FILTER_LABELS }
 
 const startOfDay = () => moment().startOf('day')
 
@@ -59,10 +45,10 @@ export const formatDue = (dueDate) => {
 }
 
 export const taskStats = (tasks) => ({
-  pending:  tasks.filter((t) => !t.done).length,
-  today:    tasks.filter((t) => isDueToday(t) || isOverdue(t)).filter((t) => !t.done).length,
-  overdue:  tasks.filter(isOverdue).length,
-  done:     tasks.filter((t) => t.done).length,
+  pending: tasks.filter((t) => !t.done).length,
+  today:   tasks.filter((t) => isDueToday(t) || isOverdue(t)).filter((t) => !t.done).length,
+  overdue: tasks.filter(isOverdue).length,
+  done:    tasks.filter((t) => t.done).length,
 })
 
 export const newTask = (overrides = {}) => ({

@@ -497,10 +497,59 @@
   @media (max-width: 600px) {
     padding: 12px;
 
-    &__stats  { gap: 12px; }
-    &__meta   { display: none; }
+    &__header { margin-bottom: 14px; }
+    &__header-title { font-size: 17px; }
+
+    &__stats { gap: 14px; }
+    &__stat-value { font-size: 16px; }
+
+    // Horizontal scroll — no wrapping to multiple lines
+    &__filters {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+      &::-webkit-scrollbar { display: none; }
+    }
+
+    &__filter-btn { flex-shrink: 0; }
+
+    // Keep due date visible — hide tags only
+    &__tag { display: none; }
+
+    // Larger touch targets
+    &__check {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+    }
+
+    &__row {
+      padding: 12px 10px;
+      min-height: 52px;
+    }
+
+    // Delete button always visible on touch devices
+    &__delete {
+      opacity: 1;
+      color: var(--cui-secondary-color);
+      padding: 8px;
+    }
+
     &__edit-row { grid-template-columns: 1fr; }
 
-    &__quick-date { display: none; }
+    &__edit-select,
+    &__edit-input { font-size: 16px; } // prevents iOS zoom on focus
+
+    &__btn {
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+  }
+
+  // Touch devices — delete always visible regardless of screen size
+  @media (hover: none) {
+    &__delete { opacity: 1; }
   }
 }
