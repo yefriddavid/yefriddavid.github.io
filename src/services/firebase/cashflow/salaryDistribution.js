@@ -31,6 +31,7 @@ export const fetchAllFromFirebase = async () => {
         invert: data.invert ?? 0,
         invertTarget: data.invertTarget ?? '',
         rows: data.rows ?? [],
+        notes: data.notes ?? '',
         order: data.order ?? 0,
         syncedAt: data.syncedAt?.toDate?.()?.toISOString() ?? null,
       }

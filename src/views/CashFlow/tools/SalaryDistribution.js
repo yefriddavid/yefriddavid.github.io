@@ -13,8 +13,6 @@ export default function SalaryDistribution() {
     data: distributions,
     fetching,
     saving,
-    syncing,
-    importing,
   } = useSelector((s) => s.salaryDistribution)
   const [activeId, setActiveId] = useState(null)
   const [editingTabId, setEditingTabId] = useState(null)
@@ -214,47 +212,7 @@ export default function SalaryDistribution() {
               minHeight: 40,
             }}
           >
-            {saving ? '…' : '💾'} {saving ? 'Guardando' : 'Guardar local'}
-          </button>
-          <button
-            onClick={() => dispatch(actions.importRequest())}
-            disabled={importing || syncing}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 8,
-              border: '1px solid var(--cui-border-color)',
-              background: 'var(--cui-body-bg)',
-              cursor: importing ? 'not-allowed' : 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              color: importing ? 'var(--cui-tertiary-color)' : 'var(--cui-body-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              minHeight: 40,
-            }}
-          >
-            {importing ? '…' : '☁️'} Importar
-          </button>
-          <button
-            onClick={() => distributions && dispatch(actions.syncRequest(distributions))}
-            disabled={syncing || saving || !distributions}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 8,
-              border: 'none',
-              background: syncing ? 'var(--cui-secondary-bg)' : 'var(--cui-primary)',
-              cursor: syncing ? 'not-allowed' : 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              color: syncing ? 'var(--cui-tertiary-color)' : '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              minHeight: 40,
-            }}
-          >
-            {syncing ? '…' : '☁️'} Sync
+            {saving ? '…' : '💾'} {saving ? 'Guardando' : 'Guardar'}
           </button>
           <button
             onClick={() => {
@@ -338,6 +296,33 @@ export default function SalaryDistribution() {
               setDragOverRowId(null)
             }}
           />
+
+          <div style={{ marginTop: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--cui-tertiary-color)', marginBottom: 6 }}>
+              Notes
+            </div>
+            <textarea
+              value={activeConfig.notes ?? ''}
+              onChange={(e) => patchActive({ notes: e.target.value })}
+              onBlur={saveLocal}
+              placeholder="Agrega notas sobre esta distribución…"
+              rows={4}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--cui-border-color)',
+                background: 'var(--cui-body-bg)',
+                color: 'var(--cui-body-color)',
+                fontSize: 13,
+                lineHeight: 1.6,
+                resize: 'vertical',
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
         </>
       )}
     </div>
