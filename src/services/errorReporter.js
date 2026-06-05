@@ -37,6 +37,7 @@ export const flightRecorderMiddleware = (store) => (next) => (action) => {
 }
 
 export async function reportError(error, context = 'unknown', extra = {}) {
+  if (import.meta.env.DEV) return
   try {
     await addDoc(collection(db, COL_SYSTEM_ERROR_LOGS), {
       timestamp: serverTimestamp(),

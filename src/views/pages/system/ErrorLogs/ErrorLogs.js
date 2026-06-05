@@ -167,8 +167,15 @@ const SkeletonRow = () => (
   </div>
 )
 
-const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh }) => {
+const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh, onClearAll }) => {
   const [selectedId, setSelectedId] = useState(null)
+  const [confirming, setConfirming] = useState(false)
+
+  const handleClearAll = () => {
+    if (!confirming) { setConfirming(true); return }
+    setConfirming(false)
+    onClearAll()
+  }
 
   const selectedLog = useMemo(() => logs.find((l) => l.id === selectedId), [logs, selectedId])
 
@@ -241,9 +248,24 @@ const ErrorLogs = ({ logs = [], loading, onDelete, onRefresh }) => {
           <h1 className="el__title">Error Monitor</h1>
           <span className="el__subtitle">System_error_logs</span>
         </div>
-        <CButton color="primary" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="el__refresh-btn">
-          {loading ? <Spinner size="sm" /> : '↺'}&nbsp; Recargar
-        </CButton>
+        <div className="el__header-actions">
+          {logs.length > 0 && (
+            <CButton
+              color={confirming ? 'danger' : 'secondary'}
+              variant="outline"
+              size="sm"
+              onClick={handleClearAll}
+              onBlur={() => setConfirming(false)}
+              disabled={loading}
+              className="el__clear-btn"
+            >
+              {confirming ? '¿Confirmar?' : '✕ Clear all'}
+            </CButton>
+          )}
+          <CButton color="primary" variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="el__refresh-btn">
+            {loading ? <Spinner size="sm" /> : '↺'}&nbsp; Recargar
+          </CButton>
+        </div>
       </div>
 
       <div className="el__stats">

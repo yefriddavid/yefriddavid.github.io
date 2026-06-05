@@ -18,6 +18,7 @@ const ErrorLogsPage = () => {
       loading={loading}
       onDelete={(id) => dispatch(actions.deleteRequest(id))}
       onRefresh={() => dispatch(actions.fetchRequest())}
+      onClearAll={() => dispatch(actions.clearAllRequest())}
     />
   )
 }

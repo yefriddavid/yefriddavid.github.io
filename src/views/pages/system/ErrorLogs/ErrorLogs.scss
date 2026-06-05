@@ -16,6 +16,12 @@
     gap: 12px;
   }
 
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__header-indicator {
     width: 10px;
     height: 10px;
