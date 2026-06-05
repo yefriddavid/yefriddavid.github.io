@@ -7,15 +7,17 @@ const useVersionCheck = () => {
   const currentVersion = useRef(null)
 
   useEffect(() => {
+    if (import.meta.env.DEV) return
+
     const check = async () => {
       try {
         // const res = await fetch('./version.json?t=' + Date.now())
         const res = await fetch('/version.json?t=' + Date.now())
         if (!res.ok) return
-        const { version } = await res.json()
+        const { hash } = await res.json()
         if (currentVersion.current === null) {
-          currentVersion.current = version
-        } else if (version !== currentVersion.current) {
+          currentVersion.current = hash
+        } else if (hash !== currentVersion.current) {
           setHasUpdate(true)
         }
       } catch {}
