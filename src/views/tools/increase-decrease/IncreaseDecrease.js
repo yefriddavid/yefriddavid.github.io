@@ -14,6 +14,8 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus, cilPencil, cilTrash, cilX, cilCopy } from '@coreui/icons'
 import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import Spinner from 'src/components/shared/Spinner'
+import CryptoPriceBadge from 'src/components/shared/CryptoPriceBadge'
+import { cryptoPricesWebSocket } from 'src/services/websocketService'
 import * as actions from 'src/actions/finance/increaseDecreaseActions'
 
 const formatToCOP = (value) => {
@@ -71,10 +73,19 @@ const IncreaseDecrease = () => {
   const [finalValue, setFinalValue] = useState(DEFAULTS.finalValue)
   const [inversionValue, setInversionValue] = useState(DEFAULTS.inversionValue)
   const [editingEntry, setEditingEntry] = useState(null)
+  const [btcLivePrice, setBtcLivePrice] = useState(null)
 
   useEffect(() => {
     dispatch(actions.loadRequest())
   }, [dispatch])
+
+  useEffect(() => {
+    const unsub = cryptoPricesWebSocket.subscribe((msg) => {
+      if (msg.data?.s !== 'BTCUSDT') return
+      setBtcLivePrice(parseFloat(msg.data.c))
+    })
+    return unsub
+  }, [])
 
   const computed = computeFields({ initialValue, finalValue, inversionValue })
   const isProfit = computed.diff >= 0
@@ -160,7 +171,10 @@ const IncreaseDecrease = () => {
         {/* Results card */}
         <CCol xs={12} md={7} lg={8}>
           <CCard className="h-100 shadow-sm">
-            <CCardHeader className="fw-semibold">Results</CCardHeader>
+            <CCardHeader className="fw-semibold d-flex align-items-center justify-content-between">
+              <span>Results</span>
+              <CryptoPriceBadge symbol="BTCUSDT" />
+            </CCardHeader>
             <CCardBody>
               <CRow className="g-3 mb-4">
                 <CCol xs={6} sm={4}>
@@ -276,6 +290,16 @@ const IncreaseDecrease = () => {
                     const color = gain ? '#2eb85c' : '#e55353'
                     const pctLabel = gain ? '+' : '-'
                     const pctVal = e.increaseValue != null ? e.increaseValue : e.decreaseValue
+
+                    const liveEarn =
+                      btcLivePrice != null && e.initialValue > 0
+                        ? parseFloat(
+                            (((btcLivePrice - e.initialValue) / e.initialValue) * e.inversionValue).toFixed(2),
+                          )
+                        : null
+                    const liveGain = liveEarn != null && liveEarn >= 0
+                    const liveColor = liveEarn == null ? '#adb5bd' : liveGain ? '#2eb85c' : '#e55353'
+
                     return [
                       [
                         <>
@@ -306,6 +330,18 @@ const IncreaseDecrease = () => {
                         <>
                           <span className={SL.label}>Investment </span>
                           <span className={SL.mono}>{formatToUSD(e.inversionValue)}</span>
+                        </>,
+                      ],
+                      [
+                        <>
+                          <span className={SL.label}>Target </span>
+                          <span style={{ color }}>{formatToUSD(e.earnUSD)}</span>
+                        </>,
+                        <>
+                          <span className={SL.label}>Real </span>
+                          <span style={{ color: liveColor, fontWeight: 700 }}>
+                            {liveEarn != null ? formatToUSD(liveEarn) : '—'}
+                          </span>
                         </>,
                       ],
                     ]
