@@ -503,6 +503,42 @@ const Inspector = ({ node, onChange, canvas }) => {
           onChange={(e) => set('strokeWidth', parseFloat(e.target.value))}
         />
       </div>
+      {['rect', 'roundRect', 'diamond', 'triangle', 'polygon', 'star', 'semicircle'].includes(node.type) && (
+        <>
+          <div className="pic-inspector__row">
+            <span className="pic-inspector__label">Ancho</span>
+            <input
+              type="number"
+              className="pic-inspector__input"
+              min={0.1}
+              step={0.1}
+              style={{ width: 65 }}
+              value={Math.round((node.w / u.pxPerUnit) * 100) / 100}
+              onChange={(e) => {
+                const v = Math.max(0.1, parseFloat(e.target.value) || 0.1)
+                onChange({ ...node, w: v * u.pxPerUnit })
+              }}
+            />
+            <span style={{ fontSize: 10, color: '#888' }}>{canvas?.unit}</span>
+          </div>
+          <div className="pic-inspector__row">
+            <span className="pic-inspector__label">Alto</span>
+            <input
+              type="number"
+              className="pic-inspector__input"
+              min={0.1}
+              step={0.1}
+              style={{ width: 65 }}
+              value={Math.round((node.h / u.pxPerUnit) * 100) / 100}
+              onChange={(e) => {
+                const v = Math.max(0.1, parseFloat(e.target.value) || 0.1)
+                onChange({ ...node, h: v * u.pxPerUnit })
+              }}
+            />
+            <span style={{ fontSize: 10, color: '#888' }}>{canvas?.unit}</span>
+          </div>
+        </>
+      )}
       {node.type === 'circle' && (
         <div className="pic-inspector__row">
           <span className="pic-inspector__label">Diámetro</span>
