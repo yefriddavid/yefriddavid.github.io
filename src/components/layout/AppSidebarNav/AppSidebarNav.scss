@@ -12,7 +12,12 @@
     padding-bottom: 0.4rem !important;
   }
 
-  .nav-group-items .nav-link {
+  .nav-group-items .nav-link,
+  .nav-group-items .nav-group-toggle {
     padding-left: 3.5rem;
+  }
+
+  .nav-group-items .nav-group-items .nav-link {
+    padding-left: 5rem;
   }
 }

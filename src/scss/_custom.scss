@@ -52,6 +52,11 @@ body {
     border-radius: 0 !important;
   }
 
+  .nav-group-items .nav-group-items .nav-link.active {
+    padding-left: calc(5rem - 3px);
+    border-radius: 0 !important;
+  }
+
   // Expanded group indicator
   .nav-group.show > .nav-group-toggle {
     color: $text-hi !important;
@@ -63,6 +68,11 @@ body {
     .nav-icon {
       color: $accent !important;
     }
+  }
+
+  // Nested group toggle (e.g. Tools inside Trade) — indent to match sibling items
+  .nav-group-items .nav-group.show > .nav-group-toggle {
+    padding-left: calc(3.5rem - 3px) !important;
   }
 
   .sidebar-brand, h3 {
