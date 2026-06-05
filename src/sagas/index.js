@@ -48,6 +48,7 @@ import sagaFinancePictures from './finance/picturesSagas'
 import sagaFinancePictureVersions from './finance/pictureVersionsSagas'
 import sagaFinanceScenes3d from './finance/scenes3dSagas'
 import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
+import sagaTasks from './misc/taskSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -100,5 +101,6 @@ export default function* rootSagas() {
     sagaFinancePictureVersions(),
     sagaFinanceScenes3d(),
     sagaIncreaseDecrease(),
+    sagaTasks(),
   ])
 }

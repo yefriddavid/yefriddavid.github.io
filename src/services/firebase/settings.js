@@ -107,6 +107,9 @@ export const COL_DOMOTICA_COMMAND_DICTIONARY = 'Domotica_command_dictionary'
 export const COL_DOMOTICA_COMMAND_PROFILES = 'Domotica_command_profiles'
 export const COL_DOMOTICA_COMMAND_PROFILE_ITEMS = 'Domotica_command_profile_items'
 
+// Misc
+export const COL_MISC_TASKS = 'Misc_tasks'
+
 // Others
 export const COL_PAGE_VISITS = 'page_visits'
 export const COL_PAYMENT_VAUCHERS = (year) => `paymentVauchers-${year}`

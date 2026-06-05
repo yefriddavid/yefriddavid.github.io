@@ -1,9 +1,15 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilImage, cil3d } from '@coreui/icons'
+import { cilImage, cil3d, cilListHighPriority } from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
 const getMiscelaneaNav = () => [
+  {
+    component: CNavItem,
+    name: 'Tasks',
+    to: '/miscelanea/tasks',
+    icon: <CIcon icon={cilListHighPriority} customClassName="nav-icon" />,
+  },
   {
     component: CNavItem,
     name: 'Pictures',
