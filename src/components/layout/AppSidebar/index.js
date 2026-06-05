@@ -1,23 +1,19 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 
 import {
   CCloseButton,
   CSidebar,
   CSidebarBrand,
-  CSidebarFooter,
   CSidebarHeader,
-  CSidebarToggler,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
 import { FinanceIcon } from 'src/components/AppIcons'
 
 import { AppSidebarNav } from '../AppSidebarNav'
 import BrandName from '../../BrandName'
-import { signOut } from '../../../services/firebase/auth'
+import SidebarFooterActions from '../SidebarFooterActions'
 import './AppSidebar.scss'
 
 import { sygnet } from 'src/assets/brand/sygnet'
@@ -29,16 +25,10 @@ import { setUi } from 'src/reducers/uiReducer'
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const unfoldable = useSelector((state) => state.ui.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   const role = useSelector((state) => state.profile.data?.role ?? null)
   const navigation = getNav(t, role)
-
-  const handleLogout = async () => {
-    await signOut()
-    navigate('/login')
-  }
 
   return (
     <CSidebar
@@ -69,30 +59,7 @@ const AppSidebar = () => {
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
-      <CSidebarFooter
-        className="border-top d-flex"
-        style={{ flexDirection: 'column', gap: 0 }}
-      >
-        <button onClick={() => navigate('/selectApp')} className="sidebar-footer-btn">
-          <CIcon icon={cilApplications} size="sm" />
-          <span>{t('nav.selectApp')}</span>
-        </button>
-        <button onClick={handleLogout} className="sidebar-footer-btn">
-          <CIcon icon={cilAccountLogout} size="sm" />
-          <span>{t('auth.logout')}</span>
-        </button>
-        <button
-          onClick={() => dispatch(setUi({ sidebarShow: false }))}
-          className="sidebar-footer-btn"
-          style={{ borderBottom: 'none' }}
-        >
-          <CIcon icon={cilMenu} size="sm" />
-          <span>{t('nav.hideMenu')}</span>
-        </button>
-        <CSidebarToggler
-          onClick={() => dispatch(setUi({ sidebarUnfoldable: !unfoldable }))}
-        />
-      </CSidebarFooter>
+      <SidebarFooterActions />
     </CSidebar>
   )
 }
