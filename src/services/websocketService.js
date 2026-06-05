@@ -139,5 +139,5 @@ export class WebSocketService {
 
 export const taxiWebSocket = new WebSocketService('wss://3.92.69.78:1979/echo_test')
 export const cryptoPricesWebSocket = new WebSocketService(
-  'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker',
+  'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker/linkusdt@ticker/bnbusdt@ticker',
 )

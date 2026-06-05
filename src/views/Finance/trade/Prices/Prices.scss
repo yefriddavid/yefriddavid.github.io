@@ -16,6 +16,27 @@
     color: var(--cui-body-color);
   }
 
+  &__interval-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__date-input {
+    appearance: none;
+    background: var(--cui-body-bg);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 8px;
+    color: var(--cui-body-color);
+    font-size: 0.85rem;
+    padding: 0.45rem 0.7rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+
+    &:focus { border-color: var(--cui-primary); }
+  }
+
   &__select {
     appearance: none;
     background: var(--cui-body-bg);
@@ -34,6 +55,12 @@
     &:focus {
       outline: none;
       border-color: var(--cui-primary);
+    }
+
+    &--sm {
+      font-size: 0.82rem;
+      padding: 0.35rem 1.8rem 0.35rem 0.7rem;
+      font-weight: 500;
     }
   }
 
@@ -242,6 +269,72 @@
 
     &--negative {
       color: #ef4444;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .crypto-prices {
+    padding: 1rem;
+
+    &__header {
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    &__title {
+      font-size: 1rem;
+      flex: 0 0 100%;
+    }
+
+    &__select {
+      flex: 1;
+      font-size: 0.9rem;
+      font-size: 16px; // prevents iOS zoom on focus
+    }
+
+    &__interval-row {
+      flex: 1;
+    }
+
+    &__select--sm {
+      font-size: 16px; // prevents iOS zoom on focus
+    }
+
+    &__date-input {
+      font-size: 16px; // prevents iOS zoom on focus
+      width: 100%;
+    }
+
+    &__card {
+      max-width: 100%;
+      padding: 1.25rem 1rem;
+    }
+
+    &__price {
+      font-size: 2.2rem;
+    }
+
+    &__stats {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    &__mini-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    &__mini-card {
+      min-width: 0;
+      padding: 0.6rem 0.75rem;
+    }
+
+    &__mini-price {
+      font-size: 0.9rem;
     }
   }
 }
