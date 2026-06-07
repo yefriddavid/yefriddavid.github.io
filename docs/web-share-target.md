@@ -11,10 +11,11 @@ Usuario comparte imagen (galería, WhatsApp, etc.)
   → Service Worker intercepta el POST
       → lee el File del FormData
       → guarda { buffer, type, name } en IDB METADATA bajo la clave "pending-share"
-      → responde con redirect 303 → /#/finance/management/account-status
-  → App carga AccountStatus
-      → useEffect on mount: getPendingShare()
-      → si hay entrada: clearPendingShare() + reconstruye File desde buffer
+      → responde con redirect 303 → /#/finance/management/account-status?share=<timestamp>
+  → App carga AccountStatus con ?share=<timestamp> en la URL
+      → useEffect([shareToken]): detecta el param, llama getPendingShare()
+      → si hay entrada: clearPendingShare() + elimina ?share de la URL (replace)
+      → reconstruye File desde buffer, setSharedFile(file)
       → pasa File como initialFile a <OcrReceiptImporter>
   → OcrReceiptImporter detecta initialFile
       → abre modal automáticamente
@@ -30,7 +31,7 @@ Usuario comparte imagen (galería, WhatsApp, etc.)
 | `src/sw/sw.js` | Handler `fetch` que intercepta POST `/share-target` |
 | `src/services/idb/pendingShare.js` | `getPendingShare()` / `clearPendingShare()` (app side) |
 | `src/views/Accounting/OcrReceiptImporter/OcrReceiptImporter.js` | Prop `initialFile`, auto-open + skip step 1 |
-| `src/views/Accounting/AccountStatus/index.js` | Lee IDB al montar, pasa `sharedFile` como `initialFile` |
+| `src/views/Accounting/AccountStatus/index.js` | Detecta `?share` param vía `useSearchParams`, lee IDB, limpia URL, pasa `sharedFile` como `initialFile` |
 
 ## Configuración del manifest
 
@@ -56,9 +57,9 @@ El handler vive en `src/sw/sw.js` y se registra antes que los handlers de Workbo
 1. Lee el `File` del FormData.
 2. Convierte a `ArrayBuffer` (serializable en IDB).
 3. Guarda en `IDB.METADATA['pending-share']` como `{ buffer, type, name }`.
-4. Devuelve `Response.redirect('/#/finance/management/account-status', 303)`.
+4. Devuelve `Response.redirect('/#/finance/management/account-status?share=<timestamp>', 303)`.
 
-El archivo persiste en IDB hasta que AccountStatus lo consume (una sola lectura).
+El `?share=<timestamp>` garantiza que la URL siempre sea diferente a la actual, forzando que `useEffect([shareToken])` se dispare incluso si el usuario ya estaba en AccountStatus. El archivo persiste en IDB hasta que AccountStatus lo consume (una sola lectura).
 
 ## IDB helper — pendingShare.js
 

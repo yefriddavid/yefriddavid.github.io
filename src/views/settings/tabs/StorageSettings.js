@@ -6,10 +6,11 @@ import {
   CListGroupItem,
   CProgress,
   CBadge,
+  CCollapse,
 } from '@coreui/react'
 import { Column, Paging } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { cilReload } from '@coreui/icons'
+import { cilReload, cilChevronBottom, cilChevronTop, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { fetchCollectionCounts, SPARK_LIMITS } from 'src/services/firebase/admin/usageMetrics'
 import Spinner from 'src/components/shared/Spinner'
@@ -49,6 +50,13 @@ const StorageSettings = () => {
   const [fbRows, setFbRows] = useState(null)
   const [fbLoading, setFbLoading] = useState(false)
 
+  // IndexedDB
+  const [idbDatabases, setIdbDatabases] = useState([])
+  const [idbLoading, setIdbLoading] = useState(false)
+  const [idbClearing, setIdbClearing] = useState(null)
+  const [idbExpanded, setIdbExpanded] = useState({})
+  const [idbConfirm, setIdbConfirm] = useState(null)
+
   const loadStorageInfo = async () => {
     setLocalLoading(true)
     try {
@@ -77,9 +85,84 @@ const StorageSettings = () => {
     }
   }
 
+  const loadIndexedDB = async () => {
+    setIdbLoading(true)
+    try {
+      const dbs = await indexedDB.databases()
+      const details = await Promise.all(
+        dbs.map(async (db) => {
+          try {
+            const stores = await new Promise((resolve, reject) => {
+              const req = indexedDB.open(db.name, db.version)
+              req.onsuccess = (e) => {
+                const names = Array.from(e.target.result.objectStoreNames)
+                e.target.result.close()
+                resolve(names)
+              }
+              req.onerror = () => reject(req.error)
+            })
+            return { name: db.name, version: db.version, stores }
+          } catch {
+            return { name: db.name, version: db.version, stores: [] }
+          }
+        }),
+      )
+      setIdbDatabases(details.sort((a, b) => a.name.localeCompare(b.name)))
+    } catch (e) {
+      setError(`IndexedDB: ${e.message}`)
+    } finally {
+      setIdbLoading(false)
+    }
+  }
+
+  const deleteDatabase = async (dbName) => {
+    setIdbClearing(dbName)
+    setIdbConfirm(null)
+    try {
+      await new Promise((resolve, reject) => {
+        const req = indexedDB.deleteDatabase(dbName)
+        req.onsuccess = resolve
+        req.onerror = () => reject(req.error)
+        req.onblocked = () => reject(new Error('La base de datos está en uso. Recarga la página e intenta de nuevo.'))
+      })
+      setSuccess(`IndexedDB "${dbName}" eliminada correctamente.`)
+      await loadIndexedDB()
+    } catch (e) {
+      setError(`Error eliminando ${dbName}: ${e.message}`)
+    } finally {
+      setIdbClearing(null)
+    }
+  }
+
+  const deleteAllDatabases = async () => {
+    setIdbClearing('__all__')
+    setIdbConfirm(null)
+    const names = idbDatabases.map((d) => d.name)
+    try {
+      await Promise.all(
+        names.map(
+          (name) =>
+            new Promise((resolve) => {
+              const req = indexedDB.deleteDatabase(name)
+              req.onsuccess = resolve
+              req.onerror = resolve
+              req.onblocked = resolve
+            }),
+        ),
+      )
+      setSuccess(`${names.length} base(s) IndexedDB eliminada(s). Se requiere recargar la página.`)
+      await loadIndexedDB()
+    } catch (e) {
+      setError(`Error en limpieza total: ${e.message}`)
+    } finally {
+      setIdbClearing(null)
+    }
+  }
+
   useEffect(() => {
     loadStorageInfo()
     loadFirebaseMetrics()
+    loadIndexedDB()
   }, [])
 
   const clearCaches = async () => {
@@ -266,6 +349,137 @@ const StorageSettings = () => {
           </small>
         </>
       ) : null}
+
+      {/* ── IndexedDB ── */}
+      <div className="d-flex align-items-center justify-content-between mb-2 mt-4">
+        <h6 className="text-secondary mb-0">IndexedDB</h6>
+        <CButton
+          size="sm"
+          color="secondary"
+          variant="ghost"
+          onClick={loadIndexedDB}
+          disabled={idbLoading}
+        >
+          <CIcon icon={cilReload} size="sm" />
+        </CButton>
+      </div>
+
+      {idbLoading ? (
+        <div className="text-center py-3">
+          <Spinner size="sm" />
+        </div>
+      ) : idbDatabases.length === 0 ? (
+        <CAlert color="secondary">No se encontraron bases de datos IndexedDB.</CAlert>
+      ) : (
+        <>
+          <CListGroup className="mb-3" style={{ fontSize: 13 }}>
+            {idbDatabases.map((db) => (
+              <CListGroupItem key={db.name} className="py-2">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div
+                    className="d-flex align-items-center gap-2 flex-grow-1"
+                    style={{ cursor: db.stores.length > 0 ? 'pointer' : 'default', minWidth: 0 }}
+                    onClick={() =>
+                      db.stores.length > 0 &&
+                      setIdbExpanded((prev) => ({ ...prev, [db.name]: !prev[db.name] }))
+                    }
+                  >
+                    {db.stores.length > 0 && (
+                      <CIcon
+                        icon={idbExpanded[db.name] ? cilChevronTop : cilChevronBottom}
+                        size="sm"
+                        className="text-secondary flex-shrink-0"
+                      />
+                    )}
+                    <span className="fw-semibold text-truncate">{db.name}</span>
+                    <CBadge color="secondary" style={{ fontSize: 10 }}>
+                      v{db.version}
+                    </CBadge>
+                    <CBadge color="info" style={{ fontSize: 10 }}>
+                      {db.stores.length} tabla{db.stores.length !== 1 ? 's' : ''}
+                    </CBadge>
+                  </div>
+                  <div className="d-flex align-items-center gap-2 ms-2 flex-shrink-0">
+                    {idbConfirm === db.name ? (
+                      <>
+                        <small className="text-danger">¿Confirmar?</small>
+                        <CButton
+                          size="sm"
+                          color="danger"
+                          onClick={() => deleteDatabase(db.name)}
+                          disabled={!!idbClearing}
+                        >
+                          Sí
+                        </CButton>
+                        <CButton
+                          size="sm"
+                          color="secondary"
+                          variant="ghost"
+                          onClick={() => setIdbConfirm(null)}
+                        >
+                          No
+                        </CButton>
+                      </>
+                    ) : (
+                      <CButton
+                        color="danger"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIdbConfirm(db.name)}
+                        disabled={!!idbClearing}
+                      >
+                        {idbClearing === db.name ? <Spinner size="sm" /> : <CIcon icon={cilTrash} size="sm" />}
+                      </CButton>
+                    )}
+                  </div>
+                </div>
+                <CCollapse visible={!!idbExpanded[db.name]}>
+                  <div className="mt-2 ps-3" style={{ borderLeft: '2px solid var(--cui-border-color)' }}>
+                    {db.stores.map((store) => (
+                      <div key={store} className="text-secondary py-1" style={{ fontSize: 12 }}>
+                        {store}
+                      </div>
+                    ))}
+                  </div>
+                </CCollapse>
+              </CListGroupItem>
+            ))}
+          </CListGroup>
+
+          <div className="d-flex justify-content-end">
+            {idbConfirm === '__all__' ? (
+              <div className="d-flex align-items-center gap-2">
+                <small className="text-danger fw-semibold">
+                  ¿Eliminar todas las bases IndexedDB? (se cerrará la sesión)
+                </small>
+                <CButton
+                  size="sm"
+                  color="danger"
+                  onClick={deleteAllDatabases}
+                  disabled={!!idbClearing}
+                >
+                  {idbClearing === '__all__' ? <Spinner size="sm" /> : 'Sí, limpiar todo'}
+                </CButton>
+                <CButton size="sm" color="secondary" variant="ghost" onClick={() => setIdbConfirm(null)}>
+                  Cancelar
+                </CButton>
+              </div>
+            ) : (
+              <CButton
+                color="danger"
+                size="sm"
+                onClick={() => setIdbConfirm('__all__')}
+                disabled={!!idbClearing}
+              >
+                Limpiar todo
+              </CButton>
+            )}
+          </div>
+          <small className="text-secondary d-block mt-2">
+            Eliminar bases que incluyen auth de Firebase cerrará la sesión al recargar.
+          </small>
+        </>
+      )}
     </div>
   )
 }

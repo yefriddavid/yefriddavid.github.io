@@ -66,14 +66,17 @@ export default function AccountStatus() {
   const [sharedFile, setSharedFile] = useState(null)
   const attachRef = useRef()
 
+  const shareToken = searchParams.get('share')
   useEffect(() => {
+    if (!shareToken) return
     getPendingShare().then((entry) => {
       if (!entry) return
       clearPendingShare()
+      setSearchParams((prev) => { prev.delete('share'); return prev }, { replace: true })
       const file = new File([entry.buffer], entry.name, { type: entry.type })
       setSharedFile(file)
     })
-  }, [])
+  }, [shareToken])
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
