@@ -60,8 +60,19 @@ export const newTask = (overrides = {}) => ({
   tags: [],
   done: false,
   doneAt: null,
+  listMode: false,
   createdAt: new Date().toISOString(),
   localUpdatedAt: new Date().toISOString(),
   syncedAt: null,
   ...overrides,
 })
+
+export const parseListItems = (notes) =>
+  (notes ?? '').split('\n').filter((l) => l.trim() !== '')
+
+export const getListProgress = (task) => {
+  if (!task.listMode || !task.notes) return null
+  const lines = parseListItems(task.notes)
+  if (!lines.length) return null
+  return { done: lines.filter((l) => l.startsWith('- ')).length, total: lines.length }
+}

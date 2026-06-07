@@ -17,6 +17,7 @@ export const fetchAllTasks = async () => {
       tags: data.tags ?? [],
       done: data.done ?? false,
       doneAt: data.doneAt ?? null,
+      listMode: data.listMode ?? false,
       createdAt: data.createdAt ?? new Date().toISOString(),
       localUpdatedAt: data.localUpdatedAt ?? null,
       syncedAt: data.syncedAt?.toDate?.()?.toISOString() ?? data.syncedAt ?? null,

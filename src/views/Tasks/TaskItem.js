@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { PRIORITY, formatDue, isOverdue, isDueToday } from './taskUtils'
+import { PRIORITY, formatDue, isOverdue, isDueToday, parseListItems, getListProgress } from './taskUtils'
 
 const PriorityDot = ({ priority }) => {
   const color = PRIORITY[priority]?.color ?? '#94a3b8'
@@ -18,6 +18,17 @@ const DueBadge = ({ task }) => {
   return <span className={cls}>{label}</span>
 }
 
+const ListProgress = ({ task }) => {
+  const progress = getListProgress(task)
+  if (!progress) return null
+  const allDone = progress.done === progress.total
+  return (
+    <span className={`tk__progress${allDone ? ' tk__progress--done' : ''}`}>
+      {progress.done}/{progress.total}
+    </span>
+  )
+}
+
 const TagPill = ({ tag, onRemove }) => (
   <span className="tk__tag">
     {tag}
@@ -27,21 +38,50 @@ const TagPill = ({ tag, onRemove }) => (
   </span>
 )
 
+const ListModeView = ({ notes, onToggle }) => {
+  const lines = parseListItems(notes)
+  if (!lines.length)
+    return <div className="tk__list-empty">Sin ítems. Desactivá List mode para agregar notas.</div>
+  return (
+    <div className="tk__list-view">
+      {lines.map((line, i) => {
+        const checked = line.startsWith('- ')
+        const text = checked ? line.slice(2) : line
+        return (
+          <div
+            key={i}
+            className={`tk__list-row${checked ? ' tk__list-row--done' : ''}`}
+            onClick={() => onToggle(i)}
+          >
+            <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
+              {checked ? '✓' : ''}
+            </span>
+            <span className="tk__list-text">{text}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 const TaskItem = ({ task, onSave, onDelete }) => {
   const [expanded, setExpanded] = useState(false)
   const [tagInput, setTagInput] = useState('')
 
   const { register, handleSubmit, watch, setValue, formState: { isDirty } } = useForm({
     defaultValues: {
-      title: task.title,
-      notes: task.notes,
+      title:    task.title,
+      notes:    task.notes,
       priority: task.priority,
-      dueDate: task.dueDate ?? '',
-      tags: task.tags ?? [],
+      dueDate:  task.dueDate ?? '',
+      tags:     task.tags ?? [],
+      listMode: task.listMode ?? false,
     },
   })
 
-  const tags = watch('tags')
+  const tags     = watch('tags')
+  const listMode = watch('listMode')
+  const notes    = watch('notes')
 
   const addTag = useCallback(() => {
     const t = tagInput.trim()
@@ -53,6 +93,26 @@ const TaskItem = ({ task, onSave, onDelete }) => {
   const removeTag = useCallback(
     (tag) => setValue('tags', tags.filter((t) => t !== tag), { shouldDirty: true }),
     [tags, setValue],
+  )
+
+  const toggleListItem = useCallback(
+    (index) => {
+      const allLines = (notes ?? '').split('\n')
+      let count = 0
+      for (let i = 0; i < allLines.length; i++) {
+        if (allLines[i].trim() !== '') {
+          if (count === index) {
+            allLines[i] = allLines[i].startsWith('- ')
+              ? allLines[i].slice(2)
+              : `- ${allLines[i]}`
+            break
+          }
+          count++
+        }
+      }
+      setValue('notes', allLines.join('\n'), { shouldDirty: true })
+    },
+    [notes, setValue],
   )
 
   const onSubmit = (data) => {
@@ -86,6 +146,7 @@ const TaskItem = ({ task, onSave, onDelete }) => {
         <span className="tk__title">{task.title || <em className="tk__placeholder">Sin título</em>}</span>
 
         <div className="tk__meta">
+          <ListProgress task={task} />
           <DueBadge task={task} />
           {(task.tags ?? []).map((tag) => (
             <TagPill key={tag} tag={tag} />
@@ -110,12 +171,24 @@ const TaskItem = ({ task, onSave, onDelete }) => {
             {...register('title', { required: true })}
           />
 
-          <textarea
-            className="tk__edit-notes"
-            placeholder="Notas…"
-            rows={6}
-            {...register('notes')}
-          />
+          <div className="tk__notes-header">
+            <span className="tk__edit-label">Notas</span>
+            <label className="tk__list-mode-toggle">
+              <input type="checkbox" {...register('listMode')} />
+              <span>List mode</span>
+            </label>
+          </div>
+
+          {listMode ? (
+            <ListModeView notes={notes} onToggle={toggleListItem} />
+          ) : (
+            <textarea
+              className="tk__edit-notes"
+              placeholder="Notas…"
+              rows={6}
+              {...register('notes')}
+            />
+          )}
 
           <div className="tk__edit-row">
             <div className="tk__edit-field">
