@@ -7,25 +7,14 @@ import { openDB, DB_STORES } from '../services/idb/db'
 import { getAllAccounts } from '../services/idb/cashflow/accountsMaster'
 import { checkPicoYPlaca } from './sw-pico-y-placa'
 
-// Workbox precaching (injected by VitePWA)
-precacheAndRoute(self.__WB_MANIFEST)
-cleanupOutdatedCaches()
-
-// Serve offline.html for any navigation request that fails (no network)
-registerRoute(
-  new NavigationRoute(
-    new NetworkOnly({
-      plugins: [{ handlerDidError: async () => caches.match('/offline.html') }],
-    }),
-  ),
-)
-
-// Allow the app to trigger skipWaiting from the update prompt
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+// Claim all clients immediately on activate so the SW controls the page that
+// triggered the Web Share Target navigation from the very first request.
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
 })
 
-// Web Share Target — intercept POST /share-target from Android share sheet
+// Web Share Target — must be registered BEFORE precacheAndRoute/registerRoute so
+// this handler runs before Workbox's fetch listeners and can call respondWith first.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
   if (url.pathname !== '/share-target' || event.request.method !== 'POST') return
@@ -54,6 +43,24 @@ self.addEventListener('fetch', (event) => {
       return Response.redirect(`/#/finance/management/account-status?share=${Date.now()}`, 303)
     })(),
   )
+})
+
+// Workbox precaching (injected by VitePWA)
+precacheAndRoute(self.__WB_MANIFEST)
+cleanupOutdatedCaches()
+
+// Serve offline.html for any navigation request that fails (no network)
+registerRoute(
+  new NavigationRoute(
+    new NetworkOnly({
+      plugins: [{ handlerDidError: async () => caches.match('/offline.html') }],
+    }),
+  ),
+)
+
+// Allow the app to trigger skipWaiting from the update prompt
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
 
 // Firebase Messaging background handler
