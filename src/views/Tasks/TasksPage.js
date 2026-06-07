@@ -17,15 +17,18 @@ const TasksPage = () => {
   const handleSave   = useCallback((task) => dispatch(actions.saveRequest(task)),   [dispatch])
   const handleDelete = useCallback((id)   => dispatch(actions.deleteRequest(id)),   [dispatch])
   const handleAdd    = useCallback((task) => dispatch(actions.saveRequest(task)),    [dispatch])
+  const handleSync   = useCallback(() => dispatch(actions.fetchRequest()),           [dispatch])
 
   if (fetching && tasks.length === 0) return <Spinner mode="section" />
 
   return (
     <TaskBoard
       tasks={tasks}
+      syncing={fetching}
       onSave={handleSave}
       onDelete={handleDelete}
       onAdd={handleAdd}
+      onSync={handleSync}
     />
   )
 }

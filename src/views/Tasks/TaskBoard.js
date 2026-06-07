@@ -35,7 +35,7 @@ const DoneSection = ({ tasks, onSave, onDelete }) => {
   )
 }
 
-const TaskBoard = ({ tasks, onSave, onDelete, onAdd }) => {
+const TaskBoard = ({ tasks, syncing, onSave, onDelete, onAdd, onSync }) => {
   const [filter, setFilter] = useState('all')
 
   const stats  = taskStats(tasks)
@@ -51,6 +51,15 @@ const TaskBoard = ({ tasks, onSave, onDelete, onAdd }) => {
           <div className="tk__header-indicator" />
           <h1 className="tk__header-title">Tasks</h1>
         </div>
+        <button
+          type="button"
+          className={`tk__sync-btn${syncing ? ' tk__sync-btn--spinning' : ''}`}
+          onClick={onSync}
+          disabled={syncing}
+          title="Sincronizar"
+        >
+          ↻
+        </button>
         <div className="tk__stats">
           <div className="tk__stat">
             <span className="tk__stat-value">{stats.pending}</span>
