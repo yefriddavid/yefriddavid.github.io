@@ -6,7 +6,7 @@ import { deleteSession } from '../../services/firebase/security/sessions'
 import { clearProfile } from '../../actions/authActions'
 import { useDispatch, useSelector } from 'react-redux'
 import './SelectApp.scss'
-import { FinanceIcon, TaxiIcon, DomoticaIcon, SystemIcon, MiscelaneaIcon } from 'src/components/AppIcons'
+import { FinanceIcon, TaxiIcon, DomoticaIcon, SystemIcon, MiscelaneaIcon, ShortcutsIcon } from 'src/components/AppIcons'
 import Spinner from 'src/components/shared/Spinner'
 
 const ArrowRight = () => (
@@ -25,6 +25,14 @@ const ArrowRight = () => (
 )
 
 const APPS = [
+  {
+    id: 'shortcuts',
+    name: 'Shortcuts',
+    description: 'accesos rápidos · tareas · estado de cuentas',
+    path: '/home',
+    accent: '#0f766e',
+    icon: ShortcutsIcon,
+  },
   {
     id: 'finance',
     name: 'Finance',

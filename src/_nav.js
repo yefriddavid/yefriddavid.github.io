@@ -37,6 +37,13 @@ const getNav = (t, role) => {
 
   items.push({
     component: CNavItem,
+    name: 'Home',
+    to: '/home',
+    icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+  })
+
+  items.push({
+    component: CNavItem,
     name: t('nav.dashboard'),
     to: '/finance/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
