@@ -25,6 +25,37 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
 
+// Web Share Target — intercept POST /share-target from Android share sheet
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+  if (url.pathname !== '/share-target' || event.request.method !== 'POST') return
+
+  event.respondWith(
+    (async () => {
+      try {
+        const formData = await event.request.formData()
+        const file = formData.get('file')
+        if (file && file instanceof File) {
+          const buffer = await file.arrayBuffer()
+          const db = await openDB()
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORES.METADATA, 'readwrite')
+            tx.objectStore(DB_STORES.METADATA).put(
+              { buffer, type: file.type, name: file.name },
+              'pending-share',
+            )
+            tx.oncomplete = resolve
+            tx.onerror = () => reject(tx.error)
+          })
+        }
+      } catch (err) {
+        console.error('[SW] share-target error:', err)
+      }
+      return Response.redirect('/#/finance/management/account-status', 303)
+    })(),
+  )
+})
+
 // Firebase Messaging background handler
 const app = initializeApp({
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

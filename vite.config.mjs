@@ -107,6 +107,14 @@ export default defineConfig(({ mode }) => {
           orientation: 'portrait-primary',
           start_url: '/',
           scope: '/',
+          share_target: {
+            action: '/share-target',
+            method: 'POST',
+            enctype: 'multipart/form-data',
+            params: {
+              files: [{ name: 'file', accept: ['image/*'] }],
+            },
+          },
           icons: [
             {
               src: 'icons/icon.svg',

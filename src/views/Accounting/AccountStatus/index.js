@@ -12,6 +12,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import OcrReceiptImporter from '../OcrReceiptImporter/OcrReceiptImporter'
+import { getPendingShare, clearPendingShare } from 'src/services/idb/pendingShare'
 import { fmt, isApplicableToMonth, getStatus, CURRENT_YEAR, CURRENT_MONTH, now } from './helpers'
 import DetailModal from './DetailModal'
 import PayModal from './PayModal'
@@ -62,7 +63,17 @@ export default function AccountStatus() {
   const [attachProcessing, setAttachProcessing] = useState(false)
   const [addingAdHoc, setAddingAdHoc] = useState(false)
   const [editingAdHoc, setEditingAdHoc] = useState(null)
+  const [sharedFile, setSharedFile] = useState(null)
   const attachRef = useRef()
+
+  useEffect(() => {
+    getPendingShare().then((entry) => {
+      if (!entry) return
+      clearPendingShare()
+      const file = new File([entry.buffer], entry.name, { type: entry.type })
+      setSharedFile(file)
+    })
+  }, [])
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -380,7 +391,7 @@ export default function AccountStatus() {
         )}
         {/* OCR importer  */}
         <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
-          <OcrReceiptImporter masters={masters} monthStr={monthStr} transactions={transactions} onConfirm={handleSavePayment} />
+          <OcrReceiptImporter masters={masters} monthStr={monthStr} transactions={transactions} onConfirm={handleSavePayment} initialFile={sharedFile} />
         </div>
       </div>
 

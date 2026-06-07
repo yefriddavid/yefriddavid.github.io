@@ -306,13 +306,24 @@ function ConfirmStep({ imageUrl, ocrText, matchedAccount, matchedRuleLabel, allA
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function OcrReceiptImporter({ masters, monthStr, transactions, onConfirm }) {
+export default function OcrReceiptImporter({ masters, monthStr, transactions, onConfirm, initialFile }) {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState('capture')
   const [file, setFile] = useState(null)
   const [imageUrl, setImageUrl] = useState(null)
   const [ocrResult, setOcrResult] = useState(null)
   const today = new Date().toISOString().slice(0, 10)
+
+  // Auto-open with shared file from Web Share Target
+  useEffect(() => {
+    if (!initialFile) return
+    const url = URL.createObjectURL(initialFile)
+    setFile(initialFile)
+    setImageUrl(url)
+    setStep('processing')
+    setOpen(true)
+    return () => URL.revokeObjectURL(url)
+  }, [initialFile])
 
   const reset = () => {
     setStep('capture')
