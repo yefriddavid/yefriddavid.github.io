@@ -40,7 +40,7 @@ self.addEventListener('fetch', (event) => {
       } catch (err) {
         console.error('[SW] share-target error:', err)
       }
-      return Response.redirect(`/#/finance/management/account-status?share=${Date.now()}`, 303)
+      return Response.redirect(`/finance/management/account-status?share=${Date.now()}`, 303)
     })(),
   )
 })

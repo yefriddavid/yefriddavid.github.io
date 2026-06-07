@@ -11,7 +11,7 @@ Usuario comparte imagen (galería, WhatsApp, etc.)
   → Service Worker intercepta el POST
       → lee el File del FormData
       → guarda { buffer, type, name } en IDB METADATA bajo la clave "pending-share"
-      → responde con redirect 303 → /#/finance/management/account-status?share=<timestamp>
+      → responde con redirect 303 → /finance/management/account-status?share=<timestamp>
   → App carga AccountStatus con ?share=<timestamp> en la URL
       → useEffect([shareToken]): detecta el param, llama getPendingShare()
       → si hay entrada: clearPendingShare() + elimina ?share de la URL (replace)
@@ -57,9 +57,11 @@ El handler vive en `src/sw/sw.js` y se registra antes que los handlers de Workbo
 1. Lee el `File` del FormData.
 2. Convierte a `ArrayBuffer` (serializable en IDB).
 3. Guarda en `IDB.METADATA['pending-share']` como `{ buffer, type, name }`.
-4. Devuelve `Response.redirect('/#/finance/management/account-status?share=<timestamp>', 303)`.
+4. Devuelve `Response.redirect('/finance/management/account-status?share=<timestamp>', 303)`.
 
 El `?share=<timestamp>` garantiza que la URL siempre sea diferente a la actual, forzando que `useEffect([shareToken])` se dispare incluso si el usuario ya estaba en AccountStatus. El archivo persiste en IDB hasta que AccountStatus lo consume (una sola lectura).
+
+> **Nota**: la URL usa `/finance/...` sin `#` porque el app usa `BrowserRouter`. Con `/#/finance/...`, React Router vería `pathname = '/'` y redirigiría a `/selectApp`.
 
 ## IDB helper — pendingShare.js
 
