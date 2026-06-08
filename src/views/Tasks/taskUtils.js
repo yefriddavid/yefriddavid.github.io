@@ -24,10 +24,16 @@ export const filterTasks = (tasks, filter) => {
   }
 }
 
+export const isLater = (t) =>
+  !t.done &&
+  !!t.dueDate &&
+  moment(t.dueDate).isSameOrAfter(moment().add(8, 'days').startOf('day'))
+
 export const groupTasks = (tasks) => ({
   overdue:  tasks.filter(isOverdue).sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
   today:    tasks.filter(isDueToday),
   upcoming: tasks.filter(isUpcoming).sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
+  later:    tasks.filter(isLater).sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
   undated:  tasks.filter((t) => !t.done && !t.dueDate),
 })
 
