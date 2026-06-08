@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/taskActions'
 import Spinner from 'src/components/shared/Spinner'
 import TaskBoard from './TaskBoard'
+import { hasPendingSync } from './taskUtils'
 import './Tasks.scss'
 
 const TasksPage = () => {
   const dispatch = useDispatch()
   const tasks    = useSelector((s) => s.task.data)
   const fetching = useSelector((s) => s.task.fetching)
+  const hasPending = hasPendingSync(tasks)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
@@ -25,6 +27,7 @@ const TasksPage = () => {
     <TaskBoard
       tasks={tasks}
       syncing={fetching}
+      hasPending={hasPending}
       onSave={handleSave}
       onDelete={handleDelete}
       onAdd={handleAdd}

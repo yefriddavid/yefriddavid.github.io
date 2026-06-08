@@ -51,6 +51,9 @@ export const taskStats = (tasks) => ({
   done:    tasks.filter((t) => t.done).length,
 })
 
+export const hasPendingSync = (tasks) =>
+  tasks.some((t) => !t.syncedAt || t.localUpdatedAt > t.syncedAt)
+
 export const newTask = (overrides = {}) => ({
   id: crypto.randomUUID(),
   title: '',

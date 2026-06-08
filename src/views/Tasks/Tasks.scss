@@ -35,6 +35,23 @@
   }
 
   // ── Sync button ─────────────────────────────────────────────────────────────
+  &__sync-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  &__sync-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f97316;
+    border: 2px solid var(--cui-body-bg);
+    pointer-events: none;
+  }
+
   &__sync-btn {
     background: none;
     border: 1px solid var(--cui-border-color);
@@ -52,6 +69,11 @@
     }
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    &--pending {
+      color: #f97316;
+      border-color: #f97316;
+    }
 
     &--spinning {
       display: inline-block;
