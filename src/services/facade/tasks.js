@@ -23,7 +23,19 @@ export const refreshFromFirebase = async (localTasks) => {
       }
     })
 
-    return { tasks: Array.from(merged.values()), pendingLocal }
+    const mergedArray = Array.from(merged.values())
+
+    // Persist merged Firestore state to IDB
+    await idb.saveBulkTasks(mergedArray)
+
+    // Delete IDB tasks that were removed in Firestore and have no pending local changes
+    const mergedIds = new Set(merged.keys())
+    const toDelete = (localTasks ?? []).filter((t) => !mergedIds.has(t.id))
+    for (const t of toDelete) {
+      await idb.deleteTask(t.id)
+    }
+
+    return { tasks: mergedArray, pendingLocal }
   } catch {
     return { tasks: null, pendingLocal: [] }
   }
