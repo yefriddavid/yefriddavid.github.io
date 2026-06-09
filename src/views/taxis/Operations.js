@@ -317,6 +317,28 @@ const Operations = () => {
               ✕ Ninguno
             </span>
           )}
+          {selected.size < MAINTENANCE_CATEGORIES.length + 1 && (
+            <span
+              onClick={() => {
+                const all = ['pico-placa', ...MAINTENANCE_CATEGORIES]
+                setSelected(new Set(all))
+                localStorage.setItem('ops_selected', JSON.stringify(all))
+              }}
+              style={{
+                borderRadius: 4,
+                padding: '2px 10px',
+                fontWeight: 600,
+                fontSize: 12,
+                cursor: 'pointer',
+                userSelect: 'none',
+                color: '#94a3b8',
+                border: '2px solid #e2e8f0',
+                background: '#f8fafc',
+              }}
+            >
+              ✓ Todos
+            </span>
+          )}
         </div>
 
         <div className="ops-controls">
