@@ -296,6 +296,27 @@ const Operations = () => {
               )
             },
           )}
+          {selected.size > 0 && (
+            <span
+              onClick={() => {
+                setSelected(new Set())
+                localStorage.setItem('ops_selected', '[]')
+              }}
+              style={{
+                borderRadius: 4,
+                padding: '2px 10px',
+                fontWeight: 600,
+                fontSize: 12,
+                cursor: 'pointer',
+                userSelect: 'none',
+                color: '#94a3b8',
+                border: '2px solid #e2e8f0',
+                background: '#f8fafc',
+              }}
+            >
+              ✕ Ninguno
+            </span>
+          )}
         </div>
 
         <div className="ops-controls">
