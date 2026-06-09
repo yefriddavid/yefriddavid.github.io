@@ -92,6 +92,19 @@ function* fetchContractsSummary() {
   }
 }
 
+function* updateCanonHistory({ payload }) {
+  try {
+    yield call(service.updateCanonHistory, payload.id, payload.history)
+    yield put(
+      actions.successRequestUpdateCanonHistory({ id: payload.id, history: payload.history }),
+    )
+    yield put(push({ type: 'success', message: 'Historial de canon guardado.' }))
+  } catch (e) {
+    yield put(actions.errorRequestUpdateCanonHistory(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchContracts),
@@ -102,5 +115,6 @@ export default function* rootSagas() {
     takeLatest(actions.deleteRequest, deleteContract),
     takeLatest(actions.archiveRequest, archiveContract),
     takeLatest(actions.fetchSummaryRequest, fetchContractsSummary),
+    takeLatest(actions.updateCanonHistoryRequest, updateCanonHistory),
   ])
 }

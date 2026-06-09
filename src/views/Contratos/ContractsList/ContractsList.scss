@@ -252,6 +252,67 @@
   }
 }
 
+.cl-history-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.cl-history-modal {
+  background: var(--cui-body-bg);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--cui-border-color);
+    gap: 0.5rem;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--cui-body-color);
+  }
+
+  &__subtitle {
+    font-size: 0.8rem;
+    color: var(--cui-secondary-color);
+    margin-top: 2px;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    padding: 0 4px;
+    flex-shrink: 0;
+
+    &:hover { color: var(--cui-body-color); }
+  }
+
+  &__body {
+    overflow-y: auto;
+    flex: 1;
+  }
+}
+
 .cl-badge {
   display: inline-flex;
   align-items: center;

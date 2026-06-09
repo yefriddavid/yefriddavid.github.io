@@ -100,7 +100,14 @@ export const getContractsSummary = async () => {
         rental_value: data.rental?.value ? Number(data.rental.value) : null,
         rental_duration: data.rental?.duration ? Number(data.rental.duration) : null,
         rental_payment_day: data.rental?.payment_day != null ? Number(data.rental.payment_day) : null,
+        canon_history: data.rental?.canon_history ?? [],
       }
     })
     .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+}
+
+export const updateCanonHistory = async (id, history) => {
+  await firestoreCall(() =>
+    updateDoc(doc(db, COL, id), { 'rental.canon_history': history, updatedAt: serverTimestamp() }),
+  )
 }

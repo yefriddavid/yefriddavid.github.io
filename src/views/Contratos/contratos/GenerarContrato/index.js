@@ -19,6 +19,8 @@ import {
 } from './icons'
 import NotesSection from './NotesSection'
 import AttachmentsSection from './AttachmentsSection'
+import CanonHistoryPanel from '../../CanonHistoryPanel'
+import * as contractActions from 'src/actions/contratos/contractActions'
 import ContractPickerModal from './ContractPickerModal'
 import NameModal from './NameModal'
 import { useGenerarContrato } from './useGenerarContrato'
@@ -139,6 +141,7 @@ export default function GenerarContrato() {
               ['#sec-inmueble', 'Inmueble'],
               ['#sec-contrato', 'Contrato'],
               ['#sec-cuenta', 'Cuenta bancaria'],
+              ...(currentContract ? [['#sec-canon', 'Historial canon']] : []),
               ...(currentContract ? [['#sec-notas', 'Notas']] : []),
               ...(currentContract ? [['#sec-adjuntos', 'Adjuntos']] : []),
             ].map(([href, label]) => (
@@ -761,6 +764,35 @@ export default function GenerarContrato() {
                 </div>
               </div>
             </section>
+
+            {currentContract && (
+              <section className="c-card" id="sec-canon">
+                <div className="c-card-header">
+                  <div className="c-card-icon">📈</div>
+                  <h2>Historial de canon</h2>
+                  <p>Incrementos anuales</p>
+                </div>
+                <div className="c-card-body" style={{ padding: 0 }}>
+                  <CanonHistoryPanel
+                    history={currentDoc?.rental?.canon_history ?? []}
+                    baseValue={
+                      currentDoc?.rental?.value
+                        ? Number(String(currentDoc.rental.value).replace(/[^\d]/g, ''))
+                        : 0
+                    }
+                    saving={contractSaving}
+                    onSave={(history) =>
+                      dispatch(
+                        contractActions.updateCanonHistoryRequest({
+                          id: currentContract.id,
+                          history,
+                        }),
+                      )
+                    }
+                  />
+                </div>
+              </section>
+            )}
 
             {currentContract && (
               <NotesSection

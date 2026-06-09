@@ -39,3 +39,11 @@ export const fetchSummaryRequest = createAction('fetch contratos summary')
 export const beginRequestFetchSummary = createAction('begin request fetch contratos summary')
 export const successRequestFetchSummary = createAction('fetch contratos summary success')
 export const errorRequestFetchSummary = createAction('request fetch contratos summary error')
+
+export const updateCanonHistoryRequest = createAction('request update contrato canon history')
+export const successRequestUpdateCanonHistory = createAction(
+  'request update contrato canon history success',
+)
+export const errorRequestUpdateCanonHistory = createAction(
+  'request update contrato canon history error',
+)

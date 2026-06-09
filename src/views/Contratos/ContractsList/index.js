@@ -6,6 +6,7 @@ import Spinner from 'src/components/shared/Spinner'
 import * as contractActions from 'src/actions/contratos/contractActions'
 import * as moduleNoteActions from 'src/actions/contratos/contractModuleNoteActions'
 import ModuleNotes from './ModuleNotes'
+import CanonHistoryPanel from '../CanonHistoryPanel'
 import './ContractsList.scss'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -52,6 +53,7 @@ export default function ContractsList() {
   const notesFetching = useSelector((s) => s.contratoModuleNote.fetching)
   const notesSaving = useSelector((s) => s.contratoModuleNote.saving)
   const [showArchived, setShowArchived] = useState(false)
+  const [historyModal, setHistoryModal] = useState(null)
 
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
@@ -193,11 +195,38 @@ export default function ContractsList() {
                 : null,
             ],
             renewalText
-              ? [<><span className={SL.label}>Canon: </span><span className={s.overdue ? 'cl-renewal--overdue' : !s.ok ? 'cl-renewal--warning' : 'cl-renewal--ok'}>{renewalText}</span></>]
+              ? [
+                  <>
+                    <span className={SL.label}>Canon: </span>
+                    <span
+                      className={
+                        s.overdue
+                          ? 'cl-renewal--overdue'
+                          : !s.ok
+                          ? 'cl-renewal--warning'
+                          : 'cl-renewal--ok'
+                      }
+                    >
+                      {renewalText}
+                    </span>
+                  </>,
+                ]
               : [],
           ]
         }}
         renderActions={(d) => [
+          {
+            label: '📈',
+            color: 'primary',
+            title: 'Historial de canon',
+            onClick: () =>
+              setHistoryModal({
+                id: d.id,
+                name: d.name,
+                history: d.canon_history ?? [],
+                baseValue: d.rental_value ?? 0,
+              }),
+          },
           { label: '✏️', color: 'primary', title: 'Abrir en editor', onClick: () => handleOpen(d.id) },
         ]}
       />
@@ -210,6 +239,37 @@ export default function ContractsList() {
         onUpdate={handleNoteUpdate}
         onDelete={handleNoteDelete}
       />
+
+      {historyModal && (
+        <div className="cl-history-overlay" onClick={() => setHistoryModal(null)}>
+          <div className="cl-history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="cl-history-modal__header">
+              <div>
+                <div className="cl-history-modal__title">Historial de canon</div>
+                <div className="cl-history-modal__subtitle">{historyModal.name}</div>
+              </div>
+              <button
+                type="button"
+                className="cl-history-modal__close"
+                onClick={() => setHistoryModal(null)}
+              >×</button>
+            </div>
+            <div className="cl-history-modal__body">
+              <CanonHistoryPanel
+                history={historyModal.history}
+                baseValue={historyModal.baseValue}
+                saving={loading}
+                onSave={(history) => {
+                  dispatch(
+                    contractActions.updateCanonHistoryRequest({ id: historyModal.id, history }),
+                  )
+                  setHistoryModal((m) => (m ? { ...m, history } : null))
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

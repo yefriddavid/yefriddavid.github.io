@@ -159,6 +159,30 @@ const contractSlice = createSlice({
         state.summaryFetching = false
         state.isError = true
       })
+
+      // Canon history
+      .addCase(actions.updateCanonHistoryRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.successRequestUpdateCanonHistory, (state, { payload }) => {
+        if (state.current?.id === payload.id) {
+          state.current = {
+            ...state.current,
+            rental: { ...(state.current.rental ?? {}), canon_history: payload.history },
+          }
+        }
+        if (state.summary) {
+          state.summary = state.summary.map((r) =>
+            r.id === payload.id ? { ...r, canon_history: payload.history } : r,
+          )
+        }
+        state.saving = false
+      })
+      .addCase(actions.errorRequestUpdateCanonHistory, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+        state.isError = true
+      })
   },
 })
 
