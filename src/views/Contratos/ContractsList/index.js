@@ -1,11 +1,8 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Column, Paging, FilterRow, Toolbar, Item } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import Spinner from 'src/components/shared/Spinner'
-import useIsMobile from 'src/hooks/useIsMobile'
 import * as contractActions from 'src/actions/contratos/contractActions'
 import './ContractsList.scss'
 
@@ -22,55 +19,30 @@ function calcDaysStatus(startDate) {
 
   if (days < 365) {
     const remaining = 365 - days
-    return { sortValue: -remaining, overdue: false, ok: remaining > 60, remaining, past: null }
+    return { overdue: false, ok: remaining > 60, remaining, past: null }
   }
 
-  // Past the first anniversary — show days since most recent yearly anniversary
+  // Past the first anniversary — days since most recent yearly anniversary
   const past = days % 365
-  return { sortValue: past, overdue: true, ok: false, remaining: null, past }
-}
-
-function calcSortValue(d) {
-  const s = calcDaysStatus(d.rental_start_date)
-  return s ? s.sortValue : null
+  return { overdue: true, ok: false, remaining: null, past }
 }
 
 function fmtCOP(v) {
   return v ? `$${String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}` : '—'
 }
 
-function fmtPayDay(day) {
-  if (!day) return '—'
-  return `Día ${day}`
-}
-
-// ─── Grid cell renders (module-level = stable references) ───────────────────
-
-function renderDaysCell({ value }) {
-  if (value === null || value === undefined)
-    return <span className="cl-badge cl-badge--default">Sin fecha</span>
-  if (value >= 0)
+function DaysBadge({ startDate }) {
+  const s = calcDaysStatus(startDate)
+  if (!s) return <span className="cl-badge cl-badge--default">Sin fecha</span>
+  if (s.overdue)
     return (
       <span className="cl-badge cl-badge--overdue">
-        {value === 0 ? 'Hoy vence' : `+${value} días`}
+        {s.past === 0 ? 'Hoy vence' : `+${s.past} días`}
       </span>
     )
-  const rem = -value
-  if (rem <= 60)
-    return <span className="cl-badge cl-badge--warning">{rem} días</span>
-  return <span className="cl-badge cl-badge--ok">{Math.ceil(rem / 30)} meses</span>
-}
-
-function renderCanonCell({ value }) {
-  return <span>{fmtCOP(value)}</span>
-}
-
-function handleRowPrepared(e) {
-  if (e.rowType !== 'data') return
-  const s = calcDaysStatus(e.data.rental_start_date)
-  if (!s) return
-  if (s.overdue) e.rowElement.classList.add('cl-row--overdue')
-  else if (!s.ok) e.rowElement.classList.add('cl-row--warning')
+  if (!s.ok)
+    return <span className="cl-badge cl-badge--warning">{s.remaining} días</span>
+  return <span className="cl-badge cl-badge--ok">{Math.ceil(s.remaining / 30)} meses</span>
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -78,18 +50,23 @@ function handleRowPrepared(e) {
 export default function ContractsList() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const isMobile = useIsMobile()
 
   const records = useSelector((s) => s.contrato.summary)
   const loading = useSelector((s) => s.contrato.summaryFetching)
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
   }, [dispatch])
 
+  const visibleRecords = useMemo(
+    () => (records ? records.filter((d) => showArchived || !d.archived) : null),
+    [records, showArchived],
+  )
+
   const stats = useMemo(() => {
     if (!records) return null
-    return records.reduce(
+    return records.filter((d) => !d.archived).reduce(
       (acc, d) => {
         const s = calcDaysStatus(d.rental_start_date)
         if (!s) acc.noDate++
@@ -103,18 +80,9 @@ export default function ContractsList() {
     )
   }, [records])
 
-  const handleOpenContract = useCallback(
+  const handleOpen = useCallback(
     (id) => navigate(`/contratos/generar?id=${id}`),
     [navigate],
-  )
-
-  const nameCellRender = useCallback(
-    ({ data }) => (
-      <button type="button" className="cl__link" onClick={() => handleOpenContract(data.id)}>
-        {data.name}
-      </button>
-    ),
-    [handleOpenContract],
   )
 
   if (loading && !records) return <Spinner mode="section" />
@@ -123,6 +91,13 @@ export default function ContractsList() {
     <div className="cl">
       <div className="cl__header">
         <h2 className="cl__header-title">Contratos — Actualización de canon</h2>
+        <button
+          type="button"
+          className={`btn btn-sm ${showArchived ? 'btn-secondary' : 'btn-outline-secondary'}`}
+          onClick={() => setShowArchived((v) => !v)}
+        >
+          {showArchived ? 'Ocultar archivados' : 'Mostrar archivados'}
+        </button>
         <button
           type="button"
           className="btn btn-sm btn-outline-secondary"
@@ -160,107 +135,38 @@ export default function ContractsList() {
         </div>
       )}
 
-      {isMobile ? (
-        <StandardList
-          data={records || []}
-          keyExpr="id"
-          emptyText="Sin contratos."
-          inactive={(d) => d.archived}
-          renderTitle={(d) => d.name}
-          renderBadge={(d) => {
-            const s = calcDaysStatus(d.rental_start_date)
-            if (!s) return null
-            if (s.overdue)
-              return { label: s.past === 0 ? 'Hoy' : `+${s.past}d`, variant: 'inactive' }
-            if (!s.ok) return { label: `${s.remaining}d`, variant: 'warning' }
-            return { label: `${Math.ceil(s.remaining / 30)}m`, variant: 'active' }
-          }}
-          renderRows={(d) => [
-            [d.tenant_name || <span className={SL.muted}>Sin inquilino</span>],
-            [d.property_address || <span className={SL.muted}>Sin inmueble</span>],
-            [
-              d.rental_start_date
-                ? <><span className={SL.label}>Inicio </span>{d.rental_start_date}</>
-                : null,
-              d.rental_value ? fmtCOP(d.rental_value) : null,
-              d.rental_payment_day
-                ? <><span className={SL.label}>Paga </span>{`día ${d.rental_payment_day}`}</>
-                : null,
-            ],
-          ]}
-          renderActions={(d) => [
-            {
-              label: '✏️',
-              color: 'primary',
-              title: 'Abrir en editor',
-              onClick: () => handleOpenContract(d.id),
-            },
-          ]}
-        />
-      ) : (
-        <StandardGrid
-          dataSource={records || []}
-          keyExpr="id"
-          onRowPrepared={handleRowPrepared}
-        >
-          <FilterRow visible />
-          <Paging defaultPageSize={25} />
-          <Toolbar>
-            <Item name="searchPanel" />
-          </Toolbar>
-
-          <Column
-            dataField="name"
-            caption="Contrato"
-            width={200}
-            cellRender={nameCellRender}
-          />
-          <Column
-            dataField="tenant_name"
-            caption="Inquilino"
-            width={180}
-          />
-          <Column
-            dataField="property_address"
-            caption="Inmueble"
-            minWidth={160}
-          />
-          <Column
-            dataField="rental_start_date"
-            caption="Fecha inicio"
-            dataType="date"
-            width={120}
-            alignment="center"
-            defaultSortOrder="asc"
-          />
-          <Column
-            dataField="rental_value"
-            caption="Canon"
-            dataType="number"
-            width={120}
-            alignment="right"
-            cellRender={renderCanonCell}
-          />
-          <Column
-            dataField="rental_payment_day"
-            caption="Día de pago"
-            dataType="number"
-            width={100}
-            alignment="center"
-            customizeText={({ value }) => fmtPayDay(value)}
-          />
-          <Column
-            caption="Actualizar canon"
-            width={150}
-            alignment="center"
-            calculateCellValue={calcSortValue}
-            cellRender={renderDaysCell}
-            defaultSortOrder="desc"
-            sortIndex={0}
-            allowFiltering={false}
-          />
-        </StandardGrid>
-      )}
+      <StandardList
+        data={visibleRecords || []}
+        keyExpr="id"
+        emptyText="Sin contratos."
+        inactive={(d) => d.archived}
+        renderTitle={(d) => d.name}
+        renderBadge={(d) => {
+          const s = calcDaysStatus(d.rental_start_date)
+          if (!s) return null
+          if (s.overdue)
+            return { label: s.past === 0 ? 'Hoy' : `+${s.past}d`, variant: 'inactive' }
+          if (!s.ok) return { label: `${s.remaining}d`, variant: 'warning' }
+          return { label: `${Math.ceil(s.remaining / 30)}m`, variant: 'active' }
+        }}
+        renderValue={(d) => (d.rental_value ? fmtCOP(d.rental_value) : null)}
+        renderRows={(d) => [
+          [d.tenant_name || <span className={SL.muted}>Sin inquilino</span>],
+          [d.property_address || <span className={SL.muted}>Sin inmueble</span>],
+          [
+            d.rental_start_date
+              ? <><span className={SL.label}>Inicio </span>{d.rental_start_date}</>
+              : null,
+            d.rental_payment_day
+              ? <><span className={SL.label}>Paga </span><span className={SL.mono}>{`día ${d.rental_payment_day}`}</span></>
+              : null,
+            <DaysBadge key="badge" startDate={d.rental_start_date} />,
+          ],
+        ]}
+        renderActions={(d) => [
+          { label: '✏️', color: 'primary', title: 'Abrir en editor', onClick: () => handleOpen(d.id) },
+        ]}
+      />
     </div>
   )
 }
