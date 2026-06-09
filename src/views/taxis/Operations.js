@@ -155,7 +155,10 @@ const Operations = () => {
   const expenses = expensesData ?? []
 
   const driversByVehicle = useMemo(
-    () => new Map(drivers.filter((d) => d.defaultVehicle).map((d) => [d.defaultVehicle, d])),
+    () =>
+      new Map(
+        drivers.filter((d) => d.defaultVehicle && d.active !== false).map((d) => [d.defaultVehicle, d]),
+      ),
     [drivers],
   )
 
