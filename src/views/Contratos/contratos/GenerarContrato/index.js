@@ -114,7 +114,7 @@ export default function GenerarContrato() {
       )}
 
       <header className="contratos-header">
-        <CLink href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <CLink href="/contratos/list" style={{ textDecoration: 'none', color: 'inherit' }}>
           <h1>{titleText}</h1>
         </CLink>
         <span className="subtitle">Colombia &mdash; Generador de documentos</span>
