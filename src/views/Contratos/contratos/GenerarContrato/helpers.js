@@ -70,7 +70,7 @@ export function buildPayload(form) {
       value: parseCOP(form.rental_value),
       duration: form.rental_duration,
       start_date: form.rental_start_date,
-      payment_day: form.rental_payment_day ? Number(form.rental_payment_day) : null,
+      payment_day: form.rental_payment_day !== '' ? Number(form.rental_payment_day) : null,
     },
     contract: { city: form.contract_city, date: form.contract_date },
     account: {

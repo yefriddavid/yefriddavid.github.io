@@ -28,21 +28,14 @@ function calcDaysStatus(startDate) {
 }
 
 function fmtCOP(v) {
-  return v ? `$${String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}` : '—'
+  return v ? `$${String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}` : null
 }
 
-function DaysBadge({ startDate }) {
-  const s = calcDaysStatus(startDate)
-  if (!s) return <span className="cl-badge cl-badge--default">Sin fecha</span>
-  if (s.overdue)
-    return (
-      <span className="cl-badge cl-badge--overdue">
-        {s.past === 0 ? 'Hoy vence' : `+${s.past} días`}
-      </span>
-    )
-  if (!s.ok)
-    return <span className="cl-badge cl-badge--warning">{s.remaining} días</span>
-  return <span className="cl-badge cl-badge--ok">{Math.ceil(s.remaining / 30)} meses</span>
+function fmtDate(iso) {
+  if (!iso) return null
+  const [y, m, d] = iso.split('-')
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+  return `${parseInt(d, 10)} ${months[parseInt(m, 10) - 1]} ${y}`
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -57,6 +50,14 @@ export default function ContractsList() {
 
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
+  }, [dispatch])
+
+  // Re-fetch when the tab/window regains focus so data stays fresh after
+  // editing a contract in GenerarContrato and navigating back here
+  useEffect(() => {
+    const onFocus = () => dispatch(contractActions.fetchSummaryRequest())
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [dispatch])
 
   const visibleRecords = useMemo(
@@ -149,20 +150,34 @@ export default function ContractsList() {
           if (!s.ok) return { label: `${s.remaining}d`, variant: 'warning' }
           return { label: `${Math.ceil(s.remaining / 30)}m`, variant: 'active' }
         }}
-        renderValue={(d) => (d.rental_value ? fmtCOP(d.rental_value) : null)}
-        renderRows={(d) => [
-          [d.tenant_name || <span className={SL.muted}>Sin inquilino</span>],
-          [d.property_address || <span className={SL.muted}>Sin inmueble</span>],
-          [
-            d.rental_start_date
-              ? <><span className={SL.label}>Inicio </span>{d.rental_start_date}</>
-              : null,
-            d.rental_payment_day
-              ? <><span className={SL.label}>Paga </span><span className={SL.mono}>{`día ${d.rental_payment_day}`}</span></>
-              : null,
-            <DaysBadge key="badge" startDate={d.rental_start_date} />,
-          ],
-        ]}
+        renderRows={(d) => {
+          const s = calcDaysStatus(d.rental_start_date)
+          const renewalText = s
+            ? s.overdue
+              ? `Atrasado +${s.past === 0 ? 'hoy' : `${s.past} días`}`
+              : !s.ok
+              ? `Por vencer: ${s.remaining} días`
+              : `Vence en ${Math.ceil(s.remaining / 30)} meses`
+            : null
+          return [
+            [
+              d.tenant_name || <span className={SL.muted}>Sin inquilino</span>,
+              fmtCOP(d.rental_value),
+            ],
+            [d.property_address || <span className={SL.muted}>Sin inmueble</span>],
+            [
+              d.rental_start_date
+                ? <><span className={SL.label}>Inicio </span>{fmtDate(d.rental_start_date)}</>
+                : null,
+              d.rental_payment_day
+                ? <><span className={SL.label}>Paga el </span><span className={SL.mono}>{`día ${d.rental_payment_day}`}</span></>
+                : null,
+            ],
+            renewalText
+              ? [<><span className={SL.label}>Canon: </span><span className={s.overdue ? 'cl-renewal--overdue' : !s.ok ? 'cl-renewal--warning' : 'cl-renewal--ok'}>{renewalText}</span></>]
+              : [],
+          ]
+        }}
         renderActions={(d) => [
           { label: '✏️', color: 'primary', title: 'Abrir en editor', onClick: () => handleOpen(d.id) },
         ]}

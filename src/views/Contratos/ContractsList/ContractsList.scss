@@ -1,3 +1,16 @@
+.cl-renewal--overdue { color: #dc3545; font-weight: 600; }
+.cl-renewal--warning { color: #856404; font-weight: 600; }
+.cl-renewal--ok      { color: #198754; }
+
+// Overrides for StandardList items inside this view
+.cl .sl__item        { padding: 12px 4px; }
+.cl .sl__title       { font-size: 15px; }
+.cl .sl__body        { gap: 4px; margin-top: 4px; }
+.cl .sl__row         { font-size: 12px; gap: 14px; align-items: center; }
+.cl .sl__row:first-child { font-size: 13px; font-weight: 500; color: var(--cui-body-color); }
+.cl .sl__controls    { gap: 6px; }
+.cl .sl__badge       { font-size: 11px; padding: 3px 8px; border-radius: 5px; }
+
 .cl {
   padding: 1rem;
 
