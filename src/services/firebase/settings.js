@@ -88,6 +88,7 @@ export const COL_CONTRATOS_OWNERS = 'Contratos_Propietarios'
 export const COL_CONTRATOS_BANK_ACCOUNTS = 'Contratos_CuentasBancarias'
 export const COL_CONTRATOS_NOTES = 'Contratos_contract_notes'
 export const COL_CONTRATOS_ATTACHMENTS = 'Contratos_contract_attachments'
+export const COL_CONTRATOS_MODULE_NOTES = 'Contratos_module_notes'
 
 // Admin
 export const COL_TENANTS = 'Admin_Tenants'

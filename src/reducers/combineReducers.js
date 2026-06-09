@@ -25,6 +25,7 @@ import contratoOwner from './contratos/ownerReducer'
 import contrato from './contratos/contractReducer'
 import contratoNote from './contratos/contractNoteReducer'
 import contratoAttachment from './contratos/contractAttachmentReducer'
+import contratoModuleNote from './contratos/contractModuleNoteReducer'
 import egg from './cashflow/eggReducer'
 import transaction from './cashflow/transactionReducer'
 import accountsMaster from './cashflow/accountsMasterReducer'
@@ -79,6 +80,7 @@ const combinedReducers = combineReducers({
   contrato,
   contratoNote,
   contratoAttachment,
+  contratoModuleNote,
   egg,
   transaction,
   accountsMaster,

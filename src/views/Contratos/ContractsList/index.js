@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import Spinner from 'src/components/shared/Spinner'
 import * as contractActions from 'src/actions/contratos/contractActions'
+import * as moduleNoteActions from 'src/actions/contratos/contractModuleNoteActions'
+import ModuleNotes from './ModuleNotes'
 import './ContractsList.scss'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -46,10 +48,14 @@ export default function ContractsList() {
 
   const records = useSelector((s) => s.contrato.summary)
   const loading = useSelector((s) => s.contrato.summaryFetching)
+  const notes = useSelector((s) => s.contratoModuleNote.notes)
+  const notesFetching = useSelector((s) => s.contratoModuleNote.fetching)
+  const notesSaving = useSelector((s) => s.contratoModuleNote.saving)
   const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
+    dispatch(moduleNoteActions.fetchRequest())
   }, [dispatch])
 
   // Re-fetch when the tab/window regains focus so data stays fresh after
@@ -84,6 +90,19 @@ export default function ContractsList() {
   const handleOpen = useCallback(
     (id) => navigate(`/contratos/generar?id=${id}`),
     [navigate],
+  )
+
+  const handleNoteAdd = useCallback(
+    (text) => dispatch(moduleNoteActions.createRequest({ text })),
+    [dispatch],
+  )
+  const handleNoteUpdate = useCallback(
+    (id, text) => dispatch(moduleNoteActions.updateRequest({ id, text })),
+    [dispatch],
+  )
+  const handleNoteDelete = useCallback(
+    (id) => dispatch(moduleNoteActions.deleteRequest({ id })),
+    [dispatch],
   )
 
   if (loading && !records) return <Spinner mode="section" />
@@ -181,6 +200,15 @@ export default function ContractsList() {
         renderActions={(d) => [
           { label: '✏️', color: 'primary', title: 'Abrir en editor', onClick: () => handleOpen(d.id) },
         ]}
+      />
+
+      <ModuleNotes
+        notes={notes}
+        fetching={notesFetching}
+        saving={notesSaving}
+        onAdd={handleNoteAdd}
+        onUpdate={handleNoteUpdate}
+        onDelete={handleNoteDelete}
       />
     </div>
   )

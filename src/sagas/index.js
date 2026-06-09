@@ -24,6 +24,7 @@ import sagaContratoOwners from './contratos/ownerSagas'
 import sagaContratos from './contratos/contractSagas'
 import sagaContratoNotes from './contratos/contractNoteSagas'
 import sagaContratoAttachments from './contratos/contractAttachmentSagas'
+import sagaContratoModuleNotes from './contratos/contractModuleNoteSagas'
 import sagaEggs from './cashflow/eggSagas'
 import sagaTransactions from './cashflow/transactionSagas'
 import sagaAccountsMaster from './cashflow/accountsMasterSagas'
@@ -77,6 +78,7 @@ export default function* rootSagas() {
     sagaContratos(),
     sagaContratoNotes(),
     sagaContratoAttachments(),
+    sagaContratoModuleNotes(),
     sagaEggs(),
     sagaTransactions(),
     sagaAccountsMaster(),
