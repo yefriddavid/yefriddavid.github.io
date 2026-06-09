@@ -590,6 +590,20 @@ export default function GenerarContrato() {
                   />
                 </div>
                 <div className="c-field">
+                  <label className="c-label">Día de pago del canon</label>
+                  <input
+                    className="c-input"
+                    type="number"
+                    placeholder="Ej. 5"
+                    min="1"
+                    max="31"
+                    inputMode="numeric"
+                    value={form.rental_payment_day}
+                    onChange={set('rental_payment_day')}
+                  />
+                  <span className="c-hint">Día del mes en que el inquilino paga</span>
+                </div>
+                <div className="c-field">
                   <label className="c-label">
                     Ciudad del contrato <span className="req">*</span>
                   </label>

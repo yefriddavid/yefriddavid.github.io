@@ -83,3 +83,24 @@ export const cloneContract = async (sourceId, newName) => {
 export const deleteContract = async (id) => {
   await firestoreCall(() => deleteDoc(doc(db, COL, id)))
 }
+
+export const getContractsSummary = async () => {
+  const q = query(collection(db, COL), where('tenantId', '==', getTenantId()))
+  const snap = await firestoreCall(() => getDocs(q))
+  return snap.docs
+    .map((d) => {
+      const data = d.data()
+      return {
+        id: d.id,
+        name: data.name ?? '',
+        archived: data.archived === true,
+        tenant_name: data.tenant?.full_name ?? '',
+        property_address: data.property?.full_address ?? '',
+        rental_start_date: data.rental?.start_date ?? '',
+        rental_value: data.rental?.value ? Number(data.rental.value) : null,
+        rental_duration: data.rental?.duration ? Number(data.rental.duration) : null,
+        rental_payment_day: data.rental?.payment_day != null ? Number(data.rental.payment_day) : null,
+      }
+    })
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+}

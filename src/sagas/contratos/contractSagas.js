@@ -81,6 +81,17 @@ function* archiveContract({ payload }) {
   }
 }
 
+function* fetchContractsSummary() {
+  try {
+    yield put(actions.beginRequestFetchSummary())
+    const data = yield call(service.getContractsSummary)
+    yield put(actions.successRequestFetchSummary(data))
+  } catch (e) {
+    yield put(actions.errorRequestFetchSummary(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchContracts),
@@ -90,5 +101,6 @@ export default function* rootSagas() {
     takeLatest(actions.cloneRequest, cloneContract),
     takeLatest(actions.deleteRequest, deleteContract),
     takeLatest(actions.archiveRequest, archiveContract),
+    takeLatest(actions.fetchSummaryRequest, fetchContractsSummary),
   ])
 }

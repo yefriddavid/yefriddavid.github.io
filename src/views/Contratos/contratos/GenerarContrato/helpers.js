@@ -26,6 +26,7 @@ export const emptyForm = {
   rental_value: '',
   rental_duration: '',
   rental_start_date: '',
+  rental_payment_day: '',
   contract_city: '',
   contract_date: '',
   account_bank_name: '',
@@ -69,6 +70,7 @@ export function buildPayload(form) {
       value: parseCOP(form.rental_value),
       duration: form.rental_duration,
       start_date: form.rental_start_date,
+      payment_day: form.rental_payment_day ? Number(form.rental_payment_day) : null,
     },
     contract: { city: form.contract_city, date: form.contract_date },
     account: {
@@ -100,6 +102,7 @@ export function fillFormFromDoc(c) {
     rental_value: c.rental?.value ? formatCOP(c.rental.value) : '',
     rental_duration: c.rental?.duration ?? '',
     rental_start_date: c.rental?.start_date ?? '',
+    rental_payment_day: c.rental?.payment_day != null ? String(c.rental.payment_day) : '',
     contract_city: c.contract?.city ?? '',
     contract_date: c.contract?.date ?? '',
     account_bank_name: c.account?.bank_name ?? '',

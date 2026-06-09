@@ -34,3 +34,8 @@ export const archiveRequest = createAction('request archive contrato')
 export const beginRequestArchive = createAction('begin request archive contrato')
 export const successRequestArchive = createAction('request archive contrato success')
 export const errorRequestArchive = createAction('request archive contrato error')
+
+export const fetchSummaryRequest = createAction('fetch contratos summary')
+export const beginRequestFetchSummary = createAction('begin request fetch contratos summary')
+export const successRequestFetchSummary = createAction('fetch contratos summary success')
+export const errorRequestFetchSummary = createAction('request fetch contratos summary error')

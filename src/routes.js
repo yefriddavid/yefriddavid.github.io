@@ -2,6 +2,8 @@ import React from 'react'
 
 const Home = React.lazy(() => import('./views/Home'))
 
+const ContractsList = React.lazy(() => import('./views/Contratos/ContractsList'))
+
 const InmobiliariaGallery = React.lazy(() => import('./views/Inmobiliaria/Gallery'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
@@ -13,6 +15,12 @@ const routes = [
     path: '/home',
     name: 'Home',
     element: Home,
+  },
+  {
+    path: '/contratos/list',
+    name: 'Contratos',
+    longName: 'Contratos — Actualización de canon',
+    element: ContractsList,
   },
   {
     path: '/inmobiliaria/gallery',

@@ -6,10 +6,12 @@ const contractSlice = createSlice({
   initialState: {
     list: null,
     current: null,
+    summary: null,
     error: {},
     fetching: false,
     loading: false,
     saving: false,
+    summaryFetching: false,
     isError: false,
   },
   reducers: {},
@@ -138,6 +140,23 @@ const contractSlice = createSlice({
       .addCase(actions.errorRequestArchive, (state, { payload }) => {
         state.error = payload
         state.saving = false
+        state.isError = true
+      })
+
+      // Fetch summary
+      .addCase(actions.fetchSummaryRequest, (state) => {
+        state.summaryFetching = true
+      })
+      .addCase(actions.beginRequestFetchSummary, (state) => {
+        state.summaryFetching = true
+      })
+      .addCase(actions.successRequestFetchSummary, (state, { payload }) => {
+        state.summary = payload
+        state.summaryFetching = false
+      })
+      .addCase(actions.errorRequestFetchSummary, (state, { payload }) => {
+        state.error = payload
+        state.summaryFetching = false
         state.isError = true
       })
   },

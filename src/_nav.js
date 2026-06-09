@@ -187,6 +187,12 @@ const getNav = (t, role) => {
       },
       {
         component: CNavItem,
+        name: 'Vencimientos canon',
+        to: '/contratos/list',
+        icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
         name: 'Designs',
         to: '/inmobiliaria/designs',
         icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
