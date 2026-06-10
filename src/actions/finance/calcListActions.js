@@ -12,9 +12,9 @@ export const deleteListRequest = createAction('delete calc list')
 export const deleteListSuccess = createAction('delete calc list success')
 export const deleteListError   = createAction('delete calc list error')
 
-export const renameListRequest = createAction('rename calc list')
-export const renameListSuccess = createAction('rename calc list success')
-export const renameListError   = createAction('rename calc list error')
+export const updateListRequest = createAction('update calc list')
+export const updateListSuccess = createAction('update calc list success')
+export const updateListError   = createAction('update calc list error')
 
 // payload: id — local only, no IDB
 export const setActive = createAction('set active calc list')

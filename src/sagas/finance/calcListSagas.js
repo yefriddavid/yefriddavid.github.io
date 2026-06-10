@@ -35,15 +35,18 @@ function* deleteList({ payload: id }) {
   }
 }
 
-function* renameList({ payload: { id, name } }) {
+function* updateList({ payload: { id, name, budget, order } }) {
   try {
     const lists = yield select((s) => s.calcList.lists)
     const list = lists.find((l) => l.id === id)
     if (!list) return
-    yield call(idb.saveList, { ...list, name, updatedAt: now() })
-    yield put(a.renameListSuccess({ id, name }))
+    const patch = { name }
+    if (budget !== undefined) patch.budget = budget
+    if (order !== undefined) patch.order = order
+    yield call(idb.saveList, { ...list, ...patch, updatedAt: now() })
+    yield put(a.updateListSuccess({ id, name, budget, order }))
   } catch (e) {
-    yield put(a.renameListError(e.message))
+    yield put(a.updateListError(e.message))
     yield put(push({ type: 'error', message: e.message }))
   }
 }
@@ -104,7 +107,7 @@ export default function* sagaCalcList() {
     takeLatest(a.loadRequest, loadLists),
     takeEvery(a.createListRequest, createList),
     takeEvery(a.deleteListRequest, deleteList),
-    takeEvery(a.renameListRequest, renameList),
+    takeEvery(a.updateListRequest, updateList),
     takeEvery(a.saveRowRequest, saveRow),
     takeEvery(a.deleteRowRequest, deleteRow),
     takeEvery(a.mergeRequest, mergeLists),

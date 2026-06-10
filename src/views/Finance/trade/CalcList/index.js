@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
@@ -21,7 +21,7 @@ const COLUMNS = [
   },
 ]
 
-function Tab({ list, active, onSelect, onDelete, onRename }) {
+function Tab({ list, active, dragging, dragOver, onSelect, onDelete, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const inputRef = useRef(null)
@@ -41,10 +41,20 @@ function Tab({ list, active, onSelect, onDelete, onRename }) {
 
   return (
     <div
-      className={`calc-list__tab${active ? ' calc-list__tab--active' : ''}`}
+      className={[
+        'calc-list__tab',
+        active ? 'calc-list__tab--active' : '',
+        dragging ? 'calc-list__tab--dragging' : '',
+        dragOver ? 'calc-list__tab--drag-over' : '',
+      ].filter(Boolean).join(' ')}
+      draggable={!editing}
+      onDragStart={() => onDragStart(list.id)}
+      onDragOver={(e) => { e.preventDefault(); onDragOver(list.id) }}
+      onDrop={(e) => { e.preventDefault(); onDrop(list.id) }}
+      onDragEnd={onDragEnd}
       onClick={() => onSelect(list.id)}
       onDoubleClick={startEdit}
-      title="Doble click para renombrar"
+      title="Doble click para renombrar, arrastrar para reordenar"
     >
       {editing ? (
         <input
@@ -74,9 +84,23 @@ export default function CalcList() {
   const activeId = useSelector((s) => s.calcList.activeId)
   const activeList = lists.find((l) => l.id === activeId)
   const [syncOpen, setSyncOpen] = useState(false)
+  const [dragTabId, setDragTabId] = useState(null)
+  const [dragOverTabId, setDragOverTabId] = useState(null)
+  const [orderedIds, setOrderedIds] = useState(() => lists.map((l) => l.id))
   const { myId, status, error, connectTo } = usePeerSync()
 
   useEffect(() => { dispatch(a.loadRequest()) }, [dispatch])
+
+  // sync orderedIds when lists change externally (create / delete / merge)
+  useEffect(() => {
+    setOrderedIds((prev) => {
+      const current = lists.map((l) => l.id)
+      return [
+        ...prev.filter((id) => current.includes(id)),
+        ...current.filter((id) => !prev.includes(id)),
+      ]
+    })
+  }, [lists])
 
   const handleAddList = () => {
     dispatch(a.createListRequest(`Lista ${lists.length + 1}`))
@@ -101,6 +125,26 @@ export default function CalcList() {
     dispatch(a.deleteRowRequest({ listId: activeId, rowId }))
   }
 
+  const handleBudget = (budget) => {
+    dispatch(a.updateListRequest({ id: activeId, name: activeList.name, budget }))
+  }
+
+  const handleReorder = useCallback((fromId, toId) => {
+    if (fromId === toId) return
+    setOrderedIds((prev) => {
+      const next = [...prev]
+      const from = next.indexOf(fromId)
+      const to = next.indexOf(toId)
+      next.splice(from, 1)
+      next.splice(to, 0, fromId)
+      next.forEach((id, order) => {
+        const list = lists.find((l) => l.id === id)
+        if (list) dispatch(a.updateListRequest({ id, name: list.name, order }))
+      })
+      return next
+    })
+  }, [lists, dispatch])
+
   return (
     <div className="calc-list">
       {syncOpen && (
@@ -113,16 +157,26 @@ export default function CalcList() {
         />
       )}
       <div className="calc-list__tabs">
-        {lists.map((list) => (
-          <Tab
-            key={list.id}
-            list={list}
-            active={list.id === activeId}
-            onSelect={(id) => dispatch(a.setActive(id))}
-            onDelete={(id) => dispatch(a.deleteListRequest(id))}
-            onRename={(id, name) => dispatch(a.renameListRequest({ id, name }))}
-          />
-        ))}
+        {orderedIds.map((id) => {
+          const list = lists.find((l) => l.id === id)
+          if (!list) return null
+          return (
+            <Tab
+              key={list.id}
+              list={list}
+              active={list.id === activeId}
+              dragging={dragTabId === list.id}
+              dragOver={dragOverTabId === list.id}
+              onSelect={(id) => dispatch(a.setActive(id))}
+              onDelete={(id) => dispatch(a.deleteListRequest(id))}
+              onRename={(id, name) => dispatch(a.updateListRequest({ id, name }))}
+              onDragStart={setDragTabId}
+              onDragOver={setDragOverTabId}
+              onDrop={(toId) => { handleReorder(dragTabId, toId); setDragTabId(null); setDragOverTabId(null) }}
+              onDragEnd={() => { setDragTabId(null); setDragOverTabId(null) }}
+            />
+          )
+        })}
         <button className="calc-list__add-tab" onClick={handleAddList} title="Nueva lista">+</button>
         <button className="calc-list__sync-btn" onClick={() => setSyncOpen(true)} title="Sincronizar con otro dispositivo">
           ⇄
@@ -144,6 +198,8 @@ export default function CalcList() {
             onRowChange={handleRowChange}
             onRowAdd={handleRowAdd}
             onRowDelete={handleRowDelete}
+            budget={activeList.budget}
+            onBudgetChange={handleBudget}
             emptyText="Sin filas. Agregá una con el botón de abajo."
           />
         )}

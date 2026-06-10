@@ -31,9 +31,12 @@ const calcListSlice = createSlice({
         }
       })
 
-      .addCase(a.renameListSuccess, (state, { payload: { id, name } }) => {
+      .addCase(a.updateListSuccess, (state, { payload: { id, name, budget, order } }) => {
         const l = state.lists.find((l) => l.id === id)
-        if (l) l.name = name
+        if (!l) return
+        l.name = name
+        if (budget !== undefined) l.budget = budget
+        if (order !== undefined) l.order = order
       })
 
       .addCase(a.saveRowSuccess, (state, { payload: { listId, row } }) => {

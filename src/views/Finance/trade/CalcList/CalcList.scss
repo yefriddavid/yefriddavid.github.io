@@ -40,6 +40,17 @@
       border-bottom: 1px solid var(--cui-body-bg);
       z-index: 1;
     }
+
+    &--dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+
+    &--drag-over {
+      background: color-mix(in srgb, var(--cui-primary) 12%, var(--cui-body-bg));
+      border-color: var(--cui-primary);
+      color: var(--cui-primary);
+    }
   }
 
   &__tab-name-input {

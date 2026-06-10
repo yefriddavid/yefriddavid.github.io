@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './EditableTable.scss'
 
 /**
@@ -12,6 +12,50 @@ import './EditableTable.scss'
  *   format?: (value) => string,  // optional display formatter
  * }>
  */
+function BudgetRow({ columns, totalColumn, budget, onBudgetChange }) {
+  const [editing, setEditing] = useState(false)
+  const totalCol = columns.find((c) => c.key === totalColumn)
+
+  return (
+    <tr className="editable-table__budget-row">
+      {columns.map((col, i) => (
+        <td key={col.key} className={col.key === totalColumn ? 'editable-table__td--calc' : ''}>
+          {i === 0 ? (
+            <span className="editable-table__total-label">Presupuesto</span>
+          ) : col.key === totalColumn ? (
+            editing ? (
+              <input
+                className="editable-table__budget-input"
+                type="number"
+                defaultValue={budget ?? ''}
+                placeholder="0"
+                autoFocus
+                onBlur={(e) => {
+                  const val = parseFloat(e.target.value)
+                  onBudgetChange(isNaN(val) ? 0 : val)
+                  setEditing(false)
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur() }}
+              />
+            ) : (
+              <span
+                className="editable-table__budget-display"
+                onClick={() => setEditing(true)}
+                title="Click para editar"
+              >
+                {budget != null && budget !== 0
+                  ? (totalCol?.format ? totalCol.format(budget) : budget)
+                  : <span className="editable-table__budget-placeholder">Click para definir</span>}
+              </span>
+            )
+          ) : null}
+        </td>
+      ))}
+      <td />
+    </tr>
+  )
+}
+
 export default function EditableTable({
   columns = [],
   rows = [],
@@ -20,6 +64,8 @@ export default function EditableTable({
   onRowAdd,
   onRowDelete,
   totalColumn,
+  budget,
+  onBudgetChange,
   emptyText = 'No hay filas.',
 }) {
   const calcTotalValue = (row) => {
@@ -128,6 +174,14 @@ export default function EditableTable({
               ))}
               <td />
             </tr>
+            {onBudgetChange != null && (
+              <BudgetRow
+                columns={columns}
+                totalColumn={totalColumn}
+                budget={budget}
+                onBudgetChange={onBudgetChange}
+              />
+            )}
           </tfoot>
         )}
       </table>

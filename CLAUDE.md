@@ -25,6 +25,31 @@ Redux Toolkit + Redux-Saga + redux-act pattern:
 
 Data flows: Component → dispatch action → saga intercepts → service call → reducer update → component re-renders.
 
+#### RULE: Never create per-field actions — use one generic update action per model
+
+When a model needs a new persisted field, extend the existing `update*Request` payload to accept it optionally. The saga spreads it into the patch only when defined. **Never create a dedicated action/saga/reducer triplet just to save a single field.**
+
+```js
+// ✅ One action covers any combination of fields
+dispatch(updateListRequest({ id, name, budget }))
+dispatch(updateListRequest({ id, name: list.name, order }))
+
+// ❌ Dedicated action per field — never do this
+dispatch(setBudgetRequest({ listId, budget }))
+dispatch(setOrderRequest({ listId, order }))
+dispatch(reorderLists(ids))
+```
+
+The saga pattern for optional fields:
+```js
+function* updateList({ payload: { id, name, budget, order } }) {
+  const patch = { name }
+  if (budget !== undefined) patch.budget = budget
+  if (order !== undefined) patch.order = order
+  yield call(idb.saveList, { ...list, ...patch })
+}
+```
+
 #### RULE: No direct API or database calls from views
 Views and components must **never** import from `src/services/`, `src/services/providers/firebase/`, or call `fetch`/`axios` directly. All async operations (Firestore reads/writes, REST calls) go exclusively through the Redux layer:
 

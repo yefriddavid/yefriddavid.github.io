@@ -8,9 +8,9 @@ export const fetchAll = async () => {
   return new Promise((resolve, reject) => {
     const req = db.transaction(STORE, 'readonly').objectStore(STORE).getAll()
     req.onsuccess = (e) => {
-      const all = e.target.result ?? []
-      // filter to valid list documents (ignore legacy flat rows)
-      resolve(all.filter((d) => d && typeof d.name === 'string' && Array.isArray(d.rows)))
+      const all = (e.target.result ?? []).filter((d) => d && typeof d.name === 'string' && Array.isArray(d.rows))
+      all.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+      resolve(all)
     }
     req.onerror = (e) => reject(e.target.error)
   })
