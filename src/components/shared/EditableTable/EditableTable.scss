@@ -107,6 +107,27 @@
     color: color-mix(in srgb, var(--cui-primary) 85%, var(--cui-body-color));
   }
 
+  &__select {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 5px;
+    color: var(--cui-body-color);
+    font-size: 0.875rem;
+    padding: 7px 10px;
+    outline: none;
+    cursor: pointer;
+    appearance: auto;
+
+    &:focus {
+      background: var(--cui-body-bg);
+      border-color: var(--cui-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--cui-primary) 15%, transparent);
+      position: relative;
+      z-index: 1;
+    }
+  }
+
   // ── Delete button ────────────────────────────────────────────────────
   &__delete-btn {
     background: none;
@@ -312,7 +333,8 @@
       }
     }
 
-    &__input {
+    &__input,
+    &__select {
       padding: 5px 12px;
       font-size: 0.95rem;
 

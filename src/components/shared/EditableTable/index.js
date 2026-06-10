@@ -5,10 +5,11 @@ import './EditableTable.scss'
  * columns: Array<{
  *   key: string,
  *   label: string,
- *   type: 'text' | 'number' | 'calc',
- *   calc?: (row) => number,      // required when type === 'calc'
+ *   type: 'text' | 'number' | 'calc' | 'select',
+ *   calc?: (row) => number,                        // required when type === 'calc'
+ *   options?: Array<{ value: string, label: string }>, // required when type === 'select'
  *   width?: number | string,
- *   align?: 'left' | 'right',    // default: 'left' for text, 'right' for number/calc
+ *   align?: 'left' | 'right',    // default: 'left' for text/select, 'right' for number/calc
  *   format?: (value) => string,  // optional display formatter
  * }>
  */
@@ -128,6 +129,16 @@ export default function EditableTable({
                     <span className="editable-table__calc-cell">
                       {displayValue(col, row) ?? '—'}
                     </span>
+                  ) : col.type === 'select' ? (
+                    <select
+                      className="editable-table__select"
+                      value={row[col.key] ?? col.options?.[0]?.value ?? ''}
+                      onChange={(e) => onRowChange?.(row[keyExpr], col.key, e.target.value)}
+                    >
+                      {col.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
                   ) : (
                     <input
                       className={`editable-table__input${alignClass(col) ? ` editable-table__input${alignClass(col)}` : ''}`}

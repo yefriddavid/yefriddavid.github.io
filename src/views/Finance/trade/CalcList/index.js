@@ -3,23 +3,117 @@ import { useDispatch, useSelector } from 'react-redux'
 import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
 import { fmtUsd } from '../tradeUtils'
+import { CALC_LIST_CATEGORIES } from 'src/constants/finance'
 import usePeerSync from './usePeerSync'
 import SyncModal from './SyncModal'
 import './CalcList.scss'
 
 const COLUMNS = [
   { key: 'description', label: 'Description', type: 'text' },
-  { key: 'quantity', label: 'Qty', type: 'number', width: 100 },
-  { key: 'value', label: 'Value', type: 'number', width: 130 },
+  { key: 'category', label: 'Category', type: 'select', options: CALC_LIST_CATEGORIES, width: 110 },
+  { key: 'quantity', label: 'Qty', type: 'number', width: 90 },
+  { key: 'value', label: 'Value', type: 'number', width: 120 },
   {
     key: 'total',
     label: 'Total',
     type: 'calc',
-    width: 140,
+    width: 130,
     calc: (row) => (row.quantity || 0) * (row.value || 0),
     format: fmtUsd,
   },
 ]
+
+function Summary({ lists, orderedIds }) {
+  const rows = lists.map((l) => ({
+    id: l.id,
+    name: l.name,
+    total: l.rows.reduce((s, r) => s + (r.quantity || 0) * (r.value || 0), 0),
+    budget: l.budget ?? null,
+    items: l.rows.length,
+  }))
+
+  const grandTotal = rows.reduce((s, r) => s + r.total, 0)
+  const totalItems = rows.reduce((s, r) => s + r.items, 0)
+  const budgeted = rows.filter((r) => r.budget)
+  const delta = budgeted.length
+    ? budgeted.reduce((s, r) => s + r.total - r.budget, 0)
+    : null
+
+  const ordered = orderedIds.map((id) => rows.find((r) => r.id === id)).filter(Boolean)
+
+  const byCategory = CALC_LIST_CATEGORIES.map((cat) => ({
+    ...cat,
+    total: lists.reduce((s, l) =>
+      s + l.rows
+        .filter((r) => (r.category || CALC_LIST_CATEGORIES[0].value) === cat.value)
+        .reduce((rs, r) => rs + (r.quantity || 0) * (r.value || 0), 0)
+    , 0),
+  }))
+
+  if (!lists.length) return null
+
+  return (
+    <div className="calc-list__summary">
+      <div className="calc-list__summary-stats">
+        <div className="calc-list__stat">
+          <span className="calc-list__stat-label">Listas</span>
+          <span className="calc-list__stat-value">{lists.length}</span>
+        </div>
+        <div className="calc-list__stat">
+          <span className="calc-list__stat-label">Items</span>
+          <span className="calc-list__stat-value">{totalItems}</span>
+        </div>
+        <div className="calc-list__stat">
+          <span className="calc-list__stat-label">Total general</span>
+          <span className="calc-list__stat-value calc-list__stat-value--primary">{fmtUsd(grandTotal)}</span>
+        </div>
+        {delta !== null && (
+          <div className="calc-list__stat">
+            <span className="calc-list__stat-label">vs Presupuesto</span>
+            <span className={`calc-list__stat-value calc-list__stat-value--${delta > 0 ? 'danger' : 'success'}`}>
+              {delta > 0 ? '+' : ''}{fmtUsd(delta)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="calc-list__category-totals">
+        {byCategory.map((cat) => (
+          <div key={cat.value} className="calc-list__category-total">
+            <span className="calc-list__category-total-label">{cat.label}</span>
+            <span className="calc-list__category-total-value">{fmtUsd(cat.total)}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="calc-list__breakdown">
+        {ordered.map((r) => {
+          const pct = r.budget ? Math.min(r.total / r.budget, 1) * 100 : null
+          const over = r.budget && r.total > r.budget
+          return (
+            <div key={r.id} className="calc-list__breakdown-row">
+              <span className="calc-list__breakdown-name">{r.name}</span>
+              <div className="calc-list__breakdown-bar-wrap">
+                {pct !== null && (
+                  <div
+                    className={`calc-list__breakdown-bar calc-list__breakdown-bar--${over ? 'danger' : 'success'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                )}
+              </div>
+              <span className="calc-list__breakdown-total">{fmtUsd(r.total)}</span>
+              {r.budget ? (
+                <span className="calc-list__breakdown-budget">/ {fmtUsd(r.budget)}</span>
+              ) : (
+                <span className="calc-list__breakdown-budget calc-list__breakdown-budget--empty">—</span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function Tab({ list, active, dragging, dragOver, onSelect, onDelete, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
   const [editing, setEditing] = useState(false)
@@ -117,7 +211,7 @@ export default function CalcList() {
     if (!activeList) return
     dispatch(a.saveRowRequest({
       listId: activeId,
-      row: { id: crypto.randomUUID(), description: '', quantity: 1, value: 0 },
+      row: { id: crypto.randomUUID(), description: '', category: CALC_LIST_CATEGORIES[0].value, quantity: 1, value: 0 },
     }))
   }
 
@@ -204,6 +298,8 @@ export default function CalcList() {
           />
         )}
       </div>
+
+      <Summary lists={lists} orderedIds={orderedIds} />
     </div>
   )
 }
