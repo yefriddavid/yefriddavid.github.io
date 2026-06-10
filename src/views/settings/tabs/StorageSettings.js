@@ -11,9 +11,17 @@ import {
 } from '@coreui/react'
 import { Column, Paging } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import { cilReload, cilChevronBottom, cilChevronTop, cilTrash } from '@coreui/icons'
+import {
+  cilReload,
+  cilChevronBottom,
+  cilChevronTop,
+  cilTrash,
+  cilCheckCircle,
+  cilWarning,
+} from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { FIREBASE_SPARK_LIMITS } from 'src/constants/admin'
+import { IDB_NAME, IDB_VERSION } from 'src/services/idb/idbStores'
 import * as usageMetricsActions from 'src/actions/system/usageMetricsActions'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -366,6 +374,24 @@ const StorageSettings = () => {
         <CAlert color="secondary">No se encontraron bases de datos IndexedDB.</CAlert>
       ) : (
         <>
+          {(() => {
+            const mainDb = idbDatabases.find((db) => db.name === IDB_NAME)
+            if (!mainDb) return null
+            const isCompatible = mainDb.version === IDB_VERSION
+            return (
+              <CAlert color={isCompatible ? 'success' : 'warning'} className="py-2 small">
+                <div className="d-flex align-items-center gap-2">
+                  <CIcon icon={isCompatible ? cilCheckCircle : cilWarning} size="sm" />
+                  <span>
+                    {isCompatible
+                      ? `Tu base de datos principal "${IDB_NAME}" (v${mainDb.version}) es compatible con el sistema.`
+                      : `Incompatibilidad detectada: La base de datos "${IDB_NAME}" (v${mainDb.version}) difiere de la esperada (v${IDB_VERSION}).`}
+                  </span>
+                </div>
+              </CAlert>
+            )
+          })()}
+
           <CListGroup className="mb-3" style={{ fontSize: 13 }}>
             {idbDatabases.map((db) => (
               <CListGroupItem key={db.name} className="py-2">
