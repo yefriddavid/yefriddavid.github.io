@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
 import { fmtUsd } from '../tradeUtils'
+import usePeerSync from './usePeerSync'
+import SyncModal from './SyncModal'
 import './CalcList.scss'
 
 const COLUMNS = [
@@ -71,6 +73,8 @@ export default function CalcList() {
   const lists = useSelector((s) => s.calcList.lists)
   const activeId = useSelector((s) => s.calcList.activeId)
   const activeList = lists.find((l) => l.id === activeId)
+  const [syncOpen, setSyncOpen] = useState(false)
+  const { myId, status, error, connectTo } = usePeerSync()
 
   useEffect(() => { dispatch(a.loadRequest()) }, [dispatch])
 
@@ -99,6 +103,15 @@ export default function CalcList() {
 
   return (
     <div className="calc-list">
+      {syncOpen && (
+        <SyncModal
+          myId={myId}
+          status={status}
+          error={error}
+          onConnect={connectTo}
+          onClose={() => setSyncOpen(false)}
+        />
+      )}
       <div className="calc-list__tabs">
         {lists.map((list) => (
           <Tab
@@ -111,6 +124,9 @@ export default function CalcList() {
           />
         ))}
         <button className="calc-list__add-tab" onClick={handleAddList} title="Nueva lista">+</button>
+        <button className="calc-list__sync-btn" onClick={() => setSyncOpen(true)} title="Sincronizar con otro dispositivo">
+          ⇄
+        </button>
       </div>
 
       <div className="calc-list__content">

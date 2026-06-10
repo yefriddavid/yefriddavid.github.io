@@ -48,6 +48,13 @@ const calcListSlice = createSlice({
         const list = state.lists.find((l) => l.id === listId)
         if (list) list.rows = list.rows.filter((r) => r.id !== rowId)
       })
+
+      .addCase(a.mergeSuccess, (state, { payload }) => {
+        state.lists = payload
+        if (payload.length && !payload.find((l) => l.id === state.activeId)) {
+          state.activeId = payload[0].id
+        }
+      })
   },
 })
 

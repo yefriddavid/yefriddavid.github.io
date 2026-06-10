@@ -13,9 +13,11 @@ function* loadLists() {
   }
 }
 
+const now = () => new Date().toISOString()
+
 function* createList({ payload: name }) {
   try {
-    const list = yield call(idb.saveList, { id: crypto.randomUUID(), name, rows: [] })
+    const list = yield call(idb.saveList, { id: crypto.randomUUID(), name, rows: [], updatedAt: now() })
     yield put(a.createListSuccess(list))
   } catch (e) {
     yield put(a.createListError(e.message))
@@ -38,7 +40,7 @@ function* renameList({ payload: { id, name } }) {
     const lists = yield select((s) => s.calcList.lists)
     const list = lists.find((l) => l.id === id)
     if (!list) return
-    yield call(idb.saveList, { ...list, name })
+    yield call(idb.saveList, { ...list, name, updatedAt: now() })
     yield put(a.renameListSuccess({ id, name }))
   } catch (e) {
     yield put(a.renameListError(e.message))
@@ -54,7 +56,7 @@ function* saveRow({ payload: { listId, row } }) {
     const rows = list.rows.some((r) => r.id === row.id)
       ? list.rows.map((r) => (r.id === row.id ? row : r))
       : [...list.rows, row]
-    yield call(idb.saveList, { ...list, rows })
+    yield call(idb.saveList, { ...list, rows, updatedAt: now() })
     yield put(a.saveRowSuccess({ listId, row }))
   } catch (e) {
     yield put(a.saveRowError(e.message))
@@ -68,10 +70,31 @@ function* deleteRow({ payload: { listId, rowId } }) {
     const list = lists.find((l) => l.id === listId)
     if (!list) return
     const rows = list.rows.filter((r) => r.id !== rowId)
-    yield call(idb.saveList, { ...list, rows })
+    yield call(idb.saveList, { ...list, rows, updatedAt: now() })
     yield put(a.deleteRowSuccess({ listId, rowId }))
   } catch (e) {
     yield put(a.deleteRowError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
+function* mergeLists({ payload: remoteLists }) {
+  try {
+    const local = yield select((s) => s.calcList.lists)
+    const merged = [...local]
+    for (const remote of remoteLists) {
+      const idx = merged.findIndex((l) => l.id === remote.id)
+      if (idx === -1) {
+        merged.push(remote)
+        yield call(idb.saveList, remote)
+      } else if ((remote.updatedAt ?? '') > (merged[idx].updatedAt ?? '')) {
+        merged[idx] = remote
+        yield call(idb.saveList, remote)
+      }
+    }
+    yield put(a.mergeSuccess(merged))
+  } catch (e) {
+    yield put(a.mergeError(e.message))
     yield put(push({ type: 'error', message: e.message }))
   }
 }
@@ -84,5 +107,6 @@ export default function* sagaCalcList() {
     takeEvery(a.renameListRequest, renameList),
     takeEvery(a.saveRowRequest, saveRow),
     takeEvery(a.deleteRowRequest, deleteRow),
+    takeEvery(a.mergeRequest, mergeLists),
   ])
 }

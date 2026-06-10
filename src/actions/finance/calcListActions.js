@@ -28,3 +28,8 @@ export const saveRowError   = createAction('save calc list row error')
 export const deleteRowRequest = createAction('delete calc list row')
 export const deleteRowSuccess = createAction('delete calc list row success')
 export const deleteRowError   = createAction('delete calc list row error')
+
+// payload: list[] from remote peer — merge into local IDB
+export const mergeRequest = createAction('merge calc lists')
+export const mergeSuccess = createAction('merge calc lists success')
+export const mergeError   = createAction('merge calc lists error')
