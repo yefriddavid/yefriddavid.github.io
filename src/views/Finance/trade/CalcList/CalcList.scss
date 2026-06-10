@@ -1,10 +1,131 @@
 .calc-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: 1.5rem;
 
-  &__title {
-    font-size: 1.1rem;
+  // ── Sheet tabs ────────────────────────────────────────────────────────
+  &__tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    flex-wrap: wrap;
+    margin-bottom: -1px;
+    padding: 0 2px;
+  }
+
+  &__tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--cui-tertiary-bg);
+    border: 1px solid var(--cui-border-color);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--cui-secondary-color);
+    transition: background 0.15s, color 0.15s;
+    max-width: 180px;
+    position: relative;
+    bottom: 0;
+
+    &:hover { background: var(--cui-secondary-bg); color: var(--cui-body-color); }
+
+    &--active {
+      background: var(--cui-body-bg);
+      color: var(--cui-body-color);
+      font-weight: 600;
+      border-bottom: 1px solid var(--cui-body-bg);
+      z-index: 1;
+    }
+  }
+
+  &__tab-name-input {
+    background: none;
+    border: none;
+    outline: 1.5px solid var(--cui-primary);
+    border-radius: 3px;
+    font-size: 0.82rem;
     font-weight: 600;
-    margin: 0 0 1.25rem;
     color: var(--cui-body-color);
+    width: 110px;
+    padding: 1px 4px;
+  }
+
+  &__tab-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+    user-select: none;
+  }
+
+  &__tab-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0 2px;
+    border-radius: 50%;
+    opacity: 0.4;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+
+    &:hover { opacity: 1; color: var(--cui-danger); }
+  }
+
+  &__add-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: 1px dashed var(--cui-border-color);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: var(--cui-tertiary-bg); color: var(--cui-primary); }
+  }
+
+  // ── Content area ──────────────────────────────────────────────────────
+  &__content {
+    border: 1px solid var(--cui-border-color);
+    border-radius: 0 8px 8px 8px;
+    background: var(--cui-body-bg);
+    padding: 1.25rem;
+    flex: 1;
+  }
+
+  &__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 200px;
+    color: var(--cui-secondary-color);
+    font-size: 0.9rem;
+  }
+
+  &__new-btn {
+    padding: 7px 18px;
+    background: var(--cui-primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &:hover { opacity: 0.88; }
   }
 }
