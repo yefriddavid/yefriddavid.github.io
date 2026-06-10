@@ -146,4 +146,51 @@
 
     &:hover { opacity: 0.88; }
   }
+
+  // ── Mobile ─────────────────────────────────────────────────────────────
+  @media (max-width: 640px) {
+    padding: 0;
+
+    &__tabs {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      scrollbar-width: none;
+      padding: 8px 12px 0;
+      gap: 3px;
+      border-bottom: 1px solid var(--cui-border-color);
+      background: var(--cui-body-bg);
+
+      &::-webkit-scrollbar { display: none; }
+    }
+
+    &__tab {
+      flex-shrink: 0;
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px 8px 0 0;
+    }
+
+    &__tab-name { max-width: 90px; }
+
+    &__add-tab {
+      flex-shrink: 0;
+    }
+
+    &__sync-btn {
+      flex-shrink: 0;
+      margin-left: auto;
+      padding: 4px 10px;
+      font-size: 1rem;
+    }
+
+    &__content {
+      border: none;
+      border-radius: 0;
+      padding: 0;
+    }
+
+    &__empty-state {
+      padding: 40px 20px;
+    }
+  }
 }

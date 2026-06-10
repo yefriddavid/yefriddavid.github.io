@@ -190,4 +190,129 @@
     font-size: 0.85rem;
     font-style: italic;
   }
+
+  // ── Mobile ───────────────────────────────────────────────────────────
+  @media (max-width: 640px) {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+
+    &__thead { display: none; }
+
+    &__table,
+    &__tbody { display: block; }
+
+    &__tr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0;
+      padding: 10px 4px 6px;
+      border-bottom: 1px solid var(--cui-border-color);
+      position: relative;
+
+      &:nth-child(even) { background: var(--cui-tertiary-bg); }
+      &:hover { background: color-mix(in srgb, var(--cui-primary) 6%, var(--cui-body-bg)); }
+
+      // always show delete on mobile
+      .editable-table__delete-btn { opacity: 0.45; }
+
+      & td { border-bottom: none; }
+    }
+
+    &__td {
+      // Description → full width, right padding for delete btn
+      &:first-child {
+        width: calc(100% - 40px);
+        flex-shrink: 0;
+      }
+
+      // Numeric (non-first, non-actions, non-calc) columns → equal width row below
+      &:nth-child(n+2):not(.editable-table__td--actions):not(.editable-table__td--calc) {
+        flex: 1;
+        min-width: 0;
+
+        &::before {
+          content: attr(data-label);
+          display: block;
+          font-size: 0.62rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--cui-secondary-color);
+          padding: 6px 12px 2px;
+        }
+      }
+
+      &--actions {
+        position: absolute;
+        top: 10px;
+        right: 4px;
+        width: 36px;
+        padding: 0;
+      }
+
+      &--calc {
+        border-left: none;
+        background: none;
+        flex: 1;
+        min-width: 0;
+
+        &::before {
+          content: attr(data-label);
+          display: block;
+          font-size: 0.62rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--cui-secondary-color);
+          padding: 6px 12px 2px;
+        }
+      }
+    }
+
+    &__input {
+      padding: 5px 12px;
+      font-size: 0.95rem;
+
+      &:focus { box-shadow: none; }
+    }
+
+    &__calc-cell {
+      padding: 5px 12px;
+      font-size: 0.95rem;
+      text-align: left;
+      color: var(--cui-primary);
+    }
+
+    &__delete-btn {
+      width: 32px;
+      height: 32px;
+    }
+
+    // Footer on mobile
+    &__footer {
+      display: block;
+
+      tr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      td { display: block; }
+    }
+
+    &__total-value {
+      background: none;
+      border-left: none;
+      font-size: 1.05rem;
+    }
+
+    &__add-row {
+      padding: 12px 16px;
+      font-size: 0.88rem;
+    }
+  }
 }

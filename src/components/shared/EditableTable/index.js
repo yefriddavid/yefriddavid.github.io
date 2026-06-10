@@ -76,6 +76,7 @@ export default function EditableTable({
                 <td
                   key={col.key}
                   className={`editable-table__td${col.type === 'calc' ? ' editable-table__td--calc' : ''}`}
+                  data-label={col.label}
                 >
                   {col.type === 'calc' ? (
                     <span className="editable-table__calc-cell">
