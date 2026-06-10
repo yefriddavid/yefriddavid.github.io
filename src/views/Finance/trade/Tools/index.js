@@ -1,10 +1,6 @@
 import React, { useState } from 'react'
+import { fmtUsd as fmt } from '../tradeUtils'
 import './Tools.scss'
-
-const fmt = (n, dec = 2) =>
-  n != null && isFinite(n)
-    ? n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec })
-    : '—'
 
 function GridCalculator() {
   const [capital, setCapital] = useState('')

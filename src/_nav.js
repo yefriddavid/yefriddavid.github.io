@@ -2,6 +2,7 @@ import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
   cilBalanceScale,
+  cilList,
   cilBarChart,
   cilBasket,
   cilBell,
@@ -160,6 +161,12 @@ const getNav = (t, role) => {
               name: 'Prices',
               to: '/finance/trade/prices',
               icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Calc List',
+              to: '/finance/trade/calc-list',
+              icon: <CIcon icon={cilList} customClassName="nav-icon" />,
             },
           ],
         },

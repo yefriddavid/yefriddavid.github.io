@@ -34,6 +34,7 @@ import myProject from './cashflow/myProjectReducer'
 import asset from './cashflow/assetReducer'
 import gridTrade from './cashflow/gridTradeReducer'
 import customGridTrade from './finance/customGridTradeReducer'
+import calcList from './finance/calcListReducer'
 import tenants from './tenantsReducer'
 import domoticaTransaction from './domotica/domoticaTransactionReducer'
 import domoticaCurrent from './domotica/domoticaCurrentReducer'
@@ -95,6 +96,7 @@ const combinedReducers = combineReducers({
   asset,
   gridTrade,
   customGridTrade,
+  calcList,
   tenants,
   domoticaTransaction,
   domoticaCurrent,

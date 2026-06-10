@@ -1,0 +1,10 @@
+.calc-list {
+  padding: 1.5rem;
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1.25rem;
+    color: var(--cui-body-color);
+  }
+}

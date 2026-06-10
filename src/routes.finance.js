@@ -17,6 +17,7 @@ const GridTrade = React.lazy(() => import('./views/CashFlow/trade/GridTrade'))
 const CustomGridTrade = React.lazy(() => import('./views/Finance/trade/CustomGridTrade'))
 const TradePrices = React.lazy(() => import('./views/Finance/trade/Prices'))
 const TradeTools = React.lazy(() => import('./views/Finance/trade/Tools'))
+const CalcList = React.lazy(() => import('./views/Finance/trade/CalcList'))
 const IncreaseDecrease = React.lazy(
   () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
@@ -41,6 +42,7 @@ const financeRoutes = [
   { path: '/trade/custom-grid', element: CustomGridTrade, landingPage: true },
   { path: '/trade/prices', element: TradePrices, landingPage: true },
   { path: '/trade/tools', element: TradeTools, landingPage: true },
+  { path: '/trade/calc-list', element: CalcList, landingPage: true },
   { path: '/tools/adjustments', element: IncreaseDecrease, landingPage: true },
   { path: '/tools/salary-distribution', element: SalaryDistribution, landingPage: true },
 ]

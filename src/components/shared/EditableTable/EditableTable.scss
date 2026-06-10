@@ -1,0 +1,193 @@
+.editable-table {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--cui-border-color);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  // ── Header ──────────────────────────────────────────────────────────
+  &__thead {
+    background: var(--cui-secondary-bg);
+    border-bottom: 2px solid var(--cui-border-color);
+  }
+
+  &__th {
+    padding: 10px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cui-secondary-color);
+    white-space: nowrap;
+
+    &--right { text-align: right; }
+    &--actions { width: 36px; }
+
+    &--total {
+      color: var(--cui-primary);
+      opacity: 0.8;
+    }
+  }
+
+  // ── Body rows ────────────────────────────────────────────────────────
+  &__tr {
+    transition: background 0.1s;
+
+    &:nth-child(even) {
+      background: var(--cui-tertiary-bg);
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--cui-primary) 6%, var(--cui-body-bg));
+
+      .editable-table__delete-btn { opacity: 0.55; }
+    }
+
+    & td {
+      border-bottom: 1px solid var(--cui-border-color-translucent);
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  &__td {
+    padding: 0;
+    position: relative;
+
+    &--calc {
+      background: color-mix(in srgb, var(--cui-primary) 5%, transparent);
+      border-left: 1px solid var(--cui-border-color-translucent);
+    }
+
+    &--actions {
+      width: 36px;
+      text-align: center;
+      vertical-align: middle;
+      padding: 0 4px;
+    }
+  }
+
+  // ── Inputs ──────────────────────────────────────────────────────────
+  &__input {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 5px;
+    color: var(--cui-body-color);
+    font-size: 0.875rem;
+    padding: 7px 12px;
+    outline: none;
+    font-variant-numeric: tabular-nums;
+
+    &:focus {
+      background: var(--cui-body-bg);
+      border-color: var(--cui-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--cui-primary) 15%, transparent);
+      position: relative;
+      z-index: 1;
+    }
+
+    &--right { text-align: right; }
+  }
+
+  &__calc-cell {
+    display: block;
+    padding: 7px 12px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: color-mix(in srgb, var(--cui-primary) 85%, var(--cui-body-color));
+  }
+
+  // ── Delete button ────────────────────────────────────────────────────
+  &__delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    font-size: 1rem;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s;
+
+    &:hover {
+      opacity: 1 !important;
+      background: color-mix(in srgb, var(--cui-danger) 12%, transparent);
+      color: var(--cui-danger);
+    }
+  }
+
+  // ── Footer / Total row ───────────────────────────────────────────────
+  &__footer {
+    background: var(--cui-secondary-bg);
+    border-top: 2px solid var(--cui-border-color);
+
+    td { padding: 0; }
+  }
+
+  &__total-label {
+    display: block;
+    padding: 9px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cui-secondary-color);
+  }
+
+  &__total-value {
+    display: block;
+    padding: 9px 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--cui-primary);
+    background: color-mix(in srgb, var(--cui-primary) 8%, transparent);
+    border-left: 1px solid var(--cui-border-color-translucent);
+  }
+
+  // ── Add row button ───────────────────────────────────────────────────
+  &__add-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    border-top: 1px dashed var(--cui-border-color);
+    color: var(--cui-secondary-color);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: color-mix(in srgb, var(--cui-primary) 5%, transparent);
+      color: var(--cui-primary);
+    }
+  }
+
+  // ── Empty state ──────────────────────────────────────────────────────
+  &__empty {
+    padding: 28px;
+    text-align: center;
+    color: var(--cui-secondary-color);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+}
