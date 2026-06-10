@@ -1,6 +1,7 @@
-import { openDB, DB_STORES } from '../db'
+import { openDB } from '../db'
+import { IDB_STORES as S } from '../idbStores'
 
-const STORE = DB_STORES.ASSETS
+const STORE = S.CF_ASSETS
 
 export async function getAllAssets() {
   const db = await openDB()

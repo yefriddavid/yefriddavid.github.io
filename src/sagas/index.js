@@ -1,7 +1,6 @@
 import { all } from 'redux-saga/effects'
 import sagaAccounts from './cashflow/accountSagas'
 import sagaPayments from './cashflow/paymentSagas'
-import sagaPaymentVauchers from './cashflow/paymentVaucherSagas'
 import sagaTaxiExpenses from './taxi/taxiExpenseSagas'
 import sagaTaxiDrivers from './taxi/taxiDriverSagas'
 import sagaTaxiVehicles from './taxi/taxiVehicleSagas'
@@ -43,6 +42,10 @@ import sagaDomoticaCommandDictionary from './domotica/domoticaCommandDictionaryS
 import sagaDomoticaCommandProfiles from './domotica/domoticaCommandProfileSagas'
 import sagaDomoticaSolarBattery from './domotica/domoticaSolarBatterySagas'
 import sagaErrorLogs from './system/errorLogSagas'
+import sagaAuditLogs from './system/auditLogSagas'
+import sagaPerfLogs from './system/perfLogSagas'
+import sagaFcmTokens from './system/fcmTokenSagas'
+import sagaPageVisits from './system/pageVisitSagas'
 import sagaInmobiliariaDesigns from './inmobiliaria/designSagas'
 import sagaInmobiliariaPlanos from './inmobiliaria/planosSagas'
 import sagaFinancePictures from './finance/picturesSagas'
@@ -50,12 +53,14 @@ import sagaFinancePictureVersions from './finance/pictureVersionsSagas'
 import sagaFinanceScenes3d from './finance/scenes3dSagas'
 import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
 import sagaTasks from './misc/taskSagas'
+import sagaTaxiTrend from './taxi/taxiTrendSagas'
+import sagaAppSettings from './system/appSettingsSagas'
+import sagaUsageMetrics from './system/usageMetricsSagas'
 
 export default function* rootSagas() {
   yield all([
     sagaPayments(),
     sagaAccounts(),
-    sagaPaymentVauchers(),
     sagaTaxiExpenses(),
     sagaTaxiDrivers(),
     sagaTaxiVehicles(),
@@ -97,6 +102,10 @@ export default function* rootSagas() {
     sagaDomoticaCommandProfiles(),
     sagaDomoticaSolarBattery(),
     sagaErrorLogs(),
+    sagaAuditLogs(),
+    sagaPerfLogs(),
+    sagaFcmTokens(),
+    sagaPageVisits(),
     sagaInmobiliariaDesigns(),
     sagaInmobiliariaPlanos(),
     sagaFinancePictures(),
@@ -104,5 +113,8 @@ export default function* rootSagas() {
     sagaFinanceScenes3d(),
     sagaIncreaseDecrease(),
     sagaTasks(),
+    sagaTaxiTrend(),
+    sagaAppSettings(),
+    sagaUsageMetrics(),
   ])
 }

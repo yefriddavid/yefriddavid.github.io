@@ -25,7 +25,7 @@ import CIcon from '@coreui/icons-react'
 import { cilTrash, cilPlus, cilX, cilCopy, cilPencil } from '@coreui/icons'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
-import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
+import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
@@ -437,7 +437,6 @@ const ExpenseForm = ({ initial, vehicles, onSave, onCancel, saving, title, subti
   )
 }
 
-
 const Gastos = () => {
   const { t } = useTranslation()
   const { monthLabels: MONTHS } = useLocaleData()
@@ -445,10 +444,11 @@ const Gastos = () => {
   const dispatch = useDispatch()
   const { data: expenses, fetching, isError, error } = useSelector((s) => s.taxiExpense)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
+  const { data: vehicleData } = useSelector((s) => s.taxiVehicle)
   const gridRef = useRef()
 
   const now = new Date()
-  const [vehicles, setVehicles] = useState([])
+  const vehicles = vehicleData ?? []
   const [showCreate, setShowCreate] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
@@ -462,7 +462,7 @@ const Gastos = () => {
   useEffect(() => {
     dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiDriverActions.fetchRequest())
-    getVehicles().then(setVehicles)
+    dispatch(taxiVehicleActions.fetchRequest())
   }, [dispatch, period.month, period.year])
 
   useEffect(() => {
@@ -525,7 +525,7 @@ const Gastos = () => {
     dispatch(taxiExpenseActions.deleteRequest({ id }))
   }
 
-  const records = expenses ?? []
+  const records = useMemo(() => expenses ?? [], [expenses])
 
   const availableYears = useMemo(() => {
     const years = [...new Set(records.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
@@ -763,7 +763,6 @@ const Gastos = () => {
             </div>
           ) : isMobile ? (
             <StandardCard
-              
               data={filtered}
               keyExpr="id"
               emptyText="Sin gastos para este periodo."
@@ -779,21 +778,50 @@ const Gastos = () => {
               renderBadge={(row) => ({
                 label: row.paid ? '✓ Pagado' : '⏳ Pendiente',
                 variant: row.paid ? 'active' : 'warning',
-                onClick: () => dispatch(taxiExpenseActions.togglePaidRequest({ id: row.id, paid: !row.paid })),
+                onClick: () =>
+                  dispatch(taxiExpenseActions.togglePaidRequest({ id: row.id, paid: !row.paid })),
               })}
               renderRows={(row) => [
                 [
-                  row.plate && <span className={SC.mono}>{row.plate}</span>,
+                  row.plate && (
+                    <span key="plate" className={SC.mono}>
+                      {row.plate}
+                    </span>
+                  ),
                   row.driverName || plateToDriver[row.plate],
-                  <span style={{ marginLeft: 'auto' }}>{row.date}</span>,
+                  <span key="date" style={{ marginLeft: 'auto' }}>
+                    {row.date}
+                  </span>,
                 ],
               ]}
-              renderActions={(row) => [
-                row.receipt && { label: '📎', color: 'info', title: 'Ver comprobante', onClick: () => setReceiptViewer({ src: row.receipt, name: row.receiptName }) },
-                { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(row) },
-                { icon: cilCopy, color: 'primary', title: 'Clonar', onClick: () => openClone(row) },
-                { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(row.id) },
-              ].filter(Boolean)}
+              renderActions={(row) =>
+                [
+                  row.receipt && {
+                    label: '📎',
+                    color: 'info',
+                    title: 'Ver comprobante',
+                    onClick: () => setReceiptViewer({ src: row.receipt, name: row.receiptName }),
+                  },
+                  {
+                    icon: cilPencil,
+                    color: 'primary',
+                    title: 'Editar',
+                    onClick: () => handleEdit(row),
+                  },
+                  {
+                    icon: cilCopy,
+                    color: 'primary',
+                    title: 'Clonar',
+                    onClick: () => openClone(row),
+                  },
+                  {
+                    icon: cilTrash,
+                    color: 'danger',
+                    title: 'Eliminar',
+                    onClick: () => handleDelete(row.id),
+                  },
+                ].filter(Boolean)
+              }
             />
           ) : (
             <StandardGrid

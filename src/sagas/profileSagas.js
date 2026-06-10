@@ -1,12 +1,19 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/authActions'
-import { getUser, updateOwnProfile, updateUserAvatar } from '../services/facade/security/usersFacade'
+import {
+  getUser,
+  updateOwnProfile,
+  updateUserAvatar,
+} from '../services/facade/security/usersFacade'
 import { setTenantId } from '../services/tenantContext'
+import { changePassword } from '../services/firebase/auth'
+import { authStorage } from '../utils/storage'
 
 export function* fetchProfile({ payload: username }) {
   try {
     const data = yield call(getUser, username)
     setTenantId(data?.tenantId ?? null)
+    authStorage.setRole(data?.role ?? null)
     yield put(actions.fetchProfileSuccess(data))
   } catch (e) {
     yield put(actions.fetchProfileError(e.message))
@@ -31,10 +38,20 @@ export function* updateAvatar({ payload }) {
   }
 }
 
+export function* handleChangePassword({ payload: { username, current, next } }) {
+  try {
+    yield call(changePassword, username, current, next)
+    yield put(actions.changePasswordSuccess())
+  } catch (e) {
+    yield put(actions.changePasswordError({ code: e.code ?? null, message: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchProfile, fetchProfile),
     takeLatest(actions.updateProfile, updateProfile),
     takeLatest(actions.updateAvatar, updateAvatar),
+    takeLatest(actions.changePasswordRequest, handleChangePassword),
   ])
 }

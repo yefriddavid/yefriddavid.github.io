@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { Column, MasterDetail } from 'devextreme-react/data-grid'
+import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { SelectControl } from './Controls'
-import ItemDetail from './ItemDetail'
 import ModalPaymentComponent from './ModalPaymentComponent'
-import * as paymentActions from '../../../actions/cashflow/paymentActions'
 import * as accountActions from '../../../actions/cashflow/accountActions'
 import { Notification } from './Alert'
 import './Payments.scss'
@@ -45,7 +43,6 @@ const Payments = () => {
   const [expandedRowKey, setExpandedRowKey] = useState(null)
   const [cachedData, setCachedData] = useState(null)
   const [isFetching, setIsFetching] = useState(false)
-  const [addingPaymentAccountId, setAddingPaymentAccountId] = useState(null)
 
   const { year, month, monthNumber } = filters
   const reduxItems = accountsSlice?.data?.data?.items
@@ -124,11 +121,8 @@ const Payments = () => {
     if (!instance) return
     instance.collapseAll(-1)
     instance.expandRow(row.accountId)
-    setAddingPaymentAccountId(row.accountId)
     setExpandedRowKey(row.accountId)
   }
-
-  const closeAddPayment = () => setAddingPaymentAccountId(null)
 
   const data = reduxItems ?? cachedData
   const months = moment.months()
@@ -265,16 +259,6 @@ const Payments = () => {
                 + Pago
               </CButton>
             )}
-          />
-          <MasterDetail
-            autoExpandAll={false}
-            enabled={false}
-            render={(item) =>
-              ItemDetail(item.data, year, monthNumber, {
-                showAddForm: item.data.accountId === addingPaymentAccountId,
-                onAddDone: closeAddPayment,
-              })
-            }
           />
         </StandardGrid>
       )}

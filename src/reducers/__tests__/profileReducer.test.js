@@ -3,7 +3,14 @@ import reducer from '../profileReducer'
 import * as actions from '../../actions/authActions'
 import { makeUser } from '../../__tests__/factories'
 
-const initial = { data: null, loading: false, error: null }
+const initial = {
+  data: null,
+  loading: false,
+  error: null,
+  pwChanging: false,
+  pwSuccess: false,
+  pwError: null,
+}
 
 describe('profileReducer', () => {
   it('returns initial state', () => {

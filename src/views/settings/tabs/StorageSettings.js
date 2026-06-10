@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   CAlert,
   CButton,
@@ -12,7 +13,8 @@ import { Column, Paging } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { cilReload, cilChevronBottom, cilChevronTop, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { fetchCollectionCounts, SPARK_LIMITS } from 'src/services/firebase/admin/usageMetrics'
+import { FIREBASE_SPARK_LIMITS } from 'src/constants/admin'
+import * as usageMetricsActions from 'src/actions/system/usageMetricsActions'
 import Spinner from 'src/components/shared/Spinner'
 
 function formatBytes(bytes) {
@@ -39,16 +41,16 @@ function groupByModule(rows) {
 }
 
 const StorageSettings = () => {
+  const dispatch = useDispatch()
+  const fbRows = useSelector((s) => s.usageMetrics.data ?? null)
+  const fbLoading = useSelector((s) => s.usageMetrics.fetching)
+
   // Local storage
   const [storageInfo, setStorageInfo] = useState(null)
   const [localLoading, setLocalLoading] = useState(true)
   const [clearing, setClearing] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
-
-  // Firebase
-  const [fbRows, setFbRows] = useState(null)
-  const [fbLoading, setFbLoading] = useState(false)
 
   // IndexedDB
   const [idbDatabases, setIdbDatabases] = useState([])
@@ -73,17 +75,7 @@ const StorageSettings = () => {
     }
   }
 
-  const loadFirebaseMetrics = async () => {
-    setFbLoading(true)
-    try {
-      const rows = await fetchCollectionCounts()
-      setFbRows(rows)
-    } catch (e) {
-      setError(`Firebase: ${e.message}`)
-    } finally {
-      setFbLoading(false)
-    }
-  }
+  const loadFirebaseMetrics = () => dispatch(usageMetricsActions.fetchRequest())
 
   const loadIndexedDB = async () => {
     setIdbLoading(true)
@@ -123,7 +115,8 @@ const StorageSettings = () => {
         const req = indexedDB.deleteDatabase(dbName)
         req.onsuccess = resolve
         req.onerror = () => reject(req.error)
-        req.onblocked = () => reject(new Error('La base de datos está en uso. Recarga la página e intenta de nuevo.'))
+        req.onblocked = () =>
+          reject(new Error('La base de datos está en uso. Recarga la página e intenta de nuevo.'))
       })
       setSuccess(`IndexedDB "${dbName}" eliminada correctamente.`)
       await loadIndexedDB()
@@ -163,6 +156,7 @@ const StorageSettings = () => {
     loadStorageInfo()
     loadFirebaseMetrics()
     loadIndexedDB()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const clearCaches = async () => {
@@ -264,23 +258,23 @@ const StorageSettings = () => {
       <CListGroup className="mb-3" style={{ fontSize: 13 }}>
         <CListGroupItem className="d-flex justify-content-between py-1">
           <span>Lecturas / día</span>
-          <CBadge color="info">{formatNumber(SPARK_LIMITS.readsPerDay)}</CBadge>
+          <CBadge color="info">{formatNumber(FIREBASE_SPARK_LIMITS.readsPerDay)}</CBadge>
         </CListGroupItem>
         <CListGroupItem className="d-flex justify-content-between py-1">
           <span>Escrituras / día</span>
-          <CBadge color="info">{formatNumber(SPARK_LIMITS.writesPerDay)}</CBadge>
+          <CBadge color="info">{formatNumber(FIREBASE_SPARK_LIMITS.writesPerDay)}</CBadge>
         </CListGroupItem>
         <CListGroupItem className="d-flex justify-content-between py-1">
           <span>Eliminaciones / día</span>
-          <CBadge color="info">{formatNumber(SPARK_LIMITS.deletesPerDay)}</CBadge>
+          <CBadge color="info">{formatNumber(FIREBASE_SPARK_LIMITS.deletesPerDay)}</CBadge>
         </CListGroupItem>
         <CListGroupItem className="d-flex justify-content-between py-1">
           <span>Almacenamiento total</span>
-          <CBadge color="info">{SPARK_LIMITS.storageGB} GiB</CBadge>
+          <CBadge color="info">{FIREBASE_SPARK_LIMITS.storageGB} GiB</CBadge>
         </CListGroupItem>
         <CListGroupItem className="d-flex justify-content-between py-1">
           <span>Transferencia de red / mes</span>
-          <CBadge color="info">{SPARK_LIMITS.networkGB} GiB</CBadge>
+          <CBadge color="info">{FIREBASE_SPARK_LIMITS.networkGB} GiB</CBadge>
         </CListGroupItem>
       </CListGroup>
 
@@ -428,13 +422,20 @@ const StorageSettings = () => {
                         onClick={() => setIdbConfirm(db.name)}
                         disabled={!!idbClearing}
                       >
-                        {idbClearing === db.name ? <Spinner size="sm" /> : <CIcon icon={cilTrash} size="sm" />}
+                        {idbClearing === db.name ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <CIcon icon={cilTrash} size="sm" />
+                        )}
                       </CButton>
                     )}
                   </div>
                 </div>
                 <CCollapse visible={!!idbExpanded[db.name]}>
-                  <div className="mt-2 ps-3" style={{ borderLeft: '2px solid var(--cui-border-color)' }}>
+                  <div
+                    className="mt-2 ps-3"
+                    style={{ borderLeft: '2px solid var(--cui-border-color)' }}
+                  >
                     {db.stores.map((store) => (
                       <div key={store} className="text-secondary py-1" style={{ fontSize: 12 }}>
                         {store}
@@ -460,7 +461,12 @@ const StorageSettings = () => {
                 >
                   {idbClearing === '__all__' ? <Spinner size="sm" /> : 'Sí, limpiar todo'}
                 </CButton>
-                <CButton size="sm" color="secondary" variant="ghost" onClick={() => setIdbConfirm(null)}>
+                <CButton
+                  size="sm"
+                  color="secondary"
+                  variant="ghost"
+                  onClick={() => setIdbConfirm(null)}
+                >
                   Cancelar
                 </CButton>
               </div>

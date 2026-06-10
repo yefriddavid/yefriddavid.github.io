@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { CCard, CCardBody, CCardHeader, CBadge } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilTrash } from '@coreui/icons'
-import { db } from 'src/services/firebase/settings'
-import { collection, getDocs, orderBy, query, limit, deleteDoc, doc } from 'firebase/firestore'
+import * as pageVisitActions from 'src/actions/system/pageVisitActions'
 import './Visits.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -173,28 +173,19 @@ const VisitDetail = ({ v }) => (
 )
 
 const Visits = () => {
-  const [visits, setVisits] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data: visitData, fetching: loading } = useSelector((s) => s.pageVisit)
+  const visits = visitData ?? []
 
-  const handleDelete = async (id, e) => {
+  const handleDelete = (id, e) => {
     e.stopPropagation()
     if (!window.confirm('¿Eliminar este registro?')) return
-    await deleteDoc(doc(db, 'page_visits', id))
-    setVisits((prev) => prev.filter((v) => v.id !== id))
+    dispatch(pageVisitActions.deleteRequest({ id }))
   }
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const q = query(collection(db, 'page_visits'), orderBy('createdAt', 'desc'), limit(200))
-        const snap = await getDocs(q)
-        setVisits(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetch()
-  }, [])
+    dispatch(pageVisitActions.fetchRequest())
+  }, [dispatch])
 
   return (
     <CCard>

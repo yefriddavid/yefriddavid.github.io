@@ -20,3 +20,8 @@ export const updateAvatarSuccess = createAction('update user avatar success')
 export const updateAvatarError = createAction('update user avatar error')
 
 export const clearProfile = createAction('clear user profile')
+
+export const changePasswordRequest = createAction('profile/changePasswordRequest')
+export const changePasswordSuccess = createAction('profile/changePasswordSuccess')
+export const changePasswordError = createAction('profile/changePasswordError')
+export const changePasswordReset = createAction('profile/changePasswordReset')

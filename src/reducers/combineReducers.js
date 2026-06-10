@@ -1,6 +1,5 @@
 import { combineReducers } from 'redux'
 import payment from './cashflow/paymentReducer'
-import paymentVaucher from './cashflow/paymentVaucherReducer'
 import account from './cashflow/accountReducer'
 import ui from './uiReducer'
 import taxiExpense from './taxi/taxiExpenseReducer'
@@ -45,6 +44,10 @@ import domoticaCommandProfile from './domotica/domoticaCommandProfileReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
 import notifications from './notificationsSlice'
 import errorLog from './system/errorLogReducer'
+import auditLog from './system/auditLogReducer'
+import perfLog from './system/perfLogReducer'
+import fcmToken from './system/fcmTokenReducer'
+import pageVisit from './system/pageVisitReducer'
 import inmobiliariaDesign from './inmobiliaria/designReducer'
 import inmobiliariaPlanos from './inmobiliaria/planosReducer'
 import financePictures from './finance/picturesReducer'
@@ -52,10 +55,12 @@ import financePictureVersions from './finance/pictureVersionsReducer'
 import financeScenes3d from './finance/scenes3dReducer'
 import increaseDecrease from './finance/increaseDecreaseReducer'
 import task from './misc/taskReducer'
+import taxiTrend from './taxi/taxiTrendReducer'
+import appSettings from './system/appSettingsReducer'
+import usageMetrics from './system/usageMetricsReducer'
 
 const combinedReducers = combineReducers({
   payment,
-  paymentVaucher,
   account,
   ui,
   taxiExpense,
@@ -100,6 +105,10 @@ const combinedReducers = combineReducers({
   domoticaSolarBattery,
   notifications,
   errorLog,
+  auditLog,
+  perfLog,
+  fcmToken,
+  pageVisit,
   inmobiliariaDesign,
   inmobiliariaPlanos,
   financePictures,
@@ -107,6 +116,9 @@ const combinedReducers = combineReducers({
   financeScenes3d,
   increaseDecrease,
   task,
+  taxiTrend,
+  appSettings,
+  usageMetrics,
 })
 
 export default combinedReducers

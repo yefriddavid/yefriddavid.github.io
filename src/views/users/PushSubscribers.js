@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { CCard, CCardBody, CCardHeader, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilReload, cilTrash } from '@coreui/icons'
-import { getTokens, deleteFcmToken } from 'src/services/firebase/security/fcmTokens'
+import * as fcmTokenActions from 'src/actions/system/fcmTokenActions'
 import Spinner from 'src/components/shared/Spinner'
 
 const parseDevice = (userAgent) => {
@@ -27,43 +28,31 @@ const parseBrowser = (userAgent) => {
 }
 
 const PushSubscribers = () => {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data: tokenData, fetching: loading } = useSelector((s) => s.fcmToken)
   const [deletingId, setDeletingId] = useState(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const tokens = await getTokens()
-      setRows(
-        tokens.map((t) => ({
-          ...t,
-          device: parseDevice(t.userAgent),
-          browser: parseBrowser(t.userAgent),
-          tokenShort: `${t.token.slice(0, 12)}…${t.token.slice(-8)}`,
-          registeredAt: t.createdAt ? t.createdAt.toLocaleString('es-CO') : '—',
-          origin: t.origin || '—',
-        })),
-      )
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const rows = (tokenData ?? []).map((t) => ({
+    ...t,
+    device: parseDevice(t.userAgent),
+    browser: parseBrowser(t.userAgent),
+    tokenShort: `${t.token.slice(0, 12)}…${t.token.slice(-8)}`,
+    registeredAt: t.createdAt ? t.createdAt.toLocaleString('es-CO') : '—',
+    origin: t.origin || '—',
+  }))
 
   useEffect(() => {
-    load()
-  }, [load])
+    dispatch(fcmTokenActions.fetchRequest())
+  }, [dispatch])
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('¿Eliminar este suscriptor?')) return
     setDeletingId(id)
-    try {
-      await deleteFcmToken(id)
-      setRows((prev) => prev.filter((r) => r.id !== id))
-    } finally {
-      setDeletingId(null)
-    }
+    dispatch(fcmTokenActions.deleteRequest({ id }))
+    setDeletingId(null)
   }
+
+  const handleReload = () => dispatch(fcmTokenActions.fetchRequest())
 
   return (
     <CCard>
@@ -73,7 +62,13 @@ const PushSubscribers = () => {
           <CBadge color="secondary">{rows.length}</CBadge>
           {loading && <Spinner size="sm" />}
         </div>
-        <CButton size="sm" color="secondary" variant="outline" onClick={load} disabled={loading}>
+        <CButton
+          size="sm"
+          color="secondary"
+          variant="outline"
+          onClick={handleReload}
+          disabled={loading}
+        >
           <CIcon icon={cilReload} size="sm" /> Actualizar
         </CButton>
       </CCardHeader>

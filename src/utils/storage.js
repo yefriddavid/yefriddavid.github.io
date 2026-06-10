@@ -7,6 +7,8 @@ export const STORAGE_KEYS = {
   USERNAME: 'username',
   SESSION_ID: 'sessionId',
   LANDING_PAGE: 'landingPage',
+  // UI hint only — real authorization is enforced by Firestore rules
+  ROLE: 'role',
   // UI persistence
   APP_THEME: 'app-theme',
   APP_THEME_MODE: 'app-theme-mode',
@@ -27,6 +29,12 @@ export const authStorage = {
   getUsername: () => localStorage.getItem(STORAGE_KEYS.USERNAME),
   getSessionId: () => localStorage.getItem(STORAGE_KEYS.SESSION_ID),
   getLandingPage: () => localStorage.getItem(STORAGE_KEYS.LANDING_PAGE),
+  getRole: () => localStorage.getItem(STORAGE_KEYS.ROLE),
+
+  setRole: (v) => {
+    if (v) localStorage.setItem(STORAGE_KEYS.ROLE, v)
+    else localStorage.removeItem(STORAGE_KEYS.ROLE)
+  },
 
   setSession: ({ token, username, sessionId, landingPage }) => {
     localStorage.setItem(STORAGE_KEYS.TOKEN, token)
@@ -42,6 +50,7 @@ export const authStorage = {
     localStorage.removeItem(STORAGE_KEYS.USERNAME)
     localStorage.removeItem(STORAGE_KEYS.SESSION_ID)
     localStorage.removeItem(STORAGE_KEYS.LANDING_PAGE)
+    localStorage.removeItem(STORAGE_KEYS.ROLE)
   },
 }
 

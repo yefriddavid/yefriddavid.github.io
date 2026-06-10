@@ -4,10 +4,6 @@ import { firestoreCall } from '../firebaseClient'
 
 //const COL = 'App_settings'
 
-export const SETTING_LABELS = {
-  egg_current_price: 'Precio actual del huevo',
-}
-
 export const getAppSettings = () =>
   firestoreCall(async () => {
     const snap = await getDocs(collection(db, COL_APP_SETTINGS))

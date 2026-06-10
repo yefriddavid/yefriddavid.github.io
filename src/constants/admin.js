@@ -19,3 +19,15 @@ export const USER_ROLE_COLORS = {
   manager: 'primary',
   conductor: 'secondary',
 }
+
+export const FIREBASE_SPARK_LIMITS = {
+  readsPerDay: 50_000,
+  writesPerDay: 20_000,
+  deletesPerDay: 20_000,
+  storageGB: 1,
+  networkGB: 10,
+}
+
+export const SETTING_LABELS = {
+  egg_current_price: 'Precio actual del huevo',
+}

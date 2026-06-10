@@ -1,87 +1,70 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { fmt } from 'src/utils/formatters'
 import { useTranslation } from 'react-i18next'
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
-import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CBadge,
-  CFormSelect,
-  CRow,
-  CCol,
-} from '@coreui/react'
-import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
-import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
-import { monthToRange } from 'src/utils/dateRange'
+import { CCard, CCardBody, CCardHeader, CBadge, CRow, CCol } from '@coreui/react'
+import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
+import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
+import PeriodSelector from 'src/components/shared/PeriodSelector'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
-
-const MONTHS = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
-
-
 
 const SummaryCard = ({ label, value, color }) => (
   <CCard className="text-center h-100">
     <CCardBody>
       <div className="summary-card__label">{label}</div>
-      <div className="summary-card__value" style={{ color }}>{fmt(value)}</div>
+      <div className="summary-card__value" style={{ color }}>
+        {fmt(value)}
+      </div>
     </CCardBody>
   </CCard>
 )
 
 const Resumen = () => {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const now = new Date()
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
+  const { data: settlements, fetching: settlementsFetching } = useSelector((s) => s.taxiSettlement)
+  const { data: expenses, fetching: expensesFetching } = useSelector((s) => s.taxiExpense)
+  const loading = settlementsFetching || expensesFetching
+
   useEffect(() => {
-    Promise.all([getSettlements(monthToRange(period)), fetchExpenses(monthToRange(period))])
-      .then(([settlements, expenses]) => {
-        const merged = [
-          ...settlements.map((s) => ({
-            id: `s-${s.id}`,
-            date: s.date,
-            type: 'Liquidación',
-            concept: s.driver,
-            plate: s.plate,
-            category: '—',
-            amount: s.amount,
-            comment: s.comment ?? '',
-            _sign: 1,
-          })),
-          ...expenses.map((e) => ({
-            id: `e-${e.id}`,
-            date: e.date,
-            type: 'Gasto',
-            concept: e.description,
-            plate: e.plate ?? '—',
-            category: e.category,
-            amount: e.amount,
-            comment: e.comment ?? '',
-            _sign: -1,
-          })),
-        ]
-        setRows(merged)
-      })
-      .finally(() => setLoading(false))
-  }, [period.month, period.year])
+    dispatch(taxiSettlementActions.fetchRequest(period))
+    dispatch(taxiExpenseActions.fetchRequest(period))
+  }, [dispatch, period])
+
+  const rows = useMemo(() => {
+    const s = settlements ?? []
+    const e = expenses ?? []
+    return [
+      ...s.map((item) => ({
+        id: `s-${item.id}`,
+        date: item.date,
+        type: 'Liquidación',
+        concept: item.driver,
+        plate: item.plate,
+        category: '—',
+        amount: item.amount,
+        comment: item.comment ?? '',
+        _sign: 1,
+      })),
+      ...e.map((item) => ({
+        id: `e-${item.id}`,
+        date: item.date,
+        type: 'Gasto',
+        concept: item.description,
+        plate: item.plate ?? '—',
+        category: item.category,
+        amount: item.amount,
+        comment: item.comment ?? '',
+        _sign: -1,
+      })),
+    ]
+  }, [settlements, expenses])
 
   const availableYears = useMemo(() => {
     const years = [...new Set(rows.map((r) => r.date?.slice(0, 4)).filter(Boolean))]
@@ -110,7 +93,6 @@ const Resumen = () => {
 
   return (
     <>
-      {/* Summary cards */}
       <CRow className="mb-3 g-3">
         <CCol sm={4}>
           <SummaryCard label="Total liquidado" value={totalIncome} />
@@ -123,7 +105,6 @@ const Resumen = () => {
         </CCol>
       </CRow>
 
-      {/* Grid */}
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div className="d-flex align-items-center gap-2">
@@ -132,30 +113,7 @@ const Resumen = () => {
           </div>
           <div className="d-flex align-items-center gap-2">
             <span className="period-label">Periodo</span>
-            <CFormSelect
-              size="sm"
-              className="period-select-month"
-              value={period.month}
-              onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
-            >
-              {MONTHS.map((name, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {name}
-                </option>
-              ))}
-            </CFormSelect>
-            <CFormSelect
-              size="sm"
-              className="period-select-year"
-              value={period.year}
-              onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
-            >
-              {availableYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </CFormSelect>
+            <PeriodSelector value={period} onChange={setPeriod} years={availableYears} />
           </div>
         </CCardHeader>
 
@@ -178,7 +136,9 @@ const Resumen = () => {
                 caption={t('taxis.resumen.columns.type')}
                 width={110}
                 cellRender={({ value }) => (
-                  <span className={`row-type-badge${value === 'Liquidación' ? ' row-type-badge--income' : ' row-type-badge--expense'}`}>
+                  <span
+                    className={`row-type-badge${value === 'Liquidación' ? ' row-type-badge--income' : ' row-type-badge--expense'}`}
+                  >
                     {value}
                   </span>
                 )}
@@ -207,8 +167,11 @@ const Resumen = () => {
                 caption={t('taxis.resumen.columns.amount')}
                 width={130}
                 cellRender={({ data }) => (
-                  <span className={`cell-amount${data._sign === 1 ? ' cell-amount--income' : ' cell-amount--expense'}`}>
-                    {data._sign === 1 ? '+' : '-'}{fmt(data.amount)}
+                  <span
+                    className={`cell-amount${data._sign === 1 ? ' cell-amount--income' : ' cell-amount--expense'}`}
+                  >
+                    {data._sign === 1 ? '+' : '-'}
+                    {fmt(data.amount)}
                   </span>
                 )}
               />

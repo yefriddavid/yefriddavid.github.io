@@ -1,58 +1,51 @@
 import React, { useEffect, useState } from 'react'
-import {
-  getAppSettings,
-  setAppSetting,
-  SETTING_LABELS,
-} from 'src/services/firebase/admin/appSettings'
+import { useDispatch, useSelector } from 'react-redux'
+import * as appSettingsActions from 'src/actions/system/appSettingsActions'
+import { SETTING_LABELS } from 'src/constants/admin'
 import Spinner from 'src/components/shared/Spinner'
 
 export default function AppVariablesSettings() {
-  const [settings, setSettings] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState({}) // key → draft value
-  const [saving, setSaving] = useState({}) // key → bool
-  const [error, setError] = useState(null)
-
-  const load = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await getAppSettings()
-      // Ensure known keys always appear even if not yet in Firebase
-      const keys = Object.keys(SETTING_LABELS)
-      const map = Object.fromEntries(data.map((s) => [s.key, s]))
-      const merged = keys.map((k) => map[k] ?? { key: k, value: '' })
-      setSettings(merged)
-    } catch (e) {
-      setError('Error al cargar variables.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const dispatch = useDispatch()
+  const {
+    data: settings,
+    fetching: loading,
+    saveSeq,
+    lastSavedKey,
+    saveError,
+  } = useSelector((s) => s.appSettings)
+  const [editing, setEditing] = useState({})
+  const [saving, setSaving] = useState({})
 
   useEffect(() => {
-    load()
-  }, [])
+    dispatch(appSettingsActions.fetchRequest())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (!saveSeq) return
+    setSaving((prev) => {
+      const n = { ...prev }
+      delete n[lastSavedKey]
+      return n
+    })
+    setEditing((prev) => {
+      const n = { ...prev }
+      delete n[lastSavedKey]
+      return n
+    })
+  }, [saveSeq]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!saveError) return
+    setSaving({})
+  }, [saveError])
 
   const handleEdit = (key, value) => setEditing((prev) => ({ ...prev, [key]: value }))
 
-  const handleSave = async (key) => {
+  const handleSave = (key) => {
     const value = editing[key]
     if (value === undefined) return
     setSaving((prev) => ({ ...prev, [key]: true }))
-    try {
-      await setAppSetting(key, value)
-      setSettings((prev) => prev.map((s) => (s.key === key ? { ...s, value } : s)))
-      setEditing((prev) => {
-        const n = { ...prev }
-        delete n[key]
-        return n
-      })
-    } catch {
-      alert('Error al guardar.')
-    } finally {
-      setSaving((prev) => ({ ...prev, [key]: false }))
-    }
+    dispatch(appSettingsActions.updateRequest({ key, value }))
   }
 
   const handleCancel = (key) =>
@@ -62,7 +55,7 @@ export default function AppVariablesSettings() {
       return n
     })
 
-  if (loading) {
+  if (loading && !settings) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
         <Spinner color="primary" />
@@ -70,9 +63,7 @@ export default function AppVariablesSettings() {
     )
   }
 
-  if (error) {
-    return <div style={{ color: '#e03131', padding: 16 }}>{error}</div>
-  }
+  if (!settings) return null
 
   return (
     <div style={{ maxWidth: 640 }}>
@@ -81,8 +72,13 @@ export default function AppVariablesSettings() {
         real.
       </p>
 
+      {saveError && (
+        <div style={{ color: '#e03131', padding: '8px 16px', marginBottom: 12, fontSize: 13 }}>
+          Error al guardar: {saveError}
+        </div>
+      )}
+
       <div style={{ border: '1px solid #e9ecef', borderRadius: 10, overflow: 'hidden' }}>
-        {/* Header */}
         <div
           style={{
             display: 'grid',

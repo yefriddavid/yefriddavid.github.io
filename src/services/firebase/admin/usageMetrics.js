@@ -2,8 +2,6 @@ import { collection, getCountFromServer } from 'firebase/firestore'
 import { db } from '../settings'
 import { firestoreCall } from '../firebaseClient'
 
-const currentYear = new Date().getFullYear()
-
 // Collections grouped by module
 const COLLECTIONS = [
   // Taxi
@@ -27,13 +25,6 @@ const COLLECTIONS = [
     label: 'Notas estado de cuentas',
     module: 'CashFlow',
   },
-  // Vauchers (dynamic by year)
-  { name: `paymentVauchers-${currentYear}`, label: `Vauchers ${currentYear}`, module: 'Vauchers' },
-  {
-    name: `paymentVauchers-${currentYear - 1}`,
-    label: `Vauchers ${currentYear - 1}`,
-    module: 'Vauchers',
-  },
   // Security
   { name: 'users', label: 'Usuarios', module: 'Seguridad' },
   { name: 'sessions', label: 'Sesiones', module: 'Seguridad' },
@@ -41,15 +32,6 @@ const COLLECTIONS = [
   // Otros
   { name: 'page_visits', label: 'Visitas', module: 'Otros' },
 ]
-
-// Spark plan daily / total limits for reference
-export const SPARK_LIMITS = {
-  readsPerDay: 50_000,
-  writesPerDay: 20_000,
-  deletesPerDay: 20_000,
-  storageGB: 1,
-  networkGB: 10,
-}
 
 export async function fetchCollectionCounts() {
   const results = await Promise.allSettled(

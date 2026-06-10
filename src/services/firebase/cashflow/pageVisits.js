@@ -1,5 +1,15 @@
-import { db } from '../settings'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db, COL_PAGE_VISITS } from '../settings'
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  limit,
+  serverTimestamp,
+} from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 
 const collectVisitorMeta = () => ({
@@ -38,7 +48,7 @@ export const trackPageVisit = async (page) => {
   try {
     const [geo, meta] = await Promise.all([fetchGeoInfo(), Promise.resolve(collectVisitorMeta())])
     await firestoreCall(() =>
-      addDoc(collection(db, 'page_visits'), {
+      addDoc(collection(db, COL_PAGE_VISITS), {
         page,
         ...meta,
         ...geo,
@@ -46,4 +56,14 @@ export const trackPageVisit = async (page) => {
       }),
     )
   } catch {}
+}
+
+export const getPageVisits = async () => {
+  const q = query(collection(db, COL_PAGE_VISITS), orderBy('createdAt', 'desc'), limit(200))
+  const snap = await firestoreCall(() => getDocs(q))
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+}
+
+export const deletePageVisit = async (id) => {
+  await firestoreCall(() => deleteDoc(doc(db, COL_PAGE_VISITS, id)))
 }

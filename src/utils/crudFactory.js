@@ -85,28 +85,34 @@ export const createCRUDReducer = (
           s.isError = true
         })
 
-        .addCase(actions.beginRequestCreate, (s) => {
+      if (actions.beginRequestCreate) {
+        builder.addCase(actions.beginRequestCreate, (s) => {
           s[writeFlag] = true
         })
-        .addCase(actions.successRequestCreate, (s, { payload }) => {
+      }
+      if (actions.successRequestCreate) {
+        builder.addCase(actions.successRequestCreate, (s, { payload }) => {
           s.data = addToData(s.data, payload)
           s[writeFlag] = false
         })
-        .addCase(actions.errorRequestCreate, (s, { payload }) => {
+      }
+      if (actions.errorRequestCreate) {
+        builder.addCase(actions.errorRequestCreate, (s, { payload }) => {
           s.error = payload
           s[writeFlag] = false
           s.isError = true
         })
+      }
 
-      if (beginUpdate) {
+      if (beginUpdate && actions.beginRequestUpdate) {
         builder.addCase(actions.beginRequestUpdate, (s) => {
           s[writeFlag] = true
           s.isError = false
         })
       }
 
-      builder
-        .addCase(actions.successRequestUpdate, (s, { payload }) => {
+      if (actions.successRequestUpdate) {
+        builder.addCase(actions.successRequestUpdate, (s, { payload }) => {
           if (s.data) {
             const mapped = s.data.map((r) =>
               r[idKey] === payload[idKey] ? { ...r, ...payload } : r,
@@ -115,28 +121,34 @@ export const createCRUDReducer = (
           }
           if (beginUpdate) s[writeFlag] = false
         })
-        .addCase(actions.errorRequestUpdate, (s, { payload }) => {
+      }
+      if (actions.errorRequestUpdate) {
+        builder.addCase(actions.errorRequestUpdate, (s, { payload }) => {
           s.error = payload
           if (beginUpdate) s[writeFlag] = false
           s.isError = true
         })
+      }
 
-      if (beginDelete) {
+      if (beginDelete && actions.beginRequestDelete) {
         builder.addCase(actions.beginRequestDelete, (s) => {
           s[writeFlag] = true
         })
       }
 
-      builder
-        .addCase(actions.successRequestDelete, (s, { payload }) => {
+      if (actions.successRequestDelete) {
+        builder.addCase(actions.successRequestDelete, (s, { payload }) => {
           if (s.data) s.data = s.data.filter((r) => r[idKey] !== payload[idKey])
           if (beginDelete) s[writeFlag] = false
         })
-        .addCase(actions.errorRequestDelete, (s, { payload }) => {
+      }
+      if (actions.errorRequestDelete) {
+        builder.addCase(actions.errorRequestDelete, (s, { payload }) => {
           s.error = payload
           if (beginDelete) s[writeFlag] = false
           s.isError = true
         })
+      }
 
       if (extraCases) extraCases(builder)
     },

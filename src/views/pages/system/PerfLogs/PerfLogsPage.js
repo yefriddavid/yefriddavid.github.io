@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CBadge, CButton } from '@coreui/react'
 import { Column, Paging, FilterRow, Toolbar, Item as ToolbarItem } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import moment from 'moment'
-import { getPerfLogs } from 'src/services/firebase/system/perfLogs'
+import * as perfLogActions from 'src/actions/system/perfLogActions'
 import Spinner from 'src/components/shared/Spinner'
 
 const renderTs = ({ value }) => (
@@ -12,12 +13,10 @@ const renderTs = ({ value }) => (
   </span>
 )
 
-const renderDuration = ({ value, data }) => {
+const renderDuration = ({ value }) => {
   const color = value > 5000 ? '#ef4444' : value > 2000 ? '#f97316' : '#22c55e'
   return (
-    <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color }}>
-      {value}ms
-    </span>
+    <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color }}>{value}ms</span>
   )
 }
 
@@ -28,51 +27,88 @@ const renderSlow = ({ value }) => (
 )
 
 const PerfLogsPage = () => {
-  const [logs, setLogs] = useState([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data: logs, fetching: loading } = useSelector((s) => s.perfLog)
+  const rows = useMemo(() => logs ?? [], [logs])
 
-  const load = () => {
-    setLoading(true)
-    getPerfLogs()
-      .then(setLogs)
-      .finally(() => setLoading(false))
-  }
+  const load = useCallback(() => dispatch(perfLogActions.fetchRequest()), [dispatch])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const slowCount = useMemo(() => logs.filter((l) => l.slow).length, [logs])
+  const slowCount = useMemo(() => rows.filter((l) => l.slow).length, [rows])
   const avgMs = useMemo(() => {
-    if (!logs.length) return 0
-    return Math.round(logs.reduce((s, l) => s + (l.durationMs ?? 0), 0) / logs.length)
-  }, [logs])
+    if (!rows.length) return 0
+    return Math.round(rows.reduce((s, l) => s + (l.durationMs ?? 0), 0) / rows.length)
+  }, [rows])
   const worstLabel = useMemo(() => {
-    if (!logs.length) return '—'
-    return logs.reduce((a, b) => (a.durationMs > b.durationMs ? a : b)).label ?? '—'
-  }, [logs])
+    if (!rows.length) return '—'
+    return rows.reduce((a, b) => (a.durationMs > b.durationMs ? a : b)).label ?? '—'
+  }, [rows])
 
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 20,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 20 }}>⚡</span>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>Performance</h1>
-          <span style={{ fontFamily: 'monospace', fontSize: 11, opacity: 0.4 }}>queries {'>'} 2s</span>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            Performance
+          </h1>
+          <span style={{ fontFamily: 'monospace', fontSize: 11, opacity: 0.4 }}>
+            queries {'>'} 2s
+          </span>
         </div>
         <CButton color="primary" variant="outline" size="sm" onClick={load} disabled={loading}>
           {loading ? <Spinner size="sm" /> : '↺'}&nbsp;Recargar
         </CButton>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
         {[
-          { label: 'Total registros', value: logs.length, color: '#94a3b8' },
+          { label: 'Total registros', value: rows.length, color: '#94a3b8' },
           { label: 'Lentas (>2s)', value: slowCount, color: slowCount > 0 ? '#ef4444' : '#22c55e' },
           { label: 'Promedio', value: `${avgMs}ms`, color: avgMs > 1000 ? '#f97316' : '#94a3b8' },
           { label: 'Peor query', value: worstLabel, color: '#3b82f6' },
         ].map(({ label, value, color }) => (
           <CCard key={label} style={{ padding: '14px 18px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'monospace', color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.5 }}>{label}</div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 800,
+                fontFamily: 'monospace',
+                color,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {value}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                opacity: 0.5,
+              }}
+            >
+              {label}
+            </div>
           </CCard>
         ))}
       </div>
@@ -83,16 +119,18 @@ const PerfLogsPage = () => {
             <Spinner color="primary" />
           </div>
         )}
-        {!loading && logs.length === 0 && (
+        {!loading && rows.length === 0 && (
           <div style={{ padding: 60, textAlign: 'center' }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>⚡</div>
             <div style={{ fontWeight: 600 }}>Sin queries lentas registradas</div>
-            <div style={{ fontSize: 13, opacity: 0.45, marginTop: 4 }}>Solo se registran queries que superen 2 segundos</div>
+            <div style={{ fontSize: 13, opacity: 0.45, marginTop: 4 }}>
+              Solo se registran queries que superen 2 segundos
+            </div>
           </div>
         )}
-        {!loading && logs.length > 0 && (
+        {!loading && rows.length > 0 && (
           <StandardGrid
-            dataSource={logs}
+            dataSource={rows}
             keyExpr="id"
             showBorders={false}
             showColumnLines={false}
@@ -105,9 +143,21 @@ const PerfLogsPage = () => {
             <Toolbar>
               <ToolbarItem name="searchPanel" />
             </Toolbar>
-            <Column dataField="timestamp" caption="Timestamp" width={130} dataType="date" cellRender={renderTs} defaultSortOrder="desc" />
+            <Column
+              dataField="timestamp"
+              caption="Timestamp"
+              width={130}
+              dataType="date"
+              cellRender={renderTs}
+              defaultSortOrder="desc"
+            />
             <Column dataField="slow" caption="Estado" width={80} cellRender={renderSlow} />
-            <Column dataField="durationMs" caption="Duración" width={110} cellRender={renderDuration} />
+            <Column
+              dataField="durationMs"
+              caption="Duración"
+              width={110}
+              cellRender={renderDuration}
+            />
             <Column dataField="label" caption="Query" />
             <Column dataField="username" caption="Usuario" width={120} />
             <Column dataField="route" caption="Ruta" width={200} />

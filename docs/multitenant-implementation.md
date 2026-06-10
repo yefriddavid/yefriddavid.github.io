@@ -43,9 +43,6 @@ Firebase Auth → fetchProfile saga
 - contratos/contractNotes.js
 - contratos/contractAttachments.js
 
-**Payments (1):**
-- cashflow/paymentVaucher.js
-
 ## Acción requerida en Firestore Console
 
 Varias queries combinan `where('tenantId', ...)` con `orderBy` o con otro `where`,

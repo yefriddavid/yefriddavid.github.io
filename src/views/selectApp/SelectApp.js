@@ -6,7 +6,14 @@ import { deleteSession } from '../../services/firebase/security/sessions'
 import { clearProfile } from '../../actions/authActions'
 import { useDispatch, useSelector } from 'react-redux'
 import './SelectApp.scss'
-import { FinanceIcon, TaxiIcon, DomoticaIcon, SystemIcon, MiscelaneaIcon, ShortcutsIcon } from 'src/components/AppIcons'
+import {
+  FinanceIcon,
+  TaxiIcon,
+  DomoticaIcon,
+  SystemIcon,
+  MiscelaneaIcon,
+  ShortcutsIcon,
+} from 'src/components/AppIcons'
 import Spinner from 'src/components/shared/Spinner'
 
 const ArrowRight = () => (
@@ -82,7 +89,10 @@ const SelectApp = () => {
   const [firebaseUser, setFirebaseUser] = useState(undefined)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const role = useSelector((s) => s.profile.data?.role ?? null)
+  const reduxRole = useSelector((s) => s.profile.data?.role ?? null)
+  // Cached role avoids the super-admin cards popping in after the profile fetch.
+  // UI hint only — real authorization is enforced by Firestore rules.
+  const role = reduxRole ?? authStorage.getRole()
   const visibleApps = role === 'superAdmin' ? [...APPS, ...APPS_SUPER_ADMIN] : APPS
 
   useEffect(() => {

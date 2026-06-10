@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import {
   Editing,
   Column,
-  MasterDetail,
   Selection,
   LoadPanel,
   Button as GButton,
@@ -10,7 +9,6 @@ import {
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { Button } from 'devextreme-react/button'
 import { SelectControl } from './Controls'
-import ItemDetail from './ItemDetail'
 import ModalPaymentComponent from './ModalPaymentComponent'
 import { cilX, cilCheckCircle } from '@coreui/icons'
 import { CIcon } from '@coreui/icons-react'
@@ -108,7 +106,7 @@ class App extends Component {
     //console.log(this.props.accounts);
 
     const { onChangeAnyState, refreshData } = this
-    const { year, month, monthNumber } = this.state
+    const { year, month } = this.state
     const months = moment.months()
     const years = [(year - 1).toString(), year.toString(), (parseInt(year) + 1).toString()]
 
@@ -165,11 +163,11 @@ class App extends Component {
           <Column
             dataField="Status"
             cellRender={(cellData) => {
-              const { data } = cellData
-              const { payments } = data
+              const { data: rowData } = cellData
+              const { payments } = rowData
               if (payments) {
                 const { total: payed } = payments
-                const { value: totalAmount } = data
+                const { value: totalAmount } = rowData
                 //console.log(cellData);
                 if (totalAmount <= payed) {
                   return <CIcon className="text-info" icon={cilCheckCircle} size="xl" />
@@ -185,13 +183,6 @@ class App extends Component {
             <GButton name="edit" />
             <GButton name="delete" />
           </Column>
-
-          <MasterDetail
-            key={crypto.randomUUID()}
-            autoExpandAll="false"
-            enabled={false}
-            render={(item) => ItemDetail(item.data, year, monthNumber, onChangeAnyState)}
-          />
 
           <LoadPanel
             visible={!data}

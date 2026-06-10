@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useForm } from 'react-hook-form'
 import { CCard, CCardHeader, CCardBody, CButton, CBadge, CAlert } from '@coreui/react'
 import * as authActions from 'src/actions/authActions'
 import { authStorage } from 'src/utils/storage'
-import { changePassword } from 'src/services/firebase/auth'
 import { LANDING_PAGES } from 'src/constants/commons'
 import {
   USER_ROLE_LABELS as ROLE_LABELS,
@@ -14,19 +14,110 @@ import Spinner from 'src/components/shared/Spinner'
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
 
+const fieldError = (err) =>
+  err ? (
+    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
+      {err.message}
+    </span>
+  ) : null
+
+const PasswordChangeForm = ({ saving, success, serverError, onSave, onCancel }) => {
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm({ defaultValues: { current: '', next: '', confirm: '' } })
+
+  return (
+    <div className="mt-3 pt-3 border-top d-flex flex-column gap-3">
+      <div className="fw-semibold small">Cambiar contraseña</div>
+      {success && <div style={{ color: '#2eb85c', fontSize: 13 }}>¡Contraseña actualizada!</div>}
+      {serverError && <div style={{ color: '#e55353', fontSize: 13 }}>{serverError}</div>}
+      <div>
+        <label className="form-label small fw-semibold">Contraseña actual</label>
+        <input
+          className="form-control"
+          type="password"
+          placeholder="••••••••"
+          autoComplete="current-password"
+          {...register('current', { required: 'Ingresa tu contraseña actual' })}
+        />
+        {fieldError(errors.current)}
+      </div>
+      <div>
+        <label className="form-label small fw-semibold">Nueva contraseña</label>
+        <input
+          className="form-control"
+          type="password"
+          placeholder="Mínimo 6 caracteres"
+          autoComplete="new-password"
+          {...register('next', {
+            required: 'Ingresa la nueva contraseña',
+            minLength: { value: 6, message: 'Mínimo 6 caracteres' },
+          })}
+        />
+        {fieldError(errors.next)}
+      </div>
+      <div>
+        <label className="form-label small fw-semibold">Confirmar contraseña</label>
+        <input
+          className="form-control"
+          type="password"
+          placeholder="••••••••"
+          autoComplete="new-password"
+          {...register('confirm', {
+            validate: (val) => val === getValues('next') || 'Las contraseñas no coinciden',
+          })}
+        />
+        {fieldError(errors.confirm)}
+      </div>
+      <div className="d-flex gap-2">
+        <CButton size="sm" color="primary" onClick={handleSubmit(onSave)} disabled={saving}>
+          {saving ? <Spinner size="sm" /> : 'Guardar'}
+        </CButton>
+        <CButton size="sm" color="secondary" variant="outline" onClick={onCancel}>
+          Cancelar
+        </CButton>
+      </div>
+    </div>
+  )
+}
+
 const Profile = () => {
   const dispatch = useDispatch()
-  const { data: profile, loading, error } = useSelector((s) => s.profile)
+  const {
+    data: profile,
+    loading,
+    error,
+    pwChanging,
+    pwSuccess,
+    pwError: pwReduxError,
+  } = useSelector((s) => s.profile)
   const fileInputRef = useRef(null)
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null)
   const [avatarLoading, setAvatarLoading] = useState(false)
   const [changingPw, setChangingPw] = useState(false)
-  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
-  const [pwLoading, setPwLoading] = useState(false)
-  const [pwError, setPwError] = useState(null)
-  const [pwSuccess, setPwSuccess] = useState(false)
+
+  useEffect(() => {
+    if (!pwSuccess) return
+    const t = setTimeout(() => {
+      setChangingPw(false)
+      dispatch(authActions.changePasswordReset())
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [pwSuccess, dispatch])
+
+  const pwDisplayError = (() => {
+    if (!pwReduxError) return null
+    const { code, message } = pwReduxError
+    if (code === 'auth/wrong-password' || code === 'auth/invalid-credential')
+      return 'Contraseña actual incorrecta'
+    if (code === 'auth/too-many-requests') return 'Demasiados intentos. Intenta más tarde.'
+    return message
+  })()
 
   if (!profile) {
     return (
@@ -59,42 +150,14 @@ const Profile = () => {
     setForm(null)
   }
 
-  const handleChangePassword = async () => {
-    setPwError(null)
-    if (!pwForm.current) {
-      setPwError('Ingresa tu contraseña actual')
-      return
-    }
-    if (!pwForm.next) {
-      setPwError('Ingresa la nueva contraseña')
-      return
-    }
-    if (pwForm.next.length < 6) {
-      setPwError('Mínimo 6 caracteres')
-      return
-    }
-    if (pwForm.next !== pwForm.confirm) {
-      setPwError('Las contraseñas no coinciden')
-      return
-    }
-    setPwLoading(true)
-    try {
-      await changePassword(profile.username, pwForm.current, pwForm.next)
-      setPwSuccess(true)
-      setPwForm({ current: '', next: '', confirm: '' })
-      setTimeout(() => {
-        setChangingPw(false)
-        setPwSuccess(false)
-      }, 2000)
-    } catch (e) {
-      let msg = e.message
-      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
-        msg = 'Contraseña actual incorrecta'
-      if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde.'
-      setPwError(msg)
-    } finally {
-      setPwLoading(false)
-    }
+  const handleChangePassword = (data) => {
+    dispatch(
+      authActions.changePasswordRequest({
+        username: profile.username,
+        current: data.current,
+        next: data.next,
+      }),
+    )
   }
 
   const handleAvatarChange = (e) => {
@@ -271,8 +334,7 @@ const Profile = () => {
                 variant="outline"
                 onClick={() => {
                   setChangingPw((v) => !v)
-                  setPwError(null)
-                  setPwSuccess(false)
+                  dispatch(authActions.changePasswordReset())
                 }}
               >
                 Cambiar contraseña
@@ -281,69 +343,19 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Password change panel */}
+        {/* Password change panel — remounts on success so the fields reset */}
         {changingPw && (
-          <div className="mt-3 pt-3 border-top d-flex flex-column gap-3">
-            <div className="fw-semibold small">Cambiar contraseña</div>
-            {pwSuccess && (
-              <div style={{ color: '#2eb85c', fontSize: 13 }}>¡Contraseña actualizada!</div>
-            )}
-            {pwError && <div style={{ color: '#e55353', fontSize: 13 }}>{pwError}</div>}
-            <div>
-              <label className="form-label small fw-semibold">Contraseña actual</label>
-              <input
-                className="form-control"
-                type="password"
-                placeholder="••••••••"
-                value={pwForm.current}
-                onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
-                autoComplete="current-password"
-              />
-            </div>
-            <div>
-              <label className="form-label small fw-semibold">Nueva contraseña</label>
-              <input
-                className="form-control"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={pwForm.next}
-                onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
-                autoComplete="new-password"
-              />
-            </div>
-            <div>
-              <label className="form-label small fw-semibold">Confirmar contraseña</label>
-              <input
-                className="form-control"
-                type="password"
-                placeholder="••••••••"
-                value={pwForm.confirm}
-                onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="d-flex gap-2">
-              <CButton
-                size="sm"
-                color="primary"
-                onClick={handleChangePassword}
-                disabled={pwLoading}
-              >
-                {pwLoading ? <Spinner size="sm" /> : 'Guardar'}
-              </CButton>
-              <CButton
-                size="sm"
-                color="secondary"
-                variant="outline"
-                onClick={() => {
-                  setChangingPw(false)
-                  setPwError(null)
-                }}
-              >
-                Cancelar
-              </CButton>
-            </div>
-          </div>
+          <PasswordChangeForm
+            key={pwSuccess ? 'saved' : 'editing'}
+            saving={pwChanging}
+            success={pwSuccess}
+            serverError={pwDisplayError}
+            onSave={handleChangePassword}
+            onCancel={() => {
+              setChangingPw(false)
+              dispatch(authActions.changePasswordReset())
+            }}
+          />
         )}
       </CCardBody>
     </CCard>

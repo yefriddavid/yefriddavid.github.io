@@ -7,6 +7,9 @@ const profileSlice = createSlice({
     data: null, // { username, name, role, avatar, email, active }
     loading: false,
     error: null,
+    pwChanging: false,
+    pwSuccess: false,
+    pwError: null, // { code, message } | null
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -41,6 +44,27 @@ const profileSlice = createSlice({
       .addCase(actions.clearProfile, (state) => {
         state.data = null
         state.error = null
+      })
+
+      .addCase(actions.changePasswordRequest, (state) => {
+        state.pwChanging = true
+        state.pwSuccess = false
+        state.pwError = null
+      })
+      .addCase(actions.changePasswordSuccess, (state) => {
+        state.pwChanging = false
+        state.pwSuccess = true
+        state.pwError = null
+      })
+      .addCase(actions.changePasswordError, (state, { payload }) => {
+        state.pwChanging = false
+        state.pwSuccess = false
+        state.pwError = payload
+      })
+      .addCase(actions.changePasswordReset, (state) => {
+        state.pwChanging = false
+        state.pwSuccess = false
+        state.pwError = null
       })
   },
 })

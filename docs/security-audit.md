@@ -79,7 +79,7 @@
 ---
 
 ### M2 — Inputs de URL usados directamente en Firestore sin validar
-- **Archivos:** `src/services/firebase/cashflow/paymentVaucher.js` líneas 17–19; `src/views/Contratos/contratos/GenerarContrato/index.js` línea ~96
+- **Archivos:** `src/views/Contratos/contratos/GenerarContrato/index.js` línea ~96
 - **Descripción:** Parámetros de query string (`searchParams.get('id')`) y valores de formulario se pasan directamente a `where()` de Firestore sin validar tipo ni formato.
 - **Fix:** Validar que los IDs sean strings no vacíos con formato esperado antes de usarlos. Considerar Zod para schemas de validación en los sagas.
 
@@ -108,7 +108,6 @@
 ---
 
 ### M6 — `console.error()` puede filtrar datos sensibles en producción
-- **Archivos:** `src/services/firebase/cashflow/paymentVaucher.js` líneas 27, 38, 48 y otros
 - **Descripción:** Objetos de error completos se loguean a consola, pudiendo incluir IDs de usuarios, paths de Firestore o datos financieros.
 - **Fix:** En producción, loguear solo el mensaje genérico. Usar un servicio como Sentry con `beforeSend` para filtrar datos sensibles antes de enviar.
 

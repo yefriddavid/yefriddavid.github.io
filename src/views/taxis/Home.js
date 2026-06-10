@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   CCard,
   CCardBody,
   CCardHeader,
   CRow,
   CCol,
-  CFormSelect,
   CNav,
   CNavItem,
   CNavLink,
@@ -23,16 +23,17 @@ import {
   cilCarAlt,
   cilBarChart,
   cilChartPie,
-  cilArrowTop,
-  cilArrowBottom,
   cilStar,
 } from '@coreui/icons'
-import { getSettlements } from 'src/services/firebase/taxi/taxiSettlements'
-import { fetchExpenses } from 'src/services/firebase/taxi/taxiExpenses'
 import { monthToRange } from 'src/utils/dateRange'
-import { getDrivers } from 'src/services/firebase/taxi/taxiDrivers'
-import { getVehicles } from 'src/services/firebase/taxi/taxiVehicles'
+import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
+import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
+import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
+import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
+import * as taxiTrendActions from 'src/actions/taxi/taxiTrendActions'
 import { fmt } from 'src/utils/formatters'
+import useLocaleData from 'src/hooks/useLocaleData'
+import PeriodSelector from 'src/components/shared/PeriodSelector'
 import KPICard from 'src/components/shared/KPICard'
 import EmptyState from 'src/components/shared/EmptyState'
 import {
@@ -41,21 +42,6 @@ import {
 } from 'src/constants/taxi'
 import './Home.scss'
 import Spinner from 'src/components/shared/Spinner'
-
-const MONTHS = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-]
 
 const fmtM = (n) => {
   if (!n) return '$0'
@@ -67,68 +53,59 @@ const fmtM = (n) => {
 const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : null)
 
 const DriverAvatar = ({ name, rank }) => (
-  <div
-    className="driver-avatar"
-    style={{ background: AVATAR_COLORS[rank % AVATAR_COLORS.length] }}
-  >
+  <div className="driver-avatar" style={{ background: AVATAR_COLORS[rank % AVATAR_COLORS.length] }}>
     {name ? name[0].toUpperCase() : '?'}
   </div>
 )
 
 const TaxisHome = () => {
+  const dispatch = useDispatch()
+  const { monthLabels } = useLocaleData()
   const now = new Date()
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [settlements, setSettlements] = useState([])
-  const [expenses, setExpenses] = useState([])
-  const [drivers, setDrivers] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [trendData, setTrendData] = useState(null)
-  const [trendLoading, setTrendLoading] = useState(false)
-  const trendFetchKey = useRef(null)
+
+  const taxiSettlement = useSelector((s) => s.taxiSettlement)
+  const taxiExpense = useSelector((s) => s.taxiExpense)
+  const taxiDriver = useSelector((s) => s.taxiDriver)
+  const taxiVehicle = useSelector((s) => s.taxiVehicle)
+  const taxiTrend = useSelector((s) => s.taxiTrend)
+
+  const settlements = useMemo(() => taxiSettlement.data ?? [], [taxiSettlement.data])
+  const expenses = useMemo(() => taxiExpense.data ?? [], [taxiExpense.data])
+  const drivers = taxiDriver.data ?? []
+  const vehicles = taxiVehicle.data ?? []
+  const loading = taxiSettlement.data === null || taxiDriver.data === null
+  const trendData = taxiTrend.settlements !== null ? taxiTrend : null
+  const trendLoading = taxiTrend.fetching
 
   useEffect(() => {
     const p = { month: now.getMonth() + 1, year: now.getFullYear() }
-    Promise.all([
-      getSettlements(monthToRange(p)),
-      fetchExpenses(monthToRange(p)),
-      getDrivers(),
-      getVehicles(),
-    ]).then(([s, e, d, v]) => {
-      setSettlements(s)
-      setExpenses(e)
-      setDrivers(d)
-      setVehicles(v)
-      setLoading(false)
-    })
+    dispatch(taxiSettlementActions.fetchRequest(p))
+    dispatch(taxiExpenseActions.fetchRequest(p))
+    dispatch(taxiDriverActions.fetchRequest())
+    dispatch(taxiVehicleActions.fetchRequest())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    setTrendData(null)
-    setTrendLoading(false)
-  }, [period])
+    dispatch(taxiTrendActions.clearRequest())
+  }, [period, dispatch])
 
   useEffect(() => {
-    if (activeTab !== 'tendencias' || trendData !== null || trendLoading) return
-    const key = `${period.year}-${period.month}`
-    trendFetchKey.current = key
-    setTrendLoading(true)
+    if (activeTab !== 'tendencias' || taxiTrend.settlements !== null || taxiTrend.fetching) return
     const pad = (n) => String(n).padStart(2, '0')
     const months = Array.from({ length: 6 }, (_, i) => {
       const d = new Date(period.year, period.month - 1 - (5 - i), 1)
       return { year: d.getFullYear(), month: d.getMonth() + 1 }
     })
+    const periodKey = `${period.year}-${period.month}`
     const range = {
       from: `${months[0].year}-${pad(months[0].month)}-01`,
       to: monthToRange(months[5]).to,
     }
-    Promise.all([getSettlements(range), fetchExpenses(range)]).then(([s, e]) => {
-      if (trendFetchKey.current !== key) return
-      setTrendData({ settlements: s, expenses: e })
-      setTrendLoading(false)
-    })
-  }, [activeTab, trendData, trendLoading, period])
+    dispatch(taxiTrendActions.fetchRequest({ ...range, periodKey }))
+  }, [activeTab, taxiTrend, period, dispatch])
 
   const availableYears = useMemo(() => {
     const years = [
@@ -236,10 +213,10 @@ const TaxisHome = () => {
       return {
         year: d.getFullYear(),
         month: d.getMonth() + 1,
-        label: MONTHS[d.getMonth()].slice(0, 3),
+        label: monthLabels[d.getMonth()]?.slice(0, 3) ?? '',
       }
     })
-  }, [period])
+  }, [period, monthLabels])
 
   const { trendSettled, trendExp } = useMemo(() => {
     const empty = last6.map(() => 0)
@@ -299,30 +276,7 @@ const TaxisHome = () => {
     <>
       <div className="d-flex align-items-center gap-2 mb-3 taxis-home__period-bar">
         <span className="taxis-home__period-label">Periodo</span>
-        <CFormSelect
-          size="sm"
-          className="taxis-home__period-select-month"
-          value={period.month}
-          onChange={(e) => setPeriod((p) => ({ ...p, month: Number(e.target.value) }))}
-        >
-          {MONTHS.map((name, i) => (
-            <option key={i + 1} value={i + 1}>
-              {name}
-            </option>
-          ))}
-        </CFormSelect>
-        <CFormSelect
-          size="sm"
-          className="taxis-home__period-select-year"
-          value={period.year}
-          onChange={(e) => setPeriod((p) => ({ ...p, year: Number(e.target.value) }))}
-        >
-          {availableYears.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </CFormSelect>
+        <PeriodSelector value={period} onChange={setPeriod} years={availableYears} />
         <div className="period-stats-pill">
           <span className="period-stats-pill__item">
             <CIcon icon={cilPeople} className="period-stats-pill__icon" />
@@ -429,7 +383,7 @@ const TaxisHome = () => {
             <CCol lg={8}>
               <CCard className="taxis-home__card">
                 {cardHeader(
-                  `Liquidaciones por día — ${MONTHS[period.month - 1]} ${period.year}`,
+                  `Liquidaciones por día — ${monthLabels[period.month - 1] ?? ''} ${period.year}`,
                   cilBarChart,
                 )}
                 <CCardBody>
@@ -684,7 +638,10 @@ const TaxisHome = () => {
                 {cardHeader('Tendencia últimos 6 meses', cilChartLine)}
                 <CCardBody>
                   {trendLoading && (
-                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
+                    <div
+                      className="d-flex justify-content-center align-items-center"
+                      style={{ minHeight: 200 }}
+                    >
                       <Spinner color="primary" />
                     </div>
                   )}

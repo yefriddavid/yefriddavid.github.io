@@ -218,13 +218,12 @@ const handleDelete = async (item) => {
 
 #### 7. `FileUploadField` — Upload con preview
 
-**Apariciones:** 3 usos con código casi idéntico (~90 líneas cada uno)
+**Apariciones:** 2 usos con código casi idéntico (~90 líneas cada uno)
 
 | Archivo | Línea aprox. |
 |---|---|
 | `src/views/Accounting/AccountStatus/AdHocExpenseModal.js` | ~228 |
 | `src/views/Accounting/AccountStatus/PayModal.js` | ~172 |
-| `src/views/movements/payments/ItemDetail.js` | — |
 
 **Código duplicado:**
 ```jsx
@@ -277,7 +276,7 @@ Patrón: label + valor formateado + barra de progreso opcional. Solución: `src/
 
 #### 9. `InlineEditingCell` — Celda editable en place
 
-**Apariciones:** 2 usos principales (`AccountCard.js` y `ItemDetail.js`)
+**Apariciones:** 1 uso principal (`AccountCard.js`)
 
 Patrón: modo vista con click → modo edición con input + Save/Cancel. Solución: `src/components/shared/InlineEditingCell.js`.
 

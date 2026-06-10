@@ -145,9 +145,7 @@
 | Ruta (`src/`) | Componente | URL | Descripción |
 |---|---|---|---|
 | `views/movements/payments/Payments.js` | `Payments` | `/cash_flow/management/payments` | Cuadre de pagos con edición inline |
-| `views/movements/payments/Services.js` | `Services` | _(modal)_ | Servicios asociados a pagos |
 | `views/movements/payments/Alert.js` | `Alert` | _(modal)_ | Alertas de pagos |
-| `views/movements/payments/VaucherControlViewer.js` | `VaucherControlViewer` | _(modal)_ | Visor de control de vauchers |
 
 ---
 
@@ -157,8 +155,6 @@
 |---|---|---|---|
 | `views/reports/Reports.js` | `Reports` | `/cash_flow/management/reports` | Reportes exportables por período |
 | `views/reports/payments/Payments.js` | `PaymentsReport` | _(tab)_ | Reporte de pagos |
-| `views/reports/payments/Services.js` | `ServicesReport` | _(tab)_ | Reporte de servicios |
-| `views/reports/payments/VaucherControlViewer.js` | `VaucherControlViewerReport` | _(modal)_ | Visor de vauchers en reportes |
 | `views/reports/payments/Alert.js` | `AlertReport` | _(tab)_ | Alertas en reportes |
 
 ---

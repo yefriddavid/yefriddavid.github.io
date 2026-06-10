@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import { trackPageVisit } from 'src/services/firebase/cashflow/pageVisits'
+import { useDispatch } from 'react-redux'
+import { trackVisitRequest } from 'src/actions/system/pageVisitActions'
 import './AboutMe.scss'
 
 import NodeImg from 'src/assets/images/skills/nodejs.png'
@@ -150,17 +151,18 @@ const useCursorGlow = (_containerRef) => {
 }
 
 const AboutMe = () => {
+  const dispatch = useDispatch()
   const containerRef = useRef()
   const { dotRef, ringRef, glowRef } = useCursorGlow(containerRef)
 
   useEffect(() => {
     const prev = document.title
     document.title = 'David Rios'
-    trackPageVisit('about-me')
+    dispatch(trackVisitRequest('about-me'))
     return () => {
       document.title = prev
     }
-  }, [])
+  }, [dispatch])
 
   return (
     <div className="about" ref={containerRef}>

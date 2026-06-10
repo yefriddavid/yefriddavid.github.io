@@ -1,6 +1,7 @@
-import { openDB, DB_STORES } from './db'
+import { openDB } from './db'
+import { IDB_STORES as S } from './idbStores'
 
-const STORE = DB_STORES.TASKS
+const STORE = S.MISC_TASKS
 
 export const getAllTasks = async () => {
   const db = await openDB()

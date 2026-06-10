@@ -46,7 +46,7 @@ vi.mock('../../../services/firebase/healthCheck', () => ({
 import { getCookie, setCookie, deleteCookie } from 'cookies-next'
 import Login from '../Login'
 
-const renderLogin = () => render(<Login />)
+const renderLogin = () => render(<Login captcha={false} />)
 
 const getUsername = () => screen.getByPlaceholderText('username')
 const getPassword = () => screen.getByPlaceholderText('••••••••')
