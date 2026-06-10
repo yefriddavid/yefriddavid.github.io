@@ -53,6 +53,16 @@ export async function signIn(username, password) {
   // ── Step 1: try Firebase Auth ──────────────────────────────────────────────
   try {
     await signInWithEmailAndPassword(auth, email, password)
+    // Wait for onAuthStateChanged to fire so the Firestore SDK has the new auth
+    // token before we make any reads. Without this there is a race condition:
+    // signInWithEmailAndPassword resolves but Firestore's internal auth listener
+    // hasn't processed the new session yet, causing permission-denied on the
+    // very next getDoc call.
+    await new Promise((resolve) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        if (user) { unsub(); resolve() }
+      })
+    })
   } catch (firebaseErr) {
     // User not in Firebase Auth yet → legacy path
     if (

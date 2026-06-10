@@ -1,4 +1,4 @@
-import { db, COL_USERS as COL } from '../settings'
+import { db, auth, COL_USERS as COL } from '../settings'
 import {
   collection,
   doc,
@@ -24,9 +24,15 @@ export const hashPassword = async (plainText) => {
     .join('')
 }
 
-// Returns full doc including passwordHash — only for login validation
+// Returns full doc including passwordHash — only for login validation.
+// Uses direct getDoc (no firestoreCall) to avoid the permission-denied → logout
+// redirect that breaks the login flow before the session is established.
+// Forces a token refresh so the Firestore SDK has the auth token before reading —
+// without this there is a race condition where signInWithEmailAndPassword has set
+// auth.currentUser but Firestore's internal auth listener hasn't fired yet.
 export const getUserForAuth = async (username) => {
-  const snap = await firestoreCall(() => getDoc(doc(db, COL, username)))
+  if (auth.currentUser) await auth.currentUser.getIdToken()
+  const snap = await getDoc(doc(db, COL, username))
   if (!snap.exists()) return null
   return { username: snap.id, ...snap.data() }
 }

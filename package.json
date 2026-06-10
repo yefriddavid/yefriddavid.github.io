@@ -127,6 +127,7 @@
     "firebase-admin": "^13.7.0",
     "jsdom": "^29.0.1",
     "mocha-junit-reporter": "^2.2.1",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.49",
     "prettier": "3.3.3",
     "sass": "^1.81.0",

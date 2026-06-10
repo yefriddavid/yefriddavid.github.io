@@ -27,7 +27,9 @@ const collectVisitorMeta = () => ({
 
 const fetchGeoInfo = async () => {
   try {
-    const res = await fetch('https://ipinfo.io/json')
+    const token = import.meta.env.VITE_IPINFO_TOKEN
+    const url = token ? `https://ipinfo.io/json?token=${token}` : 'https://ipinfo.io/json'
+    const res = await fetch(url)
     if (!res.ok) return {}
     const data = await res.json()
     return {
