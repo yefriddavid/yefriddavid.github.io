@@ -115,6 +115,8 @@ export const CALC_LIST_CLASSIFICATIONS = [
   { value: 'comida',    label: 'Comida' },
   { value: 'ocio',      label: 'Ocio' },
   { value: 'servicios', label: 'Servicios' },
+  { value: 'alquileres', label: 'Alquileres' },
+  { value: 'salarios',  label: 'Salarios' },
   { value: 'otros',     label: 'Otros' },
 ]
 
