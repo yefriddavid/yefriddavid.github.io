@@ -65,11 +65,27 @@ export default function EditableTable({
   onRowAdd,
   onRowDelete,
   onRowNote,
+  onRowReorder,
   totalColumn,
   budget,
   onBudgetChange,
   emptyText = 'No hay filas.',
 }) {
+  const [dragId, setDragId]         = useState(null)
+  const [dragOverId, setDragOverId] = useState(null)
+
+  const handleDrop = (toId) => {
+    if (!dragId || dragId === toId) return
+    const ids = rows.map((r) => r[keyExpr])
+    const from = ids.indexOf(dragId)
+    const to   = ids.indexOf(toId)
+    const next = [...ids]
+    next.splice(from, 1)
+    next.splice(to, 0, dragId)
+    onRowReorder?.(next)
+    setDragId(null)
+    setDragOverId(null)
+  }
   const calcTotalValue = (row) => {
     if (!totalColumn) return null
     const col = columns.find((c) => c.key === totalColumn)
@@ -120,7 +136,20 @@ export default function EditableTable({
             </tr>
           )}
           {rows.map((row) => (
-            <tr key={row[keyExpr]} className="editable-table__tr">
+            <tr
+              key={row[keyExpr]}
+              className={[
+                'editable-table__tr',
+                onRowReorder ? 'editable-table__tr--draggable' : '',
+                dragId      === row[keyExpr] ? 'editable-table__tr--dragging'  : '',
+                dragOverId  === row[keyExpr] ? 'editable-table__tr--drag-over' : '',
+              ].filter(Boolean).join(' ')}
+              draggable={!!onRowReorder}
+              onDragStart={() => setDragId(row[keyExpr])}
+              onDragOver={(e) => { e.preventDefault(); setDragOverId(row[keyExpr]) }}
+              onDrop={(e) => { e.preventDefault(); handleDrop(row[keyExpr]) }}
+              onDragEnd={() => { setDragId(null); setDragOverId(null) }}
+            >
               {columns.map((col) => (
                 <td
                   key={col.key}

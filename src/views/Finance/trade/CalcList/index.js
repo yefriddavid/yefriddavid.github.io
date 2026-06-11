@@ -421,6 +421,14 @@ export default function CalcList() {
     }))
   }
 
+  const handleRowReorder = (orderedIds) => {
+    if (!activeList) return
+    orderedIds.forEach((id, i) => {
+      const row = activeList.rows.find((r) => r.id === id)
+      if (row) dispatch(a.saveRowRequest({ listId: activeId, row: { ...row, index: i + 1 } }))
+    })
+  }
+
   const handleRowDelete = (rowId) => {
     dispatch(a.deleteRowRequest({ listId: activeId, rowId }))
   }
@@ -516,6 +524,7 @@ export default function CalcList() {
             onRowChange={handleRowChange}
             onRowAdd={handleRowAdd}
             onRowDelete={handleRowDelete}
+            onRowReorder={handleRowReorder}
             onRowNote={handleRowNote}
             budget={activeList.budget}
             onBudgetChange={handleBudget}
