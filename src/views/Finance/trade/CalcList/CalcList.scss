@@ -354,6 +354,33 @@
     &:hover { color: var(--cui-danger); }
   }
 
+  &__cat-modal-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--cui-border-color);
+    padding: 0 18px;
+    gap: 2px;
+  }
+
+  &__cat-modal-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cui-secondary-color);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+
+    &:hover { color: var(--cui-body-color); }
+
+    &--active {
+      color: var(--cui-primary);
+      border-bottom-color: var(--cui-primary);
+    }
+  }
+
   &__cat-modal-body {
     overflow-y: auto;
     flex: 1;
@@ -409,7 +436,8 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 
-    &--bold { font-weight: 700; }
+    &--bold  { font-weight: 700; }
+    &--muted { color: var(--cui-secondary-color); font-size: 0.78rem; }
   }
 
   // ── Mobile ─────────────────────────────────────────────────────────────

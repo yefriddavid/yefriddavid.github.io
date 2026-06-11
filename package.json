@@ -71,6 +71,7 @@
     "devextreme-react": "^24.2.3",
     "firebase": "^11.1.0",
     "html2canvas": "^1.4.1",
+    "html5-qrcode": "^2.3.8",
     "i18next": "^24.2.0",
     "i18next-http-backend": "^3.0.1",
     "json-rules-engine": "^7.3.1",

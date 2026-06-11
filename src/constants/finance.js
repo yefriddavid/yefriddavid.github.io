@@ -111,3 +111,10 @@ export const CALC_LIST_CATEGORIES = [
   { value: 'otros',   label: 'Otros' },
 ]
 
+export const CALC_LIST_CLASSIFICATIONS = [
+  { value: 'comida',    label: 'Comida' },
+  { value: 'ocio',      label: 'Ocio' },
+  { value: 'servicios', label: 'Servicios' },
+  { value: 'otros',     label: 'Otros' },
+]
+

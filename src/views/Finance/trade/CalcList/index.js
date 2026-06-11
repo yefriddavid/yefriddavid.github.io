@@ -3,14 +3,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
 import { fmtUsd } from '../tradeUtils'
-import { CALC_LIST_CATEGORIES } from 'src/constants/finance'
+import { CALC_LIST_CATEGORIES, CALC_LIST_CLASSIFICATIONS } from 'src/constants/finance'
 import usePeerSync from './usePeerSync'
 import SyncModal from './SyncModal'
 import './CalcList.scss'
 
 const COLUMNS = [
   { key: 'description', label: 'Description', type: 'text' },
-  { key: 'category', label: 'Category', type: 'select', options: CALC_LIST_CATEGORIES, width: 110 },
+  { key: 'category',       label: 'Category',       type: 'select', options: CALC_LIST_CATEGORIES,    width: 110 },
+  { key: 'classification', label: 'Classification', type: 'select', options: CALC_LIST_CLASSIFICATIONS, width: 120 },
   { key: 'quantity', label: 'Qty', type: 'number', width: 90 },
   { key: 'value', label: 'Value', type: 'number', width: 120 },
   {
@@ -23,13 +24,80 @@ const COLUMNS = [
   },
 ]
 
+function groupBy(rows, key, defs) {
+  return defs.map((def) => ({
+    ...def,
+    total: rows.filter((r) => (r[key] || defs[0].value) === def.value).reduce((s, r) => s + r.total, 0),
+  })).filter((g) => g.total > 0)
+}
+
+function DetailTab({ rows }) {
+  if (!rows.length) return <div className="calc-list__cat-modal-empty">Sin filas.</div>
+  return (
+    <table className="calc-list__cat-modal-table">
+      <thead>
+        <tr>
+          <th>Lista</th>
+          <th>Descripción</th>
+          <th>Cant.</th>
+          <th>Valor</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.id}>
+            <td className="calc-list__cat-modal-list">{r.listName}</td>
+            <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
+            <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
+            <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
+            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+function GroupTab({ groups, grandTotal }) {
+  if (!groups.length) return <div className="calc-list__cat-modal-empty">Sin datos.</div>
+  return (
+    <table className="calc-list__cat-modal-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Total</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        {groups.map((g) => (
+          <tr key={g.value}>
+            <td>{g.label}</td>
+            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
+            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--muted">
+              {grandTotal ? `${((g.total / grandTotal) * 100).toFixed(1)}%` : '—'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+const MODAL_TABS = ['Detallado', 'Por categoría', 'Por clasificación']
+
 function CategoryModal({ cat, lists, onClose }) {
+  const [tab, setTab] = useState(0)
+
   const rows = lists.flatMap((l) =>
     l.rows
       .filter((r) => (r.category || CALC_LIST_CATEGORIES[0].value) === cat.value)
       .map((r) => ({ ...r, listName: l.name, total: (r.quantity || 0) * (r.value || 0) }))
   )
   const grandTotal = rows.reduce((s, r) => s + r.total, 0)
+  const byCategory = groupBy(rows, 'category', CALC_LIST_CATEGORIES)
+  const byClassification = groupBy(rows, 'classification', CALC_LIST_CLASSIFICATIONS)
 
   return (
     <div className="calc-list__cat-modal-overlay" onClick={onClose}>
@@ -39,33 +107,19 @@ function CategoryModal({ cat, lists, onClose }) {
           <span className="calc-list__cat-modal-total">{fmtUsd(grandTotal)}</span>
           <button className="calc-list__cat-modal-close" onClick={onClose}>×</button>
         </div>
+        <div className="calc-list__cat-modal-tabs">
+          {MODAL_TABS.map((t, i) => (
+            <button
+              key={t}
+              className={`calc-list__cat-modal-tab${tab === i ? ' calc-list__cat-modal-tab--active' : ''}`}
+              onClick={() => setTab(i)}
+            >{t}</button>
+          ))}
+        </div>
         <div className="calc-list__cat-modal-body">
-          {rows.length === 0 ? (
-            <div className="calc-list__cat-modal-empty">Sin filas en esta categoría.</div>
-          ) : (
-            <table className="calc-list__cat-modal-table">
-              <thead>
-                <tr>
-                  <th>Lista</th>
-                  <th>Descripción</th>
-                  <th>Cant.</th>
-                  <th>Valor</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id}>
-                    <td className="calc-list__cat-modal-list">{r.listName}</td>
-                    <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
-                    <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
-                    <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
-                    <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          {tab === 0 && <DetailTab rows={rows} />}
+          {tab === 1 && <GroupTab groups={byCategory} grandTotal={grandTotal} />}
+          {tab === 2 && <GroupTab groups={byClassification} grandTotal={grandTotal} />}
         </div>
       </div>
     </div>
@@ -263,7 +317,7 @@ export default function CalcList() {
     if (!activeList) return
     dispatch(a.saveRowRequest({
       listId: activeId,
-      row: { id: crypto.randomUUID(), description: '', category: CALC_LIST_CATEGORIES[0].value, quantity: 1, value: 0 },
+      row: { id: crypto.randomUUID(), description: '', category: CALC_LIST_CATEGORIES[0].value, classification: CALC_LIST_CLASSIFICATIONS[0].value, quantity: 1, value: 0 },
     }))
   }
 

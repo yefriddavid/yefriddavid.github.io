@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
+import { Html5Qrcode } from 'html5-qrcode'
 import { STATUS } from './usePeerSync'
 
 const STATUS_LABEL = {
@@ -10,10 +11,40 @@ const STATUS_LABEL = {
   [STATUS.ERROR]:      { text: 'Error de conexión',     color: 'var(--cui-danger)' },
 }
 
+function QrScanner({ onScanned }) {
+  const scannerRef = useRef(null)
+  const instanceRef = useRef(null)
+  const [camError, setCamError] = useState(null)
+
+  useEffect(() => {
+    const scanner = new Html5Qrcode('qr-scanner-region')
+    instanceRef.current = scanner
+
+    scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 180, height: 180 } },
+      (text) => {
+        scanner.stop().catch(() => {})
+        onScanned(text.trim())
+      },
+      () => {},
+    ).catch((err) => setCamError(String(err)))
+
+    return () => {
+      scanner.stop().catch(() => {})
+    }
+  }, [onScanned])
+
+  if (camError) return <div style={styles.camError}>No se pudo acceder a la cámara.<br />{camError}</div>
+
+  return <div id="qr-scanner-region" ref={scannerRef} style={styles.scannerRegion} />
+}
+
 export default function SyncModal({ myId, status, error, onConnect, onClose }) {
   const canvasRef = useRef(null)
   const [remoteId, setRemoteId] = useState('')
   const [copied, setCopied] = useState(false)
+  const [scanning, setScanning] = useState(false)
 
   useEffect(() => {
     if (myId && canvasRef.current) {
@@ -25,6 +56,12 @@ export default function SyncModal({ myId, status, error, onConnect, onClose }) {
     navigator.clipboard.writeText(myId)
     setCopied(true)
     setTimeout(() => setCopied(false), 1800)
+  }
+
+  const handleScanned = (text) => {
+    setScanning(false)
+    setRemoteId(text)
+    onConnect(text)
   }
 
   const { text: statusText, color: statusColor } = STATUS_LABEL[status]
@@ -59,24 +96,42 @@ export default function SyncModal({ myId, status, error, onConnect, onClose }) {
           {/* Connect side */}
           <div style={styles.section}>
             <p style={styles.label}>Conectar al otro dispositivo</p>
-            <p style={styles.hint}>Pegá el ID del otro dispositivo o escaneá su QR con una app de cámara.</p>
-            <input
-              style={styles.input}
-              placeholder="ID del otro dispositivo"
-              value={remoteId}
-              onChange={(e) => setRemoteId(e.target.value)}
-              disabled={status === STATUS.CONNECTING || status === STATUS.CONNECTED}
-            />
-            <button
-              style={{
-                ...styles.connectBtn,
-                opacity: !remoteId.trim() || status === STATUS.CONNECTING ? 0.5 : 1,
-              }}
-              disabled={!remoteId.trim() || status === STATUS.CONNECTING || status === STATUS.CONNECTED}
-              onClick={() => onConnect(remoteId)}
-            >
-              {status === STATUS.CONNECTING ? 'Conectando…' : 'Conectar'}
-            </button>
+            {scanning ? (
+              <>
+                <QrScanner onScanned={handleScanned} />
+                <button style={styles.cancelScanBtn} onClick={() => setScanning(false)}>Cancelar</button>
+              </>
+            ) : (
+              <>
+                <input
+                  style={styles.input}
+                  placeholder="ID del otro dispositivo"
+                  value={remoteId}
+                  onChange={(e) => setRemoteId(e.target.value)}
+                  disabled={status === STATUS.CONNECTING || status === STATUS.CONNECTED}
+                />
+                <div style={styles.connectRow}>
+                  <button
+                    style={styles.scanBtn}
+                    disabled={status === STATUS.CONNECTING || status === STATUS.CONNECTED}
+                    onClick={() => setScanning(true)}
+                    title="Escanear QR con la cámara"
+                  >
+                    📷 Escanear QR
+                  </button>
+                  <button
+                    style={{
+                      ...styles.connectBtn,
+                      opacity: !remoteId.trim() || status === STATUS.CONNECTING ? 0.5 : 1,
+                    }}
+                    disabled={!remoteId.trim() || status === STATUS.CONNECTING || status === STATUS.CONNECTED}
+                    onClick={() => onConnect(remoteId)}
+                  >
+                    {status === STATUS.CONNECTING ? 'Conectando…' : 'Conectar'}
+                  </button>
+                </div>
+              </>
+            )}
 
             <div style={{ ...styles.statusRow, color: statusColor }}>
               <span style={{ ...styles.statusDot, background: statusColor }} />
@@ -161,5 +216,28 @@ const styles = {
   errorDetail: {
     display: 'block', fontSize: '0.72rem', fontWeight: 400,
     color: 'var(--cui-secondary-color)', marginTop: 2,
+  },
+  connectRow: {
+    display: 'flex', gap: 8,
+  },
+  scanBtn: {
+    padding: '8px 12px', background: 'var(--cui-tertiary-bg)',
+    border: '1px solid var(--cui-border-color)', borderRadius: 6,
+    cursor: 'pointer', fontSize: '0.82rem', color: 'var(--cui-body-color)',
+    whiteSpace: 'nowrap', flexShrink: 0,
+  },
+  scannerRegion: {
+    width: '100%', borderRadius: 8, overflow: 'hidden',
+    background: '#000', minHeight: 220,
+  },
+  cancelScanBtn: {
+    padding: '7px 14px', background: 'var(--cui-tertiary-bg)',
+    border: '1px solid var(--cui-border-color)', borderRadius: 6,
+    cursor: 'pointer', fontSize: '0.82rem', color: 'var(--cui-body-color)',
+  },
+  camError: {
+    fontSize: '0.78rem', color: 'var(--cui-danger)',
+    background: 'var(--cui-tertiary-bg)', padding: '12px',
+    borderRadius: 6, lineHeight: 1.5,
   },
 }
