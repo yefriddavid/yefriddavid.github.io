@@ -36,6 +36,7 @@ function DetailRow({ r, showList }) {
   const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
   return (
     <tr>
+      <td className="calc-list__cat-modal-num calc-list__cat-modal-num--muted">{r.index ?? '—'}</td>
       {showList && <td className="calc-list__cat-modal-list">{r.listName}</td>}
       <td>
         {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
@@ -63,6 +64,7 @@ function DetailTab({ rows, grouped }) {
     <table className="calc-list__cat-modal-table">
       <thead>
         <tr>
+          <th>#</th>
           {!grouped && <th>Lista</th>}
           <th>Descripción</th>
           <th>Clasificación</th>
@@ -75,7 +77,7 @@ function DetailTab({ rows, grouped }) {
           ? groups.map((g) => (
               <React.Fragment key={g.listName}>
                 <tr className="calc-list__cat-modal-group-header">
-                  <td colSpan={3}>
+                  <td colSpan={4}>
                     {g.listName}
                     {g.listBudget ? <span className="calc-list__cat-modal-group-budget">({fmtUsd(g.listBudget)})</span> : null}
                   </td>
