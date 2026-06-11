@@ -117,9 +117,10 @@ export default function EditableTable({
                 className={[
                   'editable-table__th',
                   alignClass(col) ? `editable-table__th${alignClass(col)}` : '',
-                  col.type === 'calc' ? 'editable-table__th--total' : '',
+                  col.type === 'calc'     ? 'editable-table__th--total'   : '',
+                  col.type === 'readonly' ? 'editable-table__th--compact' : '',
                 ].filter(Boolean).join(' ')}
-                style={col.width ? { width: col.width } : undefined}
+                style={col.width ? { width: col.width, minWidth: col.noMinWidth ? undefined : col.width } : undefined}
               >
                 {col.label}
               </th>
@@ -155,6 +156,7 @@ export default function EditableTable({
                   key={col.key}
                   className={`editable-table__td${col.type === 'calc' ? ' editable-table__td--calc' : ''}`}
                   data-label={col.label}
+                  style={undefined}
                 >
                   {col.type === 'readonly' ? (
                     <span className="editable-table__readonly-cell">

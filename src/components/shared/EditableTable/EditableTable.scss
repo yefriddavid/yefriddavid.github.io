@@ -33,6 +33,7 @@
 
     &--right { text-align: right; }
     &--actions { width: 64px; }
+    &--compact { padding: 10px 4px 10px 8px; text-align: left; }
 
     &--total {
       color: var(--cui-primary);
@@ -117,10 +118,10 @@
 
   &__readonly-cell {
     display: block;
-    padding: 7px 4px;
+    padding: 7px 4px 7px 8px;
     font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
-    text-align: center;
+    text-align: left;
     color: var(--cui-secondary-color);
   }
 
