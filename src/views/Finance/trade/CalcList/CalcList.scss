@@ -464,6 +464,12 @@
     &--muted { color: var(--cui-secondary-color); font-size: 0.78rem; }
   }
 
+  &__cat-modal-group-budget {
+    margin-left: 6px;
+    font-weight: 400;
+    opacity: 0.65;
+  }
+
   &__cat-modal-group-header {
     background: var(--cui-secondary-bg);
 

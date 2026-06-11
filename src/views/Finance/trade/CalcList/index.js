@@ -53,7 +53,7 @@ function DetailTab({ rows, grouped }) {
   const groups = rows.reduce((acc, r) => {
     const g = acc.find((x) => x.listName === r.listName)
     if (g) g.rows.push(r)
-    else acc.push({ listName: r.listName, rows: [r], total: 0 })
+    else acc.push({ listName: r.listName, listBudget: r.listBudget, rows: [r], total: 0 })
     return acc
   }, [])
   groups.forEach((g) => { g.total = g.rows.reduce((s, r) => s + r.total, 0) })
@@ -74,7 +74,10 @@ function DetailTab({ rows, grouped }) {
           ? groups.map((g) => (
               <React.Fragment key={g.listName}>
                 <tr className="calc-list__cat-modal-group-header">
-                  <td colSpan={3}>{g.listName}</td>
+                  <td colSpan={3}>
+                    {g.listName}
+                    {g.listBudget ? <span className="calc-list__cat-modal-group-budget">({fmtUsd(g.listBudget)})</span> : null}
+                  </td>
                   <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
                 </tr>
                 {g.rows.map((r) => <DetailRow key={r.id} r={r} />)}
@@ -177,7 +180,7 @@ function CategoryModal({ cat, lists, onClose }) {
   const rows = lists.flatMap((l) =>
     l.rows
       .filter((r) => (r.category || CALC_LIST_CATEGORIES[0].value) === cat.value)
-      .map((r) => ({ ...r, listName: l.name, total: (r.quantity || 0) * (r.value || 0) }))
+      .map((r) => ({ ...r, listName: l.name, listBudget: l.budget ?? null, total: (r.quantity || 0) * (r.value || 0) }))
   )
   const grandTotal = rows.reduce((s, r) => s + r.total, 0)
   const byClassification = groupBy(rows, 'classification', CALC_LIST_CLASSIFICATIONS)
