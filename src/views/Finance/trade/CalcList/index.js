@@ -33,35 +33,48 @@ function groupBy(rows, key, defs) {
 
 function DetailTab({ rows }) {
   if (!rows.length) return <div className="calc-list__cat-modal-empty">Sin filas.</div>
+
+  const groups = rows.reduce((acc, r) => {
+    const g = acc.find((x) => x.listName === r.listName)
+    if (g) g.rows.push(r)
+    else acc.push({ listName: r.listName, rows: [r], total: 0 })
+    return acc
+  }, [])
+  groups.forEach((g) => { g.total = g.rows.reduce((s, r) => s + r.total, 0) })
+
   return (
     <table className="calc-list__cat-modal-table">
       <thead>
         <tr>
-          <th>Lista</th>
           <th>Descripción</th>
           <th>Clasificación</th>
-          <th>Cant.</th>
           <th>Valor</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        {rows.map((r) => {
-          const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
-          return (
-            <tr key={r.id}>
-              <td className="calc-list__cat-modal-list">{r.listName}</td>
-              <td>
-                {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
-                {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
-              </td>
-              <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
-              <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
-              <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
-              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+        {groups.map((g) => (
+          <React.Fragment key={g.listName}>
+            <tr className="calc-list__cat-modal-group-header">
+              <td colSpan={3}>{g.listName}</td>
+              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
             </tr>
-          )
-        })}
+            {g.rows.map((r) => {
+              const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
+              return (
+                <tr key={r.id}>
+                  <td>
+                    {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
+                    {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
+                  </td>
+                  <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
+                  <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
+                  <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+                </tr>
+              )
+            })}
+          </React.Fragment>
+        ))}
       </tbody>
     </table>
   )

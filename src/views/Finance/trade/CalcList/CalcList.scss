@@ -440,6 +440,20 @@
     &--muted { color: var(--cui-secondary-color); font-size: 0.78rem; }
   }
 
+  &__cat-modal-group-header {
+    background: var(--cui-secondary-bg);
+
+    td {
+      padding: 6px 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--cui-secondary-color);
+      border-bottom: 1px solid var(--cui-border-color);
+    }
+  }
+
   &__cat-modal-group-row {
     cursor: pointer;
     user-select: none;
