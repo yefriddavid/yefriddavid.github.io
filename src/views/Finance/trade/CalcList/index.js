@@ -510,7 +510,7 @@ export default function CalcList() {
         ) : (
           <EditableTable
             columns={COLUMNS}
-            rows={activeList.rows}
+            rows={[...activeList.rows].sort((a, b) => (a.index ?? Infinity) - (b.index ?? Infinity))}
             keyExpr="id"
             totalColumn="total"
             onRowChange={handleRowChange}
