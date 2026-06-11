@@ -28,7 +28,7 @@ function groupBy(rows, key, defs) {
   return defs.map((def) => {
     const matched = rows.filter((r) => (r[key] || defs[0].value) === def.value)
     return { ...def, rows: matched, total: matched.reduce((s, r) => s + r.total, 0) }
-  }).filter((g) => g.total > 0)
+  }).filter((g) => g.total > 0).sort((a, b) => b.total - a.total)
 }
 
 function DetailTab({ rows }) {
