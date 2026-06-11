@@ -5,8 +5,14 @@
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 
+  &__scroll-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   &__table {
     width: 100%;
+    min-width: 480px;
     border-collapse: collapse;
   }
 
@@ -260,125 +266,7 @@
     border-right: none;
     box-shadow: none;
 
-    &__thead { display: none; }
-
-    &__table,
-    &__tbody { display: block; }
-
-    &__tr {
-      display: grid;
-      // 3 equal columns: description spans 2, delete in 3; row 2: qty | value | total
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: auto auto;
-      column-gap: 0;
-      row-gap: 0;
-      padding: 0;
-      border-bottom: 1px solid var(--cui-border-color);
-
-      &:nth-child(even) { background: var(--cui-tertiary-bg); }
-
-      .editable-table__delete-btn { opacity: 0.45; }
-    }
-
-    &__td {
-      // Description → row 1, spans cols 1–2
-      &:first-child {
-        grid-column: 1 / 3;
-        grid-row: 1;
-      }
-
-      // Numeric columns → row 2, auto-placed left to right
-      &:nth-child(n+2):not(.editable-table__td--actions):not(.editable-table__td--calc) {
-        grid-row: 2;
-        border-top: 1px solid var(--cui-border-color-translucent);
-
-        &::before {
-          content: attr(data-label);
-          display: block;
-          font-size: 0.6rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--cui-secondary-color);
-          padding: 5px 12px 1px;
-        }
-      }
-
-      // Delete → row 1, col 3; centered
-      &--actions {
-        grid-column: 3;
-        grid-row: 1;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      // Calc (Total) → row 2, auto-placed after numeric cols
-      &--calc {
-        grid-row: 2;
-        border-left: none;
-        background: none;
-
-        &::before {
-          content: attr(data-label);
-          display: block;
-          font-size: 0.6rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--cui-primary);
-          padding: 5px 12px 1px;
-        }
-      }
-    }
-
-    &__input,
-    &__select {
-      padding: 5px 12px;
-      font-size: 0.95rem;
-
-      &:focus { box-shadow: none; }
-    }
-
-    &__calc-cell {
-      padding: 5px 12px;
-      font-size: 0.95rem;
-      text-align: left;
-      color: var(--cui-primary);
-      font-weight: 800;
-    }
-
-    &__delete-btn {
-      width: 32px;
-      height: 32px;
-    }
-
-    // Footer on mobile — label left, value right
-    &__footer {
-      display: block;
-
-      tr {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 4px;
-      }
-
-      td { display: block; }
-    }
-
-    &__budget-display,
-    &__budget-input {
-      padding: 7px 12px;
-      font-size: 0.95rem;
-    }
-
-    &__total-value {
-      background: none;
-      border-left: none;
-      font-size: 1.05rem;
-    }
+    &__delete-btn { opacity: 0.45; }
 
     &__add-row {
       padding: 12px 16px;

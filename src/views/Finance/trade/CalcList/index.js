@@ -39,21 +39,26 @@ function DetailTab({ rows }) {
         <tr>
           <th>Lista</th>
           <th>Descripción</th>
+          <th>Clasificación</th>
           <th>Cant.</th>
           <th>Valor</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        {rows.map((r) => (
-          <tr key={r.id}>
-            <td className="calc-list__cat-modal-list">{r.listName}</td>
-            <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
-            <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
-            <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
-            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
-          </tr>
-        ))}
+        {rows.map((r) => {
+          const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
+          return (
+            <tr key={r.id}>
+              <td className="calc-list__cat-modal-list">{r.listName}</td>
+              <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
+              <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
+              <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
+              <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
+              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )
@@ -85,7 +90,7 @@ function GroupTab({ groups, grandTotal }) {
   )
 }
 
-const MODAL_TABS = ['Detallado', 'Por categoría', 'Por clasificación']
+const MODAL_TABS = ['Detallado', 'Por clasificación']
 
 function CategoryModal({ cat, lists, onClose }) {
   const [tab, setTab] = useState(0)
@@ -96,7 +101,6 @@ function CategoryModal({ cat, lists, onClose }) {
       .map((r) => ({ ...r, listName: l.name, total: (r.quantity || 0) * (r.value || 0) }))
   )
   const grandTotal = rows.reduce((s, r) => s + r.total, 0)
-  const byCategory = groupBy(rows, 'category', CALC_LIST_CATEGORIES)
   const byClassification = groupBy(rows, 'classification', CALC_LIST_CLASSIFICATIONS)
 
   return (
@@ -118,8 +122,7 @@ function CategoryModal({ cat, lists, onClose }) {
         </div>
         <div className="calc-list__cat-modal-body">
           {tab === 0 && <DetailTab rows={rows} />}
-          {tab === 1 && <GroupTab groups={byCategory} grandTotal={grandTotal} />}
-          {tab === 2 && <GroupTab groups={byClassification} grandTotal={grandTotal} />}
+          {tab === 1 && <GroupTab groups={byClassification} grandTotal={grandTotal} />}
         </div>
       </div>
     </div>

@@ -90,6 +90,7 @@ export default function EditableTable({
 
   return (
     <div className="editable-table">
+      <div className="editable-table__scroll-wrap">
       <table className="editable-table__table">
         <thead className="editable-table__thead">
           <tr>
@@ -196,6 +197,7 @@ export default function EditableTable({
           </tfoot>
         )}
       </table>
+      </div>
       {onRowAdd && (
         <button className="editable-table__add-row" onClick={onRowAdd}>
           + Add row
