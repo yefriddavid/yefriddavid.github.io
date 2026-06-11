@@ -208,7 +208,7 @@ function CategoryModal({ cat, lists, onClose }) {
                 checked={grouped}
                 onChange={(e) => setGrouped(e.target.checked)}
               />
-              Agrupar por lista
+              Agrupar
             </label>
           )}
         </div>
