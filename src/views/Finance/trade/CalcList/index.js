@@ -31,10 +31,11 @@ function groupBy(rows, key, defs) {
   }).filter((g) => g.total > 0).sort((a, b) => b.total - a.total)
 }
 
-function DetailRow({ r }) {
+function DetailRow({ r, showList }) {
   const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
   return (
     <tr>
+      {showList && <td className="calc-list__cat-modal-list">{r.listName}</td>}
       <td>
         {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
         {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
@@ -61,6 +62,7 @@ function DetailTab({ rows, grouped }) {
     <table className="calc-list__cat-modal-table">
       <thead>
         <tr>
+          {!grouped && <th>Lista</th>}
           <th>Descripción</th>
           <th>Clasificación</th>
           <th>Valor</th>
@@ -78,11 +80,7 @@ function DetailTab({ rows, grouped }) {
                 {g.rows.map((r) => <DetailRow key={r.id} r={r} />)}
               </React.Fragment>
             ))
-          : rows.map((r) => (
-              <React.Fragment key={r.id}>
-                <DetailRow r={r} />
-              </React.Fragment>
-            ))
+          : rows.map((r) => <DetailRow key={r.id} r={r} showList />)
         }
       </tbody>
     </table>
