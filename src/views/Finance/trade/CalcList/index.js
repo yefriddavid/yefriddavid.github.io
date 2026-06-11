@@ -51,7 +51,10 @@ function DetailTab({ rows }) {
           return (
             <tr key={r.id}>
               <td className="calc-list__cat-modal-list">{r.listName}</td>
-              <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
+              <td>
+                {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
+                {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
+              </td>
               <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
               <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
               <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
@@ -61,6 +64,39 @@ function DetailTab({ rows }) {
         })}
       </tbody>
     </table>
+  )
+}
+
+function NoteModal({ row, onClose, onSave }) {
+  const [draft, setDraft] = useState(row.note ?? '')
+
+  return (
+    <div className="calc-list__note-modal-overlay" onClick={onClose}>
+      <div className="calc-list__note-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="calc-list__note-modal-header">
+          <span className="calc-list__note-modal-title">Nota</span>
+          {row.description && (
+            <span className="calc-list__note-modal-desc">{row.description}</span>
+          )}
+          <button className="calc-list__cat-modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="calc-list__note-modal-body">
+          <textarea
+            className="calc-list__note-modal-textarea"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
+            placeholder="Escribí una nota…"
+            autoFocus
+            rows={4}
+          />
+        </div>
+        <div className="calc-list__note-modal-footer">
+          <button className="calc-list__note-modal-cancel" onClick={onClose}>Cancelar</button>
+          <button className="calc-list__note-modal-save" onClick={() => onSave(draft.trim())}>Guardar</button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -309,6 +345,7 @@ export default function CalcList() {
   const activeId = useSelector((s) => s.calcList.activeId)
   const activeList = lists.find((l) => l.id === activeId)
   const [syncOpen, setSyncOpen] = useState(false)
+  const [noteRow, setNoteRow] = useState(null)
   const [dragTabId, setDragTabId] = useState(null)
   const [dragOverTabId, setDragOverTabId] = useState(null)
   const [orderedIds, setOrderedIds] = useState(() => lists.map((l) => l.id))
@@ -350,6 +387,17 @@ export default function CalcList() {
     dispatch(a.deleteRowRequest({ listId: activeId, rowId }))
   }
 
+  const handleRowNote = (rowId) => {
+    if (!activeList) return
+    setNoteRow(activeList.rows.find((r) => r.id === rowId) ?? null)
+  }
+
+  const handleNoteSave = (note) => {
+    if (!noteRow) return
+    dispatch(a.saveRowRequest({ listId: activeId, row: { ...noteRow, note: note || undefined } }))
+    setNoteRow(null)
+  }
+
   const handleBudget = (budget) => {
     dispatch(a.updateListRequest({ id: activeId, name: activeList.name, budget }))
   }
@@ -372,6 +420,13 @@ export default function CalcList() {
 
   return (
     <div className="calc-list">
+      {noteRow && (
+        <NoteModal
+          row={noteRow}
+          onClose={() => setNoteRow(null)}
+          onSave={handleNoteSave}
+        />
+      )}
       {syncOpen && (
         <SyncModal
           myId={myId}
@@ -423,6 +478,7 @@ export default function CalcList() {
             onRowChange={handleRowChange}
             onRowAdd={handleRowAdd}
             onRowDelete={handleRowDelete}
+            onRowNote={handleRowNote}
             budget={activeList.budget}
             onBudgetChange={handleBudget}
             emptyText="Sin filas. Agregá una con el botón de abajo."

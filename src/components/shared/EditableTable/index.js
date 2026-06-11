@@ -64,6 +64,7 @@ export default function EditableTable({
   onRowChange,
   onRowAdd,
   onRowDelete,
+  onRowNote,
   totalColumn,
   budget,
   onBudgetChange,
@@ -157,6 +158,15 @@ export default function EditableTable({
                 </td>
               ))}
               <td className="editable-table__td editable-table__td--actions">
+                {onRowNote && (
+                  <button
+                    className={`editable-table__note-btn${row.note ? ' editable-table__note-btn--active' : ''}`}
+                    onClick={() => onRowNote(row[keyExpr])}
+                    title={row.note || 'Agregar nota'}
+                  >
+                    ✎
+                  </button>
+                )}
                 <button
                   className="editable-table__delete-btn"
                   onClick={() => onRowDelete?.(row[keyExpr])}

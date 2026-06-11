@@ -32,7 +32,7 @@
     white-space: nowrap;
 
     &--right { text-align: right; }
-    &--actions { width: 36px; }
+    &--actions { width: 64px; }
 
     &--total {
       color: var(--cui-primary);
@@ -73,10 +73,11 @@
     }
 
     &--actions {
-      width: 36px;
+      width: 64px;
       text-align: center;
       vertical-align: middle;
       padding: 0 4px;
+      white-space: nowrap;
     }
   }
 
@@ -133,6 +134,37 @@
       z-index: 1;
     }
   }
+
+  // ── Note button ──────────────────────────────────────────────────────
+  &__note-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    font-size: 0.95rem;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s;
+
+    &--active {
+      opacity: 1 !important;
+      color: var(--cui-primary);
+    }
+
+    &:hover {
+      opacity: 1 !important;
+      background: color-mix(in srgb, var(--cui-primary) 12%, transparent);
+      color: var(--cui-primary);
+    }
+  }
+
+  &__tr:hover .editable-table__note-btn { opacity: 0.55; }
 
   // ── Delete button ────────────────────────────────────────────────────
   &__delete-btn {
