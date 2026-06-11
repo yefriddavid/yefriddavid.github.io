@@ -4,7 +4,7 @@ import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
 import { fmtUsd } from '../tradeUtils'
 import { CALC_LIST_CATEGORIES, CALC_LIST_CLASSIFICATIONS } from 'src/constants/finance'
-import usePeerSync from './usePeerSync'
+import usePeerSync from 'src/hooks/usePeerSync'
 import SyncModal from './SyncModal'
 import './CalcList.scss'
 

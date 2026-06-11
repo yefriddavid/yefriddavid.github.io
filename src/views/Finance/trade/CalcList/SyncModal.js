@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { Html5Qrcode } from 'html5-qrcode'
-import { STATUS } from './usePeerSync'
+import { STATUS } from 'src/hooks/usePeerSync'
 import './SyncModal.scss'
 
 const STATUS_LABEL = {
