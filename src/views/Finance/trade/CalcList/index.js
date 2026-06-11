@@ -14,7 +14,7 @@ const COLUMNS = [
   { key: 'category',       label: 'Category',       type: 'select', options: CALC_LIST_CATEGORIES,    width: 110 },
   { key: 'classification', label: 'Classification', type: 'select', options: CALC_LIST_CLASSIFICATIONS, width: 120 },
   { key: 'quantity', label: 'Qty', type: 'number', width: 90 },
-  { key: 'value', label: 'Value', type: 'number', width: 120 },
+  { key: 'value', label: 'Value', type: 'number', width: 160 },
   {
     key: 'total',
     label: 'Total',
