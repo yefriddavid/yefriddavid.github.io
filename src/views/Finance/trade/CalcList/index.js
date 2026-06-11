@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import EditableTable from 'src/components/shared/EditableTable'
 import * as a from 'src/actions/finance/calcListActions'
+import { push as notify } from 'src/reducers/notificationsSlice'
 import { fmtUsd } from '../tradeUtils'
 import { CALC_LIST_CATEGORIES, CALC_LIST_CLASSIFICATIONS } from 'src/constants/finance'
 import usePeerSync from 'src/hooks/usePeerSync'
@@ -384,6 +385,7 @@ export default function CalcList() {
   const [syncOpen, setSyncOpen] = useState(false)
   const [noteRow, setNoteRow] = useState(null)
   const [dragTabId, setDragTabId] = useState(null)
+  const importInputRef = useRef(null)
   const [dragOverTabId, setDragOverTabId] = useState(null)
   const [orderedIds, setOrderedIds] = useState(() => lists.map((l) => l.id))
   const { myId, status, error, connectTo } = usePeerSync()
@@ -446,6 +448,37 @@ export default function CalcList() {
     setNoteRow(null)
   }
 
+  const handleExport = () => {
+    const json = JSON.stringify(lists, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `calc-lists-${new Date().toISOString().slice(0, 10)}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result)
+        if (!Array.isArray(parsed)) throw new Error('El archivo no contiene un array de listas.')
+        const valid = parsed.every((l) => typeof l.id === 'string' && typeof l.name === 'string' && Array.isArray(l.rows))
+        if (!valid) throw new Error('Formato inválido: cada lista requiere id, name y rows.')
+        if (!window.confirm(`¿Reemplazar todas las listas con las ${parsed.length} del archivo?`)) return
+        dispatch(a.importRequest(parsed))
+      } catch (err) {
+        dispatch(notify({ type: 'error', message: `Error al importar: ${err.message}` }))
+      }
+    }
+    reader.readAsText(file)
+  }
+
   const handleBudget = (budget) => {
     dispatch(a.updateListRequest({ id: activeId, name: activeList.name, budget }))
   }
@@ -506,6 +539,19 @@ export default function CalcList() {
           )
         })}
         <button className="calc-list__add-tab" onClick={handleAddList} title="Nueva lista">+</button>
+        <button className="calc-list__export-btn" onClick={handleExport} title="Exportar listas a JSON">
+          ↓
+        </button>
+        <button className="calc-list__import-btn" onClick={() => importInputRef.current?.click()} title="Importar listas desde JSON">
+          ↑
+        </button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".json,application/json"
+          style={{ display: 'none' }}
+          onChange={handleImportFile}
+        />
         <button className="calc-list__sync-btn" onClick={() => setSyncOpen(true)} title="Sincronizar con otro dispositivo">
           ⇄
         </button>

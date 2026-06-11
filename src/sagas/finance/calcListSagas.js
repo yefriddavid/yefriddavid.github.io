@@ -102,6 +102,19 @@ function* mergeLists({ payload: remoteLists }) {
   }
 }
 
+function* importLists({ payload: importedLists }) {
+  try {
+    const local = yield select((s) => s.calcList.lists)
+    for (const l of local) yield call(idb.deleteList, l.id)
+    for (const l of importedLists) yield call(idb.saveList, l)
+    yield put(a.importSuccess(importedLists))
+    yield put(push({ type: 'success', message: `${importedLists.length} lista(s) importadas correctamente.` }))
+  } catch (e) {
+    yield put(a.importError(e.message))
+    yield put(push({ type: 'error', message: `Error al importar: ${e.message}` }))
+  }
+}
+
 export default function* sagaCalcList() {
   yield all([
     takeLatest(a.loadRequest, loadLists),
@@ -111,5 +124,6 @@ export default function* sagaCalcList() {
     takeEvery(a.saveRowRequest, saveRow),
     takeEvery(a.deleteRowRequest, deleteRow),
     takeEvery(a.mergeRequest, mergeLists),
+    takeEvery(a.importRequest, importLists),
   ])
 }

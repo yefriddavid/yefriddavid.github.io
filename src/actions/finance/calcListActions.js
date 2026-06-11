@@ -33,3 +33,8 @@ export const deleteRowError   = createAction('delete calc list row error')
 export const mergeRequest = createAction('merge calc lists')
 export const mergeSuccess = createAction('merge calc lists success')
 export const mergeError   = createAction('merge calc lists error')
+
+// payload: list[] from JSON file — fully replaces local IDB
+export const importRequest = createAction('import calc lists')
+export const importSuccess = createAction('import calc lists success')
+export const importError   = createAction('import calc lists error')

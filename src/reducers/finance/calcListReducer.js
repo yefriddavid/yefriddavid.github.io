@@ -58,6 +58,11 @@ const calcListSlice = createSlice({
           state.activeId = payload[0].id
         }
       })
+
+      .addCase(a.importSuccess, (state, { payload }) => {
+        state.lists = payload
+        state.activeId = payload[0]?.id ?? null
+      })
   },
 })
 
