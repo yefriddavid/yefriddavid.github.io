@@ -72,22 +72,33 @@ export default function usePeerSync() {
         await pc.setLocalDescription(offer)
         await signaling.writeOffer(myId, offer.sdp)
 
+        // Candidates arriving before remote description is set are queued and drained after.
+        const pendingCandidates = []
+        let remoteDescReady = false
+
+        const drainCandidates = () => {
+          pendingCandidates.splice(0).forEach((c) =>
+            pc.addIceCandidate(c).catch(() => {})
+          )
+        }
+
         const unsubSession = signaling.subscribeSession(myId, (snap) => {
           if (!alive) return
           const { answerSdp } = snap.data() ?? {}
           if (answerSdp && !pc.currentRemoteDescription) {
             setStatus(STATUS.CONNECTING)
-            pc.setRemoteDescription({ type: 'answer', sdp: answerSdp }).catch((err) => {
-              setError(err.message)
-              setStatus(STATUS.ERROR)
-            })
+            pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
+              .then(() => { remoteDescReady = true; drainCandidates() })
+              .catch((err) => { setError(err.message); setStatus(STATUS.ERROR) })
           }
         })
 
         const unsubCandidates = signaling.subscribeCandidates(myId, 'answer', (snap) => {
           snap.docChanges().forEach(({ type, doc }) => {
-            if (type === 'added' && alive)
-              pc.addIceCandidate(new RTCIceCandidate(doc.data())).catch(() => {})
+            if (type !== 'added' || !alive) return
+            const candidate = new RTCIceCandidate(doc.data())
+            if (remoteDescReady) pc.addIceCandidate(candidate).catch(() => {})
+            else pendingCandidates.push(candidate)
           })
         })
 
