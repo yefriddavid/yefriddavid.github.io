@@ -356,6 +356,7 @@
 
   &__cat-modal-tabs {
     display: flex;
+    flex-wrap: wrap;
     border-bottom: 1px solid var(--cui-border-color);
     padding: 0 18px;
     gap: 2px;
@@ -371,8 +372,17 @@
     cursor: pointer;
     padding: 0 4px;
     user-select: none;
+    white-space: nowrap;
 
     input { cursor: pointer; accent-color: var(--cui-primary); }
+
+    @media (max-width: 480px) {
+      margin-left: 0;
+      width: 100%;
+      padding: 6px 18px;
+      border-top: 1px solid var(--cui-border-color);
+      order: 99;
+    }
   }
 
   &__cat-modal-tab {
