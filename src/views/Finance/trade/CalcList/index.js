@@ -86,7 +86,7 @@ function DetailTab({ rows, grouped }) {
                 {g.rows.map((r) => <DetailRow key={r.id} r={r} />)}
               </React.Fragment>
             ))
-          : rows.map((r) => <DetailRow key={r.id} r={r} showList />)
+          : groups.flatMap((g) => g.rows).map((r) => <DetailRow key={r.id} r={r} showList />)
         }
       </tbody>
     </table>
