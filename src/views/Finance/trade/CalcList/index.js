@@ -33,7 +33,7 @@ function Summary({ lists, orderedIds }) {
   }))
 
   const grandTotal = rows.reduce((s, r) => s + r.total, 0)
-  const totalItems = rows.reduce((s, r) => s + r.items, 0)
+  const totalBudget = rows.reduce((s, r) => s + (r.budget || 0), 0)
   const budgeted = rows.filter((r) => r.budget)
   const delta = budgeted.length
     ? budgeted.reduce((s, r) => s + r.total - r.budget, 0)
@@ -60,8 +60,8 @@ function Summary({ lists, orderedIds }) {
           <span className="calc-list__stat-value">{lists.length}</span>
         </div>
         <div className="calc-list__stat">
-          <span className="calc-list__stat-label">Items</span>
-          <span className="calc-list__stat-value">{totalItems}</span>
+          <span className="calc-list__stat-label">Total</span>
+          <span className="calc-list__stat-value">{totalBudget ? fmtUsd(totalBudget) : '—'}</span>
         </div>
         <div className="calc-list__stat">
           <span className="calc-list__stat-label">Total general</span>

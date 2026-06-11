@@ -108,5 +108,6 @@ export const SCENES3D_DEFAULT_OBJECT = {
 export const CALC_LIST_CATEGORIES = [
   { value: 'gastos',  label: 'Gastos' },
   { value: 'ahorros', label: 'Ahorros' },
+  { value: 'otros',   label: 'Otros' },
 ]
 
