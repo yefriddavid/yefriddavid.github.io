@@ -9,7 +9,7 @@ import SyncModal from './SyncModal'
 import './CalcList.scss'
 
 const COLUMNS = [
-  { key: 'index', label: '#', type: 'readonly', width: 44 },
+  { key: 'index', label: '#', type: 'readonly', width: 32 },
   { key: 'description', label: 'Description', type: 'text' },
   { key: 'category',       label: 'Category',       type: 'select', options: CALC_LIST_CATEGORIES,    width: 110 },
   { key: 'classification', label: 'Classification', type: 'select', options: CALC_LIST_CLASSIFICATIONS, width: 120 },
