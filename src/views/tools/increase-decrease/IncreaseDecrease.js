@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -67,6 +68,7 @@ const computeFields = ({ initialValue, finalValue, inversionValue }) => {
 const IncreaseDecrease = () => {
   const dispatch = useDispatch()
   const { entries, loading, saving } = useSelector((s) => s.increaseDecrease)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const DEFAULTS = { initialValue: 107500, finalValue: 111490, inversionValue: 500 }
   const [initialValue, setInitialValue] = useState(DEFAULTS.initialValue)
@@ -79,6 +81,19 @@ const IncreaseDecrease = () => {
     dispatch(actions.loadRequest())
   }, [dispatch])
 
+  // Restore edit state from URL on load or when entries arrive
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (!editId || !entries.length || editingEntry) return
+    const entry = entries.find((e) => e.id === editId)
+    if (entry) {
+      setEditingEntry(entry)
+      setInitialValue(entry.initialValue)
+      setFinalValue(entry.finalValue)
+      setInversionValue(entry.inversionValue)
+    }
+  }, [entries, searchParams])
+
   useEffect(() => {
     const unsub = cryptoPricesWebSocket.subscribe((msg) => {
       if (msg.data?.s !== 'BTCUSDT') return
@@ -90,13 +105,18 @@ const IncreaseDecrease = () => {
   const computed = computeFields({ initialValue, finalValue, inversionValue })
   const isProfit = computed.diff >= 0
 
+  const clearEdit = () => {
+    setEditingEntry(null)
+    setInitialValue(DEFAULTS.initialValue)
+    setFinalValue(DEFAULTS.finalValue)
+    setInversionValue(DEFAULTS.inversionValue)
+    setSearchParams({})
+  }
+
   const handleSubmit = () => {
     if (editingEntry) {
       dispatch(actions.updateRequest({ ...computed, id: editingEntry.id }))
-      setEditingEntry(null)
-      setInitialValue(DEFAULTS.initialValue)
-      setFinalValue(DEFAULTS.finalValue)
-      setInversionValue(DEFAULTS.inversionValue)
+      clearEdit()
     } else {
       dispatch(actions.saveRequest(computed))
     }
@@ -107,14 +127,10 @@ const IncreaseDecrease = () => {
     setInitialValue(e.initialValue)
     setFinalValue(e.finalValue)
     setInversionValue(e.inversionValue)
+    setSearchParams({ edit: e.id })
   }
 
-  const handleCancelEdit = () => {
-    setEditingEntry(null)
-    setInitialValue(DEFAULTS.initialValue)
-    setFinalValue(DEFAULTS.finalValue)
-    setInversionValue(DEFAULTS.inversionValue)
-  }
+  const handleCancelEdit = () => clearEdit()
 
   const handleClone = (e) => {
     const { id: _, createdAt: _c, updatedAt: _u, ...rest } = e
