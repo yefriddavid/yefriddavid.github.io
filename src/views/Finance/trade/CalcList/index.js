@@ -25,10 +25,10 @@ const COLUMNS = [
 ]
 
 function groupBy(rows, key, defs) {
-  return defs.map((def) => ({
-    ...def,
-    total: rows.filter((r) => (r[key] || defs[0].value) === def.value).reduce((s, r) => s + r.total, 0),
-  })).filter((g) => g.total > 0)
+  return defs.map((def) => {
+    const matched = rows.filter((r) => (r[key] || defs[0].value) === def.value)
+    return { ...def, rows: matched, total: matched.reduce((s, r) => s + r.total, 0) }
+  }).filter((g) => g.total > 0)
 }
 
 function DetailTab({ rows }) {
@@ -65,6 +65,8 @@ function DetailTab({ rows }) {
 }
 
 function GroupTab({ groups, grandTotal }) {
+  const [openValue, setOpenValue] = useState(null)
+
   if (!groups.length) return <div className="calc-list__cat-modal-empty">Sin datos.</div>
   return (
     <table className="calc-list__cat-modal-table">
@@ -77,13 +79,33 @@ function GroupTab({ groups, grandTotal }) {
       </thead>
       <tbody>
         {groups.map((g) => (
-          <tr key={g.value}>
-            <td>{g.label}</td>
-            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
-            <td className="calc-list__cat-modal-num calc-list__cat-modal-num--muted">
-              {grandTotal ? `${((g.total / grandTotal) * 100).toFixed(1)}%` : '—'}
-            </td>
-          </tr>
+          <React.Fragment key={g.value}>
+            <tr
+              className="calc-list__cat-modal-group-row"
+              onClick={() => setOpenValue(openValue === g.value ? null : g.value)}
+            >
+              <td>
+                <span className={`calc-list__cat-modal-chevron${openValue === g.value ? ' calc-list__cat-modal-chevron--open' : ''}`}>›</span>
+                {g.label}
+              </td>
+              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
+              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--muted">
+                {grandTotal ? `${((g.total / grandTotal) * 100).toFixed(1)}%` : '—'}
+              </td>
+            </tr>
+            {openValue === g.value && g.rows.map((r) => (
+              <tr key={r.id} className="calc-list__cat-modal-detail-row">
+                <td className="calc-list__cat-modal-detail-desc">
+                  <span className="calc-list__cat-modal-detail-indent" />
+                  {r.listName} — {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
+                </td>
+                <td className="calc-list__cat-modal-num">{fmtUsd(r.total)}</td>
+                <td className="calc-list__cat-modal-num calc-list__cat-modal-num--muted">
+                  {g.total ? `${((r.total / g.total) * 100).toFixed(1)}%` : '—'}
+                </td>
+              </tr>
+            ))}
+          </React.Fragment>
         ))}
       </tbody>
     </table>
