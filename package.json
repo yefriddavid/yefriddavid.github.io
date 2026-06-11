@@ -25,7 +25,7 @@
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "serve": "vite preview",
     "start": "vite",
-    "start:prod": "vite --mode production",
+    "start:prod": "vite --mode production --host",
     "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
     "test:app": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vitest run --config vitest.app.config.mjs --no-file-parallelism",
