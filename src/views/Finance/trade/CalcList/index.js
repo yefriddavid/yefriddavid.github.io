@@ -31,7 +31,22 @@ function groupBy(rows, key, defs) {
   }).filter((g) => g.total > 0).sort((a, b) => b.total - a.total)
 }
 
-function DetailTab({ rows }) {
+function DetailRow({ r }) {
+  const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
+  return (
+    <tr>
+      <td>
+        {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
+        {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
+      </td>
+      <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
+      <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
+      <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+    </tr>
+  )
+}
+
+function DetailTab({ rows, grouped }) {
   if (!rows.length) return <div className="calc-list__cat-modal-empty">Sin filas.</div>
 
   const groups = rows.reduce((acc, r) => {
@@ -53,28 +68,22 @@ function DetailTab({ rows }) {
         </tr>
       </thead>
       <tbody>
-        {groups.map((g) => (
-          <React.Fragment key={g.listName}>
-            <tr className="calc-list__cat-modal-group-header">
-              <td colSpan={3}>{g.listName}</td>
-              <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
-            </tr>
-            {g.rows.map((r) => {
-              const clf = CALC_LIST_CLASSIFICATIONS.find((c) => c.value === r.classification)
-              return (
-                <tr key={r.id}>
-                  <td>
-                    {r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}
-                    {r.note && <span className="calc-list__cat-modal-note">{r.note}</span>}
-                  </td>
-                  <td className="calc-list__cat-modal-list">{clf?.label ?? '—'}</td>
-                  <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
-                  <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+        {grouped
+          ? groups.map((g) => (
+              <React.Fragment key={g.listName}>
+                <tr className="calc-list__cat-modal-group-header">
+                  <td colSpan={3}>{g.listName}</td>
+                  <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(g.total)}</td>
                 </tr>
-              )
-            })}
-          </React.Fragment>
-        ))}
+                {g.rows.map((r) => <DetailRow key={r.id} r={r} />)}
+              </React.Fragment>
+            ))
+          : rows.map((r) => (
+              <React.Fragment key={r.id}>
+                <DetailRow r={r} />
+              </React.Fragment>
+            ))
+        }
       </tbody>
     </table>
   )
@@ -165,6 +174,7 @@ const MODAL_TABS = ['Detallado', 'Por clasificación']
 
 function CategoryModal({ cat, lists, onClose }) {
   const [tab, setTab] = useState(0)
+  const [grouped, setGrouped] = useState(true)
 
   const rows = lists.flatMap((l) =>
     l.rows
@@ -190,9 +200,19 @@ function CategoryModal({ cat, lists, onClose }) {
               onClick={() => setTab(i)}
             >{t}</button>
           ))}
+          {tab === 0 && (
+            <label className="calc-list__cat-modal-group-toggle">
+              <input
+                type="checkbox"
+                checked={grouped}
+                onChange={(e) => setGrouped(e.target.checked)}
+              />
+              Agrupar por lista
+            </label>
+          )}
         </div>
         <div className="calc-list__cat-modal-body">
-          {tab === 0 && <DetailTab rows={rows} />}
+          {tab === 0 && <DetailTab rows={rows} grouped={grouped} />}
           {tab === 1 && <GroupTab groups={byClassification} grandTotal={grandTotal} />}
         </div>
       </div>
