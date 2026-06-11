@@ -184,7 +184,7 @@ function CategoryModal({ cat, lists, onClose }) {
     l.rows
       .filter((r) => (r.category || CALC_LIST_CATEGORIES[0].value) === cat.value)
       .map((r) => ({ ...r, listName: l.name, listBudget: l.budget ?? null, total: (r.quantity || 0) * (r.value || 0) }))
-  )
+  ).sort((a, b) => (a.index ?? Infinity) - (b.index ?? Infinity))
   const grandTotal = rows.reduce((s, r) => s + r.total, 0)
   const byClassification = groupBy(rows, 'classification', CALC_LIST_CLASSIFICATIONS)
 
