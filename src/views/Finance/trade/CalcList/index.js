@@ -23,6 +23,55 @@ const COLUMNS = [
   },
 ]
 
+function CategoryModal({ cat, lists, onClose }) {
+  const rows = lists.flatMap((l) =>
+    l.rows
+      .filter((r) => (r.category || CALC_LIST_CATEGORIES[0].value) === cat.value)
+      .map((r) => ({ ...r, listName: l.name, total: (r.quantity || 0) * (r.value || 0) }))
+  )
+  const grandTotal = rows.reduce((s, r) => s + r.total, 0)
+
+  return (
+    <div className="calc-list__cat-modal-overlay" onClick={onClose}>
+      <div className="calc-list__cat-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="calc-list__cat-modal-header">
+          <span className="calc-list__cat-modal-title">{cat.label}</span>
+          <span className="calc-list__cat-modal-total">{fmtUsd(grandTotal)}</span>
+          <button className="calc-list__cat-modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="calc-list__cat-modal-body">
+          {rows.length === 0 ? (
+            <div className="calc-list__cat-modal-empty">Sin filas en esta categoría.</div>
+          ) : (
+            <table className="calc-list__cat-modal-table">
+              <thead>
+                <tr>
+                  <th>Lista</th>
+                  <th>Descripción</th>
+                  <th>Cant.</th>
+                  <th>Valor</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.id}>
+                    <td className="calc-list__cat-modal-list">{r.listName}</td>
+                    <td>{r.description || <span className="calc-list__cat-modal-empty-cell">—</span>}</td>
+                    <td className="calc-list__cat-modal-num">{r.quantity ?? 1}</td>
+                    <td className="calc-list__cat-modal-num">{fmtUsd(r.value || 0)}</td>
+                    <td className="calc-list__cat-modal-num calc-list__cat-modal-num--bold">{fmtUsd(r.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Summary({ lists, orderedIds }) {
   const rows = lists.map((l) => ({
     id: l.id,
@@ -50,10 +99,13 @@ function Summary({ lists, orderedIds }) {
     , 0),
   }))
 
+  const [modalCat, setModalCat] = useState(null)
+
   if (!lists.length) return null
 
   return (
     <div className="calc-list__summary">
+      {modalCat && <CategoryModal cat={modalCat} lists={lists} onClose={() => setModalCat(null)} />}
       <div className="calc-list__summary-stats">
         <div className="calc-list__stat">
           <span className="calc-list__stat-label">Listas</span>
@@ -78,8 +130,8 @@ function Summary({ lists, orderedIds }) {
       </div>
 
       <div className="calc-list__category-totals">
-        {byCategory.map((cat) => (
-          <div key={cat.value} className="calc-list__category-total">
+        {byCategory.filter((cat) => cat.total > 0).map((cat) => (
+          <div key={cat.value} className="calc-list__category-total calc-list__category-total--clickable" onClick={() => setModalCat(cat)}>
             <span className="calc-list__category-total-label">{cat.label}</span>
             <span className="calc-list__category-total-value">{fmtUsd(cat.total)}</span>
           </div>
