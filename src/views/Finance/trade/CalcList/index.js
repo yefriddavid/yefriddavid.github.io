@@ -9,6 +9,7 @@ import SyncModal from './SyncModal'
 import './CalcList.scss'
 
 const COLUMNS = [
+  { key: 'index', label: '#', type: 'readonly', width: 44 },
   { key: 'description', label: 'Description', type: 'text' },
   { key: 'category',       label: 'Category',       type: 'select', options: CALC_LIST_CATEGORIES,    width: 110 },
   { key: 'classification', label: 'Classification', type: 'select', options: CALC_LIST_CLASSIFICATIONS, width: 120 },
@@ -411,9 +412,12 @@ export default function CalcList() {
 
   const handleRowAdd = () => {
     if (!activeList) return
+    const nextIndex = activeList.rows.length
+      ? Math.max(...activeList.rows.map((r) => r.index ?? 0)) + 1
+      : 1
     dispatch(a.saveRowRequest({
       listId: activeId,
-      row: { id: crypto.randomUUID(), description: '', category: CALC_LIST_CATEGORIES[0].value, classification: CALC_LIST_CLASSIFICATIONS[0].value, quantity: 1, value: 0 },
+      row: { id: crypto.randomUUID(), index: nextIndex, description: '', category: CALC_LIST_CATEGORIES[0].value, classification: CALC_LIST_CLASSIFICATIONS[0].value, quantity: 1, value: 0 },
     }))
   }
 

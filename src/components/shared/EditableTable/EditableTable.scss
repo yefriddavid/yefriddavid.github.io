@@ -104,6 +104,15 @@
     &--right { text-align: right; }
   }
 
+  &__readonly-cell {
+    display: block;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--cui-secondary-color);
+  }
+
   &__calc-cell {
     display: block;
     padding: 7px 12px;

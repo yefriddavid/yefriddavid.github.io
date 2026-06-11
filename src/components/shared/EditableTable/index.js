@@ -127,7 +127,11 @@ export default function EditableTable({
                   className={`editable-table__td${col.type === 'calc' ? ' editable-table__td--calc' : ''}`}
                   data-label={col.label}
                 >
-                  {col.type === 'calc' ? (
+                  {col.type === 'readonly' ? (
+                    <span className="editable-table__readonly-cell">
+                      {row[col.key] ?? '—'}
+                    </span>
+                  ) : col.type === 'calc' ? (
                     <span className="editable-table__calc-cell">
                       {displayValue(col, row) ?? '—'}
                     </span>
