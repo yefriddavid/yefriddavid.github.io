@@ -8,7 +8,7 @@ export const fetchAll = async () => {
   return new Promise((resolve, reject) => {
     const req = db.transaction(STORE, 'readonly').objectStore(STORE).getAll()
     req.onsuccess = (e) => {
-      const all = (e.target.result ?? []).filter((d) => d && typeof d.name === 'string' && Array.isArray(d.rows))
+      const all = (e.target.result ?? []).filter((d) => d && typeof d.name === 'string' && (Array.isArray(d.rows) || Array.isArray(d.items)))
       all.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
       resolve(all)
     }
