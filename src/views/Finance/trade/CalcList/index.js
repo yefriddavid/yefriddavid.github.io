@@ -642,7 +642,10 @@ export default function CalcList() {
               dragOver={dragOverGroupId === group.id}
               onSelect={(id) => dispatch(a.setActiveGroup(id))}
               onDelete={(id) => dispatch(a.deleteGroupRequest(id))}
-              onClone={(id) => dispatch(a.cloneGroupRequest(id))}
+              onClone={(id) => {
+                const g = groups.find((g) => g.id === id)
+                if (window.confirm(`¿Clonar el grupo "${g?.name}"?`)) dispatch(a.cloneGroupRequest(id))
+              }}
               onRename={(id, name) => dispatch(a.updateGroupRequest({ id, name }))}
               onDragStart={setDragGroupId}
               onDragOver={setDragOverGroupId}
