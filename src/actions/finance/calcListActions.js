@@ -22,6 +22,11 @@ export const updateGroupError   = createAction('update calc list group error')
 // payload: id — local only
 export const setActiveGroup = createAction('set active calc list group')
 
+// payload: id — deep clone with new IDs
+export const cloneGroupRequest = createAction('clone calc list group')
+export const cloneGroupSuccess = createAction('clone calc list group success')
+export const cloneGroupError   = createAction('clone calc list group error')
+
 // Lists — payload: { groupId, name }
 export const createListRequest = createAction('create calc list')
 export const createListSuccess = createAction('create calc list success')

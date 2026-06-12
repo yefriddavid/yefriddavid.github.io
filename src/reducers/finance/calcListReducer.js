@@ -38,6 +38,11 @@ const calcListSlice = createSlice({
         state.activeGroupId = payload.id
         state.activeListId  = null
       })
+      .addCase(a.cloneGroupSuccess, (state, { payload }) => {
+        state.groups.push(payload)
+        state.activeGroupId = payload.id
+        state.activeListId  = sortedFirst(payload.items)
+      })
       .addCase(a.deleteGroupSuccess, (state, { payload: id }) => {
         state.groups = state.groups.filter((g) => g.id !== id)
         if (state.activeGroupId === id) {

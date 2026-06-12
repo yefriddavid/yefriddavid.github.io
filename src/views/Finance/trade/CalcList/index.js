@@ -320,7 +320,7 @@ function Summary({ lists, orderedIds }) {
   )
 }
 
-function GroupTabBar({ group, active, dragging, dragOver, onSelect, onDelete, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
+function GroupTabBar({ group, active, dragging, dragOver, onSelect, onDelete, onClone, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const inputRef = useRef(null)
@@ -368,6 +368,11 @@ function GroupTabBar({ group, active, dragging, dragOver, onSelect, onDelete, on
       ) : (
         <span className="calc-list__group-name">{group.name}</span>
       )}
+      <button
+        className="calc-list__group-clone"
+        onClick={(e) => { e.stopPropagation(); onClone(group.id) }}
+        title="Clonar grupo"
+      >⧉</button>
       <button
         className="calc-list__group-delete"
         onClick={(e) => { e.stopPropagation(); onDelete(group.id) }}
@@ -637,6 +642,7 @@ export default function CalcList() {
               dragOver={dragOverGroupId === group.id}
               onSelect={(id) => dispatch(a.setActiveGroup(id))}
               onDelete={(id) => dispatch(a.deleteGroupRequest(id))}
+              onClone={(id) => dispatch(a.cloneGroupRequest(id))}
               onRename={(id, name) => dispatch(a.updateGroupRequest({ id, name }))}
               onDragStart={setDragGroupId}
               onDragOver={setDragOverGroupId}

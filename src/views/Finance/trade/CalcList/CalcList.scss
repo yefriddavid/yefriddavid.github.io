@@ -62,12 +62,13 @@
     width: 80px;
   }
 
+  &__group-clone,
   &__group-delete {
     background: none;
     border: none;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1;
     padding: 0;
     display: flex;
@@ -78,11 +79,14 @@
     justify-content: center;
     opacity: 0;
     transition: opacity 0.15s, background 0.15s;
-
-    &:hover { background: color-mix(in srgb, var(--cui-danger) 15%, transparent); color: var(--cui-danger); opacity: 1 !important; }
   }
 
+  &__group-clone:hover { background: color-mix(in srgb, var(--cui-info) 15%, transparent); color: var(--cui-info); opacity: 1 !important; }
+  &__group-delete:hover { background: color-mix(in srgb, var(--cui-danger) 15%, transparent); color: var(--cui-danger); opacity: 1 !important; }
+
+  &__group:hover .calc-list__group-clone,
   &__group:hover .calc-list__group-delete { opacity: 0.6; }
+  &__group--active .calc-list__group-clone,
   &__group--active .calc-list__group-delete { opacity: 0.6; }
 
   &__add-group {

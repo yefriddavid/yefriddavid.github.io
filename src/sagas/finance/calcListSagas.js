@@ -35,6 +35,32 @@ function* loadLists() {
   }
 }
 
+function* cloneGroup({ payload: id }) {
+  try {
+    const groups = yield select((s) => s.calcList.groups)
+    const source = groups.find((g) => g.id === id)
+    if (!source) return
+    const cloned = {
+      ...source,
+      id: crypto.randomUUID(),
+      name: `${source.name} (copia)`,
+      order: groups.length,
+      updatedAt: now(),
+      items: source.items.map((l) => ({
+        ...l,
+        id: crypto.randomUUID(),
+        updatedAt: now(),
+        rows: l.rows.map((r) => ({ ...r, id: crypto.randomUUID() })),
+      })),
+    }
+    yield call(idb.saveList, cloned)
+    yield put(a.cloneGroupSuccess(cloned))
+  } catch (e) {
+    yield put(a.cloneGroupError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 function* createGroup({ payload: name }) {
   try {
     const groups = yield select((s) => s.calcList.groups)
@@ -232,6 +258,7 @@ function* importGroups({ payload: importedGroups }) {
 export default function* sagaCalcList() {
   yield all([
     takeLatest(a.loadRequest, loadLists),
+    takeEvery(a.cloneGroupRequest, cloneGroup),
     takeEvery(a.createGroupRequest, createGroup),
     takeEvery(a.deleteGroupRequest, deleteGroup),
     takeEvery(a.updateGroupRequest, updateGroup),
