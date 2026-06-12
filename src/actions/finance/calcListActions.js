@@ -50,6 +50,11 @@ export const deleteRowRequest = createAction('delete calc list row')
 export const deleteRowSuccess = createAction('delete calc list row success')
 export const deleteRowError   = createAction('delete calc list row error')
 
+// payload: { groupId, listId, orderedIds } — atomic reindex in one IDB write
+export const reorderRowsRequest = createAction('reorder calc list rows')
+export const reorderRowsSuccess = createAction('reorder calc list rows success')
+export const reorderRowsError   = createAction('reorder calc list rows error')
+
 // payload: group[] from remote peer — merge into local IDB
 export const mergeRequest = createAction('merge calc lists')
 export const mergeSuccess = createAction('merge calc lists success')

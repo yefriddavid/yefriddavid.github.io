@@ -171,6 +171,30 @@ function* deleteRow({ payload: { groupId, listId, rowId } }) {
   }
 }
 
+function* reorderRows({ payload: { groupId, listId, orderedIds } }) {
+  try {
+    const groups = yield select((s) => s.calcList.groups)
+    const group = groups.find((g) => g.id === groupId)
+    if (!group) return
+    const list = group.items.find((l) => l.id === listId)
+    if (!list) return
+    const rowMap = Object.fromEntries(list.rows.map((r) => [r.id, r]))
+    const reindexed = orderedIds.map((id, i) => ({ ...rowMap[id], index: i + 1 })).filter(Boolean)
+    const rest = list.rows.filter((r) => !orderedIds.includes(r.id))
+    const updatedList = { ...list, rows: [...reindexed, ...rest], updatedAt: now() }
+    const updated = {
+      ...group,
+      items: group.items.map((l) => (l.id === listId ? updatedList : l)),
+      updatedAt: now(),
+    }
+    yield call(idb.saveList, updated)
+    yield put(a.reorderRowsSuccess({ groupId, listId, rows: updatedList.rows }))
+  } catch (e) {
+    yield put(a.reorderRowsError(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 function* mergeGroups({ payload: remoteGroups }) {
   try {
     const local = yield select((s) => s.calcList.groups)
@@ -216,6 +240,7 @@ export default function* sagaCalcList() {
     takeEvery(a.updateListRequest, updateList),
     takeEvery(a.saveRowRequest, saveRow),
     takeEvery(a.deleteRowRequest, deleteRow),
+    takeEvery(a.reorderRowsRequest, reorderRows),
     takeEvery(a.mergeRequest, mergeGroups),
     takeEvery(a.importRequest, importGroups),
   ])

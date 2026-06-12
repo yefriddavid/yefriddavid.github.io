@@ -521,10 +521,7 @@ export default function CalcList() {
 
   const handleRowReorder = (reorderedIds) => {
     if (!activeList) return
-    reorderedIds.forEach((id, i) => {
-      const row = activeList.rows.find((r) => r.id === id)
-      if (row) dispatch(a.saveRowRequest({ groupId: activeGroupId, listId: activeListId, row: { ...row, index: i + 1 } }))
-    })
+    dispatch(a.reorderRowsRequest({ groupId: activeGroupId, listId: activeListId, orderedIds: reorderedIds }))
   }
 
   const handleRowDelete = (rowId) => {

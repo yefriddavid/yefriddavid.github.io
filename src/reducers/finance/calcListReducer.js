@@ -89,6 +89,10 @@ const calcListSlice = createSlice({
         const list = state.groups.find((g) => g.id === groupId)?.items.find((l) => l.id === listId)
         if (list) list.rows = list.rows.filter((r) => r.id !== rowId)
       })
+      .addCase(a.reorderRowsSuccess, (state, { payload: { groupId, listId, rows } }) => {
+        const list = state.groups.find((g) => g.id === groupId)?.items.find((l) => l.id === listId)
+        if (list) list.rows = rows
+      })
 
       // Sync / import
       .addCase(a.mergeSuccess, (state, { payload }) => {
