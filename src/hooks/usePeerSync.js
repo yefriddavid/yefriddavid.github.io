@@ -20,9 +20,9 @@ const RTC_CONFIG = {
 
 export default function usePeerSync() {
   const dispatch = useDispatch()
-  const lists = useSelector((s) => s.calcList.lists)
-  const listsRef = useRef(lists)
-  useEffect(() => { listsRef.current = lists }, [lists])
+  const groups = useSelector((s) => s.calcList.groups)
+  const listsRef = useRef(groups)
+  useEffect(() => { listsRef.current = groups }, [groups])
 
   const [myId] = useState(() => crypto.randomUUID())
   const [status, setStatus] = useState(STATUS.IDLE)
@@ -35,13 +35,13 @@ export default function usePeerSync() {
   const setupChannel = useCallback((channel) => {
     channel.onopen = () => {
       setStatus(STATUS.CONNECTED)
-      channel.send(JSON.stringify({ type: 'sync', lists: listsRef.current }))
+      channel.send(JSON.stringify({ type: 'sync', groups: listsRef.current }))
     }
     channel.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data)
         if (msg?.type === 'sync') {
-          dispatch(a.mergeRequest(msg.lists))
+          dispatch(a.mergeRequest(msg.groups ?? msg.lists ?? []))
           setStatus(STATUS.SYNCED)
         }
       } catch {}

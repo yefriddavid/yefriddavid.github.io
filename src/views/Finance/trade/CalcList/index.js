@@ -127,10 +127,10 @@ function NoteModal({ row, onClose, onSave }) {
   )
 }
 
-function GroupTab({ groups, grandTotal }) {
+function GroupTab({ groups: groupsData, grandTotal }) {
   const [openValue, setOpenValue] = useState(null)
 
-  if (!groups.length) return <div className="calc-list__cat-modal-empty">Sin datos.</div>
+  if (!groupsData.length) return <div className="calc-list__cat-modal-empty">Sin datos.</div>
   return (
     <table className="calc-list__cat-modal-table">
       <thead>
@@ -141,7 +141,7 @@ function GroupTab({ groups, grandTotal }) {
         </tr>
       </thead>
       <tbody>
-        {groups.map((g) => (
+        {groupsData.map((g) => (
           <React.Fragment key={g.value}>
             <tr
               className="calc-list__cat-modal-group-row"
@@ -320,6 +320,63 @@ function Summary({ lists, orderedIds }) {
   )
 }
 
+function GroupTabBar({ group, active, dragging, dragOver, onSelect, onDelete, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const inputRef = useRef(null)
+
+  const startEdit = (e) => {
+    e.stopPropagation()
+    setDraft(group.name)
+    setEditing(true)
+    setTimeout(() => inputRef.current?.select(), 0)
+  }
+
+  const commit = () => {
+    const name = draft.trim()
+    if (name && name !== group.name) onRename(group.id, name)
+    setEditing(false)
+  }
+
+  return (
+    <div
+      className={[
+        'calc-list__group',
+        active ? 'calc-list__group--active' : '',
+        dragging ? 'calc-list__group--dragging' : '',
+        dragOver ? 'calc-list__group--drag-over' : '',
+      ].filter(Boolean).join(' ')}
+      draggable={!editing}
+      onDragStart={() => onDragStart(group.id)}
+      onDragOver={(e) => { e.preventDefault(); onDragOver(group.id) }}
+      onDrop={(e) => { e.preventDefault(); onDrop(group.id) }}
+      onDragEnd={onDragEnd}
+      onClick={() => onSelect(group.id)}
+      onDoubleClick={startEdit}
+      title="Doble click para renombrar, arrastrar para reordenar"
+    >
+      {editing ? (
+        <input
+          ref={inputRef}
+          className="calc-list__group-name-input"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <span className="calc-list__group-name">{group.name}</span>
+      )}
+      <button
+        className="calc-list__group-delete"
+        onClick={(e) => { e.stopPropagation(); onDelete(group.id) }}
+        title="Eliminar grupo"
+      >×</button>
+    </div>
+  )
+}
+
 function Tab({ list, active, dragging, dragOver, onSelect, onDelete, onRename, onDragStart, onDragOver, onDrop, onDragEnd }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -379,39 +436,67 @@ function Tab({ list, active, dragging, dragOver, onSelect, onDelete, onRename, o
 
 export default function CalcList() {
   const dispatch = useDispatch()
-  const lists = useSelector((s) => s.calcList.lists)
-  const activeId = useSelector((s) => s.calcList.activeId)
-  const activeList = lists.find((l) => l.id === activeId)
+  const groups       = useSelector((s) => s.calcList.groups)
+  const activeGroupId = useSelector((s) => s.calcList.activeGroupId)
+  const activeListId  = useSelector((s) => s.calcList.activeListId)
+  const activeGroup = groups.find((g) => g.id === activeGroupId)
+  const activeList  = activeGroup?.items.find((l) => l.id === activeListId)
+
   const [syncOpen, setSyncOpen] = useState(false)
-  const [noteRow, setNoteRow] = useState(null)
-  const [dragTabId, setDragTabId] = useState(null)
+  const [noteRow, setNoteRow]   = useState(null)
   const importInputRef = useRef(null)
-  const [dragOverTabId, setDragOverTabId] = useState(null)
-  const [orderedIds, setOrderedIds] = useState(() => lists.map((l) => l.id))
+
+  const [dragGroupId, setDragGroupId]         = useState(null)
+  const [dragOverGroupId, setDragOverGroupId] = useState(null)
+  const [dragTabId, setDragTabId]             = useState(null)
+  const [dragOverTabId, setDragOverTabId]     = useState(null)
+
+  const [orderedGroupIds, setOrderedGroupIds] = useState(() => groups.map((g) => g.id))
+  const [orderedListIds, setOrderedListIds]   = useState(() => {
+    const items = activeGroup?.items ?? []
+    return [...items].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity)).map((l) => l.id)
+  })
+
   const { myId, status, error, connectTo } = usePeerSync()
 
   useEffect(() => { dispatch(a.loadRequest()) }, [dispatch])
 
-  // sync orderedIds when lists change externally (create / delete / merge)
   useEffect(() => {
-    setOrderedIds((prev) => {
-      const current = lists.map((l) => l.id)
+    setOrderedGroupIds((prev) => {
+      const current = groups.map((g) => g.id)
       return [
         ...prev.filter((id) => current.includes(id)),
         ...current.filter((id) => !prev.includes(id)),
       ]
     })
-  }, [lists])
+  }, [groups])
+
+  useEffect(() => {
+    const items = activeGroup?.items ?? []
+    const sorted = [...items].sort((x, y) => (x.order ?? Infinity) - (y.order ?? Infinity))
+    setOrderedListIds((prev) => {
+      const current = sorted.map((l) => l.id)
+      return [
+        ...prev.filter((id) => current.includes(id)),
+        ...current.filter((id) => !prev.includes(id)),
+      ]
+    })
+  }, [activeGroupId, groups])
+
+  const handleAddGroup = () => {
+    dispatch(a.createGroupRequest(`Grupo ${groups.length + 1}`))
+  }
 
   const handleAddList = () => {
-    dispatch(a.createListRequest(`Lista ${lists.length + 1}`))
+    if (!activeGroup) return
+    dispatch(a.createListRequest({ groupId: activeGroupId, name: `Lista ${activeGroup.items.length + 1}` }))
   }
 
   const handleRowChange = (rowId, field, value) => {
     if (!activeList) return
     const row = activeList.rows.find((r) => r.id === rowId)
     if (!row) return
-    dispatch(a.saveRowRequest({ listId: activeId, row: { ...row, [field]: value } }))
+    dispatch(a.saveRowRequest({ groupId: activeGroupId, listId: activeListId, row: { ...row, [field]: value } }))
   }
 
   const handleRowAdd = () => {
@@ -420,21 +505,30 @@ export default function CalcList() {
       ? Math.max(...activeList.rows.map((r) => r.index ?? 0)) + 1
       : 1
     dispatch(a.saveRowRequest({
-      listId: activeId,
-      row: { id: crypto.randomUUID(), index: nextIndex, description: '', category: CALC_LIST_CATEGORIES[0].value, classification: CALC_LIST_CLASSIFICATIONS[0].value, quantity: 1, value: 0 },
+      groupId: activeGroupId,
+      listId: activeListId,
+      row: {
+        id: crypto.randomUUID(),
+        index: nextIndex,
+        description: '',
+        category: CALC_LIST_CATEGORIES[0].value,
+        classification: CALC_LIST_CLASSIFICATIONS[0].value,
+        quantity: 1,
+        value: 0,
+      },
     }))
   }
 
-  const handleRowReorder = (orderedIds) => {
+  const handleRowReorder = (reorderedIds) => {
     if (!activeList) return
-    orderedIds.forEach((id, i) => {
+    reorderedIds.forEach((id, i) => {
       const row = activeList.rows.find((r) => r.id === id)
-      if (row) dispatch(a.saveRowRequest({ listId: activeId, row: { ...row, index: i + 1 } }))
+      if (row) dispatch(a.saveRowRequest({ groupId: activeGroupId, listId: activeListId, row: { ...row, index: i + 1 } }))
     })
   }
 
   const handleRowDelete = (rowId) => {
-    dispatch(a.deleteRowRequest({ listId: activeId, rowId }))
+    dispatch(a.deleteRowRequest({ groupId: activeGroupId, listId: activeListId, rowId }))
   }
 
   const handleRowNote = (rowId) => {
@@ -444,16 +538,52 @@ export default function CalcList() {
 
   const handleNoteSave = (note) => {
     if (!noteRow) return
-    dispatch(a.saveRowRequest({ listId: activeId, row: { ...noteRow, note: note || undefined } }))
+    dispatch(a.saveRowRequest({ groupId: activeGroupId, listId: activeListId, row: { ...noteRow, note: note || undefined } }))
     setNoteRow(null)
   }
 
+  const handleBudget = (budget) => {
+    dispatch(a.updateListRequest({ groupId: activeGroupId, id: activeListId, name: activeList.name, budget }))
+  }
+
+  const handleGroupReorder = useCallback((fromId, toId) => {
+    if (fromId === toId) return
+    setOrderedGroupIds((prev) => {
+      const next = [...prev]
+      const from = next.indexOf(fromId)
+      const to   = next.indexOf(toId)
+      next.splice(from, 1)
+      next.splice(to, 0, fromId)
+      next.forEach((id, order) => {
+        const g = groups.find((g) => g.id === id)
+        if (g) dispatch(a.updateGroupRequest({ id, name: g.name, order }))
+      })
+      return next
+    })
+  }, [groups, dispatch])
+
+  const handleListReorder = useCallback((fromId, toId) => {
+    if (fromId === toId) return
+    setOrderedListIds((prev) => {
+      const next = [...prev]
+      const from = next.indexOf(fromId)
+      const to   = next.indexOf(toId)
+      next.splice(from, 1)
+      next.splice(to, 0, fromId)
+      next.forEach((id, order) => {
+        const l = activeGroup?.items.find((l) => l.id === id)
+        if (l) dispatch(a.updateListRequest({ groupId: activeGroupId, id, name: l.name, order }))
+      })
+      return next
+    })
+  }, [activeGroup, activeGroupId, dispatch])
+
   const handleExport = () => {
-    const json = JSON.stringify(lists, null, 2)
+    const json = JSON.stringify(groups, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
+    const url  = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = url
+    link.href     = url
     link.download = `calc-lists-${new Date().toISOString().slice(0, 10)}.json`
     link.click()
     URL.revokeObjectURL(url)
@@ -467,10 +597,13 @@ export default function CalcList() {
     reader.onload = (ev) => {
       try {
         const parsed = JSON.parse(ev.target.result)
-        if (!Array.isArray(parsed)) throw new Error('El archivo no contiene un array de listas.')
-        const valid = parsed.every((l) => typeof l.id === 'string' && typeof l.name === 'string' && Array.isArray(l.rows))
-        if (!valid) throw new Error('Formato inválido: cada lista requiere id, name y rows.')
-        if (!window.confirm(`¿Reemplazar todas las listas con las ${parsed.length} del archivo?`)) return
+        if (!Array.isArray(parsed)) throw new Error('El archivo no contiene un array de grupos.')
+        const valid = parsed.every(
+          (g) => typeof g.id === 'string' && typeof g.name === 'string' && Array.isArray(g.items) &&
+                 g.items.every((l) => typeof l.id === 'string' && Array.isArray(l.rows))
+        )
+        if (!valid) throw new Error('Formato inválido.')
+        if (!window.confirm(`¿Reemplazar todos los datos con los ${parsed.length} grupos del archivo?`)) return
         dispatch(a.importRequest(parsed))
       } catch (err) {
         dispatch(notify({ type: 'error', message: `Error al importar: ${err.message}` }))
@@ -479,72 +612,71 @@ export default function CalcList() {
     reader.readAsText(file)
   }
 
-  const handleBudget = (budget) => {
-    dispatch(a.updateListRequest({ id: activeId, name: activeList.name, budget }))
-  }
-
-  const handleReorder = useCallback((fromId, toId) => {
-    if (fromId === toId) return
-    setOrderedIds((prev) => {
-      const next = [...prev]
-      const from = next.indexOf(fromId)
-      const to = next.indexOf(toId)
-      next.splice(from, 1)
-      next.splice(to, 0, fromId)
-      next.forEach((id, order) => {
-        const list = lists.find((l) => l.id === id)
-        if (list) dispatch(a.updateListRequest({ id, name: list.name, order }))
-      })
-      return next
-    })
-  }, [lists, dispatch])
+  const allLists = orderedGroupIds.flatMap((gid) => {
+    const g = groups.find((g) => g.id === gid)
+    return g ? [...g.items].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity)) : []
+  })
+  const allListIds = allLists.map((l) => l.id)
 
   return (
     <div className="calc-list">
       {noteRow && (
-        <NoteModal
-          row={noteRow}
-          onClose={() => setNoteRow(null)}
-          onSave={handleNoteSave}
-        />
+        <NoteModal row={noteRow} onClose={() => setNoteRow(null)} onSave={handleNoteSave} />
       )}
       {syncOpen && (
-        <SyncModal
-          myId={myId}
-          status={status}
-          error={error}
-          onConnect={connectTo}
-          onClose={() => setSyncOpen(false)}
-        />
+        <SyncModal myId={myId} status={status} error={error} onConnect={connectTo} onClose={() => setSyncOpen(false)} />
       )}
+
+      <div className="calc-list__groups">
+        {orderedGroupIds.map((id) => {
+          const group = groups.find((g) => g.id === id)
+          if (!group) return null
+          return (
+            <GroupTabBar
+              key={group.id}
+              group={group}
+              active={group.id === activeGroupId}
+              dragging={dragGroupId === group.id}
+              dragOver={dragOverGroupId === group.id}
+              onSelect={(id) => dispatch(a.setActiveGroup(id))}
+              onDelete={(id) => dispatch(a.deleteGroupRequest(id))}
+              onRename={(id, name) => dispatch(a.updateGroupRequest({ id, name }))}
+              onDragStart={setDragGroupId}
+              onDragOver={setDragOverGroupId}
+              onDrop={(toId) => { handleGroupReorder(dragGroupId, toId); setDragGroupId(null); setDragOverGroupId(null) }}
+              onDragEnd={() => { setDragGroupId(null); setDragOverGroupId(null) }}
+            />
+          )
+        })}
+        <button className="calc-list__add-group" onClick={handleAddGroup} title="Nuevo grupo">
+          + Grupo
+        </button>
+      </div>
+
       <div className="calc-list__tabs">
-        {orderedIds.map((id) => {
-          const list = lists.find((l) => l.id === id)
+        {orderedListIds.map((id) => {
+          const list = activeGroup?.items.find((l) => l.id === id)
           if (!list) return null
           return (
             <Tab
               key={list.id}
               list={list}
-              active={list.id === activeId}
+              active={list.id === activeListId}
               dragging={dragTabId === list.id}
               dragOver={dragOverTabId === list.id}
               onSelect={(id) => dispatch(a.setActive(id))}
-              onDelete={(id) => dispatch(a.deleteListRequest(id))}
-              onRename={(id, name) => dispatch(a.updateListRequest({ id, name }))}
+              onDelete={(id) => dispatch(a.deleteListRequest({ groupId: activeGroupId, listId: id }))}
+              onRename={(id, name) => dispatch(a.updateListRequest({ groupId: activeGroupId, id, name }))}
               onDragStart={setDragTabId}
               onDragOver={setDragOverTabId}
-              onDrop={(toId) => { handleReorder(dragTabId, toId); setDragTabId(null); setDragOverTabId(null) }}
+              onDrop={(toId) => { handleListReorder(dragTabId, toId); setDragTabId(null); setDragOverTabId(null) }}
               onDragEnd={() => { setDragTabId(null); setDragOverTabId(null) }}
             />
           )
         })}
-        <button className="calc-list__add-tab" onClick={handleAddList} title="Nueva lista">+</button>
-        <button className="calc-list__export-btn" onClick={handleExport} title="Exportar listas a JSON">
-          ↓
-        </button>
-        <button className="calc-list__import-btn" onClick={() => importInputRef.current?.click()} title="Importar listas desde JSON">
-          ↑
-        </button>
+        <button className="calc-list__add-tab" onClick={handleAddList} title="Nueva lista" disabled={!activeGroup}>+</button>
+        <button className="calc-list__export-btn" onClick={handleExport} title="Exportar a JSON">↓</button>
+        <button className="calc-list__import-btn" onClick={() => importInputRef.current?.click()} title="Importar desde JSON">↑</button>
         <input
           ref={importInputRef}
           type="file"
@@ -558,9 +690,14 @@ export default function CalcList() {
       </div>
 
       <div className="calc-list__content">
-        {!activeList ? (
+        {!activeGroup ? (
           <div className="calc-list__empty-state">
-            <span>No hay listas. Crea una para empezar.</span>
+            <span>No hay grupos. Crea uno para empezar.</span>
+            <button className="calc-list__new-btn" onClick={handleAddGroup}>+ Nuevo grupo</button>
+          </div>
+        ) : !activeList ? (
+          <div className="calc-list__empty-state">
+            <span>No hay listas en este grupo.</span>
             <button className="calc-list__new-btn" onClick={handleAddList}>+ Nueva lista</button>
           </div>
         ) : (
@@ -581,7 +718,7 @@ export default function CalcList() {
         )}
       </div>
 
-      <Summary lists={lists} orderedIds={orderedIds} />
+      <Summary lists={allLists} orderedIds={allListIds} />
     </div>
   )
 }
