@@ -614,10 +614,9 @@ export default function CalcList() {
     reader.readAsText(file)
   }
 
-  const allLists = orderedGroupIds.flatMap((gid) => {
-    const g = groups.find((g) => g.id === gid)
-    return g ? [...g.items].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity)) : []
-  })
+  const allLists = activeGroup
+    ? orderedListIds.map((id) => activeGroup.items.find((l) => l.id === id)).filter(Boolean)
+    : []
   const allListIds = allLists.map((l) => l.id)
 
   return (
