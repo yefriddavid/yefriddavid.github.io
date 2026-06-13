@@ -9,6 +9,7 @@ const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
 const Tenants = React.lazy(() => import('./views/admin/Tenants'))
 const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))
 const Visits = React.lazy(() => import('./views/tools/visits/Visits'))
+const ContactMessages = React.lazy(() => import('./views/tools/contactMessages/ContactMessages'))
 
 const systemRoutes = [
   {
@@ -40,6 +41,12 @@ const systemRoutes = [
     name: 'Visits',
     tKey: 'nav.visits',
     element: Visits,
+  },
+  {
+    path: '/system/messages',
+    name: 'Messages',
+    tKey: 'nav.messages',
+    element: ContactMessages,
   },
   {
     path: '/system/error-logs',

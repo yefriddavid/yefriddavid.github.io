@@ -59,6 +59,7 @@ import task from './misc/taskReducer'
 import taxiTrend from './taxi/taxiTrendReducer'
 import appSettings from './system/appSettingsReducer'
 import usageMetrics from './system/usageMetricsReducer'
+import contactMessage from './system/contactMessageReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -121,6 +122,7 @@ const combinedReducers = combineReducers({
   taxiTrend,
   appSettings,
   usageMetrics,
+  contactMessage,
 })
 
 export default combinedReducers

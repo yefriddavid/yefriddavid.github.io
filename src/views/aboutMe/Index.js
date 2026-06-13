@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useForm } from 'react-hook-form'
 import { trackVisitRequest } from 'src/actions/system/pageVisitActions'
+import { createRequest } from 'src/actions/system/contactMessageActions'
 import './AboutMe.scss'
 
 import NodeImg from 'src/assets/images/skills/nodejs.png'
@@ -56,6 +58,12 @@ const LinkedInIcon = () => (
 const GithubIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+  </svg>
+)
+
+const XIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 )
 
@@ -150,6 +158,136 @@ const useCursorGlow = (_containerRef) => {
   return { dotRef, ringRef, glowRef }
 }
 
+const fieldError = (err) =>
+  err ? (
+    <span className="about__chat-field-error">{err.message}</span>
+  ) : null
+
+const ChatWidget = () => {
+  const dispatch = useDispatch()
+  const saving = useSelector((s) => s.contactMessage?.saving)
+  const [open, setOpen] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm()
+
+  const onSend = (data) => {
+    dispatch(createRequest(data))
+    setSent(true)
+    reset()
+  }
+
+  const handleOpen = () => {
+    setOpen(true)
+    setSent(false)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setSent(false)
+    reset()
+  }
+
+  return (
+    <>
+      <button className={`about__chat-fab${open ? ' about__chat-fab--open' : ''}`} onClick={open ? handleClose : handleOpen} aria-label="Abrir chat">
+        {open ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+          </svg>
+        )}
+      </button>
+
+      <div className={`about__chat-panel${open ? ' about__chat-panel--open' : ''}`}>
+        <div className="about__chat-panel__header">
+          <div className="about__chat-panel__avatar">DR</div>
+          <div>
+            <div className="about__chat-panel__name">David Rios</div>
+            <div className="about__chat-panel__status">
+              <span className="about__chat-panel__dot" /> Disponible
+            </div>
+          </div>
+        </div>
+
+        <div className="about__chat-panel__body">
+          {sent ? (
+            <div className="about__chat-sent">
+              <div className="about__chat-sent__icon">✓</div>
+              <p className="about__chat-sent__title">¡Mensaje enviado!</p>
+              <p className="about__chat-sent__sub">Te responderé pronto por correo o WhatsApp.</p>
+              <button className="about__chat-sent__btn" onClick={() => setSent(false)}>
+                Enviar otro mensaje
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSend)} className="about__chat-form">
+              <div className="about__chat-bubble about__chat-bubble--bot">
+                👋 Hola! Déjame tu mensaje y te respondo pronto.
+              </div>
+
+              <div className="about__chat-field">
+                <label className="about__chat-label">Nombre *</label>
+                <input
+                  className="about__chat-input"
+                  placeholder="Tu nombre"
+                  {...register('name', { required: 'El nombre es obligatorio' })}
+                />
+                {fieldError(errors.name)}
+              </div>
+
+              <div className="about__chat-field">
+                <label className="about__chat-label">Email</label>
+                <input
+                  className="about__chat-input"
+                  type="email"
+                  placeholder="tu@email.com (opcional)"
+                  {...register('email', {
+                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Email inválido' },
+                  })}
+                />
+                {fieldError(errors.email)}
+              </div>
+
+              <div className="about__chat-field">
+                <label className="about__chat-label">Mensaje *</label>
+                <textarea
+                  className="about__chat-input about__chat-input--textarea"
+                  rows={4}
+                  placeholder="¿En qué puedo ayudarte?"
+                  {...register('message', { required: 'El mensaje es obligatorio' })}
+                />
+                {fieldError(errors.message)}
+              </div>
+
+              <button type="submit" className="about__chat-send" disabled={saving}>
+                {saving ? (
+                  <span className="about__chat-spinner" />
+                ) : (
+                  <>
+                    Enviar
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
 const AboutMe = () => {
   const dispatch = useDispatch()
   const containerRef = useRef()
@@ -213,6 +351,14 @@ const AboutMe = () => {
             >
               <GithubIcon /> GitHub
             </a>
+            <a
+              className="about__btn about__btn--outline"
+              href="https://x.com/yefriddavid"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <XIcon /> X
+            </a>
           </div>
         </div>
 
@@ -262,9 +408,16 @@ const AboutMe = () => {
       <footer className="about__footer">
         Hecho con ♥ ·{' '}
         <a href="https://www.linkedin.com/in/yefriddavid" target="_blank" rel="noreferrer">
-          @yefriddavid
+          LinkedIn
+        </a>
+        {' · '}
+        <a href="https://x.com/yefriddavid" target="_blank" rel="noreferrer">
+          X / Twitter
         </a>
       </footer>
+
+      {/* ── Chat widget ── */}
+      <ChatWidget />
     </div>
   )
 }

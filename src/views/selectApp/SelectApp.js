@@ -128,6 +128,9 @@ const SelectApp = () => {
               Manage<span>ment</span>
             </h1>
             <p className="select-app__tagline">Management Suite</p>
+            <button className="select-app__about-link" onClick={() => navigate('/aboutMe')}>
+              about me
+            </button>
           </div>
         </div>
         <span className="select-app__version">v3.0 · 2025</span>

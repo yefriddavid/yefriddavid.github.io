@@ -57,6 +57,7 @@ import sagaTasks from './misc/taskSagas'
 import sagaTaxiTrend from './taxi/taxiTrendSagas'
 import sagaAppSettings from './system/appSettingsSagas'
 import sagaUsageMetrics from './system/usageMetricsSagas'
+import sagaContactMessages from './system/contactMessageSagas'
 
 export default function* rootSagas() {
   yield all([
@@ -118,5 +119,6 @@ export default function* rootSagas() {
     sagaTaxiTrend(),
     sagaAppSettings(),
     sagaUsageMetrics(),
+    sagaContactMessages(),
   ])
 }
