@@ -168,6 +168,7 @@ const ChatWidget = () => {
   const saving = useSelector((s) => s.contactMessage?.saving)
   const [open, setOpen] = useState(false)
   const [sent, setSent] = useState(false)
+  const openedAt = useRef(null)
 
   const {
     register,
@@ -176,8 +177,14 @@ const ChatWidget = () => {
     formState: { errors },
   } = useForm()
 
-  const onSend = (data) => {
-    dispatch(createRequest(data))
+  const onSend = ({ _trap, name, email, message }) => {
+    const tooFast = openedAt.current && Date.now() - openedAt.current < 2000
+    if (_trap || tooFast) {
+      setSent(true)
+      reset()
+      return
+    }
+    dispatch(createRequest({ name, email, message }))
     setSent(true)
     reset()
   }
@@ -185,6 +192,7 @@ const ChatWidget = () => {
   const handleOpen = () => {
     setOpen(true)
     setSent(false)
+    openedAt.current = Date.now()
   }
 
   const handleClose = () => {
@@ -267,6 +275,9 @@ const ChatWidget = () => {
                 />
                 {fieldError(errors.message)}
               </div>
+
+              {/* honeypot — invisible to humans, bots fill it */}
+              <input className="about__chat-trap" tabIndex={-1} autoComplete="off" {...register('_trap')} />
 
               <button type="submit" className="about__chat-send" disabled={saving}>
                 {saving ? (
