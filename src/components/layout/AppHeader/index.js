@@ -18,6 +18,7 @@ import CIcon from '@coreui/icons-react'
 import {
   cilCalendar,
   cilClock,
+  cilEnvelopeClosed,
   cilFullscreen,
   cilFullscreenExit,
   cilMenu,
@@ -64,6 +65,9 @@ const AppHeader = () => {
   const appTheme    = useSelector((state) => state.ui.appTheme)
   const pendingTasks = useSelector((state) =>
     (state.task?.data ?? []).filter((t) => !t.done).length
+  )
+  const unreadMessages = useSelector((state) =>
+    (state.contactMessage?.data ?? []).filter((m) => !m.read).length
   )
   const hideHeader = () => dispatch(setUi({ headerShow: false }))
   const hasUpdate = useVersionCheck()
@@ -200,6 +204,21 @@ const AppHeader = () => {
                 {pendingTasks > 0 && (
                   <span className="header__task-badge">
                     {pendingTasks > 99 ? '99+' : pendingTasks}
+                  </span>
+                )}
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink
+                as="button"
+                onClick={() => navigate('/system/messages')}
+                title={`Mensajes sin leer: ${unreadMessages}`}
+                style={{ position: 'relative' }}
+              >
+                <CIcon icon={cilEnvelopeClosed} size="lg" />
+                {unreadMessages > 0 && (
+                  <span className="header__task-badge">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
                   </span>
                 )}
               </CNavLink>

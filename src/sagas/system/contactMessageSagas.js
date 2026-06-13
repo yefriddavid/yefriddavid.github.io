@@ -24,6 +24,15 @@ function* createContactMessage({ payload }) {
   }
 }
 
+function* updateContactMessage({ payload }) {
+  try {
+    yield call(service.updateContactMessage, payload)
+    yield put(actions.successRequestUpdate(payload))
+  } catch (e) {
+    yield put(actions.errorRequestUpdate(e.message))
+  }
+}
+
 function* deleteContactMessage({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
@@ -40,6 +49,7 @@ export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchContactMessages),
     takeLatest(actions.createRequest, createContactMessage),
+    takeLatest(actions.updateRequest, updateContactMessage),
     takeLatest(actions.deleteRequest, deleteContactMessage),
   ])
 }

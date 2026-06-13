@@ -5,6 +5,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
   query,
   orderBy,
   serverTimestamp,
@@ -27,6 +28,10 @@ export const getContactMessages = async () => {
   const q = query(collection(db, COL_CONTACT_MESSAGES), orderBy('createdAt', 'desc'))
   const snap = await firestoreCall(() => getDocs(q))
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+}
+
+export const updateContactMessage = async ({ id, ...fields }) => {
+  await firestoreCall(() => updateDoc(doc(db, COL_CONTACT_MESSAGES, id), fields))
 }
 
 export const deleteContactMessage = async (id) => {

@@ -5,6 +5,7 @@ import { CContainer } from '@coreui/react'
 import Spinner from '../../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../../actions/authActions'
+import * as contactMessageActions from '../../../actions/system/contactMessageActions'
 import { onAuthChange } from '../../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
 import { validateSession } from '../../../services/firebase/security/sessions'
@@ -28,7 +29,9 @@ const AppContent = () => {
   useEffect(() => {
     const unsubscribe = onAuthChange((user) => {
       setFirebaseUser(user)
-      if (!user) {
+      if (user) {
+        dispatch(contactMessageActions.fetchRequest())
+      } else {
         dispatch(clearProfile())
         authStorage.clearSession()
       }

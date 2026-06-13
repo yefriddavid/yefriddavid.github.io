@@ -53,6 +53,11 @@ const ContactMessages = () => {
     dispatch(actions.deleteRequest({ id }))
   }
 
+  const handleRowExpand = ({ key, component }) => {
+    const msg = messages.find((m) => m.id === key)
+    if (msg && !msg.read) dispatch(actions.updateRequest({ id: key, read: true }))
+  }
+
   return (
     <CCard>
       <CCardHeader className="d-flex align-items-center gap-2">
@@ -66,7 +71,7 @@ const ContactMessages = () => {
             <Spinner color="primary" />
           </div>
         ) : (
-          <StandardGrid keyExpr="id" dataSource={messages} noDataText="No hay mensajes aún.">
+          <StandardGrid keyExpr="id" dataSource={messages} noDataText="No hay mensajes aún." onRowExpanding={handleRowExpand}>
             <Column
               dataField="createdAt"
               caption="Fecha"
