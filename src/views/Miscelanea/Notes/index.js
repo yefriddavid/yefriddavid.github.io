@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilPlus, cilX, cilSave } from '@coreui/icons'
+import { cilPencil, cilTrash, cilPlus, cilX, cilSave, cilFullscreen } from '@coreui/icons'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
@@ -58,11 +58,14 @@ const formatDate = (ts) => {
 
 // ── Note card ────────────────────────────────────────────────────────────────
 
-const NoteCard = ({ note, onEdit, onDelete }) => (
+const NoteCard = ({ note, onEdit, onDelete, onView }) => (
   <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
     <div className="note-card__header">
       <h6 className="note-card__title">{note.title || <em>Sin título</em>}</h6>
       <div className="note-card__actions">
+        <button className="note-card__btn" onClick={onView} title="Ver">
+          <CIcon icon={cilFullscreen} size="sm" />
+        </button>
         <button className="note-card__btn" onClick={onEdit} title="Editar">
           <CIcon icon={cilPencil} size="sm" />
         </button>
@@ -159,6 +162,35 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   )
 }
 
+// ── View modal ────────────────────────────────────────────────────────────────
+
+const NoteViewModal = ({ note, onClose, onEdit }) => (
+  <div className="note-view-overlay" onClick={onClose}>
+    <div
+      className="note-view"
+      style={{ '--note-bg': note.color || '#fff' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="note-view__bar">
+        <h5 className="note-view__title">{note.title || <em>Sin título</em>}</h5>
+        <div className="note-view__bar-actions">
+          <button className="note-editor__icon-btn" onClick={onEdit} title="Editar">
+            <CIcon icon={cilPencil} />
+          </button>
+          <button className="note-editor__icon-btn" onClick={onClose} title="Cerrar">
+            <CIcon icon={cilX} />
+          </button>
+        </div>
+      </div>
+      <div className="note-view__date">{formatDate(note.updatedAt)}</div>
+      <div
+        className="note-view__content ql-editor"
+        dangerouslySetInnerHTML={{ __html: note.content }}
+      />
+    </div>
+  </div>
+)
+
 // ── Main view ────────────────────────────────────────────────────────────────
 
 const Notes = () => {
@@ -166,6 +198,7 @@ const Notes = () => {
   const { data, fetching, saving } = useSelector((s) => s.note)
   const notes = data ?? []
   const [editing, setEditing] = useState(null) // null | 'new' | note
+  const [viewing, setViewing] = useState(null) // null | note
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
@@ -210,11 +243,20 @@ const Notes = () => {
             <NoteCard
               key={note.id}
               note={note}
+              onView={() => setViewing(note)}
               onEdit={() => setEditing(note)}
               onDelete={() => handleDelete(note)}
             />
           ))}
         </div>
+      )}
+
+      {viewing && !editing && (
+        <NoteViewModal
+          note={viewing}
+          onClose={() => setViewing(null)}
+          onEdit={() => { setEditing(viewing); setViewing(null) }}
+        />
       )}
 
       {editing && (
