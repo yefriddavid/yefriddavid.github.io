@@ -1,0 +1,219 @@
+.bastidor {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 8px 0;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+
+  // ── Form panel ─────────────────────────────────────────
+
+  &__form-panel {
+    background: var(--cui-card-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  &__form-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cui-secondary-color, #6c757d);
+    margin: 0 0 14px;
+  }
+
+  &__form-subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cui-secondary-color, #6c757d);
+    margin: 0 0 10px;
+  }
+
+  &__sep {
+    border: none;
+    border-top: 1px solid var(--cui-border-color, #dee2e6);
+    margin: 14px 0;
+  }
+
+  &__field-group {
+    margin-bottom: 10px;
+  }
+
+  &__fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  &__label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cui-body-color, #333);
+    margin-bottom: 4px;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--cui-body-bg, #fff);
+    color: var(--cui-body-color, #333);
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: #4f46e5;
+    }
+  }
+
+  // ── Joint selector ──────────────────────────────────────
+
+  &__joints {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__joint {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--cui-border-color, #dee2e6);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+
+    &--active {
+      border-color: #4f46e5;
+      background: rgba(79, 70, 229, 0.06);
+    }
+
+    &-radio {
+      display: none;
+    }
+
+    &-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cui-body-color, #333);
+    }
+
+    &-desc {
+      font-size: 11px;
+      color: var(--cui-secondary-color, #6c757d);
+      line-height: 1.4;
+    }
+  }
+
+  // ── Result panel ────────────────────────────────────────
+
+  &__result-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__diagram-card {
+    background: var(--cui-card-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 10px;
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  &__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  &__empty {
+    text-align: center;
+    color: var(--cui-secondary-color, #6c757d);
+    font-size: 13px;
+    padding: 40px 16px;
+  }
+
+  // ── Cuts card ───────────────────────────────────────────
+
+  &__cuts-card {
+    background: var(--cui-card-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  &__cuts-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cui-secondary-color, #6c757d);
+    margin: 0 0 12px;
+  }
+
+  &__cut {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    &__qty {
+      grid-row: 1 / 3;
+      font-size: 20px;
+      font-weight: 800;
+      color: #4f46e5;
+      display: flex;
+      align-items: center;
+    }
+
+    &__info {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    &__length {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--cui-body-color, #333);
+      line-height: 1;
+    }
+
+    &__dir {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cui-secondary-color, #6c757d);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    &__note {
+      font-size: 11px;
+      color: var(--cui-secondary-color, #6c757d);
+      padding-top: 2px;
+    }
+  }
+
+  &__cuts-total {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--cui-secondary-color, #6c757d);
+    text-align: right;
+  }
+}
