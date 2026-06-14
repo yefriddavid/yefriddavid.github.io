@@ -3,6 +3,8 @@ import './Calc.scss'
 
 const OP_LABELS = { '/': '÷', '*': '×', '-': '−', '+': '+' }
 const MAX_DIGITS = 12
+const HISTORY_KEY = 'calc_history'
+const MAX_HISTORY = 15
 
 const BUTTONS = [
   [
@@ -66,6 +68,13 @@ const compute = (a, op, b) => {
   }
 }
 
+const loadHistory = () => {
+  try { return JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? '[]') } catch { return [] }
+}
+
+const persistHistory = (entries) =>
+  sessionStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, MAX_HISTORY)))
+
 const Calc = () => {
   const [display, setDisplay] = useState('0')
   const [accumulator, setAccumulator] = useState(null)
@@ -73,10 +82,39 @@ const Calc = () => {
   const [expression, setExpression] = useState('')
   const [replace, setReplace] = useState(false)
   const [activeKey, setActiveKey] = useState(null)
+  const [history, setHistory] = useState(loadHistory)
 
-  // Keep a ref to dispatch that always closes over latest state
   const stateRef = useRef({})
-  stateRef.current = { display, accumulator, operator, expression, replace }
+  stateRef.current = { display, accumulator, operator, expression, replace, history }
+
+  // ── Page meta ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const prevTitle = document.title
+    document.title = 'Calculadora — Tools Online'
+
+    let metaKw = document.querySelector('meta[name="keywords"]')
+    const prevKw = metaKw ? metaKw.getAttribute('content') : null
+    if (!metaKw) {
+      metaKw = document.createElement('meta')
+      metaKw.setAttribute('name', 'keywords')
+      document.head.appendChild(metaKw)
+    }
+    metaKw.setAttribute('content', 'tools, calc, tools online')
+
+    return () => {
+      document.title = prevTitle
+      if (prevKw === null) metaKw.remove()
+      else metaKw.setAttribute('content', prevKw)
+    }
+  }, [])
+
+  // ── Calculator logic ───────────────────────────────────────────────────────
+  const addToHistory = (expr, result) => {
+    const entry = { expr, result }
+    const updated = [entry, ...stateRef.current.history].slice(0, MAX_HISTORY)
+    setHistory(updated)
+    persistHistory(updated)
+  }
 
   const press = (btn) => {
     const { display: d, accumulator: acc, operator: op, expression: expr, replace: repl } = stateRef.current
@@ -151,8 +189,11 @@ const Calc = () => {
       const fullExpr = expr + ' ' + d + ' ='
       if (!isFinite(result)) {
         setDisplay('Error'); setExpression(fullExpr)
+        addToHistory(fullExpr, 'Error')
       } else {
-        setDisplay(fmt(result)); setExpression(fullExpr)
+        const r = fmt(result)
+        setDisplay(r); setExpression(fullExpr)
+        addToHistory(fullExpr, r)
       }
       setAccumulator(null); setOperator(null); setReplace(true)
     }
@@ -181,13 +222,26 @@ const Calc = () => {
     return true
   }
 
+  const restoreFromHistory = (entry) => {
+    setDisplay(entry.result)
+    setExpression('')
+    setAccumulator(null)
+    setOperator(null)
+    setReplace(true)
+  }
+
+  const clearHistory = () => {
+    setHistory([])
+    sessionStorage.removeItem(HISTORY_KEY)
+  }
+
   const fontSize = display.length > 14 ? 22 : display.length > 9 ? 32 : 48
 
   return (
     <div className="calc">
       <div className="calc__card">
         <div className="calc__display">
-          <div className="calc__expression">{expression || ' '}</div>
+          <div className="calc__expression">{expression || ' '}</div>
           <div className="calc__value" style={{ fontSize }}>{display}</div>
         </div>
         <div className="calc__pad">
@@ -213,6 +267,30 @@ const Calc = () => {
         </div>
         <p className="calc__hint">También puedes usar el teclado</p>
       </div>
+
+      {history.length > 0 && (
+        <div className="calc__history">
+          <div className="calc__history-header">
+            <span className="calc__history-title">Historial</span>
+            <button type="button" className="calc__history-clear" onClick={clearHistory}>
+              Limpiar
+            </button>
+          </div>
+          <ul className="calc__history-list">
+            {history.map((entry, i) => (
+              <li
+                key={i}
+                className="calc__history-item"
+                onClick={() => restoreFromHistory(entry)}
+                title="Usar resultado"
+              >
+                <span className="calc__history-expr">{entry.expr}</span>
+                <span className="calc__history-result">{entry.result}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
