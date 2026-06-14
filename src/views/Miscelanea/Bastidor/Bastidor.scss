@@ -203,6 +203,14 @@
       letter-spacing: 0.05em;
     }
 
+    &__inner {
+      font-size: 12px;
+      color: #16a34a;
+      padding-top: 2px;
+
+      strong { font-weight: 700; }
+    }
+
     &__note {
       font-size: 11px;
       color: var(--cui-secondary-color, #6c757d);

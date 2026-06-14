@@ -38,14 +38,16 @@ function calcCuts(w, h, p, joint) {
         {
           qty: 2,
           length: w,
+          inner: +(w - 2 * p).toFixed(1),
           dir: 'Horizontal',
-          note: 'Corte 45° en ambos extremos — medir por el borde exterior',
+          note: 'Corte 45° en ambos extremos',
         },
         {
           qty: 2,
           length: h,
+          inner: +(h - 2 * p).toFixed(1),
           dir: 'Vertical',
-          note: 'Corte 45° en ambos extremos — medir por el borde exterior',
+          note: 'Corte 45° en ambos extremos',
         },
       ]
     case 'mediamadera':
@@ -71,6 +73,7 @@ function calcCuts(w, h, p, joint) {
 // ── SVG helpers ─────────────────────────────────────────────────────────────
 
 const BLUE = '#4f46e5'
+const GREEN = '#16a34a'
 const WOOD_H = '#C4956A'
 const WOOD_V = '#9B6A3A'
 const STROKE = '#7B5335'
@@ -78,10 +81,10 @@ const SVG_W = 480
 const SVG_H = 400
 
 function DimLine({ x1, y1, x2, y2, label, variant = 'blue', vertical = false }) {
-  const color = variant === 'blue' ? BLUE : STROKE
+  const color = variant === 'blue' ? BLUE : variant === 'green' ? GREEN : STROKE
   const mx = (x1 + x2) / 2
   const my = (y1 + y2) / 2
-  const markId = variant === 'blue' ? 'bArr' : 'wArr'
+  const markId = variant === 'blue' ? 'bArr' : variant === 'green' ? 'gArr' : 'wArr'
   const lw = label.length * 6 + 10
 
   return (
@@ -177,7 +180,11 @@ function FrameSVG({ w, h, p, joint }) {
       aria-label="Diagrama del bastidor"
     >
       <defs>
-        {['bArr', 'wArr'].map((id, i) => (
+        {[
+          ['bArr', BLUE],
+          ['wArr', STROKE],
+          ['gArr', GREEN],
+        ].map(([id, fill]) => (
           <marker
             key={id}
             id={id}
@@ -187,7 +194,7 @@ function FrameSVG({ w, h, p, joint }) {
             refY="3.5"
             orient="auto-start-reverse"
           >
-            <path d="M0,1 L6,3.5 L0,6 Z" fill={i === 0 ? BLUE : STROKE} />
+            <path d="M0,1 L6,3.5 L0,6 Z" fill={fill} />
           </marker>
         ))}
       </defs>
@@ -338,6 +345,39 @@ function FrameSVG({ w, h, p, joint }) {
         strokeDasharray="5,4"
         strokeWidth={1}
       />
+
+      {/* ── Inner dimensions (inglete only) ── */}
+      {joint === 'inglete' && innerW > 30 && (
+        <>
+          {/* inner width */}
+          <DimLine
+            x1={ox + fp}
+            y1={oy + fp + 22}
+            x2={ox + fw - fp}
+            y2={oy + fp + 22}
+            label={`${+(w - 2 * p).toFixed(1)} cm`}
+            variant="green"
+          />
+          <TickLine x={ox + fp} y1={oy + fp + 17} y2={oy + fp + 27} color={GREEN} />
+          <TickLine x={ox + fw - fp} y1={oy + fp + 17} y2={oy + fp + 27} color={GREEN} />
+          {/* inner height */}
+          {innerH > 40 && (
+            <>
+              <DimLine
+                x1={ox + fp + 22}
+                y1={oy + fp}
+                x2={ox + fp + 22}
+                y2={oy + fh - fp}
+                label={`${+(h - 2 * p).toFixed(1)} cm`}
+                variant="green"
+                vertical
+              />
+              <TickLineH y={oy + fp} x1={ox + fp + 17} x2={ox + fp + 27} color={GREEN} />
+              <TickLineH y={oy + fh - fp} x1={ox + fp + 17} x2={ox + fp + 27} color={GREEN} />
+            </>
+          )}
+        </>
+      )}
 
       {/* ── Text on pieces ── */}
       {fw > 80 && (
@@ -518,6 +558,11 @@ const Bastidor = () => {
                   <span className="bastidor__cut__length">{c.length} cm</span>
                   <span className="bastidor__cut__dir">{c.dir}</span>
                 </div>
+                {c.inner != null && (
+                  <div className="bastidor__cut__inner">
+                    Interior (borde corto): <strong>{c.inner} cm</strong>
+                  </div>
+                )}
                 <div className="bastidor__cut__note">{c.note}</div>
               </div>
             ))}
