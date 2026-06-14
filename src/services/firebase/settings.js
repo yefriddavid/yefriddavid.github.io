@@ -110,6 +110,7 @@ export const COL_DOMOTICA_COMMAND_PROFILE_ITEMS = 'Domotica_command_profile_item
 
 // Misc
 export const COL_MISC_TASKS = 'Misc_tasks'
+export const COL_MISC_NOTES = 'Misc_notes'
 
 // Others
 export const COL_PAGE_VISITS = 'page_visits'

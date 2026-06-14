@@ -56,6 +56,7 @@ import financePictureVersions from './finance/pictureVersionsReducer'
 import financeScenes3d from './finance/scenes3dReducer'
 import increaseDecrease from './finance/increaseDecreaseReducer'
 import task from './misc/taskReducer'
+import note from './misc/noteReducer'
 import taxiTrend from './taxi/taxiTrendReducer'
 import appSettings from './system/appSettingsReducer'
 import usageMetrics from './system/usageMetricsReducer'
@@ -106,6 +107,7 @@ const combinedReducers = combineReducers({
   domoticaCommandDictionary,
   domoticaCommandProfile,
   domoticaSolarBattery,
+  note,
   notifications,
   errorLog,
   auditLog,
