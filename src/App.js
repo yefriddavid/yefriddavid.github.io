@@ -28,6 +28,7 @@ const GenerarContrato = React.lazy(
   () => import('./views/Contratos/contratos/GenerarContrato/index.js'),
 )
 const GalleryPage = React.lazy(() => import('./views/Public/GalleryPage'))
+const Calc = React.lazy(() => import('./views/Miscelanea/Tools/Calc'))
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
@@ -154,6 +155,7 @@ const App = () => {
               <Route path="/selectApp" element={<SelectApp />} />
               <Route path="/contratos/generar" element={<GenerarContrato />} />
               <Route path="/gallery/:folder" element={<GalleryPage />} />
+              <Route path="/tools/calc" element={<Calc />} />
             </Route>
             <Route path="/finance/*" element={<FinanceLayout />} />
             <Route path="/miscelanea/*" element={<MiscelaneaLayout />} />

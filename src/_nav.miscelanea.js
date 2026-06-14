@@ -42,7 +42,7 @@ const getMiscelaneaNav = () => [
       {
         component: CNavItem,
         name: 'Calc',
-        to: '/miscelanea/tools/calc',
+        to: '/tools/calc',
         icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
       },
     ],
