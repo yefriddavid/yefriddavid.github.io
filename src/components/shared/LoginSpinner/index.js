@@ -21,7 +21,7 @@ const LoginSpinner = ({ step = 0 }) => (
     <circle cx="20" cy="20" r="18" stroke="rgba(255,255,255,0.15)" strokeWidth="3" />
     <g className="login-spinner__ring">
       {/* Dashed ring always visible from step 0 */}
-      <circle cx="20" cy="20" r="18" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeDasharray="5 3" />
+      <circle cx="20" cy="20" r="18" stroke="rgba(0,0,0,0.45)" strokeWidth="2" strokeDasharray="5 3" />
       {/* Solid arcs fill in per step */}
       {step >= 1 && <circle cx="20" cy="20" r="18" stroke="white" strokeWidth="3" strokeDasharray="28.27 84.82" strokeDashoffset="0"      strokeLinecap="butt" />}
       {step >= 2 && <circle cx="20" cy="20" r="18" stroke="white" strokeWidth="3" strokeDasharray="28.27 84.82" strokeDashoffset="-28.27"  strokeLinecap="butt" />}
