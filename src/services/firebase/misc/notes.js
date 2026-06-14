@@ -12,14 +12,24 @@ import {
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 
+const serializeTs = (ts) => ts?.toDate?.()?.toISOString() ?? null
+
 export const getNotes = async () => {
   const q = query(collection(db, COL_MISC_NOTES), orderBy('updatedAt', 'desc'))
   const snap = await firestoreCall(() => getDocs(q))
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return snap.docs.map((d) => {
+    const data = d.data()
+    return {
+      id: d.id,
+      ...data,
+      createdAt: serializeTs(data.createdAt),
+      updatedAt: serializeTs(data.updatedAt),
+    }
+  })
 }
 
 export const createNote = async ({ title, content, color }) => {
-  const now = new Date()
+  const now = new Date().toISOString()
   const ref = await firestoreCall(() =>
     addDoc(collection(db, COL_MISC_NOTES), {
       title,
