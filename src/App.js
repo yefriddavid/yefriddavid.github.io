@@ -66,8 +66,10 @@ const App = () => {
     }
   }, [])
 
-  // Background sync for accounting accounts and tasks
+  // Background sync for accounting accounts and tasks — only when authenticated
   useEffect(() => {
+    const token = authStorage.getToken()
+    if (!token) return
     dispatch(accountsMasterActions.fetchRequest())
     dispatch(taskActions.fetchRequest())
   }, [dispatch])
