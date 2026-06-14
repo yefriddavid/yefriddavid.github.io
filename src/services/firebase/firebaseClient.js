@@ -15,7 +15,7 @@
  */
 
 import { signOut } from 'firebase/auth'
-import { auth } from './settings'
+import { auth, authTaxi, authDomotica } from './settings'
 import { authStorage } from 'src/utils/storage'
 
 // ── Error normalization ────────────────────────────────────────────────────────
@@ -42,13 +42,12 @@ function normalizeError(err) {
 // ── Auth error handler ─────────────────────────────────────────────────────────
 
 async function handleAuthFailure() {
-  try {
-    await signOut(auth)
-  } catch {
-    // ignore signOut errors
-  }
+  await Promise.all([
+    signOut(auth).catch(() => {}),
+    signOut(authTaxi).catch(() => {}),
+    signOut(authDomotica).catch(() => {}),
+  ])
   authStorage.clearSession()
-  // Redirect to login — works with HashRouter
   window.location.hash = '#/login'
 }
 

@@ -23,7 +23,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from 'firebase/auth'
-import { auth } from 'src/services/firebase/settings'
+import { auth, authTaxi, authDomotica } from 'src/services/firebase/settings'
 import {
   getUserForAuth,
   hashPassword,
@@ -46,7 +46,7 @@ export const toAuthEmail = (username) => `${username.toLowerCase().trim()}@cashf
  *
  * @returns {{ username, name, role, landingPage, sessionId }}
  */
-export async function signIn(username, password) {
+export async function signIn(username, password, onStep) {
   const email = toAuthEmail(username)
   let firestoreUser = null
 
@@ -92,6 +92,27 @@ export async function signIn(username, password) {
       throw new Error(firebaseErr.message)
     }
   }
+  onStep?.(1)
+
+  // ── Sign in to taxi Firebase project ──────────────────────────────────────
+  try {
+    await signInWithEmailAndPassword(authTaxi, email, password)
+  } catch (err) {
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+      await createUserWithEmailAndPassword(authTaxi, email, password).catch(() => {})
+    }
+  }
+  onStep?.(2)
+
+  // ── Sign in to domotica Firebase project ───────────────────────────────────
+  try {
+    await signInWithEmailAndPassword(authDomotica, email, password)
+  } catch (err) {
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+      await createUserWithEmailAndPassword(authDomotica, email, password).catch(() => {})
+    }
+  }
+  onStep?.(3)
 
   // ── Fetch Firestore profile (always needed for role, name, etc.) ───────────
   if (!firestoreUser) {
@@ -107,6 +128,7 @@ export async function signIn(username, password) {
     : btoa(`${username}:${Date.now()}`)
 
   await createSession(sessionId, firestoreUser.username, token).catch(() => {})
+  onStep?.(4)
 
   return {
     username: firestoreUser.username,
@@ -122,7 +144,11 @@ export async function signIn(username, password) {
  * Signs out from Firebase Auth and clears local state.
  */
 export async function signOut() {
-  await firebaseSignOut(auth).catch(() => {})
+  await Promise.all([
+    firebaseSignOut(auth).catch(() => {}),
+    firebaseSignOut(authTaxi).catch(() => {}),
+    firebaseSignOut(authDomotica).catch(() => {}),
+  ])
   clearTenantId()
   authStorage.clearSession()
 }

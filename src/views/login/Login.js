@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { deleteCookie, getCookie, setCookie } from 'cookies-next'
 import { Link, useNavigate } from 'react-router-dom'
 import BrandName from '../../components/BrandName'
@@ -8,6 +9,7 @@ import { fetchProfile } from '../../actions/authActions'
 import { signIn } from '../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
 import { checkFirebaseConnectivity } from '../../services/firebase/healthCheck'
+import LoginSpinner from '../../components/shared/LoginSpinner'
 import { useForm } from 'react-hook-form'
 import './Login.scss'
 
@@ -110,28 +112,6 @@ const IconArrow = () => (
   </svg>
 )
 
-const Spinner = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-  >
-    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
-      <animateTransform
-        attributeName="transform"
-        type="rotate"
-        from="0 12 12"
-        to="360 12 12"
-        dur="0.8s"
-        repeatCount="indefinite"
-      />
-    </path>
-  </svg>
-)
 
 const fieldError = (err) =>
   err ? (
@@ -155,6 +135,7 @@ const Login = ({ captcha: requireCaptcha = true }) => {
   const dispatch = useDispatch()
 
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(0)
   const [error, setError] = useState(null)
   const [shake, setShake] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -196,13 +177,15 @@ const Login = ({ captcha: requireCaptcha = true }) => {
       }
       setCaptchaError(false)
     }
-    setLoading(true)
-    setError(null)
+    flushSync(() => {
+      setLoading(true)
+      setStep(0)
+      setError(null)
+    })
     try {
       const reachable = await checkFirebaseConnectivity()
       if (!reachable) {
         setLoading(false)
-        // setError('Firebase no disponible — verifica tu conexión e intenta de nuevo')
         setError('Applicacion no disponible — verifica tu conexión e intenta de nuevo')
         setShake(true)
         shakeTimerRef.current = setTimeout(() => setShake(false), 500)
@@ -213,7 +196,7 @@ const Login = ({ captcha: requireCaptcha = true }) => {
         landingPage,
         sessionId,
         token,
-      } = await signIn(username.trim(), password)
+      } = await signIn(username.trim(), password, (s) => setStep(s))
       authStorage.setSession({ token, username: uname, landingPage, sessionId })
       if (rememberMe) {
         setCookie('username', username)
@@ -226,6 +209,7 @@ const Login = ({ captcha: requireCaptcha = true }) => {
       navigate('/selectApp')
     } catch (e) {
       setLoading(false)
+      setStep(0)
       setError(e.message || 'Error de conexión')
       setShake(true)
       shakeTimerRef.current = setTimeout(() => setShake(false), 500)
@@ -369,7 +353,7 @@ const Login = ({ captcha: requireCaptcha = true }) => {
           </label>
 
           <button className="login-page__btn" onClick={handleSubmit(onSubmit)} disabled={loading}>
-            {loading ? <Spinner /> : <IconArrow />}
+            {loading ? <LoginSpinner step={step} /> : <IconArrow />}
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </div>

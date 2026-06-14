@@ -1,0 +1,9 @@
+@keyframes login-spinner-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.login-spinner__ring {
+  transform-origin: 20px 20px;
+  animation: login-spinner-spin 1.4s linear infinite;
+}

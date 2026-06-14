@@ -42,9 +42,11 @@ export const rtdb = getDatabase(app)
 
 const taxiApp = initializeApp(taxiConfig, 'taxi')
 export const dbTaxi = getFirestore(taxiApp)
+export const authTaxi = getAuth(taxiApp)
 
 const domoticaApp = initializeApp(domoticaConfig, 'domotica')
 export const dbDomotica = getFirestore(domoticaApp)
+export const authDomotica = getAuth(domoticaApp)
 export const rtdbDomotica = getDatabase(domoticaApp)
 
 // Exported for REST API calls
