@@ -105,7 +105,7 @@
     flex-shrink: 0;
 
     // Hidden on tablet and mobile — user opens the modal instead
-    @media (max-width: 991px) {
+    @media (max-width: 1199px) {
       display: none;
     }
   }
@@ -138,7 +138,7 @@
       border-color: var(--cui-primary);
     }
 
-    @media (max-width: 991px) {
+    @media (max-width: 1199px) {
       display: block;
     }
   }
