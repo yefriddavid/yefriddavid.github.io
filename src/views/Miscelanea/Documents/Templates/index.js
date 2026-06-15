@@ -7,7 +7,8 @@ import { generateHtmlToPdf } from 'src/views/Contratos/contratos/contractPdf'
 import { TEMPLATES } from '../templates'
 import './Templates.scss'
 
-const PREVIEW_SCALE = 0.40
+//const PREVIEW_SCALE = 0.40
+const PREVIEW_SCALE = 1
 const FRAME_W = 816
 const FRAME_H = 1140
 const SCALED_W = Math.round(FRAME_W * PREVIEW_SCALE)
@@ -84,6 +85,7 @@ const TemplateWorkspace = ({ template, onBack }) => {
       </div>
 
       <div className="doc-workspace__form">
+        <p className="doc-workspace__form-label">Formulario</p>
         <StandardForm
           title={template.name}
           subtitle={template.description}

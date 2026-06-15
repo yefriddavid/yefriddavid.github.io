@@ -106,6 +106,13 @@
     width: 100%;
   }
 }
+.doc-workspace__form-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cui-secondary-color);
+  margin-bottom: 8px;
+}
 
 .doc-workspace__field-row {
   display: flex;
