@@ -68,15 +68,6 @@
     }
   }
 
-  &__content {
-    flex: 1;
-    min-width: 0;
-
-    @media (max-width: 767px) {
-      width: 100%;
-    }
-  }
-
   &__hint {
     display: flex;
     align-items: center;
@@ -89,58 +80,84 @@
   }
 }
 
-// ── Workspace (form + desktop preview) ───────────────────────────────────────
+// ── Workspace columns (direct flex children of .doc-templates) ───────────────
 
-.doc-workspace {
+.doc-workspace__preview {
+  flex-shrink: 0;
+
+  @media (max-width: 1580px) {
+    display: none;
+  }
+}
+
+.doc-workspace__preview-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cui-secondary-color);
+  margin-bottom: 8px;
+}
+
+.doc-workspace__form {
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+}
+
+.doc-workspace__field-row {
   display: flex;
-  gap: 20px;
-  align-items: flex-start;
+  gap: 6px;
+  align-items: center;
 
-  &__form {
+  input {
     flex: 1;
     min-width: 0;
   }
+}
 
-  &__preview {
-    flex-shrink: 0;
+.doc-workspace__autofill-btn {
+  flex-shrink: 0;
+  padding: 0 10px;
+  height: 34px;
+  background: var(--cui-body-bg);
+  border: 1px solid var(--cui-border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--cui-primary);
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
 
-    // Hidden on tablet and mobile — user opens the modal instead
-    @media (max-width: 1199px) {
-      display: none;
-    }
+  &:hover {
+    background: rgba(var(--cui-primary-rgb), 0.08);
+    border-color: var(--cui-primary);
+  }
+}
+
+.doc-workspace__preview-toggle {
+  display: none;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--cui-border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--cui-primary);
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba(var(--cui-primary-rgb), 0.04);
+    border-color: var(--cui-primary);
   }
 
-  &__preview-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--cui-secondary-color);
-    margin-bottom: 8px;
-  }
-
-  // Button that opens the preview modal (visible only when preview column is hidden)
-  &__preview-toggle {
-    display: none;
-    width: 100%;
-    margin-bottom: 12px;
-    padding: 8px 12px;
-    background: transparent;
-    border: 1px solid var(--cui-border-color);
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--cui-primary);
-    text-align: center;
-    transition: background 0.15s, border-color 0.15s;
-
-    &:hover {
-      background: rgba(var(--cui-primary-rgb), 0.04);
-      border-color: var(--cui-primary);
-    }
-
-    @media (max-width: 1199px) {
-      display: block;
-    }
+  @media (max-width: 1580px) {
+    display: block;
   }
 }
 

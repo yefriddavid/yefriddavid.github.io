@@ -53,12 +53,22 @@ const buildHtml = (v = {}) => `<!DOCTYPE html>
   </tr></table>
 </div></body></html>`
 
+const MONTHS_ES = [
+  'enero','febrero','marzo','abril','mayo','junio',
+  'julio','agosto','septiembre','octubre','noviembre','diciembre',
+]
+
+const todayLabel = () => {
+  const d = new Date()
+  return `${d.getDate()} de ${MONTHS_ES[d.getMonth()]} de ${d.getFullYear()}`
+}
+
 export const cartaMandato = {
   id: 'carta-mandato',
   name: 'Carta Mandato',
   description: 'Contrato de Mandato para trámites ante el Organismo de Tránsito y Transporte',
   fields: [
-    { key: 'fecha', label: 'Fecha', placeholder: '6 de octubre de 2022' },
+    { key: 'fecha', label: 'Fecha', placeholder: '6 de octubre de 2022', autoFill: todayLabel },
     { key: 'ciudad', label: 'Ciudad', placeholder: 'Envigado' },
     { key: 'mandanteNombre', label: 'Nombre del Mandante', placeholder: 'Andrés Enrique Ramírez Mejía' },
     { key: 'mandanteCedula', label: 'Cédula del Mandante', placeholder: '71.377.779' },

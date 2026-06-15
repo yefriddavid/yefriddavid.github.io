@@ -7,11 +7,11 @@ import { generateHtmlToPdf } from 'src/views/Contratos/contratos/contractPdf'
 import { TEMPLATES } from '../templates'
 import './Templates.scss'
 
-const PREVIEW_SCALE = 0.60
+const PREVIEW_SCALE = 0.40
 const FRAME_W = 816
 const FRAME_H = 1140
 const SCALED_W = Math.round(FRAME_W * PREVIEW_SCALE)
-const SCALED_H = Math.round(FRAME_H * PREVIEW_SCALE)
+const SCALED_H = Math.min(Math.round(FRAME_H * PREVIEW_SCALE), 820)
 
 const fieldError = (err) =>
   err ? (
@@ -59,7 +59,7 @@ const TemplateWorkspace = ({ template, onBack }) => {
   const [generating, setGenerating] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewHtml, setPreviewHtml] = useState(() => template.buildHtml({}))
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({ defaultValues: {} })
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({ defaultValues: {} })
   const values = watch()
 
   useEffect(() => {
@@ -78,41 +78,50 @@ const TemplateWorkspace = ({ template, onBack }) => {
 
   return (
     <>
-      <div className="doc-workspace">
-        <div className="doc-workspace__preview">
-          <p className="doc-workspace__preview-label">Vista previa</p>
-          <LivePreview html={previewHtml} />
-        </div>
+      <div className="doc-workspace__preview">
+        <p className="doc-workspace__preview-label">Vista previa</p>
+        <LivePreview html={previewHtml} />
+      </div>
 
-        <div className="doc-workspace__form">
-          <StandardForm
-            title={template.name}
-            subtitle={template.description}
-            onCancel={onBack}
-            onSave={handleSubmit(onGenerate)}
-            saving={generating}
-            saveLabel="Descargar PDF"
-            cancelLabel="Volver"
+      <div className="doc-workspace__form">
+        <StandardForm
+          title={template.name}
+          subtitle={template.description}
+          onCancel={onBack}
+          onSave={handleSubmit(onGenerate)}
+          saving={generating}
+          saveLabel="Descargar PDF"
+          cancelLabel="Volver"
+        >
+          <button
+            type="button"
+            className="doc-workspace__preview-toggle"
+            onClick={() => setPreviewOpen(true)}
           >
-            <button
-              type="button"
-              className="doc-workspace__preview-toggle"
-              onClick={() => setPreviewOpen(true)}
-            >
-              Vista previa
-            </button>
-            {template.fields.map((field) => (
-              <StandardField key={field.key} label={field.label}>
+            Vista previa
+          </button>
+          {template.fields.map((field) => (
+            <StandardField key={field.key} label={field.label}>
+              <div className={field.autoFill ? 'doc-workspace__field-row' : undefined}>
                 <input
                   className={SF.input}
                   placeholder={field.placeholder || ''}
                   {...register(field.key)}
                 />
-                {fieldError(errors[field.key])}
-              </StandardField>
-            ))}
-          </StandardForm>
-        </div>
+                {field.autoFill && (
+                  <button
+                    type="button"
+                    className="doc-workspace__autofill-btn"
+                    onClick={() => setValue(field.key, field.autoFill())}
+                  >
+                    Hoy
+                  </button>
+                )}
+              </div>
+              {fieldError(errors[field.key])}
+            </StandardField>
+          ))}
+        </StandardForm>
       </div>
 
       {previewOpen && (
@@ -159,19 +168,17 @@ const Templates = () => {
         ))}
       </div>
 
-      <div className="doc-templates__content">
-        {selected ? (
-          <TemplateWorkspace
-            key={selected.id}
-            template={selected}
-            onBack={() => setSelected(null)}
-          />
-        ) : (
-          <div className="doc-templates__hint">
-            Selecciona una plantilla para generar el PDF
-          </div>
-        )}
-      </div>
+      {selected ? (
+        <TemplateWorkspace
+          key={selected.id}
+          template={selected}
+          onBack={() => setSelected(null)}
+        />
+      ) : (
+        <div className="doc-templates__hint">
+          Selecciona una plantilla para generar el PDF
+        </div>
+      )}
     </div>
   )
 }
