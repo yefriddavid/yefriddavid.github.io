@@ -1,0 +1,67 @@
+.doc-templates {
+  display: flex;
+  gap: 20px;
+  padding: 16px 4px;
+  align-items: flex-start;
+
+  &__list {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  &__list-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--cui-secondary-color);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  &__card {
+    border: 1px solid var(--cui-border-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover {
+      border-color: var(--cui-primary);
+      background: rgba(var(--cui-primary-rgb), 0.04);
+    }
+
+    &--active {
+      border-color: var(--cui-primary);
+      background: rgba(var(--cui-primary-rgb), 0.08);
+    }
+
+    &__name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    &__desc {
+      font-size: 11px;
+      color: var(--cui-secondary-color);
+      line-height: 1.4;
+    }
+  }
+
+  &__panel {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--cui-secondary-color);
+    font-size: 13px;
+    border: 1px dashed var(--cui-border-color);
+    border-radius: 8px;
+  }
+}
