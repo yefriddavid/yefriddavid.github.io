@@ -79,6 +79,11 @@ const TemplateWorkspace = ({ template, onBack }) => {
   return (
     <>
       <div className="doc-workspace">
+        <div className="doc-workspace__preview">
+          <p className="doc-workspace__preview-label">Vista previa</p>
+          <LivePreview html={previewHtml} />
+        </div>
+
         <div className="doc-workspace__form">
           <StandardForm
             title={template.name}
@@ -107,11 +112,6 @@ const TemplateWorkspace = ({ template, onBack }) => {
               </StandardField>
             ))}
           </StandardForm>
-        </div>
-
-        <div className="doc-workspace__preview">
-          <p className="doc-workspace__preview-label">Vista previa</p>
-          <LivePreview html={previewHtml} />
         </div>
       </div>
 
