@@ -168,6 +168,12 @@ const getNav = (t, role) => {
               to: '/finance/trade/calc-list',
               icon: <CIcon icon={cilList} customClassName="nav-icon" />,
             },
+            {
+              component: CNavItem,
+              name: 'Loan Calculator',
+              to: '/finance/tools/loan-calc',
+              icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
+            },
           ],
         },
       ],
