@@ -20,6 +20,7 @@ export const fetchAll = async () => {
     const data = d.data()
     return {
       id: d.id,
+      name: data.name ?? '',
       initialValue: data.initialValue ?? 0,
       finalValue: data.finalValue ?? 0,
       diff: data.diff ?? 0,
@@ -50,7 +51,11 @@ export const saveEntry = async (entry) => {
 export const updateEntry = async (entry) => {
   const { id, ...data } = entry
   await firestoreCall(() =>
-    setDoc(doc(collection(db, COL), id), { ...data, updatedAt: serverTimestamp() }, { merge: true }),
+    setDoc(
+      doc(collection(db, COL), id),
+      { ...data, updatedAt: serverTimestamp() },
+      { merge: true },
+    ),
   )
 }
 

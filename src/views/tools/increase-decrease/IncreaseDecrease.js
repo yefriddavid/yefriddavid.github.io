@@ -71,6 +71,7 @@ const IncreaseDecrease = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const DEFAULTS = { initialValue: 107500, finalValue: 111490, inversionValue: 500 }
+  const [name, setName] = useState('')
   const [initialValue, setInitialValue] = useState(DEFAULTS.initialValue)
   const [finalValue, setFinalValue] = useState(DEFAULTS.finalValue)
   const [inversionValue, setInversionValue] = useState(DEFAULTS.inversionValue)
@@ -88,6 +89,7 @@ const IncreaseDecrease = () => {
     const entry = entries.find((e) => e.id === editId)
     if (entry) {
       setEditingEntry(entry)
+      setName(entry.name ?? '')
       setInitialValue(entry.initialValue)
       setFinalValue(entry.finalValue)
       setInversionValue(entry.inversionValue)
@@ -107,6 +109,7 @@ const IncreaseDecrease = () => {
 
   const clearEdit = () => {
     setEditingEntry(null)
+    setName('')
     setInitialValue(DEFAULTS.initialValue)
     setFinalValue(DEFAULTS.finalValue)
     setInversionValue(DEFAULTS.inversionValue)
@@ -115,15 +118,16 @@ const IncreaseDecrease = () => {
 
   const handleSubmit = () => {
     if (editingEntry) {
-      dispatch(actions.updateRequest({ ...computed, id: editingEntry.id }))
+      dispatch(actions.updateRequest({ ...computed, name, id: editingEntry.id }))
       clearEdit()
     } else {
-      dispatch(actions.saveRequest(computed))
+      dispatch(actions.saveRequest({ ...computed, name }))
     }
   }
 
   const handleEditClick = (e) => {
     setEditingEntry(e)
+    setName(e.name ?? '')
     setInitialValue(e.initialValue)
     setFinalValue(e.finalValue)
     setInversionValue(e.inversionValue)
@@ -134,7 +138,7 @@ const IncreaseDecrease = () => {
 
   const handleClone = (e) => {
     const { id: _, createdAt: _c, updatedAt: _u, ...rest } = e
-    dispatch(actions.saveRequest(rest))
+    dispatch(actions.saveRequest({ ...rest, name: rest.name ? `${rest.name} (copy)` : '' }))
   }
 
   const handleDelete = (id) => {
@@ -156,6 +160,15 @@ const IncreaseDecrease = () => {
               )}
             </CCardHeader>
             <CCardBody className="d-flex flex-column gap-3">
+              <div>
+                <CFormLabel className="fw-medium mb-1">Name</CFormLabel>
+                <CFormInput
+                  type="text"
+                  placeholder="e.g. BTC short term"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
               <div>
                 <CFormLabel className="fw-medium mb-1">Initial Value</CFormLabel>
                 <CFormInput
@@ -208,7 +221,9 @@ const IncreaseDecrease = () => {
                       {isProfit ? 'Increase %' : 'Decrease %'}
                     </div>
                     <div className={`fs-5 fw-bold ${isProfit ? 'text-success' : 'text-danger'}`}>
-                      {formatPct(Math.abs(isProfit ? computed.increaseValue : computed.decreaseValue))}
+                      {formatPct(
+                        Math.abs(isProfit ? computed.increaseValue : computed.decreaseValue),
+                      )}
                     </div>
                   </div>
                 </CCol>
@@ -276,113 +291,123 @@ const IncreaseDecrease = () => {
                 <Spinner mode="section" />
               ) : (
                 <div style={{ paddingLeft: 12 }}>
-                <StandardList
-                  data={[...entries].sort((a, b) => a.initialValue - b.initialValue)}
-                  keyExpr="id"
-                  emptyText="No entries yet — fill in the values above and click Add to List."
-                  renderTitle={(e) => (
-                    <>
-                      <span className={SL.mono}>{e.initialValue?.toLocaleString()}</span>
-                      <span className={SL.muted}>{' → '}</span>
-                      <span className={SL.mono}>{e.finalValue?.toLocaleString()}</span>
-                      {'  '}
-                      <span
-                        style={{
-                          color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {formatToUSD(e.earnUSD)}
-                      </span>
-                    </>
-                  )}
-                  renderBadge={(e) =>
-                    e.earnUSD >= 0
-                      ? { label: 'Profit', variant: 'active' }
-                      : { label: 'Loss', variant: 'warning' }
-                  }
-                  renderRows={(e) => {
-                    const gain = e.earnUSD >= 0
-                    const color = gain ? '#2eb85c' : '#e55353'
-                    const pctLabel = gain ? '+' : '-'
-                    const pctVal = e.increaseValue != null ? e.increaseValue : e.decreaseValue
+                  <StandardList
+                    data={[...entries].sort((a, b) => a.initialValue - b.initialValue)}
+                    keyExpr="id"
+                    emptyText="No entries yet — fill in the values above and click Add to List."
+                    renderTitle={(e) => (
+                      <>
+                        {e.name && (
+                          <span style={{ fontWeight: 700 }}>
+                            {e.name}
+                            {'  '}
+                          </span>
+                        )}
+                        <span className={SL.mono}>{e.initialValue?.toLocaleString()}</span>
+                        <span className={SL.muted}>{' → '}</span>
+                        <span className={SL.mono}>{e.finalValue?.toLocaleString()}</span>
+                        {'  '}
+                        <span
+                          style={{
+                            color: e.earnUSD >= 0 ? '#2eb85c' : '#e55353',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {formatToUSD(e.earnUSD)}
+                        </span>
+                      </>
+                    )}
+                    renderBadge={(e) =>
+                      e.earnUSD >= 0
+                        ? { label: 'Profit', variant: 'active' }
+                        : { label: 'Loss', variant: 'warning' }
+                    }
+                    renderRows={(e) => {
+                      const gain = e.earnUSD >= 0
+                      const color = gain ? '#2eb85c' : '#e55353'
+                      const pctLabel = gain ? '+' : '-'
+                      const pctVal = e.increaseValue != null ? e.increaseValue : e.decreaseValue
 
-                    const liveEarn =
-                      btcLivePrice != null && e.initialValue > 0
-                        ? parseFloat(
-                            (((btcLivePrice - e.initialValue) / e.initialValue) * e.inversionValue).toFixed(2),
-                          )
-                        : null
-                    const liveGain = liveEarn != null && liveEarn >= 0
-                    const liveColor = liveEarn == null ? '#adb5bd' : liveGain ? '#2eb85c' : '#e55353'
+                      const liveEarn =
+                        btcLivePrice != null && e.initialValue > 0
+                          ? parseFloat(
+                              (
+                                ((btcLivePrice - e.initialValue) / e.initialValue) *
+                                e.inversionValue
+                              ).toFixed(2),
+                            )
+                          : null
+                      const liveGain = liveEarn != null && liveEarn >= 0
+                      const liveColor =
+                        liveEarn == null ? '#adb5bd' : liveGain ? '#2eb85c' : '#e55353'
 
-                    return [
-                      [
-                        <>
-                          <span className={SL.label}>Diff </span>
-                          <span style={{ color }}>{formatToCOP(e.diff)}</span>
-                        </>,
-                        <>
-                          <span className={SL.label}>{gain ? 'Increase ' : 'Decrease '}</span>
-                          <span style={{ color }}>
-                            {pctLabel}
-                            {formatPct(pctVal)}
-                          </span>
-                        </>,
-                      ],
-                      [
-                        <>
-                          <span className={SL.label}>Inv. {gain ? 'Profit ' : 'Loss '}</span>
-                          <span style={{ color }}>
-                            {formatPct(Math.abs(gain ? e.profit : e.loss))}
-                          </span>
-                        </>,
-                        <>
-                          <span className={SL.label}>Earn COP </span>
-                          <span style={{ color }}>{formatToCOP(e.earnCOP)}</span>
-                        </>,
-                      ],
-                      [
-                        <>
-                          <span className={SL.label}>Investment </span>
-                          <span className={SL.mono}>{formatToUSD(e.inversionValue)}</span>
-                        </>,
-                      ],
-                      [
-                        <>
-                          <span className={SL.label}>Target </span>
-                          <span style={{ color }}>{formatToUSD(e.earnUSD)}</span>
-                        </>,
-                        <>
-                          <span className={SL.label}>Real </span>
-                          <span style={{ color: liveColor, fontWeight: 700 }}>
-                            {liveEarn != null ? formatToUSD(liveEarn) : '—'}
-                          </span>
-                        </>,
-                      ],
-                    ]
-                  }}
-                  renderActions={(e) => [
-                    {
-                      icon: cilPencil,
-                      color: 'primary',
-                      title: 'Edit',
-                      onClick: () => handleEditClick(e),
-                    },
-                    {
-                      icon: cilCopy,
-                      color: 'info',
-                      title: 'Clone',
-                      onClick: () => handleClone(e),
-                    },
-                    {
-                      icon: cilTrash,
-                      color: 'danger',
-                      title: 'Delete',
-                      onClick: () => handleDelete(e.id),
-                    },
-                  ]}
-                />
+                      return [
+                        [
+                          <>
+                            <span className={SL.label}>Diff </span>
+                            <span style={{ color }}>{formatToCOP(e.diff)}</span>
+                          </>,
+                          <>
+                            <span className={SL.label}>{gain ? 'Increase ' : 'Decrease '}</span>
+                            <span style={{ color }}>
+                              {pctLabel}
+                              {formatPct(pctVal)}
+                            </span>
+                          </>,
+                        ],
+                        [
+                          <>
+                            <span className={SL.label}>Inv. {gain ? 'Profit ' : 'Loss '}</span>
+                            <span style={{ color }}>
+                              {formatPct(Math.abs(gain ? e.profit : e.loss))}
+                            </span>
+                          </>,
+                          <>
+                            <span className={SL.label}>Earn COP </span>
+                            <span style={{ color }}>{formatToCOP(e.earnCOP)}</span>
+                          </>,
+                        ],
+                        [
+                          <>
+                            <span className={SL.label}>Investment </span>
+                            <span className={SL.mono}>{formatToUSD(e.inversionValue)}</span>
+                          </>,
+                        ],
+                        [
+                          <>
+                            <span className={SL.label}>Target </span>
+                            <span style={{ color }}>{formatToUSD(e.earnUSD)}</span>
+                          </>,
+                          <>
+                            <span className={SL.label}>Real </span>
+                            <span style={{ color: liveColor, fontWeight: 700 }}>
+                              {liveEarn != null ? formatToUSD(liveEarn) : '—'}
+                            </span>
+                          </>,
+                        ],
+                      ]
+                    }}
+                    renderActions={(e) => [
+                      {
+                        icon: cilPencil,
+                        color: 'primary',
+                        title: 'Edit',
+                        onClick: () => handleEditClick(e),
+                      },
+                      {
+                        icon: cilCopy,
+                        color: 'info',
+                        title: 'Clone',
+                        onClick: () => handleClone(e),
+                      },
+                      {
+                        icon: cilTrash,
+                        color: 'danger',
+                        title: 'Delete',
+                        onClick: () => handleDelete(e.id),
+                      },
+                    ]}
+                  />
                 </div>
               )}
             </CCardBody>
