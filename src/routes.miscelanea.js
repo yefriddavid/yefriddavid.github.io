@@ -8,6 +8,7 @@ const TasksPage = React.lazy(() => import('./views/Tasks/TasksPage'))
 const Bastidor = React.lazy(() => import('./views/Miscelanea/Bastidor'))
 const Notes = React.lazy(() => import('./views/Miscelanea/Notes'))
 const DocumentTemplates = React.lazy(() => import('./views/Miscelanea/Documents/Templates'))
+const Programs = React.lazy(() => import('./views/Miscelanea/Programs'))
 // Paths are relative to the /miscelanea/* parent route (no /miscelanea prefix)
 const miscelaneaRoutes = [
   { path: '/tasks', element: TasksPage, landingPage: true },
@@ -18,6 +19,7 @@ const miscelaneaRoutes = [
   { path: '/scenes3d', element: Scenes3D, landingPage: true },
   { path: '/scenes3d/:id', element: Scenes3DEditor },
   { path: '/documents/templates', element: DocumentTemplates },
+  { path: '/programs', element: Programs },
 ]
 
 export default miscelaneaRoutes

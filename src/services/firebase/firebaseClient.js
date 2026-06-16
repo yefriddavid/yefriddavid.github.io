@@ -148,3 +148,6 @@ async function openProjectCall(operation, { retries = 1 } = {}) {
 
 export const domoticaCall = (op, opts) => openProjectCall(op, opts)
 export const taxiCall = (op, opts) => openProjectCall(op, opts)
+
+// For unauthenticated (public) pages — no token injection, no redirect on auth errors.
+export const publicCall = (op, opts) => openProjectCall(op, opts)

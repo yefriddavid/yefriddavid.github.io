@@ -10,10 +10,10 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore'
-import { firestoreCall } from '../firebaseClient'
+import { firestoreCall, publicCall } from '../firebaseClient'
 
 export const saveContactMessage = async ({ name, email, message }) => {
-  await firestoreCall(() =>
+  await publicCall(() =>
     addDoc(collection(db, COL_CONTACT_MESSAGES), {
       name,
       email,
