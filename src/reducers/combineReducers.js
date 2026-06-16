@@ -55,6 +55,7 @@ import financePictures from './finance/picturesReducer'
 import financePictureVersions from './finance/pictureVersionsReducer'
 import financeScenes3d from './finance/scenes3dReducer'
 import increaseDecrease from './finance/increaseDecreaseReducer'
+import loan from './finance/loanReducer'
 import task from './misc/taskReducer'
 import note from './misc/noteReducer'
 import taxiTrend from './taxi/taxiTrendReducer'
@@ -120,6 +121,7 @@ const combinedReducers = combineReducers({
   financePictureVersions,
   financeScenes3d,
   increaseDecrease,
+  loan,
   task,
   taxiTrend,
   appSettings,

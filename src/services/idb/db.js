@@ -49,6 +49,9 @@ export function openDB() {
       if (!db.objectStoreNames.contains(S.FINANCE_CALC_LIST)) {
         db.createObjectStore(S.FINANCE_CALC_LIST, { keyPath: 'id' })
       }
+      if (!db.objectStoreNames.contains(S.FINANCE_LOANS)) {
+        db.createObjectStore(S.FINANCE_LOANS, { keyPath: 'id' })
+      }
     }
 
     req.onsuccess = (e) => {

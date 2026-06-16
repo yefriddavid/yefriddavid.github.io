@@ -1,5 +1,5 @@
 export const IDB_NAME = 'my-admin-local'
-export const IDB_VERSION = 9
+export const IDB_VERSION = 10
 
 export const IDB_STORES = {
   // CashFlow module
@@ -14,6 +14,7 @@ export const IDB_STORES = {
   // Finance module
   FINANCE_GRID_TRADES: 'finance_grid_trades',
   FINANCE_CALC_LIST: 'finance_calc_list',
+  FINANCE_LOANS: 'finance_loans',
 
   // Misc
   MISC_TASKS: 'misc_tasks',

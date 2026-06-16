@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import * as a from '../../../../actions/finance/loanActions'
 import './LoanCalc.scss'
 
 const fmt = (n, dec = 2) =>
@@ -47,7 +49,12 @@ const METHODS = [
   { id: 'german', label: 'Capital fijo (alemán)' },
 ]
 
+const EMPTY_SAVE = { name: '', bank: '' }
+
 export default function LoanCalc() {
+  const dispatch = useDispatch()
+  const { records, saving } = useSelector((s) => s.loan)
+
   const [principal, setPrincipal] = useState('')
   const [rate, setRate] = useState('')
   const [rateMode, setRateMode] = useState('annual')
@@ -55,12 +62,24 @@ export default function LoanCalc() {
   const [method, setMethod] = useState('french')
   const [safetyFee, setSafetyFee] = useState('')
 
+  const [activeLoanId, setActiveLoanId] = useState(null)
+  const [showSaveForm, setShowSaveForm] = useState(false)
+  const [saveForm, setSaveForm] = useState(EMPTY_SAVE)
+  const nameInputRef = useRef(null)
+
+  useEffect(() => {
+    dispatch(a.loadRequest())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (showSaveForm) nameInputRef.current?.focus()
+  }, [showSaveForm])
+
   const p = parseFloat(principal)
   const rInput = parseFloat(rate)
   const n = parseInt(periods, 10)
   const monthlyRate = rateMode === 'annual' ? rInput / 100 / 12 : rInput / 100
   const fee = parseFloat(safetyFee) || 0
-
   const valid = p > 0 && rInput >= 0 && n > 0 && n <= 600 && isFinite(monthlyRate)
 
   const schedule = useMemo(() => {
@@ -90,10 +109,167 @@ export default function LoanCalc() {
     return years
   }, [schedule, fee])
 
+  const currentValues = () => ({
+    principal: parseFloat(principal) || 0,
+    rate: parseFloat(rate) || 0,
+    rateMode,
+    periods: parseInt(periods, 10) || 0,
+    method,
+    safetyFee: parseFloat(safetyFee) || 0,
+  })
+
+  const loadLoan = (loan) => {
+    setPrincipal(String(loan.principal))
+    setRate(String(loan.rate))
+    setRateMode(loan.rateMode)
+    setPeriods(String(loan.periods))
+    setMethod(loan.method)
+    setSafetyFee(loan.safetyFee ? String(loan.safetyFee) : '')
+    setActiveLoanId(loan.id)
+    setShowSaveForm(false)
+  }
+
+  const handleSaveNew = () => {
+    if (!saveForm.name.trim()) return
+    dispatch(
+      a.saveRequest({
+        ...currentValues(),
+        name: saveForm.name.trim(),
+        bank: saveForm.bank.trim(),
+      }),
+    )
+    setSaveForm(EMPTY_SAVE)
+    setShowSaveForm(false)
+    // we'll set activeLoanId when saveSuccess arrives — but we don't have it yet.
+    // The reducer puts the new record first in the list, so after dispatch we track via records.
+  }
+
+  const handleUpdate = () => {
+    const active = records.find((r) => r.id === activeLoanId)
+    if (!active) return
+    dispatch(a.saveRequest({ ...active, ...currentValues() }))
+  }
+
+  const handleDelete = (id) => {
+    dispatch(a.deleteRequest(id))
+    if (activeLoanId === id) setActiveLoanId(null)
+  }
+
+  const handleCancelSave = () => {
+    setShowSaveForm(false)
+    setSaveForm(EMPTY_SAVE)
+  }
+
+  const activeLoan = records.find((r) => r.id === activeLoanId)
+
   return (
     <div className="loan-calc">
       <h5 className="loan-calc__title">Calculadora de Préstamo</h5>
 
+      {/* ── Saved loans panel ── */}
+      <div className="loan-calc__saved">
+        <div className="loan-calc__saved-header">
+          <span className="loan-calc__saved-label">Préstamos guardados</span>
+          <button
+            type="button"
+            className="loan-calc__saved-add"
+            onClick={() => {
+              setShowSaveForm((v) => !v)
+              setSaveForm(EMPTY_SAVE)
+            }}
+            title="Guardar como nuevo"
+          >
+            + Nuevo
+          </button>
+        </div>
+
+        {showSaveForm && (
+          <div className="loan-calc__save-form">
+            <input
+              ref={nameInputRef}
+              className="loan-calc__save-input"
+              placeholder="Nombre del préstamo"
+              value={saveForm.name}
+              onChange={(e) => setSaveForm((f) => ({ ...f, name: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveNew()
+              }}
+            />
+            <input
+              className="loan-calc__save-input"
+              placeholder="Banco"
+              value={saveForm.bank}
+              onChange={(e) => setSaveForm((f) => ({ ...f, bank: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveNew()
+              }}
+            />
+            <button
+              type="button"
+              className="loan-calc__save-btn loan-calc__save-btn--confirm"
+              onClick={handleSaveNew}
+              disabled={!saveForm.name.trim() || saving}
+            >
+              {saving ? '…' : 'Guardar'}
+            </button>
+            <button type="button" className="loan-calc__save-btn" onClick={handleCancelSave}>
+              Cancelar
+            </button>
+          </div>
+        )}
+
+        {records.length > 0 && (
+          <div className="loan-calc__saved-list">
+            {records.map((loan) => (
+              <div
+                key={loan.id}
+                className={`loan-calc__saved-item${activeLoanId === loan.id ? ' loan-calc__saved-item--active' : ''}`}
+              >
+                <button
+                  type="button"
+                  className="loan-calc__saved-load"
+                  onClick={() => loadLoan(loan)}
+                >
+                  <span className="loan-calc__saved-name">{loan.name}</span>
+                  {loan.bank && <span className="loan-calc__saved-bank">{loan.bank}</span>}
+                </button>
+                {activeLoanId === loan.id && (
+                  <button
+                    type="button"
+                    className="loan-calc__saved-action loan-calc__saved-action--update"
+                    onClick={handleUpdate}
+                    disabled={saving}
+                    title="Actualizar con valores actuales"
+                  >
+                    {saving ? '…' : 'Actualizar'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="loan-calc__saved-action loan-calc__saved-action--delete"
+                  onClick={() => handleDelete(loan.id)}
+                  title="Eliminar"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {records.length === 0 && !showSaveForm && (
+          <p className="loan-calc__saved-empty">Sin préstamos guardados.</p>
+        )}
+      </div>
+
+      {activeLoan && (
+        <div className="loan-calc__active-badge">
+          Editando: <strong>{activeLoan.name}</strong>
+          {activeLoan.bank && <> — {activeLoan.bank}</>}
+        </div>
+      )}
+
+      {/* ── Calculator form ── */}
       <div className="loan-calc__form">
         <div className="loan-calc__field">
           <label className="loan-calc__label">Capital prestado</label>
@@ -207,7 +383,9 @@ export default function LoanCalc() {
               <span className="loan-calc__stat-label">
                 {fee > 0 ? 'Total a pagar (con seguro)' : 'Total a pagar'}
               </span>
-              <span className="loan-calc__stat-value">{fmt(fee > 0 ? totalWithFees : totalPaid)}</span>
+              <span className="loan-calc__stat-value">
+                {fmt(fee > 0 ? totalWithFees : totalPaid)}
+              </span>
             </div>
             <div className="loan-calc__stat">
               <span className="loan-calc__stat-label">Tasa mensual efectiva</span>
@@ -234,9 +412,7 @@ export default function LoanCalc() {
                 Capital {fmt(100 - interestPct, 1)}%
               </span>
               <span className="loan-calc__bar-dot loan-calc__bar-dot--interest" />
-              <span className="loan-calc__bar-legend-text">
-                Intereses {fmt(interestPct, 1)}%
-              </span>
+              <span className="loan-calc__bar-legend-text">Intereses {fmt(interestPct, 1)}%</span>
             </div>
           </div>
 
@@ -259,7 +435,9 @@ export default function LoanCalc() {
                       <td className="loan-calc__td--n">{yr.year}</td>
                       <td className="loan-calc__td--interest">{fmt(yr.interest)}</td>
                       {fee > 0 && <td className="loan-calc__td--warning">{fmt(yr.fees)}</td>}
-                      {fee > 0 && <td className="loan-calc__td--interest">{fmt(yr.interest + yr.fees)}</td>}
+                      {fee > 0 && (
+                        <td className="loan-calc__td--interest">{fmt(yr.interest + yr.fees)}</td>
+                      )}
                       <td className="loan-calc__td--n">{yr.months}</td>
                     </tr>
                   ))}

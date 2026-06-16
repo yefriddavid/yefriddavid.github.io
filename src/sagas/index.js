@@ -53,6 +53,7 @@ import sagaFinancePictures from './finance/picturesSagas'
 import sagaFinancePictureVersions from './finance/pictureVersionsSagas'
 import sagaFinanceScenes3d from './finance/scenes3dSagas'
 import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
+import sagaLoans from './finance/loanSagas'
 import sagaTasks from './misc/taskSagas'
 import sagaNotes from './misc/noteSagas'
 import sagaTaxiTrend from './taxi/taxiTrendSagas'
@@ -116,6 +117,7 @@ export default function* rootSagas() {
     sagaFinancePictureVersions(),
     sagaFinanceScenes3d(),
     sagaIncreaseDecrease(),
+    sagaLoans(),
     sagaTasks(),
     sagaNotes(),
     sagaTaxiTrend(),
