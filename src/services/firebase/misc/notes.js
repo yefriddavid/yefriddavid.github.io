@@ -8,14 +8,20 @@ import {
   doc,
   query,
   orderBy,
+  where,
   serverTimestamp,
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
+import { getTenantId } from 'src/services/tenantContext'
 
 const serializeTs = (ts) => ts?.toDate?.()?.toISOString() ?? null
 
 export const getNotes = async () => {
-  const q = query(collection(db, COL_MISC_NOTES), orderBy('updatedAt', 'desc'))
+  const q = query(
+    collection(db, COL_MISC_NOTES),
+    where('tenantId', '==', getTenantId()),
+    orderBy('updatedAt', 'desc'),
+  )
   const snap = await firestoreCall(() => getDocs(q))
   return snap.docs.map((d) => {
     const data = d.data()
@@ -35,6 +41,7 @@ export const createNote = async ({ title, content, color }) => {
       title,
       content,
       color,
+      tenantId: getTenantId(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }),

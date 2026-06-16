@@ -37,6 +37,16 @@ const SystemContent = () => {
     )
   }
 
+  if (authStorage.getRole() !== 'superAdmin') {
+    return (
+      <CContainer className="px-2" fluid>
+        <Routes>
+          <Route path="/*" element={<Navigate to="/404" replace />} />
+        </Routes>
+      </CContainer>
+    )
+  }
+
   return (
     <CContainer className="px-2" fluid>
       <Suspense fallback={<Spinner mode="section" />}>

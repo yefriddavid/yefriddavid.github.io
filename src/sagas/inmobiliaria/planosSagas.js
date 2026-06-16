@@ -49,6 +49,21 @@ function* updatePlano({ payload: { id, data } }) {
   }
 }
 
+function* clonePlano({ payload }) {
+  try {
+    yield put(actions.beginRequestClone())
+    const original = yield call(service.getPlano, payload.id)
+    const { id: _id, createdAt: _c, updatedAt: _u, ...data } = original
+    const clonedData = { ...data, name: `${data.name} (copia)` }
+    const newId = yield call(service.addPlano, clonedData)
+    yield put(actions.successRequestClone({ id: newId, ...clonedData }))
+    yield put(notify({ type: 'success', message: 'Plano clonado correctamente.' }))
+  } catch (e) {
+    yield put(actions.errorRequestClone(e.message))
+    yield put(notify({ type: 'error', message: `Error: ${e.message}` }))
+  }
+}
+
 function* deletePlano({ payload }) {
   try {
     yield put(actions.beginRequestDelete())
@@ -67,6 +82,7 @@ export default function* rootSagas() {
     takeLatest(actions.loadRequest, loadPlano),
     takeLatest(actions.createRequest, createPlano),
     takeLatest(actions.updateRequest, updatePlano),
+    takeLatest(actions.cloneRequest, clonePlano),
     takeLatest(actions.deleteRequest, deletePlano),
   ])
 }

@@ -26,3 +26,8 @@ export const successRequestDelete = createAction('success delete inmobiliaria pl
 export const errorRequestDelete = createAction('error delete inmobiliaria plano')
 
 export const clearPlano = createAction('clear inmobiliaria plano')
+
+export const cloneRequest = createAction('clone inmobiliaria plano')
+export const beginRequestClone = createAction('begin clone inmobiliaria plano')
+export const successRequestClone = createAction('success clone inmobiliaria plano')
+export const errorRequestClone = createAction('error clone inmobiliaria plano')

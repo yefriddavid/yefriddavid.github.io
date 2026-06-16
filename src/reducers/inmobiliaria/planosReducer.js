@@ -86,6 +86,20 @@ const planosSlice = createSlice({
         state.error = payload
         state.saving = false
       })
+
+      .addCase(actions.beginRequestClone, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.successRequestClone, (state, { payload }) => {
+        state.list = state.list
+          ? [...state.list, payload].sort((a, b) => a.name.localeCompare(b.name))
+          : [payload]
+        state.saving = false
+      })
+      .addCase(actions.errorRequestClone, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+      })
   },
 })
 

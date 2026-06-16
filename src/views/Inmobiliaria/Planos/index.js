@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilPencil, cilTrash } from '@coreui/icons'
+import { cilPlus, cilPencil, cilTrash, cilCopy } from '@coreui/icons'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { Column, Paging, FilterRow } from 'devextreme-react/data-grid'
 import Spinner from 'src/components/shared/Spinner'
@@ -18,6 +18,10 @@ const Planos = () => {
   useEffect(() => {
     dispatch(actions.fetchRequest())
   }, [dispatch])
+
+  const handleClone = (row) => {
+    dispatch(actions.cloneRequest({ id: row.id }))
+  }
 
   const handleDelete = (row) => {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {
@@ -60,7 +64,7 @@ const Planos = () => {
           <Column dataField="updatedAt" caption="Última edición" dataType="date" width={160} />
           <Column
             caption="Acciones"
-            width={100}
+            width={130}
             cellRender={({ data }) => (
               <div style={{ display: 'flex', gap: 4 }}>
                 <CButton
@@ -71,6 +75,15 @@ const Planos = () => {
                   onClick={() => navigate(`/inmobiliaria/planos/${data.id}`)}
                 >
                   <CIcon icon={cilPencil} />
+                </CButton>
+                <CButton
+                  size="sm"
+                  color="info"
+                  variant="ghost"
+                  title="Clonar"
+                  onClick={() => handleClone(data)}
+                >
+                  <CIcon icon={cilCopy} />
                 </CButton>
                 <CButton
                   size="sm"

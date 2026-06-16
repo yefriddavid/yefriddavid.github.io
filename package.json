@@ -42,7 +42,8 @@
     "cy:parallel": "cypress-parallel -s cy:run:raw -t 2 -d cypress/e2e",
     "cy:run:parallel": "start-server-and-test serve:test 3005 \"npm run cy:parallel\"",
     "cli:build": "node cli/build.mjs",
-    "cli": "node cli/dist/index.js"
+    "cli": "node cli/dist/index.js",
+    "sync:users": "node scripts/gas-sync-firebase-auth.js"
   },
   "dependencies": {
     "@coreui/chartjs": "^4.0.0",
