@@ -116,6 +116,18 @@
     &--danger {
       color: var(--cui-danger);
     }
+
+    &--warning {
+      color: var(--cui-warning);
+    }
+  }
+
+  &__stat-hint {
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: var(--cui-secondary-color);
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   &__bar-wrap {
@@ -241,7 +253,36 @@
     color: var(--cui-danger);
   }
 
+  &__td--warning {
+    color: var(--cui-warning);
+  }
+
+  &__td--bold {
+    font-weight: 700;
+  }
+
   &__td--balance {
     font-weight: 600;
+  }
+
+  &__yearly {
+    margin-bottom: 1.5rem;
+  }
+
+  &__yearly-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cui-secondary-color);
+    margin: 0 0 0.5rem;
+  }
+
+  &__table--yearly {
+    max-width: 520px;
+
+    td, th {
+      text-align: right;
+    }
   }
 }

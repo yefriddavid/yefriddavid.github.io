@@ -53,11 +53,13 @@ export default function LoanCalc() {
   const [rateMode, setRateMode] = useState('annual')
   const [periods, setPeriods] = useState('')
   const [method, setMethod] = useState('french')
+  const [safetyFee, setSafetyFee] = useState('')
 
   const p = parseFloat(principal)
   const rInput = parseFloat(rate)
   const n = parseInt(periods, 10)
   const monthlyRate = rateMode === 'annual' ? rInput / 100 / 12 : rInput / 100
+  const fee = parseFloat(safetyFee) || 0
 
   const valid = p > 0 && rInput >= 0 && n > 0 && n <= 600 && isFinite(monthlyRate)
 
@@ -68,8 +70,25 @@ export default function LoanCalc() {
 
   const totalPaid = schedule.reduce((s, r) => s + r.payment, 0)
   const totalInterest = schedule.reduce((s, r) => s + r.interest, 0)
-  const interestPct = totalPaid > 0 ? (totalInterest / totalPaid) * 100 : 0
-  const firstPayment = schedule[0]?.payment ?? null
+  const totalFees = fee * schedule.length
+  const totalWithFees = totalPaid + totalFees
+  const interestPct = totalWithFees > 0 ? ((totalInterest + totalFees) / totalWithFees) * 100 : 0
+  const firstPayment = schedule[0] ? schedule[0].payment + fee : null
+
+  const yearlyInterest = useMemo(() => {
+    if (schedule.length <= 12) return []
+    const years = []
+    for (let i = 0; i < schedule.length; i += 12) {
+      const chunk = schedule.slice(i, i + 12)
+      years.push({
+        year: Math.floor(i / 12) + 1,
+        interest: chunk.reduce((s, r) => s + r.interest, 0),
+        fees: fee * chunk.length,
+        months: chunk.length,
+      })
+    }
+    return years
+  }, [schedule, fee])
 
   return (
     <div className="loan-calc">
@@ -144,6 +163,18 @@ export default function LoanCalc() {
             ))}
           </select>
         </div>
+
+        <div className="loan-calc__field">
+          <label className="loan-calc__label">Seguro mensual del banco</label>
+          <input
+            className="loan-calc__input"
+            type="number"
+            placeholder="0"
+            min="0"
+            value={safetyFee}
+            onChange={(e) => setSafetyFee(e.target.value)}
+          />
+        </div>
       </div>
 
       {valid && (
@@ -152,6 +183,7 @@ export default function LoanCalc() {
             <div className="loan-calc__stat">
               <span className="loan-calc__stat-label">
                 {method === 'french' ? 'Cuota fija / mes' : 'Primera cuota'}
+                {fee > 0 && <span className="loan-calc__stat-hint"> (con seguro)</span>}
               </span>
               <span className="loan-calc__stat-value loan-calc__stat-value--primary">
                 {fmt(firstPayment)}
@@ -163,9 +195,19 @@ export default function LoanCalc() {
                 {fmt(totalInterest)}
               </span>
             </div>
+            {fee > 0 && (
+              <div className="loan-calc__stat">
+                <span className="loan-calc__stat-label">Total seguros</span>
+                <span className="loan-calc__stat-value loan-calc__stat-value--warning">
+                  {fmt(totalFees)}
+                </span>
+              </div>
+            )}
             <div className="loan-calc__stat">
-              <span className="loan-calc__stat-label">Total a pagar</span>
-              <span className="loan-calc__stat-value">{fmt(totalPaid)}</span>
+              <span className="loan-calc__stat-label">
+                {fee > 0 ? 'Total a pagar (con seguro)' : 'Total a pagar'}
+              </span>
+              <span className="loan-calc__stat-value">{fmt(fee > 0 ? totalWithFees : totalPaid)}</span>
             </div>
             <div className="loan-calc__stat">
               <span className="loan-calc__stat-label">Tasa mensual efectiva</span>
@@ -198,12 +240,42 @@ export default function LoanCalc() {
             </div>
           </div>
 
+          {yearlyInterest.length > 0 && (
+            <div className="loan-calc__yearly">
+              <h6 className="loan-calc__yearly-title">Intereses por año</h6>
+              <table className="loan-calc__table loan-calc__table--yearly">
+                <thead>
+                  <tr>
+                    <th className="loan-calc__th--n">Año</th>
+                    <th>Intereses</th>
+                    {fee > 0 && <th>Seguros</th>}
+                    {fee > 0 && <th>Total costo</th>}
+                    <th>Meses</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearlyInterest.map((yr) => (
+                    <tr key={yr.year}>
+                      <td className="loan-calc__td--n">{yr.year}</td>
+                      <td className="loan-calc__td--interest">{fmt(yr.interest)}</td>
+                      {fee > 0 && <td className="loan-calc__td--warning">{fmt(yr.fees)}</td>}
+                      {fee > 0 && <td className="loan-calc__td--interest">{fmt(yr.interest + yr.fees)}</td>}
+                      <td className="loan-calc__td--n">{yr.months}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           <div className="loan-calc__table-wrap">
             <table className="loan-calc__table">
               <thead>
                 <tr>
                   <th className="loan-calc__th--n">#</th>
                   <th>Cuota</th>
+                  {fee > 0 && <th>Seguro</th>}
+                  {fee > 0 && <th>Total</th>}
                   <th>Capital</th>
                   <th>Interés</th>
                   <th>Saldo</th>
@@ -214,6 +286,8 @@ export default function LoanCalc() {
                   <tr key={row.num}>
                     <td className="loan-calc__td--n">{row.num}</td>
                     <td>{fmt(row.payment)}</td>
+                    {fee > 0 && <td className="loan-calc__td--warning">{fmt(fee)}</td>}
+                    {fee > 0 && <td className="loan-calc__td--bold">{fmt(row.payment + fee)}</td>}
                     <td>{fmt(row.cap)}</td>
                     <td className="loan-calc__td--interest">{fmt(row.interest)}</td>
                     <td className="loan-calc__td--balance">{fmt(row.balance)}</td>
