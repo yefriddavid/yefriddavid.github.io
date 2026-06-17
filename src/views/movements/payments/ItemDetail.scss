@@ -233,6 +233,16 @@
     flex: 1;
   }
 
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
   &__field {
     display: flex;
     flex-direction: column;
@@ -318,6 +328,14 @@
       color: #fff;
       box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
     }
+  }
+}
+
+.form-panel {
+  max-width: 50%;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
   }
 }
 

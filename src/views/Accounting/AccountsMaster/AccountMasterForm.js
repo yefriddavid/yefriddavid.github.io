@@ -120,7 +120,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         />
       </StandardField>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Tipo">
           <select className={SF.select} {...register('type')}>
             {ACCOUNT_MASTER_TYPES.map((o) => (
@@ -149,7 +149,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </StandardField>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Naturaleza">
           <input
             className={SF.readonly}
@@ -170,7 +170,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </StandardField>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Clasificación">
           <select className={SF.select} {...register('classification')}>
             {CLASSIFICATION_OPTIONS.map((o) => (
@@ -192,7 +192,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </StandardField>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Día máximo de pago">
           <input className={SF.input} type="number" min={1} max={31} {...register('maxDatePay')} />
         </StandardField>
@@ -207,7 +207,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </StandardField>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Banco">
           <select className={SF.select} {...register('bankName')}>
             <option value="">Sin banco</option>
@@ -230,7 +230,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         </StandardField>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <div className="payment-form__row">
         <StandardField label="Número de cuenta">
           <input
             className={SF.input}

@@ -11,7 +11,7 @@
   }
 
   &__item {
-    padding: 10px 2px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--cui-border-color);
 
     &:last-child  { border-bottom: none; }
@@ -86,8 +86,8 @@
     gap: 10px;
     font-size: 11px;
     color: var(--cui-secondary-color);
-    white-space: nowrap;
     flex-wrap: wrap;
+    word-break: break-word;
   }
 
   &__pagination {

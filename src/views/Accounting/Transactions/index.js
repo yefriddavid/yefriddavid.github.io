@@ -234,7 +234,7 @@ export default function Transactions() {
         </CCardHeader>
         <CCardBody>
           <CCollapse visible={showForm}>
-            <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
+            <div className="p-3 border-bottom form-panel">
               <TransactionForm
                 key={showForm ? JSON.stringify(formInitial) : 'hidden'}
                 initial={formInitial}

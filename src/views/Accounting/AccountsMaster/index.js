@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Column, MasterDetail } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import { CButton, CCard, CCardBody, CCardHeader, CCollapse } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX } from '@coreui/icons'
+import { cilPlus, cilX, cilPencil, cilTrash, cilCopy } from '@coreui/icons'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import {
   ACCOUNT_MASTER_TYPES,
@@ -16,6 +17,7 @@ import {
 import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSeed'
 import AccountMasterForm from './AccountMasterForm'
 import { push as pushNotification } from 'src/reducers/notificationsSlice'
+import useIsMobile from 'src/hooks/useIsMobile'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -26,7 +28,9 @@ export default function AccountsMaster() {
     (s) => s.accountsMaster,
   )
   const gridRef = useRef(null)
+  const isMobile = useIsMobile()
   const [showForm, setShowForm] = useState(false)
+  const [editingRow, setEditingRow] = useState(null)
   const [typeFilter, setTypeFilter] = useState('all')
   const [activeFilter, setActiveFilter] = useState('active')
   const [nameSearch, setNameSearch] = useState('')
@@ -206,7 +210,10 @@ export default function AccountsMaster() {
               size="sm"
               color="secondary"
               variant="outline"
-              onClick={() => setShowForm(false)}
+              onClick={() => {
+                setShowForm(false)
+                setEditingRow(null)
+              }}
             >
               <CIcon icon={cilX} /> Cancelar
             </CButton>
@@ -216,6 +223,7 @@ export default function AccountsMaster() {
               color="primary"
               onClick={() => {
                 setShowForm(true)
+                setEditingRow(null)
                 gridRef.current?.instance.collapseAll(-1)
               }}
             >
@@ -226,12 +234,24 @@ export default function AccountsMaster() {
       </CCardHeader>
       <CCardBody style={{ padding: 0 }}>
         <CCollapse visible={showForm}>
-          <div className="p-3 border-bottom" style={{ maxWidth: '50%' }}>
+          <div className="p-3 border-bottom form-panel">
             <AccountMasterForm
-              initial={undefined}
+              key={editingRow?.id ?? 'create'}
+              initial={editingRow ?? undefined}
               saving={saving}
-              onSave={handleCreate}
-              onCancel={() => setShowForm(false)}
+              onSave={
+                editingRow
+                  ? (p) => {
+                      handleUpdate({ ...editingRow, ...p })
+                      setShowForm(false)
+                      setEditingRow(null)
+                    }
+                  : handleCreate
+              }
+              onCancel={() => {
+                setShowForm(false)
+                setEditingRow(null)
+              }}
             />
           </div>
         </CCollapse>
@@ -240,6 +260,79 @@ export default function AccountsMaster() {
           <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
             <Spinner color="primary" />
           </div>
+        ) : isMobile ? (
+          <StandardList
+            data={filtered}
+            keyExpr="id"
+            emptyText="Sin cuentas maestras registradas."
+            inactive={(r) => r.active === false}
+            renderTitle={(r) => (
+              <>
+                {r.important && <span style={{ color: '#e03131', marginRight: 4 }}>★</span>}
+                {r.code && (
+                  <span className={SL.mono} style={{ marginRight: 6 }}>
+                    {r.code}
+                  </span>
+                )}
+                {r.name}
+              </>
+            )}
+            renderBadge={(r) => ({
+              label: r.active ? 'Activo' : 'Inactivo',
+              variant: r.active ? 'active' : 'inactive',
+              onClick: () => {
+                dispatch(accountsMasterActions.updateRequest({ ...r, active: !r.active }))
+                dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
+              },
+            })}
+            renderRows={(r) => [
+              [
+                r.accountingName && <span className={SL.muted}>{r.accountingName}</span>,
+                ACCOUNT_MASTER_TYPE_LABELS[r.type] ?? r.type,
+              ],
+              [
+                r.defaultValue
+                  ? new Intl.NumberFormat('es-CO', {
+                      style: 'currency',
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                    }).format(r.defaultValue)
+                  : null,
+                r.period && <span className={SL.label}>{r.period}</span>,
+                r.paymentMethod,
+              ],
+              [r.notes && <span className={SL.muted}>{r.notes}</span>],
+              [
+                r.bankAccountNumber && <span className={SL.mono}>{r.bankAccountNumber}</span>,
+                r.bankAccountNumber && (
+                  <button
+                    type="button"
+                    className="sl__action-btn sl__action-btn--primary"
+                    onClick={() => navigator.clipboard.writeText(r.bankAccountNumber)}
+                  >
+                    <CIcon icon={cilCopy} size="sm" />
+                  </button>
+                ),
+              ],
+            ]}
+            renderActions={(r) => [
+              {
+                icon: cilPencil,
+                color: 'primary',
+                title: 'Editar',
+                onClick: () => {
+                  setEditingRow(r)
+                  setShowForm(true)
+                },
+              },
+              {
+                icon: cilTrash,
+                color: 'danger',
+                title: 'Eliminar',
+                onClick: () => handleDelete(r),
+              },
+            ]}
+          />
         ) : (
           <StandardGrid
             ref={gridRef}
