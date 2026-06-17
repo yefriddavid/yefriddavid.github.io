@@ -102,27 +102,31 @@ const TemplateWorkspace = ({ template, onBack }) => {
           >
             Vista previa
           </button>
-          {template.fields.map((field) => (
-            <StandardField key={field.key} label={field.label}>
-              <div className={field.autoFill ? 'doc-workspace__field-row' : undefined}>
-                <input
-                  className={SF.input}
-                  placeholder={field.placeholder || ''}
-                  {...register(field.key)}
-                />
-                {field.autoFill && (
-                  <button
-                    type="button"
-                    className="doc-workspace__autofill-btn"
-                    onClick={() => setValue(field.key, field.autoFill())}
-                  >
-                    Hoy
-                  </button>
-                )}
-              </div>
-              {fieldError(errors[field.key])}
-            </StandardField>
-          ))}
+          {template.fields.map((field) => {
+            const fill = field.autoFill || (field.placeholder ? () => field.placeholder : null)
+            return (
+              <StandardField key={field.key} label={field.label}>
+                <div className={fill ? 'doc-workspace__field-row' : undefined}>
+                  <input
+                    className={SF.input}
+                    placeholder={field.placeholder || ''}
+                    {...register(field.key)}
+                  />
+                  {fill && (
+                    <button
+                      type="button"
+                      className="doc-workspace__autofill-btn"
+                      title="Autocompletar"
+                      onClick={() => setValue(field.key, fill())}
+                    >
+                      {field.autoFill ? 'Hoy' : '↺'}
+                    </button>
+                  )}
+                </div>
+                {fieldError(errors[field.key])}
+              </StandardField>
+            )
+          })}
         </StandardForm>
       </div>
 
