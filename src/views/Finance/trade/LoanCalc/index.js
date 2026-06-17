@@ -379,6 +379,14 @@ export default function LoanCalc() {
                 </span>
               </div>
             )}
+            {fee > 0 && (
+              <div className="loan-calc__stat">
+                <span className="loan-calc__stat-label">Interés + seguro</span>
+                <span className="loan-calc__stat-value loan-calc__stat-value--danger">
+                  {fmt(totalInterest + totalFees)}
+                </span>
+              </div>
+            )}
             <div className="loan-calc__stat">
               <span className="loan-calc__stat-label">
                 {fee > 0 ? 'Total a pagar (con seguro)' : 'Total a pagar'}
