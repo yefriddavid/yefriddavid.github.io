@@ -21,6 +21,7 @@ import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import { ADMIN_PLANS as PLANS, ADMIN_PLAN_COLORS as PLAN_COLORS } from 'src/constants/admin'
 import Spinner from 'src/components/shared/Spinner'
+import StatusBadge from 'src/components/shared/StatusBadge'
 
 const EMPTY = {
   name: '',
@@ -242,6 +243,11 @@ const Tenants = () => {
     dispatch(tenantsActions.deleteRequest({ id: row.id }))
   }
 
+  const handleToggleActive = (row) => {
+    dispatch(tenantsActions.updateRequest({ ...row, active: !(row.active !== false) }))
+    dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
+  }
+
   const toggleRow = (row) => {
     if (!gridRef.current) return
     const instance = gridRef.current.instance
@@ -317,10 +323,8 @@ const Tenants = () => {
             dataField="active"
             caption="Estado"
             width={90}
-            cellRender={({ value }) => (
-              <CBadge color={value !== false ? 'success' : 'secondary'}>
-                {value !== false ? 'Activo' : 'Inactivo'}
-              </CBadge>
+            cellRender={({ data: row }) => (
+              <StatusBadge active={row.active !== false} onClick={() => handleToggleActive(row)} />
             )}
           />
           <Column

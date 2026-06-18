@@ -27,6 +27,7 @@ import {
   USER_ROLE_COLORS as ROLE_COLORS,
 } from 'src/constants/admin'
 import Spinner from 'src/components/shared/Spinner'
+import StatusBadge from 'src/components/shared/StatusBadge'
 
 const EMPTY = {
   username: '',
@@ -305,6 +306,11 @@ const Users = () => {
     dispatch(usersActions.deleteRequest({ username: row.username }))
   }
 
+  const handleToggleActive = (row) => {
+    dispatch(usersActions.updateRequest({ ...row, active: !(row.active !== false) }))
+    dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
+  }
+
   const openResetForm = (row) => {
     setResetTarget(row.username)
     setResetPw('')
@@ -467,10 +473,11 @@ const Users = () => {
             dataField="active"
             caption="Estado"
             width={90}
-            cellRender={({ value }) => (
-              <CBadge color={value !== false ? 'success' : 'secondary'}>
-                {value !== false ? 'Activo' : 'Inactivo'}
-              </CBadge>
+            cellRender={({ data: row }) => (
+              <StatusBadge
+                active={row.active !== false}
+                onClick={isSuperAdmin ? () => handleToggleActive(row) : undefined}
+              />
             )}
           />
           <Column

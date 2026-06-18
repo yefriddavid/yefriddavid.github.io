@@ -9,8 +9,9 @@ import PropTypes from 'prop-types'
  * @param {any} [props.value] - Alternative to active (will be truthy-checked)
  * @param {Object} [props.labels] - Custom labels for true/false states { true: '...', false: '...' }
  * @param {Object} [props.colors] - Custom colors { true: { bg, text, border }, false: { ... } }
+ * @param {Function} [props.onClick] - When provided, the badge becomes clickable (e.g. toggle active state)
  */
-const StatusBadge = ({ active, value, labels, colors }) => {
+const StatusBadge = ({ active, value, labels, colors, onClick }) => {
   const isActive = active !== undefined ? active : !!value
 
   const defaultLabels = { true: 'Activo', false: 'Inactivo' }
@@ -19,27 +20,27 @@ const StatusBadge = ({ active, value, labels, colors }) => {
     : defaultLabels[isActive]
 
   const defaultColors = {
-    true: { bg: '#d3f9d8', text: '#2f9e44', border: '#8ce99a' },
-    false: { bg: '#ffe3e3', text: '#c92a2a', border: '#ffa8a8' },
+    true: { bg: '#f0fdf4', text: '#2f9e44', border: '#86efac' },
+    false: { bg: '#fff5f5', text: '#e03131', border: '#fca5a5' },
   }
 
-  const colorSet = colors
-    ? colors[isActive] || colors[String(isActive)]
-    : defaultColors[isActive]
+  const colorSet = colors ? colors[isActive] || colors[String(isActive)] : defaultColors[isActive]
 
   return (
     <span
+      onClick={onClick}
       style={{
-        fontSize: 'var(--fs-2xs)',
+        fontSize: 'var(--fs-base)',
         fontWeight: 700,
-        borderRadius: 20,
-        padding: '2px 10px',
+        borderRadius: 4,
+        padding: '0px 8px',
         background: colorSet.bg,
         color: colorSet.text,
         border: `1px solid ${colorSet.border}`,
         whiteSpace: 'nowrap',
         display: 'inline-block',
-        textTransform: 'uppercase',
+        cursor: onClick ? 'pointer' : undefined,
+        userSelect: onClick ? 'none' : undefined,
       }}
     >
       {displayLabel}
@@ -52,6 +53,7 @@ StatusBadge.propTypes = {
   value: PropTypes.any,
   labels: PropTypes.object,
   colors: PropTypes.object,
+  onClick: PropTypes.func,
 }
 
 export default StatusBadge

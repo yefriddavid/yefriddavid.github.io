@@ -27,6 +27,7 @@ import StandardForm, { StandardField, SF } from 'src/components/shared/StandardF
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import useIsMobile from 'src/hooks/useIsMobile'
 import { uploadImages } from 'src/services/facade/imageFacade'
+import StatusBadge from 'src/components/shared/StatusBadge'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -405,9 +406,11 @@ const Vehiculos = () => {
                 dataType="boolean"
                 width={80}
                 cellRender={({ data }) => (
-                  <CBadge color={data.active !== false ? 'success' : 'danger'}>
-                    {data.active !== false ? 'Sí' : 'No'}
-                  </CBadge>
+                  <StatusBadge
+                    active={data.active !== false}
+                    labels={{ true: 'Sí', false: 'No' }}
+                    onClick={() => handleToggleActive(data)}
+                  />
                 )}
               />
               <Column dataField="brand" caption={t('taxis.vehicles.fields.brand')} />

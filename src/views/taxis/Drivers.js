@@ -222,7 +222,12 @@ const Conductores = () => {
               caption="Estado"
               width={100}
               allowSorting={true}
-              cellRender={({ data }) => <StatusBadge active={data.active !== false} />}
+              cellRender={({ data }) => (
+                <StatusBadge
+                  active={data.active !== false}
+                  onClick={() => handleToggleActive(data)}
+                />
+              )}
             />
           </StandardGrid>
         )}

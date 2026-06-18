@@ -21,6 +21,7 @@ import useIsMobile from 'src/hooks/useIsMobile'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 import Spinner from 'src/components/shared/Spinner'
+import StatusBadge from 'src/components/shared/StatusBadge'
 
 export default function AccountsMaster() {
   const dispatch = useDispatch()
@@ -499,25 +500,13 @@ export default function AccountsMaster() {
               width={85}
               alignment="center"
               cellRender={({ value, data: row }) => (
-                <span
+                <StatusBadge
+                  active={value}
                   onClick={() => {
                     dispatch(accountsMasterActions.updateRequest({ ...row, active: !row.active }))
                     dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
                   }}
-                  style={{
-                    fontSize: 'var(--fs-base)',
-                    fontWeight: 700,
-                    borderRadius: 4,
-                    padding: '2px 8px',
-                    background: value ? '#f0fdf4' : '#fff5f5',
-                    color: value ? '#2f9e44' : '#e03131',
-                    border: `1px solid ${value ? '#86efac' : '#fca5a5'}`,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                  }}
-                >
-                  {value ? 'Activo' : 'Inactivo'}
-                </span>
+                />
               )}
             />
             <Column
