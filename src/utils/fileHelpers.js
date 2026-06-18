@@ -72,6 +72,7 @@ export async function processAttachmentFile(file) {
   const isPdf = file.type === 'application/pdf'
   const isImage = file.type.startsWith('image/')
   if (!isPdf && !isImage) throw new Error('Solo se permiten imágenes o PDF.')
-  if (isPdf && file.size > MAX_FILE_BYTES) throw new Error('El archivo PDF supera el límite de 5 MB.')
+  if (isPdf && file.size > MAX_FILE_BYTES)
+    throw new Error('El archivo PDF supera el límite de 5 MB.')
   return isPdf ? pdfToSingleImage(file) : compressImage(file)
 }

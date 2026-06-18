@@ -1,0 +1,61 @@
+.avatar-position-editor {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__panel {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  &__hint {
+    font-size: var(--fs-sm);
+    color: #6c757d;
+    margin-bottom: 16px;
+  }
+
+  &__viewport {
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 0 0 3px var(--cui-border-color, #dee2e6);
+  }
+
+  &__image {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+}

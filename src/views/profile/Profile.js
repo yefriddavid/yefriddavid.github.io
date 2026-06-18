@@ -10,6 +10,7 @@ import {
   USER_ROLE_COLORS as ROLE_COLORS,
 } from 'src/constants/admin'
 import Spinner from 'src/components/shared/Spinner'
+import AvatarPositionEditor from 'src/components/shared/AvatarPositionEditor'
 
 const DEFAULT_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="%231e3a5f"/><circle cx="32" cy="26" r="12" fill="%23a8d4f5"/><ellipse cx="32" cy="54" rx="18" ry="12" fill="%23a8d4f5"/></svg>'
@@ -100,6 +101,7 @@ const Profile = () => {
   const [form, setForm] = useState(null)
   const [avatarLoading, setAvatarLoading] = useState(false)
   const [changingPw, setChangingPw] = useState(false)
+  const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
 
   useEffect(() => {
     if (!pwSuccess) return
@@ -162,14 +164,16 @@ const Profile = () => {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]
+    e.target.value = ''
     if (!file) return
+    setPendingAvatarFile(file)
+  }
+
+  const handleAvatarConfirm = (avatar) => {
+    setPendingAvatarFile(null)
     setAvatarLoading(true)
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      dispatch(authActions.updateAvatar({ username: profile.username, avatar: ev.target.result }))
-      setAvatarLoading(false)
-    }
-    reader.readAsDataURL(file)
+    dispatch(authActions.updateAvatar({ username: profile.username, avatar }))
+    setAvatarLoading(false)
   }
 
   const avatarSrc = profile.avatar || DEFAULT_AVATAR
@@ -238,6 +242,14 @@ const Profile = () => {
             />
           </div>
         </div>
+
+        {pendingAvatarFile && (
+          <AvatarPositionEditor
+            file={pendingAvatarFile}
+            onCancel={() => setPendingAvatarFile(null)}
+            onConfirm={handleAvatarConfirm}
+          />
+        )}
 
         {/* Profile fields */}
         {editing ? (
