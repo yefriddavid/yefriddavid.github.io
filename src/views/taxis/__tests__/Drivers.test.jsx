@@ -1,28 +1,27 @@
 // @vitest-environment jsdom
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import combinedReducers from 'src/reducers/combineReducers'
 import Conductores from '../Drivers'
-import { makeDriver, makeVehicle } from 'src/__tests__/factories'
-import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
+import { makeDriver } from 'src/__tests__/factories'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key) => key }),
 }))
 
+const navigateMock = vi.fn()
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+}))
+
 vi.mock('@coreui/icons-react', () => ({ default: () => <span data-testid="icon" /> }))
-vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilX: 'x', cilTrash: 'trash' }))
+vi.mock('@coreui/icons', () => ({ cilPlus: 'plus', cilTrash: 'trash', cilPencil: 'pencil', cilDescription: 'description' }))
 vi.mock('src/views/taxis/masters.scss', () => ({}))
 
 vi.mock('src/hooks/useIsMobile', () => ({ default: vi.fn(() => false) }))
-
-vi.mock('src/services/facade/imageFacade', () => ({
-  uploadImage: vi.fn(),
-  createPreview: vi.fn(),
-}))
 
 vi.mock('src/components/shared/Spinner', () => ({
   default: () => <span className="spinner-mock" />,
@@ -57,24 +56,10 @@ vi.mock('@coreui/react', () => ({
   ),
   CCardHeader: ({ children, className }) => <div className={className}>{children}</div>,
   CBadge: ({ children }) => <span>{children}</span>,
-  CAlert: ({ children }) => <div>{children}</div>,
   CButton: ({ children, onClick, disabled }) => (
     <button onClick={onClick} disabled={disabled}>
       {children}
     </button>
-  ),
-  CCollapse: ({ visible, children }) =>
-    visible ? <div data-testid="collapse">{children}</div> : null,
-  CModal: ({ visible, children }) => (visible ? <div data-testid="modal">{children}</div> : null),
-  CModalHeader: ({ children }) => <div>{children}</div>,
-  CModalTitle: ({ children }) => <h5>{children}</h5>,
-  CModalBody: ({ children }) => <div>{children}</div>,
-  CRow: ({ children }) => <div>{children}</div>,
-  CCol: ({ children }) => <div>{children}</div>,
-  CFormSelect: ({ children, onChange, value, className }) => (
-    <select onChange={onChange} value={value} className={className}>
-      {children}
-    </select>
   ),
 }))
 
@@ -93,45 +78,6 @@ vi.mock('src/components/shared/StandardGrid/Index', () => ({
       )}
     </div>
   )),
-}))
-
-vi.mock('src/components/shared/StandardForm', () => ({
-  __esModule: true,
-  default: ({ title, subtitle, onCancel, onSave, saving, children }) => (
-    <div data-testid="standard-form">
-      <span data-testid="form-title">{title}</span>
-      {subtitle && <span data-testid="form-subtitle">{subtitle}</span>}
-      {children}
-      {onCancel && <button onClick={onCancel}>cancel</button>}
-      <button onClick={onSave} disabled={saving}>
-        save
-      </button>
-    </div>
-  ),
-  StandardField: ({ label, children }) => (
-    <div>
-      <label>{label}</label>
-      {children}
-    </div>
-  ),
-  SF: { input: '', select: '', textarea: '' },
-}))
-
-vi.mock('src/components/shared/DetailPanel', () => ({
-  __esModule: true,
-  default: ({ children }) => <div data-testid="detail-panel">{children}</div>,
-  DetailSection: ({ title, children }) => (
-    <div>
-      <strong>{title}</strong>
-      {children}
-    </div>
-  ),
-  DetailRow: ({ label, value }) => (
-    <div>
-      <span>{label}</span>
-      <span>{value ?? ''}</span>
-    </div>
-  ),
 }))
 
 const driverState = (overrides = {}) => ({
@@ -201,90 +147,11 @@ describe('Conductores (Drivers)', () => {
     })
   })
 
-  describe('create form', () => {
-    it('opens create form when "Nuevo conductor" is clicked', () => {
+  describe('navigation', () => {
+    it('navigates to /taxis/drivers/new when "Nuevo conductor" is clicked', () => {
       renderWithRedux(driverState())
       fireEvent.click(screen.getByText('Nuevo conductor'))
-      expect(screen.getByTestId('standard-form')).toBeTruthy()
-      expect(screen.getByTestId('form-title').textContent).toBe('Nuevo conductor')
+      expect(navigateMock).toHaveBeenCalledWith('/taxis/drivers/new')
     })
-
-    it('closes create form when cancel is clicked', () => {
-      renderWithRedux(driverState())
-      fireEvent.click(screen.getByText('Nuevo conductor'))
-      fireEvent.click(screen.getByText('cancel'))
-      expect(screen.queryByTestId('standard-form')).toBeNull()
-    })
-
-    it('form closes after saving with valid name and idNumber (createRequest dispatched)', async () => {
-      // fetchRequest on mount sets fetching=true; dispatch success to re-enable the save button
-      const { store } = renderWithRedux(driverState())
-      act(() => {
-        store.dispatch(taxiDriverActions.successRequestFetch([]))
-      })
-
-      fireEvent.click(screen.getByText('Nuevo conductor'))
-      fireEvent.change(screen.getByPlaceholderText('Nombre completo'), {
-        target: { value: 'Nuevo Conductor' },
-      })
-      fireEvent.change(screen.getByPlaceholderText('123456789'), {
-        target: { value: '999888777' },
-      })
-      await act(async () => fireEvent.click(screen.getByText('save')))
-
-      // handleCreate() is called after dispatch → CCollapse closes (showCreate=false)
-      expect(screen.queryByTestId('collapse')).toBeNull()
-    })
-
-    it('does not dispatch when name is missing', () => {
-      const store = configureStore({ reducer: combinedReducers, preloadedState: driverState() })
-      const dispatchSpy = vi.spyOn(store, 'dispatch')
-      render(
-        <Provider store={store}>
-          <Conductores />
-        </Provider>,
-      )
-      const mountCalls = dispatchSpy.mock.calls.length
-      fireEvent.click(screen.getByText('Nuevo conductor'))
-      // leave name empty, fill idNumber
-      fireEvent.change(screen.getByPlaceholderText('123456789'), {
-        target: { value: '12345' },
-      })
-      fireEvent.click(screen.getByText('save'))
-      expect(dispatchSpy.mock.calls.length).toBe(mountCalls)
-    })
-  })
-})
-
-// ── DriverForm subcomponent ────────────────────────────────────────────────────
-
-describe('DriverForm', () => {
-  const DriverForm = () => {
-    // Re-import the internal component by rendering and checking its form behavior
-    // We test it indirectly via the create panel shown in Conductores
-  }
-
-  it('shows active/inactive toggle button reflecting current active state', () => {
-    renderWithRedux(driverState())
-    fireEvent.click(screen.getByText('Nuevo conductor'))
-    // Default EMPTY has active: true
-    expect(screen.getByText('✓ Activo')).toBeTruthy()
-  })
-
-  it('toggles active state when the active button is clicked', () => {
-    renderWithRedux(driverState())
-    fireEvent.click(screen.getByText('Nuevo conductor'))
-    fireEvent.click(screen.getByText('✓ Activo'))
-    expect(screen.getByText('✗ Inactivo')).toBeTruthy()
-  })
-
-  it('lists vehicles in default vehicle select', () => {
-    const vehicles = [makeVehicle({ id: 'v1', plate: 'XYZ999', brand: 'Chevrolet' })]
-    renderWithRedux({
-      ...driverState(),
-      taxiVehicle: { data: vehicles, fetching: false },
-    })
-    fireEvent.click(screen.getByText('Nuevo conductor'))
-    expect(screen.getByText('XYZ999 · Chevrolet')).toBeTruthy()
   })
 })

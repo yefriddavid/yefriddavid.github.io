@@ -30,7 +30,7 @@ const StatusBadge = ({ active, value, labels, colors }) => {
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 'var(--fs-2xs)',
         fontWeight: 700,
         borderRadius: 20,
         padding: '2px 10px',

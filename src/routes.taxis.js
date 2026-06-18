@@ -2,6 +2,7 @@ import React from 'react'
 
 const Settlements = React.lazy(() => import('./views/taxis/Settlements/Index'))
 const Drivers = React.lazy(() => import('./views/taxis/Drivers'))
+const DriverEditor = React.lazy(() => import('./views/taxis/DriverEditor'))
 const Vehicles = React.lazy(() => import('./views/taxis/Vehicles'))
 const Expenses = React.lazy(() => import('./views/taxis/Expenses'))
 const Summary = React.lazy(() => import('./views/taxis/Summary'))
@@ -31,6 +32,18 @@ const taxisRoutes = [
     name: 'Drivers',
     tKey: 'nav.conductores',
     element: Drivers,
+  },
+  {
+    path: '/taxis/drivers/new',
+    name: 'New Driver',
+    tKey: 'nav.driverNew',
+    element: DriverEditor,
+  },
+  {
+    path: '/taxis/drivers/:id',
+    name: 'Edit Driver',
+    tKey: 'nav.driverEdit',
+    element: DriverEditor,
   },
   {
     path: '/taxis/vehicles',

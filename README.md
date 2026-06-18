@@ -551,6 +551,15 @@ Eliminar el `#` de las URLs migrando de `HashRouter` a `BrowserRouter`.
 3. Revisar usos de `window.location.hash` o links con `#/` hardcodeados
 4. GitHub Pages requiere truco con `404.html` para soportar BrowserRouter — evaluar si vale la pena dado el hosting actual
 
+### 🟡 Reordenar la escala de tokens `--fs-*`
+
+`src/scss/_custom.scss` quedó con valores desordenados tras varios ajustes manuales iterativos (pedidos de "más pequeño"/"más grande" sobre tokens puntuales): `--fs-base` terminó en `10px`, más chico que `--fs-xs` (`11px`) y `--fs-sm` (`12px`), rompiendo la progresión esperada `2xs < xs < sm < base < md < lg < xl < 2xl < 3xl < 4xl < 5xl`. Hoy el nombre del token ya no refleja su tamaño relativo, lo que genera resultados confusos al "bajar un escalón" (ej. pasar de `base` a `sm` agranda en vez de achicar).
+
+**Pasos:**
+1. Decidir los valores finales deseados para cada paso de la escala (revisando visualmente sidebar, grids de DevExtreme y StandardList, que son los puntos más sensibles).
+2. Reescribir el bloque `:root` en `src/scss/_custom.scss` con una progresión estrictamente ascendente.
+3. Revisar los lugares donde se eligió un token específico "a mano" (ej. `AppSidebarNav.scss`, `AccountCard.js`, `StatusBadge/index.js`) por si el nuevo orden cambia cuál token es el correcto para cada caso.
+
 ### 🔵 Seguimiento Familiar GPS
 Conectar el GPS del celular a un mapa donde va a estar toda mi familia. El cliente será Flutter o la misma app que usa la posición del celular y la reporta a Firebase.
 
