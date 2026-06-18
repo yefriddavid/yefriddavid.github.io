@@ -6,7 +6,7 @@ import { Column, Lookup } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { CCard, CCardHeader, CCardBody, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilTrash, cilPencil, cilDescription } from '@coreui/icons'
+import { cilPlus, cilTrash, cilPencil, cilDescription, cilUser } from '@coreui/icons'
 import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
@@ -170,7 +170,9 @@ const Conductores = () => {
                 value ? (
                   <img src={value} alt="" className="master-photo-thumb" />
                 ) : (
-                  <span className="master-photo-thumb master-photo-thumb--empty">–</span>
+                  <span className="master-photo-thumb master-photo-thumb--empty">
+                    <CIcon icon={cilUser} size="sm" />
+                  </span>
                 )
               }
             />
