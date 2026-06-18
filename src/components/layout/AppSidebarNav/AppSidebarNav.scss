@@ -7,7 +7,7 @@
 
   .nav-link,
   .nav-group-toggle {
-    font-size: 0.8rem !important;
+    font-size: var(--fs-base) !important;
     padding-top: 0.4rem !important;
     padding-bottom: 0.4rem !important;
   }

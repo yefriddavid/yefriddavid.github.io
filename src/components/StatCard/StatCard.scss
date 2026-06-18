@@ -25,7 +25,7 @@
   }
 
   &__label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     color: var(--cui-secondary-color);
     text-transform: uppercase;
@@ -33,7 +33,7 @@
   }
 
   &__value {
-    font-size: 19px;
+    font-size: var(--fs-3xl);
     font-weight: 800;
     color: var(--stat-card-color, #adb5bd);
     line-height: 1.15;
@@ -41,7 +41,7 @@
     overflow-wrap: anywhere;
 
     @media (max-width: 576px) {
-      font-size: 15px;
+      font-size: var(--fs-lg);
     }
   }
 
@@ -54,7 +54,7 @@
     border-radius: 50%;
     border: 1.5px solid var(--cui-tertiary-color);
     color: var(--cui-tertiary-color);
-    font-size: 9px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     cursor: help;
     margin-left: 5px;

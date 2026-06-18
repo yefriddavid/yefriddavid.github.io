@@ -55,12 +55,12 @@ export default function PeriodNotes({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 15 }}>📝</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>Notas del período</span>
+          <span style={{ fontSize: 'var(--fs-lg)' }}>📝</span>
+          <span style={{ fontSize: 'var(--fs-md)', fontWeight: 600, color: '#1a1a2e' }}>Notas del período</span>
           {notes.length > 0 && (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 'var(--fs-xs)',
                 fontWeight: 700,
                 background: '#eef4ff',
                 color: '#1e3a5f',
@@ -74,7 +74,7 @@ export default function PeriodNotes({
         </div>
         <span
           style={{
-            fontSize: 14,
+            fontSize: 'var(--fs-md)',
             color: '#adb5bd',
             transition: 'transform 0.2s',
             transform: open ? 'rotate(180deg)' : 'none',
@@ -93,7 +93,7 @@ export default function PeriodNotes({
             </div>
           ) : notes.length === 0 ? (
             <div
-              style={{ fontSize: 13, color: '#adb5bd', padding: '4px 0 12px', textAlign: 'center' }}
+              style={{ fontSize: 'var(--fs-base)', color: '#adb5bd', padding: '4px 0 12px', textAlign: 'center' }}
             >
               Sin notas para este período
             </div>
@@ -129,7 +129,7 @@ export default function PeriodNotes({
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 14,
+                        fontSize: 'var(--fs-md)',
                         color: n.checked ? '#6c757d' : '#1a1a2e',
                         textDecoration: n.checked ? 'line-through' : 'none',
                         wordBreak: 'break-word',
@@ -138,7 +138,7 @@ export default function PeriodNotes({
                       {n.text}
                     </div>
                     {n.createdAt && (
-                      <div style={{ fontSize: 11, color: '#adb5bd', marginTop: 2 }}>
+                      <div style={{ fontSize: 'var(--fs-xs)', color: '#adb5bd', marginTop: 2 }}>
                         {fmtDate(n.createdAt)}
                       </div>
                     )}
@@ -150,7 +150,7 @@ export default function PeriodNotes({
                       border: 'none',
                       cursor: 'pointer',
                       color: '#adb5bd',
-                      fontSize: 14,
+                      fontSize: 'var(--fs-md)',
                       padding: '0 2px',
                       flexShrink: 0,
                       lineHeight: 1,
@@ -174,7 +174,7 @@ export default function PeriodNotes({
               placeholder="Nueva nota…"
               style={{
                 flex: 1,
-                fontSize: 14,
+                fontSize: 'var(--fs-md)',
                 padding: '8px 12px',
                 borderRadius: 10,
                 border: '1px solid #dee2e6',
@@ -192,7 +192,7 @@ export default function PeriodNotes({
                 border: 'none',
                 background: saving || !text.trim() ? '#e9ecef' : '#1e3a5f',
                 color: saving || !text.trim() ? '#adb5bd' : '#fff',
-                fontSize: 13,
+                fontSize: 'var(--fs-base)',
                 fontWeight: 700,
                 cursor: saving || !text.trim() ? 'not-allowed' : 'pointer',
                 flexShrink: 0,

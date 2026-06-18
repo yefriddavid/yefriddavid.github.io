@@ -266,6 +266,43 @@ Rules:
 }
 ```
 
+#### RULE: Font sizes must always use the `--fs-*` tokens — never hardcode
+
+All `font-size` values across the app come from a single unified scale: CSS custom properties declared once in `src/scss/_custom.scss` under `:root`. **Never hardcode a literal `font-size` value (`px`, `rem`, or `em`) inside a component `.scss` file.**
+
+Why CSS custom properties and not SCSS variables: per-component `.scss` partials (e.g. `LoanCalc.scss`, `Templates.scss`) are compiled as standalone modules and do **not** `@import 'variables'` — only `src/scss/style.scss` does. SCSS variables (`$font-size-base`, etc.) would not be visible inside them. CSS custom properties resolve at runtime in the browser, so `var(--fs-*)` works identically in every `.scss` file regardless of import order.
+
+Available tokens (`src/scss/_custom.scss`):
+
+| Token | Use for |
+|---|---|
+| `--fs-2xs` | Smallest meta text (tiny badges, map-pin overlays) |
+| `--fs-xs` | Table/column header labels, uppercase eyebrow text |
+| `--fs-sm` | Secondary/helper text |
+| `--fs-base` | Default UI text — data grid rows, sidebar nav, form labels |
+| `--fs-md` / `--fs-lg` / `--fs-xl` | Slightly emphasized body text, inputs |
+| `--fs-2xl` / `--fs-3xl` / `--fs-4xl` | Section titles, card headers |
+| `--fs-5xl` | Rare large display step |
+
+```scss
+// ✅ Correct
+.loan-calc__label {
+  font-size: var(--fs-sm);
+}
+
+// ❌ Wrong — hardcoded, invisible to the global scale
+.loan-calc__label {
+  font-size: 0.75rem;
+}
+```
+
+**Exceptions** (these are not screen UI text, so the scale doesn't apply):
+- Standalone print/PDF document templates that build their own isolated HTML (e.g. `src/views/Miscelanea/Documents/templates/*.js`) — they render into a separate `iframe.contentDocument`/PDF with no access to the app's CSS variables, and use fixed print-page px sizes instead.
+- One-off "display" numbers (KPI/dashboard stat values, hero headlines) that are intentionally larger than any UI text step — these may use a literal value if no existing token fits, but should still prefer `--fs-5xl` first.
+- Decorative/non-semantic sizes (e.g. an SVG background pattern's embedded `font-size='...'` attribute, a tiny label inside a map-pin icon) are not part of the readable-text scale.
+
+To change sizing app-wide (e.g. "make everything a bit smaller"), edit the token values once in `src/scss/_custom.scss` — never go file-by-file changing literals.
+
 ### i18n
 `i18next` with Spanish (`es`) as default. Translation files loaded via HTTP backend. Use `useTranslation()` hook and `t('key')` in components.
 

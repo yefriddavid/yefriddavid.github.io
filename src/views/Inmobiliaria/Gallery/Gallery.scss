@@ -11,7 +11,7 @@
   }
 
   &__hint {
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     opacity: 0.55;
     margin: 0;
   }
@@ -56,7 +56,7 @@
     right: 10px;
     background: rgba(0, 0, 0, 0.55);
     color: #fff;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     padding: 3px 9px;
     border-radius: 20px;
     backdrop-filter: blur(4px);
@@ -77,11 +77,11 @@
 
   &__name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--fs-xl);
   }
 
   &__sub {
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     opacity: 0.5;
   }
 
@@ -94,7 +94,7 @@
     flex: 1;
     padding: 7px 0;
     border-radius: 7px;
-    font-size: 0.82rem;
+    font-size: var(--fs-base);
     font-weight: 600;
     text-align: center;
     cursor: pointer;

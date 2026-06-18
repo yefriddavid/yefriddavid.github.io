@@ -7,7 +7,7 @@
     text-align: center;
     padding: 40px;
     color: #adb5bd;
-    font-size: 14px;
+    font-size: var(--fs-md);
   }
 }
 
@@ -31,14 +31,14 @@
   }
 
   &__title {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 700;
     color: #fff;
     letter-spacing: 0.03em;
   }
 
   &__id {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: rgba(255, 255, 255, 0.50);
   }
 
@@ -93,20 +93,20 @@
   }
 
   &__hint {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: #64748b;
   }
 
   &__sub {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #94a3b8;
   }
 
   &__change {
     background: none;
     border: none;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #0891b2;
     cursor: pointer;
     text-align: center;
@@ -117,7 +117,7 @@
   }
 
   &__error {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #dc2626;
     margin: 0;
   }
@@ -127,7 +127,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     color: #000;
     background: #ffc107;
@@ -144,7 +144,7 @@
 
   &__btn {
     flex: 1;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     border-radius: 7px;
     border: none;
@@ -214,14 +214,14 @@
   }
 
   &__title {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 700;
     color: #fff;
     letter-spacing: 0.03em;
   }
 
   &__id {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: rgba(255, 255, 255, 0.50);
   }
 
@@ -250,7 +250,7 @@
   }
 
   &__label {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -260,7 +260,7 @@
   &__input {
     width: 100%;
     padding: 7px 10px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #1e293b;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -306,7 +306,7 @@
 
   &__btn {
     flex: 1;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 700;
     border-radius: 8px;
     border: none;
@@ -372,7 +372,7 @@
 
   &__amount {
     padding: 14px 16px 4px;
-    font-size: 20px;
+    font-size: var(--fs-3xl);
     font-weight: 700;
     color: #212529;
     letter-spacing: -0.5px;
@@ -396,7 +396,7 @@
   }
 
   &__label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -404,13 +404,13 @@
   }
 
   &__value {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #495057;
     font-weight: 500;
   }
 
   &__badge {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     background: #e7f5ff;
     color: #1971c2;
@@ -423,7 +423,7 @@
     padding: 8px 10px;
     background: #f8f9fa;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #6c757d;
     border-left: 3px solid #dee2e6;
     font-style: italic;
@@ -432,7 +432,7 @@
 
   &__id {
     margin-top: 8px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #ced4da;
     text-align: right;
   }
@@ -445,7 +445,7 @@
 
     .btn {
       flex: 1;
-      font-size: 12px;
+      font-size: var(--fs-sm);
       font-weight: 500;
       border-radius: 6px;
     }

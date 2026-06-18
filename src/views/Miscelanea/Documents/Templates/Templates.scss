@@ -29,7 +29,7 @@
   }
 
   &__list-title {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--cui-secondary-color);
@@ -57,12 +57,12 @@
 
     &__name {
       font-weight: 600;
-      font-size: 13px;
+      font-size: var(--fs-base);
       margin-bottom: 4px;
     }
 
     &__desc {
-      font-size: 11px;
+      font-size: var(--fs-xs);
       color: var(--cui-secondary-color);
       line-height: 1.4;
     }
@@ -74,7 +74,7 @@
     justify-content: center;
     height: 200px;
     color: var(--cui-secondary-color);
-    font-size: 13px;
+    font-size: var(--fs-base);
     border: 1px dashed var(--cui-border-color);
     border-radius: 8px;
   }
@@ -91,7 +91,7 @@
 }
 
 .doc-workspace__preview-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--cui-secondary-color);
@@ -107,7 +107,7 @@
   }
 }
 .doc-workspace__form-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--cui-secondary-color);
@@ -132,7 +132,7 @@
   background: var(--cui-body-bg);
   border: 1px solid var(--cui-border-color);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   cursor: pointer;
   color: var(--cui-primary);
   white-space: nowrap;
@@ -152,7 +152,7 @@
   background: transparent;
   border: 1px solid var(--cui-border-color);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--fs-base);
   cursor: pointer;
   color: var(--cui-primary);
   text-align: center;
@@ -201,7 +201,7 @@
 
   &__title {
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--fs-md);
   }
 
   &__close {

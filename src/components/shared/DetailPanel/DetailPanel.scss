@@ -21,13 +21,13 @@
 
   &__label {
     min-width: 150px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--cui-secondary-color, #6c757d);
     font-weight: 500;
   }
 
   &__value {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     word-break: break-all;
 
     &--mono {
@@ -38,7 +38,7 @@
 
 .detail-section {
   &__title {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;

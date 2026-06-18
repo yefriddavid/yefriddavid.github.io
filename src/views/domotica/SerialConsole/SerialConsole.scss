@@ -48,7 +48,7 @@ $sc-purple: #bc8cff;
     color: $sc-text;
     border-radius: 6px;
     padding: 4px 8px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-family: inherit;
     cursor: pointer;
     outline: none;
@@ -57,7 +57,7 @@ $sc-purple: #bc8cff;
     &:hover, &:focus { border-color: $sc-blue; }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    &--sm { font-size: 12px; padding: 4px 6px; }
+    &--sm { font-size: var(--fs-sm); padding: 4px 6px; }
   }
 
   // ── Buttons ──────────────────────────────────────────────
@@ -68,7 +68,7 @@ $sc-purple: #bc8cff;
     border: none;
     border-radius: 6px;
     padding: 5px 12px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
@@ -96,13 +96,13 @@ $sc-purple: #bc8cff;
       &:hover:not(:disabled) { background: $sc-border; }
     }
 
-    &--xs { padding: 3px 8px; font-size: 12px; }
-    &--add { color: $sc-muted; font-size: 12px; }
+    &--xs { padding: 3px 8px; font-size: var(--fs-sm); }
+    &--add { color: $sc-muted; font-size: var(--fs-sm); }
   }
 
   // ── Status badge ─────────────────────────────────────────
   &__badge {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 20px;
@@ -136,7 +136,7 @@ $sc-purple: #bc8cff;
     color: $sc-text;
     border: none;
     padding: 4px 10px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
@@ -155,7 +155,7 @@ $sc-purple: #bc8cff;
     cursor: pointer;
     display: flex;
     align-items: center;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     transition: background 0.15s, color 0.15s;
 
     &:hover { background: rgba($sc-red, 0.2); color: $sc-red; }
@@ -173,7 +173,7 @@ $sc-purple: #bc8cff;
     color: $sc-text;
     border-radius: 5px;
     padding: 3px 8px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: inherit;
     width: 110px;
     outline: none;
@@ -201,7 +201,7 @@ $sc-purple: #bc8cff;
     padding: 6px 12px;
     background: $sc-bg-2;
     border-bottom: 1px solid $sc-border;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: $sc-muted;
     font-family: inherit;
   }
@@ -221,7 +221,7 @@ $sc-purple: #bc8cff;
 
   &__log-empty {
     color: $sc-muted;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-style: italic;
     margin: auto;
     text-align: center;
@@ -232,7 +232,7 @@ $sc-purple: #bc8cff;
     display: flex;
     align-items: baseline;
     gap: 8px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-all;
@@ -245,14 +245,14 @@ $sc-purple: #bc8cff;
 
   &__line-time {
     color: $sc-muted;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     flex-shrink: 0;
     opacity: 0.7;
   }
 
   &__line-prefix {
     flex-shrink: 0;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     opacity: 0.8;
   }
 
@@ -277,13 +277,13 @@ $sc-purple: #bc8cff;
     color: $sc-text;
     border-radius: 6px;
     padding: 7px 12px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-family: inherit;
     outline: none;
     transition: border-color 0.15s;
 
     &:focus { border-color: $sc-blue; }
-    &::placeholder { color: $sc-muted; font-size: 12px; }
+    &::placeholder { color: $sc-muted; font-size: var(--fs-sm); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 
@@ -305,7 +305,7 @@ $sc-purple: #bc8cff;
 // ── Dictionary inside AppModal ────────────────────────────────
 .sc-dict {
   &__warn-banner {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #e3b341;
     background: rgba(227, 179, 65, 0.10);
     border: 1px solid rgba(227, 179, 65, 0.25);
@@ -321,7 +321,7 @@ $sc-purple: #bc8cff;
     border: none;
     border-radius: 5px;
     padding: 3px 10px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
     font-weight: 500;
     cursor: pointer;
@@ -348,7 +348,7 @@ $sc-purple: #bc8cff;
   background: #161b22;
 
   &__desc {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #c9d1d9;
     margin-bottom: 12px;
     line-height: 1.6;
@@ -375,7 +375,7 @@ $sc-purple: #bc8cff;
 
     code {
       font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-      font-size: 12px;
+      font-size: var(--fs-sm);
       color: #58a6ff;
       background: rgba(88, 166, 255, 0.08);
       padding: 2px 6px;
@@ -384,14 +384,14 @@ $sc-purple: #bc8cff;
     }
 
     span:not(.sc-dict-detail__lbl) {
-      font-size: 12px;
+      font-size: var(--fs-sm);
       color: #c9d1d9;
       line-height: 1.5;
     }
   }
 
   &__lbl {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -404,7 +404,7 @@ $sc-purple: #bc8cff;
   display: inline-block;
   padding: 2px 8px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -430,7 +430,7 @@ $sc-purple: #bc8cff;
 // ── Inline code chip ─────────────────────────────────────────
 .sc-code {
   font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   background: rgba(88, 166, 255, 0.1);
   color: #58a6ff;
   padding: 1px 6px;
@@ -440,7 +440,7 @@ $sc-purple: #bc8cff;
 
 .sc-na {
   color: #6e7681;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 // ── Unsupported ──────────────────────────────────────────────
@@ -455,7 +455,7 @@ $sc-purple: #bc8cff;
   color: var(--cui-body-color);
 
   &__title {
-    font-size: 18px;
+    font-size: var(--fs-2xl);
     font-weight: 600;
   }
 }

@@ -81,7 +81,7 @@
 
   &__tagline {
     font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
+    font-size: var(--fs-xs);
     color: #ffffff40;
     text-transform: uppercase;
     letter-spacing: 0.2em;
@@ -93,7 +93,7 @@
     border: none;
     padding: 0;
     font-family: 'DM Mono', monospace;
-    font-size: 0.62rem;
+    font-size: var(--fs-2xs);
     color: #ffffff28;
     text-transform: lowercase;
     letter-spacing: 0.15em;
@@ -111,7 +111,7 @@
     position: absolute;
     bottom: 2rem;
     font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
+    font-size: var(--fs-2xs);
     color: #ffffff20;
     letter-spacing: 0.15em;
     z-index: 1;
@@ -131,7 +131,7 @@
 
   &__heading {
     font-family: 'DM Mono', monospace;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     color: #9a9590;
     text-transform: uppercase;
     letter-spacing: 0.25em;
@@ -164,7 +164,7 @@
     border: none;
     padding: 0;
     font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
+    font-size: var(--fs-2xs);
     color: #9a9590;
     text-transform: lowercase;
     letter-spacing: 0.1em;
@@ -260,7 +260,7 @@
   &__card-name {
     font-family: 'Syne', sans-serif;
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: var(--fs-xl);
     color: #1a1a18;
     letter-spacing: -0.01em;
     margin: 0;
@@ -268,7 +268,7 @@
   }
 
   &__card-desc {
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: #9a9590;
     margin: 0.2rem 0 0;
     font-family: 'DM Mono', monospace;

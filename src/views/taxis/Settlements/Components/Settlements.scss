@@ -7,13 +7,13 @@
 
   &__label {
     min-width: 150px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #374151;
     font-weight: 500;
   }
 
   &__amount-display {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: #374151;
     border-bottom: 2px dotted #94a3b8;
@@ -23,7 +23,7 @@
 
   &__amount-input {
     width: 110px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     padding: 1px 4px;
     border: none;
@@ -34,7 +34,7 @@
   }
 
   &__save-btn {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     padding: 2px 10px;
     border-radius: 4px;
@@ -45,7 +45,7 @@
   }
 
   &__comment {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #6b7280;
   }
 }
@@ -63,13 +63,13 @@
 
   &__driver {
     min-width: 150px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #6b21a8;
     font-weight: 500;
   }
 
   &__vehicle {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: monospace;
     color: #6b21a8;
   }

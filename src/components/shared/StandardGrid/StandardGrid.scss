@@ -24,7 +24,7 @@
 
   .dx-datagrid {
     font-family: 'Inter', -apple-system, system-ui, sans-serif;
-    font-size: 14px;
+    font-size: var(--fs-md);
     color: var(--grid-text);
     background: transparent;
   }
@@ -36,7 +36,7 @@
 
     .dx-header-row > td {
       padding: 10px 16px;
-      font-size: 12px;
+      font-size: var(--fs-sm);
       font-weight: 600;
       text-transform: none;
       letter-spacing: 0.01em;
@@ -75,7 +75,7 @@
 
   // ── Data rows ─────────────────────────────────────────────────────
   .dx-data-row > td {
-    padding: 7px 16px;
+    padding: 2px 16px;
     border-bottom: 1px solid var(--grid-border) !important;
     border-right: none !important;
     transition: background 0.15s ease;
@@ -183,7 +183,7 @@
     border-radius: 8px;
 
     .dx-field-item-label-text {
-      font-size: 12px;
+      font-size: var(--fs-sm);
       color: var(--grid-header-text);
       font-weight: 500;
     }

@@ -63,7 +63,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
   const tabStyle = (active) => ({
     flex: 1,
     padding: '10px 0',
-    fontSize: 14,
+    fontSize: 'var(--fs-md)',
     fontWeight: 600,
     border: 'none',
     cursor: 'pointer',
@@ -112,8 +112,8 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
 
         {/* Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          {account.important && <span style={{ color: '#e03131', fontSize: 16 }}>★</span>}
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e' }}>{account.name}</div>
+          {account.important && <span style={{ color: '#e03131', fontSize: 'var(--fs-xl)' }}>★</span>}
+          <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e' }}>{account.name}</div>
         </div>
 
         {/* Tabs */}
@@ -141,11 +141,11 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                     borderBottom: '1px solid #f1f5f9',
                   }}
                 >
-                  <span style={{ fontSize: 13, color: '#6c757d', fontWeight: 500 }}>{label}</span>
+                  <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d', fontWeight: 500 }}>{label}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span
                       style={{
-                        fontSize: 13,
+                        fontSize: 'var(--fs-base)',
                         color: '#1a1a2e',
                         fontWeight: 600,
                         textAlign: 'right',
@@ -163,7 +163,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                           border: 'none',
                           cursor: 'pointer',
                           padding: '2px 4px',
-                          fontSize: 14,
+                          fontSize: 'var(--fs-md)',
                           color: copied ? '#2f9e44' : '#adb5bd',
                           lineHeight: 1,
                           flexShrink: 0,
@@ -185,7 +185,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   borderRadius: 12,
                   border: '1px solid #dee2e6',
                   background: '#fff',
-                  fontSize: 15,
+                  fontSize: 'var(--fs-lg)',
                   fontWeight: 600,
                   color: '#6c757d',
                   cursor: 'pointer',
@@ -202,7 +202,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   borderRadius: 12,
                   border: 'none',
                   background: saving ? '#e9ecef' : '#495057',
-                  fontSize: 15,
+                  fontSize: 'var(--fs-lg)',
                   fontWeight: 600,
                   color: saving ? '#adb5bd' : '#fff',
                   cursor: saving ? 'not-allowed' : 'pointer',
@@ -254,7 +254,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 onChange={set('notes')}
                 rows={2}
                 placeholder="Observaciones adicionales…"
-                style={{ ...fieldInput, resize: 'none', fontFamily: 'inherit', fontSize: 14 }}
+                style={{ ...fieldInput, resize: 'none', fontFamily: 'inherit', fontSize: 'var(--fs-md)' }}
               />
             </div>
 
@@ -265,7 +265,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>TIPO</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.type}
                   onChange={set('type')}
                 >
@@ -279,7 +279,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>PERÍODO</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.period}
                   onChange={set('period')}
                 >
@@ -299,7 +299,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div style={{ marginBottom: 16 }}>
                 <label style={fieldLabel}>MES DE INICIO / APLICA</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.monthStartAt ?? 'January'}
                   onChange={set('monthStartAt')}
                 >
@@ -319,7 +319,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>CLASIFICACIÓN</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.classification ?? 'dispensable'}
                   onChange={set('classification')}
                 >
@@ -333,7 +333,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>CATEGORÍA</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.category ?? ''}
                   onChange={set('category')}
                 >
@@ -365,7 +365,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>MÉTODO DE PAGO</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.paymentMethod ?? ''}
                   onChange={set('paymentMethod')}
                 >
@@ -385,7 +385,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>BANCO</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.bankName ?? ''}
                   onChange={set('bankName')}
                 >
@@ -400,7 +400,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
               <div>
                 <label style={fieldLabel}>TIPO DE CUENTA</label>
                 <select
-                  style={{ ...fieldInput, fontSize: 14 }}
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                   value={form.bankAccountType ?? ''}
                   onChange={set('bankAccountType')}
                 >
@@ -444,7 +444,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
             <div style={{ marginBottom: 16 }}>
               <label style={fieldLabel}>VALOR POR DEFECTO (COP)</label>
               <input
-                style={{ ...fieldInput, fontSize: 16 }}
+                style={{ ...fieldInput, fontSize: 'var(--fs-xl)' }}
                 type="number"
                 min={0}
                 value={form.defaultValue ?? ''}
@@ -457,12 +457,12 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
             <div style={{ marginBottom: 16 }}>
               <label style={fieldLabel}>
                 DEUDA TOTAL A PAGAR (COP)
-                <span style={{ fontSize: 11, color: '#adb5bd', marginLeft: 6 }}>
+                <span style={{ fontSize: 'var(--fs-xs)', color: '#adb5bd', marginLeft: 6 }}>
                   — dejar vacío si no es una deuda
                 </span>
               </label>
               <input
-                style={{ ...fieldInput, fontSize: 16 }}
+                style={{ ...fieldInput, fontSize: 'var(--fs-xl)' }}
                 type="number"
                 min={0}
                 value={form.targetAmount ?? ''}
@@ -475,7 +475,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
             <div style={{ marginBottom: 16 }}>
               <label style={fieldLabel}>ESTADO</label>
               <select
-                style={{ ...fieldInput, fontSize: 14 }}
+                style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
                 value={form.active ? 'true' : 'false'}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, active: e.target.value === 'true' }))
@@ -510,7 +510,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 }}
                 onClick={(e) => e.stopPropagation()}
               />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#6c757d' }}>
+              <span style={{ fontSize: 'var(--fs-base)', fontWeight: 600, color: '#6c757d' }}>
                 <span style={{ color: '#e03131', marginRight: 4 }}>★</span>Importante
               </span>
             </div>
@@ -525,7 +525,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   borderRadius: 12,
                   border: '1px solid #dee2e6',
                   background: '#fff',
-                  fontSize: 15,
+                  fontSize: 'var(--fs-lg)',
                   fontWeight: 600,
                   color: '#6c757d',
                   cursor: 'pointer',
@@ -542,7 +542,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   borderRadius: 12,
                   border: 'none',
                   background: saving || !form.name?.trim() ? '#e9ecef' : '#1e3a5f',
-                  fontSize: 15,
+                  fontSize: 'var(--fs-lg)',
                   fontWeight: 700,
                   color: saving || !form.name?.trim() ? '#adb5bd' : '#fff',
                   cursor: saving || !form.name?.trim() ? 'not-allowed' : 'pointer',

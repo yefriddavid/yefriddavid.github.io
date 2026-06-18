@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 18px;
+    font-size: var(--fs-2xl);
     font-weight: 700;
     color: var(--cui-body-color);
   }
@@ -27,7 +27,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
   }
 
@@ -41,7 +41,7 @@
 
   &__read-btn {
     margin-left: 4px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     padding: 3px 10px;
     min-width: 120px;
     transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
@@ -66,7 +66,7 @@
     padding: 40px;
     text-align: center;
     color: var(--cui-secondary-color);
-    font-size: 14px;
+    font-size: var(--fs-md);
   }
 
   // Battery card — dark background
@@ -107,7 +107,7 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     padding: 5px 12px;
     border-radius: 20px;
   }
@@ -128,7 +128,7 @@
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     padding: 2px 8px;
     color: var(--cui-secondary-color);
@@ -143,12 +143,12 @@
   &__energy-label {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
+    font-size: var(--fs-base);
     margin-bottom: 6px;
     color: var(--cui-secondary-color);
 
     strong {
-      font-size: 15px;
+      font-size: var(--fs-lg);
     }
   }
 
@@ -156,7 +156,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
@@ -164,7 +164,7 @@
     padding: 10px 14px;
 
     strong {
-      font-size: 18px;
+      font-size: var(--fs-2xl);
       font-weight: 800;
       color: #1971c2;
       margin-left: auto;
@@ -176,7 +176,7 @@
   }
 
   &__autonomy-note {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #e67700;
     white-space: nowrap;
   }
@@ -220,7 +220,7 @@
   &__interval-input {
     width: 90px;
     padding: 5px 8px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-body-color);
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
@@ -238,19 +238,19 @@
   }
 
   &__interval-unit {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     color: var(--cui-secondary-color);
   }
 
   &__command-label {
-    font-size: 14px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--cui-body-color);
   }
 
   &__command-sub {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
     margin-top: 2px;
     font-family: monospace;
@@ -265,12 +265,12 @@
   &__chart-empty {
     padding: 32px;
     text-align: center;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
   }
 
   &__section-label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -309,13 +309,13 @@
   }
 
   &__history-filter-sep {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--cui-secondary-color);
   }
 
   &__datetime-input {
     padding: 4px 8px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--cui-body-color);
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
@@ -330,7 +330,7 @@
 
   &__last-seen {
     display: block;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 400;
     text-transform: none;
     letter-spacing: 0;
@@ -342,7 +342,7 @@
   &__estimated-tag {
     display: inline-block;
     margin-left: 6px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -370,7 +370,7 @@
   &__energy-footer {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
     margin-top: 4px;
     opacity: 0.7;
@@ -381,7 +381,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     background: var(--cui-tertiary-bg);
     padding: 8px 12px;
@@ -474,7 +474,7 @@
     right: 0;
     display: flex;
     justify-content: space-between;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: var(--cui-secondary-color);
     margin-top: 4px;
     pointer-events: none;
@@ -599,19 +599,19 @@
   }
 
   &__pct-sign {
-    font-size: 20px;
+    font-size: var(--fs-3xl);
     font-weight: 700;
   }
 
   &__estimated-mark {
-    font-size: 24px;
+    font-size: var(--fs-4xl);
     font-weight: 700;
     opacity: 0.7;
     margin-right: 1px;
   }
 
   &__soc-label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -671,7 +671,7 @@
   }
 
   &__label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -680,21 +680,21 @@
   }
 
   &__value {
-    font-size: 22px;
+    font-size: var(--fs-3xl);
     font-weight: 800;
     line-height: 1;
     margin-bottom: 3px;
   }
 
   &__unit {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-secondary-color);
     margin-left: 2px;
   }
 
   &__sub {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
   }
 }

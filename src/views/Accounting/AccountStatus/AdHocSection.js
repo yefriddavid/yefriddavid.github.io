@@ -33,12 +33,12 @@ export default function AdHocSection({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 15 }}>💸</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>Otras cuentas</span>
+          <span style={{ fontSize: 'var(--fs-lg)' }}>💸</span>
+          <span style={{ fontSize: 'var(--fs-md)', fontWeight: 600, color: '#1a1a2e' }}>Otras cuentas</span>
           {adHocFiltered.length > 0 && (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 'var(--fs-xs)',
                 fontWeight: 700,
                 background: '#eef4ff',
                 color: '#1e3a5f',
@@ -58,7 +58,7 @@ export default function AdHocSection({
             border: 'none',
             background: '#1e3a5f',
             color: '#fff',
-            fontSize: 12,
+            fontSize: 'var(--fs-sm)',
             fontWeight: 700,
             cursor: 'pointer',
             whiteSpace: 'nowrap',
@@ -92,7 +92,7 @@ export default function AdHocSection({
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  fontSize: 18,
+                  fontSize: 'var(--fs-2xl)',
                   fontWeight: 700,
                   color: accentColor,
                 }}
@@ -102,7 +102,7 @@ export default function AdHocSection({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 15,
+                    fontSize: 'var(--fs-lg)',
                     fontWeight: 600,
                     color: '#1a1a2e',
                     whiteSpace: 'nowrap',
@@ -124,7 +124,7 @@ export default function AdHocSection({
                   {t.note && (
                     <span
                       style={{
-                        fontSize: 11,
+                        fontSize: 'var(--fs-xs)',
                         color: '#6c757d',
                         background: '#f1f5f9',
                         borderRadius: 4,
@@ -135,7 +135,7 @@ export default function AdHocSection({
                       {t.note}
                     </span>
                   )}
-                  {t.date && <span style={{ fontSize: 11, color: '#6c757d' }}>{t.date}</span>}
+                  {t.date && <span style={{ fontSize: 'var(--fs-xs)', color: '#6c757d' }}>{t.date}</span>}
                 </div>
               </div>
               <div
@@ -149,7 +149,7 @@ export default function AdHocSection({
               >
                 <span
                   style={{
-                    fontSize: 13,
+                    fontSize: 'var(--fs-base)',
                     fontWeight: 700,
                     borderRadius: 20,
                     padding: '3px 10px',
@@ -169,7 +169,7 @@ export default function AdHocSection({
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        fontSize: 15,
+                        fontSize: 'var(--fs-lg)',
                         padding: '2px 4px',
                       }}
                     >
@@ -185,7 +185,7 @@ export default function AdHocSection({
                       border: 'none',
                       background: '#e9ecef',
                       color: '#495057',
-                      fontSize: 12,
+                      fontSize: 'var(--fs-sm)',
                       fontWeight: 700,
                       cursor: 'pointer',
                     }}
@@ -201,7 +201,7 @@ export default function AdHocSection({
                       border: 'none',
                       background: '#e03131',
                       color: '#fff',
-                      fontSize: 12,
+                      fontSize: 'var(--fs-sm)',
                       fontWeight: 700,
                       cursor: 'pointer',
                     }}

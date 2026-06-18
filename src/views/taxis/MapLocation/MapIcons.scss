@@ -6,7 +6,7 @@
   border-radius: 4px;
   font-family: 'Monaco', 'Consolas', monospace;
   font-weight: bold;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   white-space: nowrap;
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
@@ -33,7 +33,7 @@
   border-radius: 6px;
   font-family: 'Arial', sans-serif;
   font-weight: 900;
-  font-size: 14px;
+  font-size: var(--fs-md);
   letter-spacing: 0.5px;
   white-space: nowrap;
   position: relative;

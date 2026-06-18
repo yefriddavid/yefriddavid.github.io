@@ -16,24 +16,24 @@ $muted: var(--cui-secondary-color);
 // ── Inline elements ──────────────────────────────────────────────────────────
 .cmd-code {
   font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-  font-size: 13px;
+  font-size: var(--fs-base);
   background: rgba(88, 166, 255, 0.1);
   color: #58a6ff;
   padding: 1px 6px;
   border-radius: 4px;
   white-space: nowrap;
 
-  &--sm { font-size: 12px; }
+  &--sm { font-size: var(--fs-sm); }
 }
 
-.cmd-na { color: $muted; font-size: 12px; }
+.cmd-na { color: $muted; font-size: var(--fs-sm); }
 
 // ── Category badges ──────────────────────────────────────────────────────────
 .cmd-cat {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -86,7 +86,7 @@ $muted: var(--cui-secondary-color);
   background: $bg2;
 
   &__desc {
-    font-size: 14px;
+    font-size: var(--fs-md);
     color: var(--cui-body-color);
     margin-bottom: 14px;
     line-height: 1.6;
@@ -113,7 +113,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__label {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -122,7 +122,7 @@ $muted: var(--cui-secondary-color);
 
   &__code {
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #58a6ff;
     background: rgba(88, 166, 255, 0.08);
     padding: 4px 8px;
@@ -131,7 +131,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__text {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: var(--cui-body-color);
     line-height: 1.5;
   }
@@ -167,7 +167,7 @@ $muted: var(--cui-secondary-color);
     padding: 16px 20px;
     border-bottom: 1px solid $border;
 
-    h5 { margin: 0; font-size: 15px; font-weight: 600; }
+    h5 { margin: 0; font-size: var(--fs-lg); font-weight: 600; }
   }
 
   &__close {
@@ -175,7 +175,7 @@ $muted: var(--cui-secondary-color);
     border: none;
     cursor: pointer;
     color: $muted;
-    font-size: 16px;
+    font-size: var(--fs-xl);
     padding: 2px 6px;
     border-radius: 4px;
     &:hover { background: $bg2; }
@@ -196,7 +196,7 @@ $muted: var(--cui-secondary-color);
     gap: 4px;
 
     label {
-      font-size: 12px;
+      font-size: var(--fs-sm);
       font-weight: 600;
       color: $muted;
     }
@@ -207,7 +207,7 @@ $muted: var(--cui-secondary-color);
       color: var(--cui-body-color);
       border-radius: 6px;
       padding: 7px 10px;
-      font-size: 13px;
+      font-size: var(--fs-base);
       font-family: inherit;
       outline: none;
       transition: border-color 0.15s;
@@ -229,7 +229,7 @@ $muted: var(--cui-secondary-color);
     padding: 7px 18px;
     border: none;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s;
@@ -252,7 +252,7 @@ $muted: var(--cui-secondary-color);
 
 // ── Toast ────────────────────────────────────────────────────────────────────
 .cmd-toast {
-  font-size: 13px;
+  font-size: var(--fs-base);
   min-width: 220px;
 }
 
@@ -312,7 +312,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__title {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -343,7 +343,7 @@ $muted: var(--cui-secondary-color);
 
 .cp-empty {
   padding: 20px 14px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: $muted;
   text-align: center;
 
@@ -377,7 +377,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__name {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-body-color);
     white-space: nowrap;
@@ -386,7 +386,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__model {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: $muted;
     font-family: 'Cascadia Code', 'Fira Code', monospace;
   }
@@ -407,7 +407,7 @@ $muted: var(--cui-secondary-color);
   }
 
   &__desc {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: $muted;
     margin-bottom: 8px;
     line-height: 1.5;
@@ -448,7 +448,7 @@ $muted: var(--cui-secondary-color);
   &__value {
     flex: 1;
     font-family: 'Cascadia Code', 'Fira Code', monospace;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #58a6ff;
     word-break: break-all;
     line-height: 1.5;
@@ -466,7 +466,7 @@ $muted: var(--cui-secondary-color);
 
   &__notes {
     display: block;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: $muted;
     margin-top: 3px;
   }
@@ -501,7 +501,7 @@ $muted: var(--cui-secondary-color);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   background: none;
   border: none;
   color: $muted;
@@ -534,7 +534,7 @@ $muted: var(--cui-secondary-color);
     color: var(--cui-body-color);
     border-radius: 5px;
     padding: 6px 9px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: inherit;
     outline: none;
     width: 100%;
@@ -542,10 +542,10 @@ $muted: var(--cui-secondary-color);
 
     &:focus { border-color: #58a6ff; }
 
-    &--sm { font-size: 11px; padding: 5px 8px; }
+    &--sm { font-size: var(--fs-xs); padding: 5px 8px; }
     &--code {
       font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 11px;
+      font-size: var(--fs-xs);
       color: #58a6ff;
     }
   }
@@ -563,7 +563,7 @@ $muted: var(--cui-secondary-color);
     padding: 5px 14px;
     border: none;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s;

@@ -7,7 +7,7 @@
     padding: 32px 0;
     text-align: center;
     color: var(--cui-secondary-color);
-    font-size: 13px;
+    font-size: var(--fs-base);
   }
 
   &__item {
@@ -29,7 +29,7 @@
   &__title {
     flex: 1 1 0;
     min-width: 0;
-    font-size: 14px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--cui-body-color);
     white-space: nowrap;
@@ -46,7 +46,7 @@
   &__top .sl__badge { margin-right: 4px; }
 
   &__badge {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     border-radius: 3px;
     padding: 2px 7px;
@@ -66,7 +66,7 @@
     border: none;
     cursor: pointer;
     padding: 2px 6px;
-    font-size: 14px;
+    font-size: var(--fs-md);
     line-height: 1;
 
     &--primary { color: var(--cui-primary); }
@@ -84,7 +84,7 @@
   &__row {
     display: flex;
     gap: 10px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
     flex-wrap: wrap;
     word-break: break-word;
@@ -106,7 +106,7 @@
     border-radius: 6px;
     width: 32px;
     height: 32px;
-    font-size: 18px;
+    font-size: var(--fs-2xl);
     line-height: 1;
     cursor: pointer;
     color: var(--cui-body-color);
@@ -120,7 +120,7 @@
   }
 
   &__page-info {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-secondary-color);
     min-width: 48px;

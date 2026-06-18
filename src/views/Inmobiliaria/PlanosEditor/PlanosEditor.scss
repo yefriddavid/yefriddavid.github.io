@@ -26,7 +26,7 @@
     align-items: center;
     gap: 8px;
     flex: 1;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #6c757d;
   }
 
@@ -47,7 +47,7 @@
     border: 1px solid #ced4da;
     border-radius: 5px;
     background: #f8f9fa;
-    font-size: 15px;
+    font-size: var(--fs-lg);
     line-height: 1;
     cursor: pointer;
     color: #495057;
@@ -89,7 +89,7 @@
   gap: 6px;
 
   &__section-label {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     color: #6c757d;
@@ -114,7 +114,7 @@
     border-radius: 6px;
     background: #f8f9fa;
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     transition: all 0.15s;
 
     &:hover { background: #e8f0fe; border-color: #4285f4; }
@@ -122,12 +122,12 @@
   }
 
   &__tool-icon {
-    font-size: 16px;
+    font-size: var(--fs-xl);
     line-height: 1;
   }
 
   &__tool-label {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     text-align: center;
   }
 
@@ -145,7 +145,7 @@
 
   &__cat {
     padding: 3px 7px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     border: 1px solid #dee2e6;
     border-radius: 4px;
     background: #f8f9fa;
@@ -179,11 +179,11 @@
   }
 
   &__furniture-label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
 
   &__furniture-size {
-    font-size: 9px;
+    font-size: var(--fs-2xs);
     color: #999;
     .pe-toolbar__furniture-item--active & { color: rgba(255,255,255,0.75); }
   }
@@ -193,7 +193,7 @@
     padding: 8px;
     background: #f0f4ff;
     border-radius: 6px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #555;
     line-height: 1.5;
 
@@ -227,7 +227,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 7px 10px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -237,7 +237,7 @@
   }
 
   &__group-create {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     background: #4285f4;
     color: #fff;
     border: none;
@@ -274,7 +274,7 @@
     background: none;
     border: none;
     padding: 0 2px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #6b7280;
     cursor: pointer;
     flex-shrink: 0;
@@ -282,13 +282,13 @@
   }
 
   &__group-icon {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #6b7280;
     flex-shrink: 0;
   }
 
   &__group-name {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: #1f2937;
     flex: 1;
@@ -299,7 +299,7 @@
   }
 
   &__group-count {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #9ca3af;
     flex-shrink: 0;
     min-width: 14px;
@@ -310,7 +310,7 @@
     background: none;
     border: none;
     padding: 0 2px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #9ca3af;
     cursor: pointer;
     flex-shrink: 0;
@@ -323,7 +323,7 @@
     background: none;
     border: none;
     padding: 0 2px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #9ca3af;
     cursor: pointer;
     flex-shrink: 0;
@@ -380,7 +380,7 @@
 
   &__empty {
     padding: 20px 12px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #adb5bd;
     text-align: center;
   }
@@ -403,7 +403,7 @@
   }
 
   &__item-icon {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #9ca3af;
     flex-shrink: 0;
     width: 16px;
@@ -412,7 +412,7 @@
   }
 
   &__item-name {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #374151;
     flex: 1;
     overflow: hidden;
@@ -423,7 +423,7 @@
 
   &__item-input {
     flex: 1;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     border: 1px solid #3b82f6;
     border-radius: 3px;
     padding: 1px 5px;
@@ -433,7 +433,7 @@
   }
 
   &__drag-handle {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #d1d5db;
     cursor: grab;
     flex-shrink: 0;
@@ -465,7 +465,7 @@
 
   &__drop-hint {
     padding: 10px 12px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #9ca3af;
     text-align: center;
     font-style: italic;

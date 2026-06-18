@@ -1,8 +1,8 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CSidebarFooter, CSidebarToggler } from '@coreui/react'
+import { CNavLink, CSidebarFooter, CSidebarToggler } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilMenu, cilApplications } from '@coreui/icons'
 import { signOut } from '../../../services/firebase/auth'
@@ -21,10 +21,10 @@ const SidebarFooterActions = () => {
 
   return (
     <CSidebarFooter className="border-top d-flex" style={{ flexDirection: 'column', gap: 0 }}>
-      <button onClick={() => navigate('/selectApp')} className="sidebar-footer-btn">
+      <CNavLink as={NavLink} to="/selectApp" className="sidebar-footer-btn">
         <CIcon icon={cilApplications} size="sm" />
         <span>{t('nav.selectApp')}</span>
-      </button>
+      </CNavLink>
       <button onClick={handleLogout} className="sidebar-footer-btn">
         <CIcon icon={cilAccountLogout} size="sm" />
         <span>{t('auth.logout')}</span>

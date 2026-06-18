@@ -16,7 +16,7 @@
   color: var(--ink);
   font-family: 'DM Sans', sans-serif;
   font-weight: 300;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -42,7 +42,7 @@
   }
 
   span.subtitle {
-    font-size: .8rem;
+    font-size: var(--fs-base);
     color: #9B9690;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -60,7 +60,7 @@
   color: #ccc;
   padding: 8px 16px;
   font-family: 'DM Sans', sans-serif;
-  font-size: .8rem;
+  font-size: var(--fs-base);
   font-weight: 400;
   letter-spacing: .04em;
   cursor: pointer;
@@ -103,7 +103,7 @@
     gap: 10px;
     text-decoration: none;
     color: var(--muted);
-    font-size: .82rem;
+    font-size: var(--fs-base);
     font-weight: 400;
     letter-spacing: .04em;
     text-transform: uppercase;
@@ -167,13 +167,13 @@
 
   h2 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.15rem;
+    font-size: var(--fs-2xl);
     font-weight: 600;
     letter-spacing: .01em;
   }
 
   p {
-    font-size: .78rem;
+    font-size: var(--fs-sm);
     color: var(--muted);
     margin-left: auto;
     letter-spacing: .03em;
@@ -209,7 +209,7 @@
 .c-field { display: flex; flex-direction: column; gap: 6px; }
 
 .c-label {
-  font-size: .75rem;
+  font-size: var(--fs-sm);
   font-weight: 500;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -227,7 +227,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-family: 'DM Sans', sans-serif;
-  font-size: .9rem;
+  font-size: var(--fs-md);
   font-weight: 400;
   color: var(--ink);
   outline: none;
@@ -266,7 +266,7 @@
   .c-select { padding-right: 36px; cursor: pointer; }
 }
 
-.c-hint { font-size: .72rem; color: var(--muted); margin-top: -2px; }
+.c-hint { font-size: var(--fs-xs); color: var(--muted); margin-top: -2px; }
 
 /* ── Currency input ── */
 .c-currency-wrap {
@@ -277,7 +277,7 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: .85rem;
+    font-size: var(--fs-md);
     color: var(--muted);
     pointer-events: none;
   }
@@ -308,7 +308,7 @@
   li {
     padding: 10px 14px;
     cursor: pointer;
-    font-size: .88rem;
+    font-size: var(--fs-md);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -322,7 +322,7 @@
     &:hover svg { fill: var(--gold); }
 
     .alias-name { font-weight: 500; color: var(--ink); }
-    .alias-addr { font-size: .78rem; color: var(--muted); }
+    .alias-addr { font-size: var(--fs-sm); color: var(--muted); }
 
     > div { flex: 1; min-width: 0; }
   }
@@ -367,7 +367,7 @@
   animation: fadeUp .45s .47s ease forwards;
 
   p {
-    font-size: .82rem;
+    font-size: var(--fs-base);
     color: var(--muted);
     max-width: 480px;
     line-height: 1.5;
@@ -396,7 +396,7 @@
 
 .c-templates-title {
   display: block;
-  font-size: .7rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -423,7 +423,7 @@
 }
 
 .c-template-label {
-  font-size: .88rem;
+  font-size: var(--fs-md);
   font-weight: 500;
   color: var(--ink);
   flex: 1;
@@ -448,7 +448,7 @@
   border-radius: 6px;
   padding: 13px 30px;
   font-family: 'DM Sans', sans-serif;
-  font-size: .85rem;
+  font-size: var(--fs-md);
   font-weight: 500;
   letter-spacing: .05em;
   text-transform: uppercase;
@@ -490,7 +490,7 @@
   border-radius: 6px;
   padding: 13px 22px;
   font-family: 'DM Sans', sans-serif;
-  font-size: .85rem;
+  font-size: var(--fs-md);
   font-weight: 500;
   letter-spacing: .04em;
   color: var(--ink);
@@ -524,7 +524,7 @@
   color: var(--cream);
   padding: 14px 20px;
   border-radius: 8px;
-  font-size: .85rem;
+  font-size: var(--fs-md);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -593,11 +593,11 @@
 
   h2 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem;
+    font-size: var(--fs-3xl);
     font-weight: 600;
   }
 
-  p { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+  p { font-size: var(--fs-base); color: var(--muted); margin-top: 2px; }
 }
 
 /* ── Picker tabs ── */
@@ -617,7 +617,7 @@
   border: none;
   background: transparent;
   font-family: 'DM Sans', sans-serif;
-  font-size: .8rem;
+  font-size: var(--fs-base);
   font-weight: 500;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -644,7 +644,7 @@
   padding: 0 5px;
   background: var(--border);
   border-radius: 100px;
-  font-size: .68rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--muted);
 
@@ -676,10 +676,10 @@
 
   svg { width: 18px; height: 18px; fill: var(--muted); flex-shrink: 0; }
 
-  span { font-size: .9rem; font-weight: 400; color: var(--ink); }
-  /*span { font-size: .9rem; font-weight: 400; color: var(--ink); flex: 1; }*/
+  span { font-size: var(--fs-md); font-weight: 400; color: var(--ink); }
+  /*span { font-size: var(--fs-md); font-weight: 400; color: var(--ink); flex: 1; }*/
 
-  .arrow { font-size: .8rem; color: var(--border); transition: color .15s, transform .15s; }
+  .arrow { font-size: var(--fs-base); color: var(--border); transition: color .15s, transform .15s; }
 
   &:hover {
     background: #fff;
@@ -694,9 +694,9 @@
   padding: 32px 28px;
   text-align: center;
   color: var(--muted);
-  font-size: .9rem;
+  font-size: var(--fs-md);
 
-  code { font-size: .85rem; background: var(--cream); padding: 2px 6px; border-radius: 4px; }
+  code { font-size: var(--fs-md); background: var(--cream); padding: 2px 6px; border-radius: 4px; }
 }
 
 /* ── Clone modal ── */
@@ -721,11 +721,11 @@
 
   h2 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
+    font-size: var(--fs-2xl);
     font-weight: 600;
   }
 
-  p { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+  p { font-size: var(--fs-sm); color: var(--muted); margin-top: 2px; }
 }
 
 .c-clone-body {
@@ -734,7 +734,7 @@
   flex-direction: column;
   gap: 16px;
 
-  code { font-size: .8rem; background: var(--cream); padding: 1px 5px; border-radius: 3px; }
+  code { font-size: var(--fs-base); background: var(--cream); padding: 1px 5px; border-radius: 3px; }
 }
 
 .c-clone-actions {
@@ -766,7 +766,7 @@
   color: var(--cream);
   flex-shrink: 0;
 
-  span { font-size: .85rem; letter-spacing: .05em; text-transform: uppercase; color: #aaa; }
+  span { font-size: var(--fs-md); letter-spacing: .05em; text-transform: uppercase; color: #aaa; }
 
   button {
     background: none;
@@ -836,7 +836,7 @@
 
   span {
     font-family: 'DM Sans', sans-serif;
-    font-size: .82rem;
+    font-size: var(--fs-base);
     font-weight: 500;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -860,7 +860,7 @@
 
 .c-notes-empty {
   padding: 20px 0 8px;
-  font-size: .85rem;
+  font-size: var(--fs-md);
   color: var(--muted);
   font-style: italic;
 }
@@ -918,7 +918,7 @@
 }
 
 .c-note-text {
-  font-size: .9rem;
+  font-size: var(--fs-md);
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
@@ -937,7 +937,7 @@
 
 .c-note-meta {
   flex: 1;
-  font-size: .72rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
 }
 
@@ -979,7 +979,7 @@
   border-radius: 5px;
   padding: 5px 12px;
   font-family: 'DM Sans', sans-serif;
-  font-size: .8rem;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
   transition: background .15s, border-color .15s;
@@ -1009,7 +1009,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-family: 'DM Sans', sans-serif;
-  font-size: .88rem;
+  font-size: var(--fs-md);
   line-height: 1.5;
   color: var(--ink);
   outline: none;
@@ -1041,7 +1041,7 @@
 }
 
 .c-note-hint {
-  font-size: .72rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   font-style: italic;
 }
@@ -1104,7 +1104,7 @@
     flex-wrap: wrap;
     gap: 8px;
 
-    p { margin-left: 0; width: 100%; font-size: .75rem; }
+    p { margin-left: 0; width: 100%; font-size: var(--fs-sm); }
   }
 
   .c-card-body,
@@ -1172,7 +1172,7 @@
     padding: 16px 20px;
     flex-wrap: wrap;
     gap: 8px;
-    h2 { font-size: 1.1rem; }
+    h2 { font-size: var(--fs-2xl); }
     p { width: 100%; }
   }
 
@@ -1237,15 +1237,15 @@
       border-color: var(--accent);
     }
     &__icon { font-size: 28px; }
-    &__label { font-size: 13px; color: var(--text); text-align: center; }
-    &__hint { font-size: 11px; color: var(--muted); }
+    &__label { font-size: var(--fs-base); color: var(--text); text-align: center; }
+    &__hint { font-size: var(--fs-xs); color: var(--muted); }
   }
 
   .c-attach-loading,
   .c-attach-empty {
     text-align: center;
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--fs-base);
     padding: 16px 0;
   }
 
@@ -1277,7 +1277,7 @@
   }
 
   .c-attach-name {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: var(--muted);
     text-align: center;
     width: 100%;
@@ -1339,7 +1339,7 @@
     padding: 10px 16px;
     background: #111;
     color: rgba(255,255,255,0.8);
-    font-size: 13px;
+    font-size: var(--fs-base);
     gap: 12px;
   }
 

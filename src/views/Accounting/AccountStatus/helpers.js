@@ -18,7 +18,7 @@ export const TYPE_OPTIONS = ['Outcoming', 'Incoming']
 export const CLASSIFICATION_OPTIONS = ['dispensable', 'indispensable']
 
 export const fieldLabel = {
-  fontSize: 12,
+  fontSize: 'var(--fs-sm)',
   fontWeight: 600,
   color: '#6c757d',
   display: 'block',

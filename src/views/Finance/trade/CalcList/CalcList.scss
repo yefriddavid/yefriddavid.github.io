@@ -23,7 +23,7 @@
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
     color: var(--cui-secondary-color);
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -68,7 +68,7 @@
     border: none;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     line-height: 1;
     padding: 0;
     display: flex;
@@ -96,7 +96,7 @@
     border-radius: 6px;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     font-weight: 600;
     transition: background 0.15s, color 0.15s;
 
@@ -123,7 +123,7 @@
     border-bottom: none;
     border-radius: 6px 6px 0 0;
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     transition: background 0.15s, color 0.15s;
     max-width: 180px;
@@ -157,7 +157,7 @@
     border: none;
     outline: 1.5px solid var(--cui-primary);
     border-radius: 3px;
-    font-size: 0.82rem;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-body-color);
     width: 110px;
@@ -177,7 +177,7 @@
     border: none;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     line-height: 1;
     padding: 0 2px;
     border-radius: 50%;
@@ -200,7 +200,7 @@
     border-radius: 6px 6px 0 0;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 1.1rem;
+    font-size: var(--fs-2xl);
     line-height: 1;
     transition: background 0.15s, color 0.15s;
 
@@ -219,7 +219,7 @@
     border-radius: 6px 6px 0 0;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     transition: background 0.15s, color 0.15s;
 
     &:hover { background: var(--cui-tertiary-bg); color: var(--cui-primary); }
@@ -238,7 +238,7 @@
     border-radius: 6px 6px 0 0;
     cursor: pointer;
     color: var(--cui-secondary-color);
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     transition: background 0.15s, color 0.15s;
 
     &:hover { background: var(--cui-tertiary-bg); color: var(--cui-primary); }
@@ -261,7 +261,7 @@
     gap: 12px;
     height: 200px;
     color: var(--cui-secondary-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
   }
 
   &__new-btn {
@@ -270,7 +270,7 @@
     color: #fff;
     border: none;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     cursor: pointer;
 
     &:hover { opacity: 0.88; }
@@ -303,7 +303,7 @@
   }
 
   &__stat-label {
-    font-size: 0.65rem;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -311,7 +311,7 @@
   }
 
   &__stat-value {
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     color: var(--cui-body-color);
@@ -344,7 +344,7 @@
   }
 
   &__category-total-label {
-    font-size: 0.65rem;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -352,7 +352,7 @@
   }
 
   &__category-total-value {
-    font-size: 0.95rem;
+    font-size: var(--fs-lg);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     color: var(--cui-body-color);
@@ -373,7 +373,7 @@
   }
 
   &__breakdown-name {
-    font-size: 0.82rem;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-body-color);
     white-space: nowrap;
@@ -398,7 +398,7 @@
   }
 
   &__breakdown-total {
-    font-size: 0.82rem;
+    font-size: var(--fs-base);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--cui-body-color);
@@ -406,7 +406,7 @@
   }
 
   &__breakdown-budget {
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
     font-variant-numeric: tabular-nums;
     color: var(--cui-secondary-color);
     white-space: nowrap;
@@ -448,14 +448,14 @@
   }
 
   &__cat-modal-title {
-    font-size: 0.95rem;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--cui-body-color);
     flex: 1;
   }
 
   &__cat-modal-total {
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     color: var(--cui-primary);
@@ -465,7 +465,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.3rem;
+    font-size: var(--fs-3xl);
     line-height: 1;
     color: var(--cui-secondary-color);
     padding: 0 4px;
@@ -485,7 +485,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
     color: var(--cui-secondary-color);
     cursor: pointer;
     padding: 0 4px;
@@ -508,7 +508,7 @@
     border: none;
     border-bottom: 2px solid transparent;
     padding: 8px 14px;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-secondary-color);
     cursor: pointer;
@@ -532,7 +532,7 @@
     padding: 32px;
     text-align: center;
     color: var(--cui-secondary-color);
-    font-size: 0.88rem;
+    font-size: var(--fs-md);
   }
 
   &__cat-modal-empty-cell {
@@ -543,12 +543,12 @@
   &__cat-modal-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.84rem;
+    font-size: var(--fs-base);
 
     th {
       padding: 8px 14px;
       text-align: left;
-      font-size: 0.65rem;
+      font-size: var(--fs-2xs);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -568,7 +568,7 @@
   }
 
   &__cat-modal-list {
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     color: var(--cui-secondary-color);
     white-space: nowrap;
   }
@@ -579,7 +579,7 @@
     white-space: nowrap;
 
     &--bold  { font-weight: 700; }
-    &--muted { color: var(--cui-secondary-color); font-size: 0.78rem; }
+    &--muted { color: var(--cui-secondary-color); font-size: var(--fs-sm); }
   }
 
   &__cat-modal-group-budget {
@@ -593,7 +593,7 @@
 
     td {
       padding: 6px 14px;
-      font-size: 0.72rem;
+      font-size: var(--fs-xs);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
@@ -612,7 +612,7 @@
   &__cat-modal-chevron {
     display: inline-block;
     margin-right: 6px;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     color: var(--cui-secondary-color);
     transition: transform 0.18s;
     transform: rotate(0deg);
@@ -623,7 +623,7 @@
   &__cat-modal-detail-row {
     background: color-mix(in srgb, var(--cui-tertiary-bg) 60%, var(--cui-body-bg));
 
-    td { border-bottom: 1px solid var(--cui-border-color); font-size: 0.8rem; }
+    td { border-bottom: 1px solid var(--cui-border-color); font-size: var(--fs-base); }
     &:last-child td { border-bottom: 1px solid var(--cui-border-color); }
   }
 
@@ -642,7 +642,7 @@
   // ── Detail row note ───────────────────────────────────────────────────
   &__cat-modal-note {
     display: block;
-    font-size: 0.72rem;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
     margin-top: 2px;
     overflow: hidden;
@@ -683,14 +683,14 @@
   }
 
   &__note-modal-title {
-    font-size: 0.95rem;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--cui-body-color);
     flex-shrink: 0;
   }
 
   &__note-modal-desc {
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     flex: 1;
     overflow: hidden;
@@ -708,7 +708,7 @@
     border: 1.5px solid var(--cui-border-color);
     border-radius: 6px;
     color: var(--cui-body-color);
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     padding: 10px 12px;
     outline: none;
     resize: vertical;
@@ -733,7 +733,7 @@
     border: 1px solid var(--cui-border-color);
     border-radius: 6px;
     padding: 6px 16px;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     color: var(--cui-secondary-color);
     cursor: pointer;
     transition: background 0.15s;
@@ -746,7 +746,7 @@
     border: none;
     border-radius: 6px;
     padding: 6px 18px;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: #fff;
     cursor: pointer;
@@ -789,7 +789,7 @@
     &__tab {
       flex-shrink: 0;
       padding: 7px 12px;
-      font-size: 0.8rem;
+      font-size: var(--fs-base);
       border-radius: 8px 8px 0 0;
     }
 
@@ -804,7 +804,7 @@
     &__sync-btn {
       flex-shrink: 0;
       padding: 4px 10px;
-      font-size: 1rem;
+      font-size: var(--fs-xl);
     }
 
     &__export-btn { margin-left: auto; }

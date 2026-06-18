@@ -15,21 +15,21 @@
   }
 
   &__greeting {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: rgba(255, 255, 255, 0.6);
     margin-bottom: 4px;
     font-weight: 500;
   }
 
   &__title {
-    font-size: 22px;
+    font-size: var(--fs-3xl);
     font-weight: 800;
     color: #fff;
     letter-spacing: -0.02em;
   }
 
   &__subtitle {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: rgba(255, 255, 255, 0.55);
     margin-top: 4px;
   }
@@ -47,13 +47,13 @@
   }
 
   &__date {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: rgba(255, 255, 255, 0.5);
     margin-top: 6px;
   }
 
   &__section-label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -109,13 +109,13 @@
 
   &__label {
     font-weight: 700;
-    font-size: 15px;
+    font-size: var(--fs-lg);
     margin-bottom: 4px;
     letter-spacing: -0.01em;
   }
 
   &__description {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #64748b;
     line-height: 1.4;
   }

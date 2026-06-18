@@ -32,7 +32,7 @@
 
   &__title {
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: var(--fs-lg);
     color: var(--cui-body-color);
   }
 
@@ -73,7 +73,7 @@
   &__label {
     margin: 0;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: var(--cui-body-color);
   }
 
@@ -92,7 +92,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
   }
 
@@ -104,7 +104,7 @@
 
   &__id-text {
     flex: 1;
-    font-size: 0.72rem;
+    font-size: var(--fs-xs);
     font-family: monospace;
     color: var(--cui-secondary-color);
     word-break: break-all;
@@ -117,7 +117,7 @@
     background: var(--cui-tertiary-bg);
     border: 1px solid var(--cui-border-color);
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     cursor: pointer;
     padding: 4px 10px;
     color: var(--cui-body-color);
@@ -133,7 +133,7 @@
     border: 1px solid var(--cui-border-color);
     background: var(--cui-body-bg);
     color: var(--cui-body-color);
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     outline: none;
 
     &:focus { border-color: var(--cui-primary); }
@@ -150,7 +150,7 @@
     border: 1px solid var(--cui-border-color);
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     color: var(--cui-body-color);
     white-space: nowrap;
     flex-shrink: 0;
@@ -168,7 +168,7 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     transition: opacity 0.15s;
 
     &:hover:not(:disabled) { opacity: 0.88; }
@@ -181,7 +181,7 @@
     border: 1px solid var(--cui-border-color);
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--fs-md);
     color: var(--cui-body-color);
     align-self: flex-start;
 
@@ -197,7 +197,7 @@
   }
 
   &__cam-error {
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
     color: var(--cui-danger);
     background: var(--cui-tertiary-bg);
     padding: 12px;
@@ -210,7 +210,7 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     font-weight: 600;
     flex-wrap: wrap;
 
@@ -231,7 +231,7 @@
 
   &__status-error {
     display: block;
-    font-size: 0.72rem;
+    font-size: var(--fs-xs);
     font-weight: 400;
     color: var(--cui-secondary-color);
     width: 100%;
@@ -276,7 +276,7 @@
     &__connect-btn {
       width: 100%;
       padding: 13px;
-      font-size: 0.95rem;
+      font-size: var(--fs-lg);
     }
 
     &__cancel-btn {
@@ -287,7 +287,7 @@
 
     &__input {
       padding: 12px;
-      font-size: 0.95rem;
+      font-size: var(--fs-lg);
     }
   }
 }

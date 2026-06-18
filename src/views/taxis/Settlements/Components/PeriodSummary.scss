@@ -10,7 +10,7 @@
   }
 
   &__toggle-label {
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
     color: var(--cui-secondary-color);
     letter-spacing: 0.03em;
@@ -22,7 +22,7 @@
   }
 
   &__pending-hint {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
   }
 
@@ -31,20 +31,20 @@
     align-items: center;
     gap: 5px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
   }
 
   &__stat-btn {
     align-self: flex-start;
-    font-size: 11px !important;
+    font-size: var(--fs-xs) !important;
   }
 }
 
 .summary-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-base);
 
   &__head-row {
     border-bottom: 2px solid var(--cui-border-color);
@@ -96,6 +96,6 @@
 
   &__badge {
     margin-left: 6px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
   }
 }

@@ -15,7 +15,7 @@
   }
 
   &__filename {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: rgba(255, 255, 255, 0.7);
     max-width: 200px;
     overflow: hidden;
@@ -36,7 +36,7 @@
     border: none;
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
-    font-size: 18px;
+    font-size: var(--fs-2xl);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -53,7 +53,7 @@
     }
 
     &--close {
-      font-size: 20px;
+      font-size: var(--fs-3xl);
     }
   }
 
@@ -91,7 +91,7 @@
     flex-shrink: 0;
 
     span {
-      font-size: 11px;
+      font-size: var(--fs-xs);
       color: rgba(255, 255, 255, 0.35);
     }
   }

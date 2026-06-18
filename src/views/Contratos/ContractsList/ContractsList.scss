@@ -4,12 +4,12 @@
 
 // Overrides for StandardList items inside this view
 .cl .sl__item        { padding: 12px 4px; }
-.cl .sl__title       { font-size: 15px; }
+.cl .sl__title       { font-size: var(--fs-lg); }
 .cl .sl__body        { gap: 4px; margin-top: 4px; }
-.cl .sl__row         { font-size: 12px; gap: 14px; align-items: center; }
-.cl .sl__row:first-child { font-size: 13px; font-weight: 500; color: var(--cui-body-color); }
+.cl .sl__row         { font-size: var(--fs-sm); gap: 14px; align-items: center; }
+.cl .sl__row:first-child { font-size: var(--fs-base); font-weight: 500; color: var(--cui-body-color); }
 .cl .sl__controls    { gap: 6px; }
-.cl .sl__badge       { font-size: 11px; padding: 3px 8px; border-radius: 5px; }
+.cl .sl__badge       { font-size: var(--fs-xs); padding: 3px 8px; border-radius: 5px; }
 
 .cl {
   padding: 1rem;
@@ -23,7 +23,7 @@
 
     &-title {
       flex: 1;
-      font-size: 1.1rem;
+      font-size: var(--fs-2xl);
       font-weight: 600;
       margin: 0;
       min-width: 0;
@@ -43,7 +43,7 @@
     gap: 0.4rem;
     padding: 0.3rem 0.7rem;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     font-weight: 500;
     border: 1px solid;
     line-height: 1.4;
@@ -113,13 +113,13 @@
   }
 
   &__title {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--cui-body-color);
   }
 
   &__count {
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
     font-weight: 700;
     background: var(--cui-tertiary-bg);
     color: var(--cui-secondary-color);
@@ -129,7 +129,7 @@
 
   &__loading,
   &__empty {
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     padding: 0.25rem 0 0.75rem;
   }
@@ -149,7 +149,7 @@
   }
 
   &__text {
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     color: var(--cui-body-color);
     word-break: break-word;
     white-space: pre-wrap;
@@ -157,7 +157,7 @@
 
   &__edit-input {
     width: 100%;
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     padding: 0.4rem 0.5rem;
     border: 1px solid var(--cui-primary);
     border-radius: 6px;
@@ -176,7 +176,7 @@
   }
 
   &__date {
-    font-size: 0.72rem;
+    font-size: var(--fs-xs);
     color: var(--cui-secondary-color);
   }
 
@@ -190,7 +190,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     padding: 2px 6px;
     border-radius: 5px;
     color: var(--cui-secondary-color);
@@ -209,7 +209,7 @@
     &--cancel { color: var(--cui-secondary-color); }
 
     &--delete {
-      font-size: 1rem;
+      font-size: var(--fs-xl);
       &:hover { color: #dc3545; background: rgba(220,53,69,0.08); }
     }
   }
@@ -223,7 +223,7 @@
 
   &__add-input {
     flex: 1;
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--cui-border-color);
     border-radius: 8px;
@@ -241,7 +241,7 @@
     border-radius: 8px;
     background: var(--cui-primary);
     color: #fff;
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     font-weight: 600;
     cursor: pointer;
     flex-shrink: 0;
@@ -283,13 +283,13 @@
   }
 
   &__title {
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     font-weight: 700;
     color: var(--cui-body-color);
   }
 
   &__subtitle {
-    font-size: 0.8rem;
+    font-size: var(--fs-base);
     color: var(--cui-secondary-color);
     margin-top: 2px;
   }
@@ -319,7 +319,7 @@
   gap: 3px;
   padding: 2px 9px;
   border-radius: 10px;
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.01em;
   white-space: nowrap;

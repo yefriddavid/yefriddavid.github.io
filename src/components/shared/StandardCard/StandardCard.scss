@@ -9,7 +9,7 @@
   padding: 32px 0;
   text-align: center;
   color: var(--cui-secondary-color);
-  font-size: 13px;
+  font-size: var(--fs-base);
 }
 
 .sc__card {
@@ -39,14 +39,14 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 14px;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--cui-body-color);
 }
 
 .sc__value {
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: var(--fs-xl);
   font-weight: 700;
   color: var(--cui-body-color);
   white-space: nowrap;
@@ -61,7 +61,7 @@
 .sc__row {
   display: flex;
   gap: 10px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--cui-secondary-color);
   white-space: nowrap;
   flex-wrap: wrap;
@@ -81,7 +81,7 @@
 }
 
 .sc__badge {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 600;
   border-radius: 3px;
   padding: 2px 7px;
@@ -101,7 +101,7 @@
   border: none;
   cursor: pointer;
   padding: 6px 10px;
-  font-size: 18px;
+  font-size: var(--fs-2xl);
   line-height: 1;
   border-radius: 6px;
   transition: background 0.15s;
@@ -130,7 +130,7 @@
   border-radius: 6px;
   width: 32px;
   height: 32px;
-  font-size: 18px;
+  font-size: var(--fs-2xl);
   line-height: 1;
   cursor: pointer;
   color: var(--cui-body-color);
@@ -144,7 +144,7 @@
 }
 
 .sc__page-info {
-  font-size: 13px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--cui-secondary-color);
   min-width: 48px;
@@ -157,7 +157,7 @@
 .sc-muted { color: var(--cui-secondary-color); }
 .sc-tag {
   display: inline-block;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   border-radius: 4px;
   padding: 1px 7px;

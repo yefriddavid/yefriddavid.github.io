@@ -7,7 +7,7 @@ import Spinner from 'src/components/shared/Spinner'
 
 const fieldError = (err) =>
   err ? (
-    <span style={{ fontSize: 11, color: '#b91c1c', display: 'block', marginBottom: 4 }}>
+    <span style={{ fontSize: 'var(--fs-xs)', color: '#b91c1c', display: 'block', marginBottom: 4 }}>
       {err.message}
     </span>
   ) : null
@@ -120,10 +120,10 @@ export default function AdHocExpenseModal({
           }}
         />
 
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
           {isEditing ? 'Editar movimiento' : 'Agregar movimiento del período'}
         </div>
-        <div style={{ fontSize: 13, color: '#6c757d', marginBottom: 24 }}>
+        <div style={{ fontSize: 'var(--fs-base)', color: '#6c757d', marginBottom: 24 }}>
           {isEditing
             ? 'Modifica los datos del movimiento'
             : 'Solo quedará en el historial de este período'}
@@ -145,7 +145,7 @@ export default function AdHocExpenseModal({
                 padding: '8px 0',
                 border: 'none',
                 borderRadius: 10,
-                fontSize: 13,
+                fontSize: 'var(--fs-base)',
                 fontWeight: type === opt.key ? 700 : 500,
                 cursor: 'pointer',
                 background: type === opt.key ? '#1e3a5f' : '#e9ecef',
@@ -163,7 +163,7 @@ export default function AdHocExpenseModal({
           type="text"
           placeholder="Ej: Reparación, mercado…"
           autoFocus
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          style={{ ...fieldInput, fontSize: 'var(--fs-xl)', marginBottom: 4 }}
           {...register('description', { required: 'La descripción es obligatoria' })}
         />
         {fieldError(errors.description)}
@@ -191,7 +191,7 @@ export default function AdHocExpenseModal({
         <label style={fieldLabel}>FECHA *</label>
         <input
           type="date"
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          style={{ ...fieldInput, fontSize: 'var(--fs-xl)', marginBottom: 4 }}
           {...register('date', { required: 'La fecha es obligatoria' })}
         />
         {fieldError(errors.date)}
@@ -200,7 +200,7 @@ export default function AdHocExpenseModal({
         {/* Category */}
         <label style={fieldLabel}>CATEGORÍA (opcional)</label>
         <select
-          style={{ ...fieldInput, fontSize: 14, marginBottom: 20 }}
+          style={{ ...fieldInput, fontSize: 'var(--fs-md)', marginBottom: 20 }}
           {...register('category')}
         >
           <option value="">Sin categoría</option>
@@ -218,7 +218,7 @@ export default function AdHocExpenseModal({
           rows={2}
           style={{
             ...fieldInput,
-            fontSize: 14,
+            fontSize: 'var(--fs-md)',
             resize: 'none',
             marginBottom: 20,
             fontFamily: 'inherit',
@@ -245,7 +245,7 @@ export default function AdHocExpenseModal({
               marginBottom: 8,
               border: '2px dashed #dee2e6',
               background: '#fafafa',
-              fontSize: 13,
+              fontSize: 'var(--fs-base)',
               color: '#6c757d',
               cursor: 'pointer',
               display: 'flex',
@@ -254,7 +254,7 @@ export default function AdHocExpenseModal({
               gap: 8,
             }}
           >
-            <span style={{ fontSize: 18 }}>📎</span> Adjuntar imagen o PDF
+            <span style={{ fontSize: 'var(--fs-2xl)' }}>📎</span> Adjuntar imagen o PDF
           </button>
         )}
         {processing && (
@@ -268,11 +268,11 @@ export default function AdHocExpenseModal({
             }}
           >
             <Spinner size="sm" />
-            <span style={{ fontSize: 13, color: '#6c757d' }}>Procesando archivo…</span>
+            <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d' }}>Procesando archivo…</span>
           </div>
         )}
         {fileError && (
-          <div style={{ fontSize: 12, color: '#e03131', marginBottom: 8 }}>{fileError}</div>
+          <div style={{ fontSize: 'var(--fs-sm)', color: '#e03131', marginBottom: 8 }}>{fileError}</div>
         )}
         {attachment && (
           <div style={{ marginBottom: 20, position: 'relative' }}>
@@ -295,7 +295,7 @@ export default function AdHocExpenseModal({
                   border: 'none',
                   background: 'rgba(0,0,0,0.55)',
                   color: '#fff',
-                  fontSize: 11,
+                  fontSize: 'var(--fs-xs)',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -313,7 +313,7 @@ export default function AdHocExpenseModal({
                   border: 'none',
                   background: 'rgba(220,53,69,0.85)',
                   color: '#fff',
-                  fontSize: 11,
+                  fontSize: 'var(--fs-xs)',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -321,7 +321,7 @@ export default function AdHocExpenseModal({
                 Quitar
               </button>
             </div>
-            <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4, paddingLeft: 2 }}>
+            <div style={{ fontSize: 'var(--fs-xs)', color: '#6c757d', marginTop: 4, paddingLeft: 2 }}>
               {attachName}
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function AdHocExpenseModal({
               borderRadius: 12,
               border: '1px solid #dee2e6',
               background: '#fff',
-              fontSize: 15,
+              fontSize: 'var(--fs-lg)',
               fontWeight: 600,
               color: '#6c757d',
               cursor: 'pointer',
@@ -354,7 +354,7 @@ export default function AdHocExpenseModal({
               borderRadius: 12,
               border: 'none',
               background: processing ? '#e9ecef' : '#1e3a5f',
-              fontSize: 15,
+              fontSize: 'var(--fs-lg)',
               fontWeight: 700,
               color: processing ? '#adb5bd' : '#fff',
               cursor: processing ? 'not-allowed' : 'pointer',

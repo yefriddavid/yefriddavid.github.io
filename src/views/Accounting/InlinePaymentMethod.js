@@ -22,7 +22,7 @@ const InlinePaymentMethod = ({ account }) => {
         onChange={handleChange}
         onBlur={() => setEditing(false)}
         style={{
-          fontSize: 11,
+          fontSize: 'var(--fs-2xs)',
           padding: '1px 4px',
           borderRadius: 4,
           border: '1px solid #cbd5e1',
@@ -45,7 +45,7 @@ const InlinePaymentMethod = ({ account }) => {
       onClick={() => setEditing(true)}
       title="Click para cambiar método de pago"
       style={{
-        fontSize: 11,
+        fontSize: 'var(--fs-2xs)',
         cursor: 'pointer',
         borderBottom: '2px dotted #94a3b8',
         paddingBottom: 1,

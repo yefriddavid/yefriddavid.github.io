@@ -28,7 +28,7 @@
   }
 
   @media (max-width: 767.98px) {
-    .breadcrumb { font-size: 12px; }
+    .breadcrumb { font-size: var(--fs-sm); }
   }
 
   // Layout
@@ -58,7 +58,7 @@
     border-radius: 10px;
     min-width: 16px;
     height: 16px;
-    font-size: 9px;
+    font-size: var(--fs-2xs);
     font-weight: 700;
     display: flex;
     align-items: center;

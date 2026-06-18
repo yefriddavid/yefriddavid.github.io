@@ -12,7 +12,7 @@
 
   &__title {
     margin: 0;
-    font-size: 18px;
+    font-size: var(--fs-2xl);
     font-weight: 600;
   }
 }
@@ -25,7 +25,7 @@
   height: 100vh;
   background: #1e1e2e;
   color: #e0e0f0;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   overflow: hidden;
 
   &__header {
@@ -52,7 +52,7 @@
     border: 1px solid transparent;
     border-radius: 4px;
     color: #e0e0f0;
-    font-size: 14px;
+    font-size: var(--fs-md);
     font-weight: 600;
     padding: 2px 6px;
     width: 200px;
@@ -85,7 +85,7 @@
     border-radius: 4px;
     color: #e0e0f0;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     padding: 4px 10px;
     white-space: nowrap;
 
@@ -137,7 +137,7 @@
 
   &__label {
     display: block;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -160,7 +160,7 @@
     border-radius: 4px;
     color: #c0c0e0;
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     width: 100%;
     text-align: left;
 
@@ -168,7 +168,7 @@
   }
 
   &__tool-icon {
-    font-size: 13px;
+    font-size: var(--fs-base);
     width: 18px;
     text-align: center;
   }
@@ -189,7 +189,7 @@
     border-radius: 4px;
     color: #c0c0e0;
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     width: 100%;
     text-align: left;
 
@@ -206,7 +206,7 @@
     background: #333345;
     border: 1px solid #555;
     border-radius: 3px;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     padding: 0 4px;
     font-family: monospace;
     color: #aaa;
@@ -234,7 +234,7 @@
   }
 
   &__label {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #888;
     min-width: 55px;
 
@@ -251,7 +251,7 @@
     border: 1px solid #3a3a5e;
     border-radius: 3px;
     color: #e0e0f0;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     padding: 2px 4px;
     flex: 1;
 
@@ -259,7 +259,7 @@
   }
 
   &__section {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     color: #555;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -290,7 +290,7 @@
   }
 
   &__title {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -305,7 +305,7 @@
 
   &__empty {
     padding: 16px 12px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: #555;
     text-align: center;
     line-height: 1.6;
@@ -330,7 +330,7 @@
   }
 
   &__icon {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     width: 18px;
     text-align: center;
     flex-shrink: 0;
@@ -338,7 +338,7 @@
 
   &__name {
     flex: 1;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -349,7 +349,7 @@
       border: 1px solid #5a5aaa;
       border-radius: 3px;
       color: #e0e0f0;
-      font-size: 11px;
+      font-size: var(--fs-xs);
       padding: 1px 4px;
       width: 100%;
     }
@@ -365,7 +365,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     opacity: 0.4;
     padding: 1px 2px;
     border-radius: 2px;

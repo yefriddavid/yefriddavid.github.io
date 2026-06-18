@@ -6,7 +6,7 @@ import Spinner from 'src/components/shared/Spinner'
 
 const fieldError = (err) =>
   err ? (
-    <span style={{ fontSize: 11, color: '#b91c1c', display: 'block', marginBottom: 4 }}>
+    <span style={{ fontSize: 'var(--fs-xs)', color: '#b91c1c', display: 'block', marginBottom: 4 }}>
       {err.message}
     </span>
   ) : null
@@ -91,12 +91,12 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
           }}
         />
 
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
           Registrar pago
         </div>
         <div
           style={{
-            fontSize: 13,
+            fontSize: 'var(--fs-base)',
             color: '#6c757d',
             marginBottom: 24,
             display: 'flex',
@@ -104,7 +104,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
             gap: 4,
           }}
         >
-          {account.important && <span style={{ color: '#e03131', fontSize: 13 }}>★</span>}
+          {account.important && <span style={{ color: '#e03131', fontSize: 'var(--fs-base)' }}>★</span>}
           {account.name}
           {account.defaultValue > 0 && (
             <span style={{ color: '#1e3a5f', fontWeight: 700, marginLeft: 4 }}>
@@ -136,7 +136,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
         <label style={fieldLabel}>FECHA</label>
         <input
           type="date"
-          style={{ ...fieldInput, fontSize: 16, marginBottom: 4 }}
+          style={{ ...fieldInput, fontSize: 'var(--fs-xl)', marginBottom: 4 }}
           {...register('date', { required: 'La fecha es obligatoria' })}
         />
         {fieldError(errors.date)}
@@ -149,7 +149,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
           rows={2}
           style={{
             ...fieldInput,
-            fontSize: 14,
+            fontSize: 'var(--fs-md)',
             resize: 'none',
             marginBottom: 20,
             borderBottom: '2px solid #dee2e6',
@@ -180,7 +180,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
               borderRadius: 12,
               border: '1px solid #dee2e6',
               background: '#fff',
-              fontSize: 15,
+              fontSize: 'var(--fs-lg)',
               fontWeight: 600,
               color: '#6c757d',
               cursor: 'pointer',
@@ -197,7 +197,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
               borderRadius: 12,
               border: 'none',
               background: saving ? '#e9ecef' : '#1e3a5f',
-              fontSize: 15,
+              fontSize: 'var(--fs-lg)',
               fontWeight: 700,
               color: saving ? '#adb5bd' : '#fff',
               cursor: saving ? 'not-allowed' : 'pointer',

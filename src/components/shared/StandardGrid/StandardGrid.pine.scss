@@ -25,7 +25,7 @@
 
   .dx-datagrid {
     font-family: inherit;
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #1e293b;
     background: #fff;
   }
@@ -37,7 +37,7 @@
 
     .dx-header-row > td {
       padding: 12px 14px;
-      font-size: 11px;
+      font-size: var(--fs-xs);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -68,7 +68,7 @@
         .dx-placeholder::before,
         .dx-texteditor-input {
           color: rgba(255, 255, 255, 0.55);
-          font-size: 12px;
+          font-size: var(--fs-sm);
         }
 
         &.dx-state-focused {
@@ -91,8 +91,8 @@
 
   // ── Data rows ─────────────────────────────────────────────────────
   .dx-data-row > td {
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: 1px 14px;
+    font-size: var(--fs-base);
     color: #1e293b;
     border-color: #eef2f7 !important;
     border-right: none !important;
@@ -140,7 +140,7 @@
     padding: 6px 14px;
     background: linear-gradient(90deg, #f0f5ff, #f8fafd) !important;
     font-weight: 700;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #1e3a5f !important;
     border-bottom: 1px solid #d0dff5 !important;
     letter-spacing: 0.02em;
@@ -151,7 +151,7 @@
     border-top: 1px solid #eef2f7;
     padding: 10px 16px;
     background: #fafbfd;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #64748b;
 
     .dx-page-size,
@@ -182,7 +182,7 @@
     border-top: 2px solid #f5c842;
 
     .dx-footer-row > td {
-      font-size: 13px;
+      font-size: var(--fs-base);
       font-weight: 700;
       color: #fff;
       background: transparent !important;
@@ -200,7 +200,7 @@
     .dx-searchbox .dx-texteditor {
       border-radius: 8px;
       border-color: #d0dff5;
-      font-size: 13px;
+      font-size: var(--fs-base);
 
       &.dx-state-focused {
         border-color: #1e3a5f;
@@ -210,7 +210,7 @@
 
     .dx-button {
       border-radius: 7px;
-      font-size: 12px;
+      font-size: var(--fs-sm);
       font-weight: 600;
     }
   }
@@ -228,7 +228,7 @@
     }
 
     .dx-form-group-caption {
-      font-size: 11px;
+      font-size: var(--fs-xs);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
@@ -239,7 +239,7 @@
     }
 
     .dx-field-item-label-text {
-      font-size: 11px;
+      font-size: var(--fs-xs);
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
@@ -259,7 +259,7 @@
 
     .dx-button {
       border-radius: 7px;
-      font-size: 13px;
+      font-size: var(--fs-base);
       font-weight: 600;
 
       &.dx-button-default {
@@ -281,13 +281,13 @@
 
   // ── Column chooser ─────────────────────────────────────────────────
   .dx-datagrid-column-chooser-item {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #334155;
   }
 
   // ── No-data text ───────────────────────────────────────────────────
   .dx-datagrid-nodata {
-    font-size: 13px;
+    font-size: var(--fs-base);
     color: #94a3b8;
     font-style: italic;
   }

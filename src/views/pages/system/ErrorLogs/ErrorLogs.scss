@@ -37,21 +37,21 @@
   }
 
   &__title {
-    font-size: 20px;
+    font-size: var(--fs-3xl);
     font-weight: 700;
     margin: 0;
     letter-spacing: -0.02em;
   }
 
   &__subtitle {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     opacity: 0.4;
     margin-top: 1px;
   }
 
   &__refresh-btn {
-    font-size: 13px;
+    font-size: var(--fs-base);
     gap: 6px;
   }
 
@@ -94,7 +94,7 @@
   }
 
   &__stat-label {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     opacity: 0.5;
@@ -133,7 +133,7 @@
   &__badge {
     display: inline-block;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     padding: 2px 8px;
     border-radius: 4px;
     background: color-mix(in srgb, var(--badge-color, #3b82f6) 12%, transparent);
@@ -150,18 +150,18 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 13px;
+    font-size: var(--fs-base);
   }
 
   &__ts-cell {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     opacity: 0.75;
   }
 
   &__route-cell {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     opacity: 0.6;
     white-space: nowrap;
     overflow: hidden;
@@ -171,7 +171,7 @@
 
   &__del-btn {
     padding: 2px 6px !important;
-    font-size: 12px !important;
+    font-size: var(--fs-sm) !important;
     opacity: 0.4;
     transition: opacity 0.15s;
 
@@ -220,18 +220,18 @@
 
   &__detail-context {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 13px;
+    font-size: var(--fs-base);
     font-weight: 600;
   }
 
   &__detail-ts {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     opacity: 0.5;
   }
 
   &__detail-user {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     opacity: 0.6;
     background: var(--cui-secondary-bg, #f1f5f9);
     padding: 1px 8px;
@@ -239,7 +239,7 @@
   }
 
   &__detail-message {
-    font-size: 14px;
+    font-size: var(--fs-md);
     font-weight: 500;
     margin-bottom: 20px;
     padding: 12px 16px;
@@ -264,7 +264,7 @@
   }
 
   &__detail-section-title {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -277,7 +277,7 @@
 
   &__detail-section-icon {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: var(--fs-sm);
   }
 
   // ── Stack trace ─────────────────────────────────────────
@@ -316,7 +316,7 @@
 
   &__stack-line {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11.5px;
+    font-size: var(--fs-xs);
     line-height: 1.8;
     white-space: pre-wrap;
     word-break: break-all;
@@ -346,7 +346,7 @@
 
   &__stack-empty {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: #475569;
     font-style: italic;
   }
@@ -398,7 +398,7 @@
 
   &__timeline-type {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 11.5px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     color: var(--cui-primary, #321fdb);
     white-space: nowrap;
@@ -408,13 +408,13 @@
 
   &__timeline-ts {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 10px;
+    font-size: var(--fs-2xs);
     opacity: 0.4;
   }
 
   &__timeline-payload {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 10.5px;
+    font-size: var(--fs-2xs);
     opacity: 0.5;
     white-space: nowrap;
     overflow: hidden;
@@ -422,7 +422,7 @@
   }
 
   &__timeline-empty {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     opacity: 0.4;
     font-style: italic;
   }
@@ -437,7 +437,7 @@
   &__detail-meta-row {
     display: flex;
     gap: 10px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 
@@ -472,18 +472,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: var(--fs-3xl);
     color: #22c55e;
     margin-bottom: 6px;
   }
 
   &__empty-title {
-    font-size: 16px;
+    font-size: var(--fs-xl);
     font-weight: 600;
   }
 
   &__empty-sub {
-    font-size: 13px;
+    font-size: var(--fs-base);
     opacity: 0.45;
   }
 

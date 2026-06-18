@@ -64,7 +64,7 @@ export default function AccountCard({
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            fontSize: 18,
+            fontSize: 'var(--fs-xl)',
           }}
         >
           {status.label === 'Pagado'
@@ -80,7 +80,7 @@ export default function AccountCard({
           <div
             onClick={() => onDetail(account)}
             style={{
-              fontSize: 15,
+              fontSize: 'var(--fs-base)',
               fontWeight: 600,
               color: '#1a1a2e',
               whiteSpace: 'nowrap',
@@ -93,7 +93,7 @@ export default function AccountCard({
             }}
           >
             {account.important && (
-              <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1, flexShrink: 0 }}>
+              <span style={{ color: '#e03131', fontSize: 'var(--fs-sm)', lineHeight: 1, flexShrink: 0 }}>
                 ★{' '}
               </span>
             )}
@@ -111,7 +111,7 @@ export default function AccountCard({
             {account.category && (
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--fs-2xs)',
                   color: '#6c757d',
                   background: '#f1f5f9',
                   borderRadius: 4,
@@ -122,12 +122,12 @@ export default function AccountCard({
               </span>
             )}
             {account.defaultValue > 0 && (
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#1e3a5f' }}>
+              <span style={{ fontSize: 'var(--fs-2xs)', fontWeight: 700, color: '#1e3a5f' }}>
                 {fmt(account.defaultValue)}
               </span>
             )}
             {account.maxDatePay && (
-              <span style={{ fontSize: 11, color: '#6c757d' }}>día {account.maxDatePay}</span>
+              <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>día {account.maxDatePay}</span>
             )}
             <InlinePaymentMethod account={account} />
           </div>
@@ -144,7 +144,7 @@ export default function AccountCard({
         >
           <span
             style={{
-              fontSize: 12,
+              fontSize: 'var(--fs-xs)',
               fontWeight: 700,
               borderRadius: 20,
               padding: '3px 10px',
@@ -164,7 +164,7 @@ export default function AccountCard({
                 border: 'none',
                 background: '#1e3a5f',
                 color: '#fff',
-                fontSize: 12,
+                fontSize: 'var(--fs-xs)',
                 fontWeight: 700,
                 cursor: isSaving ? 'not-allowed' : 'pointer',
                 whiteSpace: 'nowrap',
@@ -196,10 +196,10 @@ export default function AccountCard({
       {isDebt && (
         <div style={{ marginTop: 10, padding: '8px 0 2px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 11, color: '#6c757d' }}>
+            <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>
               Pagado: <strong style={{ color: '#1a1a2e' }}>{fmt(cumulativePaid)}</strong>
             </span>
-            <span style={{ fontSize: 11, color: '#6c757d' }}>
+            <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>
               Saldo:{' '}
               <strong style={{ color: status.remaining > 0 ? '#e03131' : '#2f9e44' }}>
                 {fmt(status.remaining ?? 0)}
@@ -218,7 +218,7 @@ export default function AccountCard({
               }}
             />
           </div>
-          <div style={{ fontSize: 10, color: '#adb5bd', textAlign: 'right', marginTop: 3 }}>
+          <div style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', textAlign: 'right', marginTop: 3 }}>
             {Math.round((cumulativePaid / account.targetAmount) * 100)}% completado
           </div>
         </div>
@@ -248,7 +248,7 @@ export default function AccountCard({
                     onClick={() => !isEditing && startEdit(p)}
                     title="Editar"
                     style={{
-                      fontSize: 13,
+                      fontSize: 'var(--fs-sm)',
                       fontWeight: 700,
                       color: '#2f9e44',
                       flex: 1,
@@ -262,7 +262,7 @@ export default function AccountCard({
                     {fmt(p.amount)}
                   </span>
                   {p.date && (
-                    <span style={{ fontSize: 11, color: '#adb5bd', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', whiteSpace: 'nowrap' }}>
                       {p.date}
                     </span>
                   )}
@@ -271,7 +271,7 @@ export default function AccountCard({
                       onClick={() => startEdit(p)}
                       title="Editar nota"
                       style={{
-                        fontSize: 11,
+                        fontSize: 'var(--fs-2xs)',
                         color: '#6c757d',
                         fontStyle: 'italic',
                         maxWidth: 80,
@@ -292,7 +292,7 @@ export default function AccountCard({
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        fontSize: 15,
+                        fontSize: 'var(--fs-base)',
                         padding: '2px 4px',
                       }}
                     >
@@ -308,7 +308,7 @@ export default function AccountCard({
                         border: 'none',
                         padding: '2px 4px',
                         cursor: isAttaching ? 'not-allowed' : 'pointer',
-                        fontSize: 13,
+                        fontSize: 'var(--fs-sm)',
                         color: '#adb5bd',
                         display: 'flex',
                         alignItems: 'center',
@@ -330,7 +330,7 @@ export default function AccountCard({
                         border: 'none',
                         cursor: 'pointer',
                         color: '#e03131',
-                        fontSize: 14,
+                        fontSize: 'var(--fs-sm)',
                         padding: '2px 4px',
                       }}
                     >
@@ -349,7 +349,7 @@ export default function AccountCard({
                       autoFocus
                       style={{
                         width: '100%',
-                        fontSize: 14,
+                        fontSize: 'var(--fs-sm)',
                         fontWeight: 700,
                         color: '#1e3a5f',
                         border: 'none',
@@ -366,7 +366,7 @@ export default function AccountCard({
                       placeholder="Nota (opcional)"
                       style={{
                         width: '100%',
-                        fontSize: 12,
+                        fontSize: 'var(--fs-xs)',
                         color: '#6c757d',
                         border: 'none',
                         borderBottom: '1px solid #dee2e6',
@@ -385,7 +385,7 @@ export default function AccountCard({
                           borderRadius: 6,
                           border: '1px solid #dee2e6',
                           background: '#fff',
-                          fontSize: 12,
+                          fontSize: 'var(--fs-xs)',
                           color: '#6c757d',
                           cursor: 'pointer',
                         }}
@@ -401,7 +401,7 @@ export default function AccountCard({
                           border: 'none',
                           background: isDirty(p) ? '#1e3a5f' : '#e9ecef',
                           color: isDirty(p) ? '#fff' : '#adb5bd',
-                          fontSize: 12,
+                          fontSize: 'var(--fs-xs)',
                           fontWeight: 600,
                           cursor: isDirty(p) ? 'pointer' : 'not-allowed',
                         }}
@@ -417,7 +417,7 @@ export default function AccountCard({
           {status.label === 'Parcial' && (
             <div
               style={{
-                fontSize: 11,
+                fontSize: 'var(--fs-2xs)',
                 color: '#0ea5e9',
                 fontWeight: 600,
                 textAlign: 'right',

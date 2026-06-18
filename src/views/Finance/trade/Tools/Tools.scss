@@ -2,7 +2,7 @@
   padding: 1.5rem;
 
   &__title {
-    font-size: 1.1rem;
+    font-size: var(--fs-2xl);
     font-weight: 600;
     margin: 0 0 1.5rem;
     color: var(--cui-body-color);
@@ -23,7 +23,7 @@
   }
 
   &__card-title {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -37,7 +37,7 @@
 
   &__label {
     display: block;
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--cui-secondary-color);
     margin-bottom: 0.3rem;
@@ -51,7 +51,7 @@
     border: 1px solid var(--cui-border-color);
     border-radius: 6px;
     color: var(--cui-body-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     padding: 0.42rem 0.7rem;
     transition: border-color 0.15s;
     font-variant-numeric: tabular-nums;
@@ -78,7 +78,7 @@
   }
 
   &__result-label {
-    font-size: 0.7rem;
+    font-size: var(--fs-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -86,7 +86,7 @@
   }
 
   &__result-value {
-    font-size: 1rem;
+    font-size: var(--fs-xl);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--cui-body-color);

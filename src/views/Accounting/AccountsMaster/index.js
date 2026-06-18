@@ -354,14 +354,14 @@ export default function AccountsMaster() {
                     style={{
                       fontFamily: 'monospace',
                       fontWeight: 700,
-                      fontSize: 13,
+                      fontSize: 'var(--fs-base)',
                       color: '#1e3a5f',
                     }}
                   >
                     {value}
                   </span>
                 ) : (
-                  <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  <span style={{ color: '#dee2e6', fontSize: 'var(--fs-base)' }}>—</span>
                 )
               }
             />
@@ -372,7 +372,7 @@ export default function AccountsMaster() {
               cellRender={({ value, data: row }) => (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   {row.important && (
-                    <span style={{ color: '#e03131', fontSize: 13, lineHeight: 1 }}>★</span>
+                    <span style={{ color: '#e03131', fontSize: 'var(--fs-base)', lineHeight: 1 }}>★</span>
                   )}
                   {value}
                 </span>
@@ -384,9 +384,9 @@ export default function AccountsMaster() {
               minWidth={200}
               cellRender={({ value }) =>
                 value ? (
-                  <span style={{ fontSize: 12, color: '#374151' }}>{value}</span>
+                  <span style={{ fontSize: 'var(--fs-base)', color: '#374151' }}>{value}</span>
                 ) : (
-                  <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  <span style={{ color: '#dee2e6', fontSize: 'var(--fs-base)' }}>—</span>
                 )
               }
             />
@@ -400,7 +400,7 @@ export default function AccountsMaster() {
                 return (
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 'var(--fs-base)',
                       fontWeight: 600,
                       borderRadius: 4,
                       padding: '2px 8px',
@@ -425,7 +425,7 @@ export default function AccountsMaster() {
                 return (
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 'var(--fs-base)',
                       fontWeight: 600,
                       borderRadius: 4,
                       padding: '2px 8px',
@@ -455,7 +455,7 @@ export default function AccountsMaster() {
                     }).format(value)}
                   </span>
                 ) : (
-                  <span style={{ color: '#adb5bd', fontSize: 11 }}>—</span>
+                  <span style={{ color: '#adb5bd', fontSize: 'var(--fs-base)' }}>—</span>
                 )
               }
             />
@@ -481,7 +481,7 @@ export default function AccountsMaster() {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      fontSize: 12,
+                      fontSize: 'var(--fs-base)',
                       color: '#495057',
                       cursor: 'default',
                     }}
@@ -489,7 +489,7 @@ export default function AccountsMaster() {
                     {value}
                   </span>
                 ) : (
-                  <span style={{ color: '#dee2e6', fontSize: 11 }}>—</span>
+                  <span style={{ color: '#dee2e6', fontSize: 'var(--fs-base)' }}>—</span>
                 )
               }
             />
@@ -505,7 +505,7 @@ export default function AccountsMaster() {
                     dispatch(pushNotification({ type: 'success', message: 'Estado actualizado.' }))
                   }}
                   style={{
-                    fontSize: 11,
+                    fontSize: 'var(--fs-base)',
                     fontWeight: 700,
                     borderRadius: 4,
                     padding: '2px 8px',
@@ -535,7 +535,7 @@ export default function AccountsMaster() {
                       border: 'none',
                       cursor: 'pointer',
                       color: '#1e3a5f',
-                      fontSize: 15,
+                      fontSize: 'var(--fs-base)',
                       padding: '2px 4px',
                     }}
                   >
@@ -549,7 +549,7 @@ export default function AccountsMaster() {
                       border: 'none',
                       cursor: 'pointer',
                       color: '#e03131',
-                      fontSize: 15,
+                      fontSize: 'var(--fs-base)',
                       padding: '2px 4px',
                     }}
                   >

@@ -30,7 +30,7 @@
       border-radius: 50%;
       border: 1px solid #dee2e6;
       background: #fff;
-      font-size: 18px;
+      font-size: var(--fs-2xl);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -46,18 +46,18 @@
       text-align: center;
 
       .month-name {
-        font-size: 22px;
+        font-size: var(--fs-3xl);
         font-weight: 700;
         color: #1a1a2e;
       }
 
       .year-name {
-        font-size: 13px;
+        font-size: var(--fs-base);
         color: #6c757d;
       }
 
       .current-day {
-        font-size: 12px;
+        font-size: var(--fs-sm);
         color: #adb5bd;
         margin-top: 2px;
       }
@@ -82,13 +82,13 @@
       }
 
       .summary-label {
-        font-size: 11px;
+        font-size: var(--fs-xs);
         margin-top: 3px;
         font-weight: 600;
       }
 
       .summary-total {
-        font-size: 10px;
+        font-size: var(--fs-2xs);
         margin-top: 4px;
         opacity: 0.85;
         padding-left: 4px;
@@ -126,13 +126,13 @@
     align-items: center;
 
     .total-label {
-      font-size: 13px;
+      font-size: var(--fs-base);
       color: #1e3a5f;
       font-weight: 600;
     }
 
     .total-value {
-      font-size: 18px;
+      font-size: var(--fs-2xl);
       font-weight: 800;
       color: #1e3a5f;
     }
@@ -152,19 +152,19 @@
       gap: 8px;
 
       .balance-label {
-        font-size: 12px;
+        font-size: var(--fs-sm);
         color: #6c757d;
         font-weight: 500;
       }
 
       .balance-formula {
-        font-size: 11px;
+        font-size: var(--fs-xs);
         color: #adb5bd;
       }
     }
 
     .balance-value {
-      font-size: 16px;
+      font-size: var(--fs-xl);
       font-weight: 800;
     }
 
@@ -191,7 +191,7 @@
       padding: 9px 0;
       border: none;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: var(--fs-base);
       cursor: pointer;
       transition: all 0.15s;
       background: #e9ecef;
@@ -219,7 +219,7 @@
       padding: 7px 4px;
       border: none;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: var(--fs-sm);
       cursor: pointer;
       background: transparent;
       color: #6c757d;
@@ -245,6 +245,6 @@
     text-align: center;
     padding: 48px 24px;
     color: #adb5bd;
-    font-size: 14px;
+    font-size: var(--fs-md);
   }
 }
