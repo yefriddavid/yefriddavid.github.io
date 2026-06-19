@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+Allow: /tools/calc
+
+Sitemap: https://yefriddavid.github.io/yefriddavid.github.io/sitemap.xml
