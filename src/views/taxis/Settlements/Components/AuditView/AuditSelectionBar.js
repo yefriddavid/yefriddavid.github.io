@@ -31,6 +31,7 @@ const AuditSelectionBar = ({
   clearAuditRowSelection,
   net,
   pendingTotal,
+  totalExpenses,
 }) => {
   if (selectedAuditRows.size === 0) return null
 
@@ -113,6 +114,11 @@ const AuditSelectionBar = ({
           Net + items + pending drivers:{' '}
         </span>
         {fmt(netPlusItemsPlusPending)}
+      </span>
+
+      <span style={{ fontSize: 13, fontWeight: 700, color: '#ff8787', whiteSpace: 'nowrap' }}>
+        <span style={{ color: 'rgba(255,135,135,0.7)', fontWeight: 500 }}>Gastos: </span>
+        {fmt(totalExpenses)}
       </span>
 
       <button

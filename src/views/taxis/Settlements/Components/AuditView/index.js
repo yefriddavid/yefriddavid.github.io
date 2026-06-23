@@ -28,6 +28,7 @@ const AuditView = (props) => {
     handleBookResolvedToggle,
     net,
     pendingTotal,
+    totalExpenses,
   } = props
 
   const hook = useAuditView(props)
@@ -90,7 +91,12 @@ const AuditView = (props) => {
         handleBookNoteSave={handleBookNoteSave}
         handleBookResolvedToggle={handleBookResolvedToggle}
       />
-      <AuditSelectionBar {...hook} net={net} pendingTotal={pendingTotal} />
+      <AuditSelectionBar
+        {...hook}
+        net={net}
+        pendingTotal={pendingTotal}
+        totalExpenses={totalExpenses}
+      />
     </div>
   )
 }

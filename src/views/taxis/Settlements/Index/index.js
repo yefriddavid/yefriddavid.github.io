@@ -975,6 +975,7 @@ const Taxis = () => {
               exportAuditToPdf={exportAuditToPdf}
               net={net}
               pendingTotal={pendingTotal}
+              totalExpenses={totalExpenses}
             />
           ) : null}
         </CCardBody>
