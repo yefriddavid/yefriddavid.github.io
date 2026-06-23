@@ -34,6 +34,7 @@ import SettlementCreateForm from '../Components/SettlementCreateForm'
 import AuditView from '../Components/AuditView'
 import PeriodNotes from '../Components/PeriodNotes'
 import PeriodAttachments from '../Components/PeriodAttachments'
+import SettlementsAuditChat from '../Components/SettlementsAuditChat'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { buildAuditExporters } from './auditExport'
 
@@ -983,6 +984,7 @@ const Taxis = () => {
 
       <PeriodNotes period={period} />
       <PeriodAttachments period={period} />
+      <SettlementsAuditChat period={period} settlements={filtered} expenses={periodExpenses} />
     </>
   )
 }
