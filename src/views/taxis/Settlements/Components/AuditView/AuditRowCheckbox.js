@@ -19,7 +19,7 @@ const AuditRowCheckbox = ({ checked, onToggle }) => (
       top: 0,
       bottom: 0,
       left: 0,
-      width: 6,
+      width: 12,
       borderRadius: 3,
       background: checked ? '#cbd5e1' : '#f1f3f5',
       cursor: 'pointer',
