@@ -121,7 +121,7 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
                         <td className="summary-table__td summary-table__td--icon">
                           <input type="checkbox" checked={checked} onChange={() => {}} />
                         </td>
-                        <td className="summary-table__td">{r.date}</td>
+                        <td className="summary-table__td">{r.date?.slice(-2)}</td>
                         <td className="summary-table__td">{r.description}</td>
                         <td className="summary-table__td">{r.category}</td>
                         <td className="summary-table__td">{r.plate ?? '—'}</td>
