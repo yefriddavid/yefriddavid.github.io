@@ -35,6 +35,19 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
     }, {}),
   ).sort((a, b) => b.total - a.total)
 
+  const byPlate = Object.values(
+    checkedExpensesList.reduce((acc, r) => {
+      const key = r.plate ?? '—'
+      if (!acc[key]) acc[key] = { plate: key, count: 0, total: 0, drivers: new Set() }
+      acc[key].count += 1
+      acc[key].total += r.amount || 0
+      if (r.driverName) acc[key].drivers.add(r.driverName)
+      return acc
+    }, {}),
+  )
+    .map((p) => ({ ...p, drivers: [...p.drivers].join(', ') || '—' }))
+    .sort((a, b) => b.total - a.total)
+
   return (
     <CModal visible={visible} onClose={onClose} size="lg" alignment="center">
       <CModalHeader>
@@ -62,6 +75,15 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
               Total por categoría
             </CNavLink>
           </CNavItem>
+          <CNavItem>
+            <CNavLink
+              active={tab === 'plate'}
+              onClick={() => setTab('plate')}
+              className="cursor-pointer"
+            >
+              Total por placa
+            </CNavLink>
+          </CNavItem>
         </CNav>
         <CTabContent>
           <CTabPane visible={tab === 'detail'}>
@@ -76,6 +98,7 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
                     <th className="summary-table__th">Descripción</th>
                     <th className="summary-table__th">Categoría</th>
                     <th className="summary-table__th">Placa</th>
+                    <th className="summary-table__th">Conductor</th>
                     <th className="summary-table__th summary-table__th--right">Monto</th>
                   </tr>
                 </thead>
@@ -102,6 +125,7 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
                         <td className="summary-table__td">{r.description}</td>
                         <td className="summary-table__td">{r.category}</td>
                         <td className="summary-table__td">{r.plate ?? '—'}</td>
+                        <td className="summary-table__td">{r.driverName ?? '—'}</td>
                         <td className="summary-table__td summary-table__td--right summary-table__td--bold">
                           {fmt(r.amount)}
                         </td>
@@ -111,7 +135,7 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
                 </tbody>
                 <tfoot>
                   <tr className="summary-table__foot-row">
-                    <td colSpan={5} className="summary-table__td summary-table__td--bolder">
+                    <td colSpan={6} className="summary-table__td summary-table__td--bolder">
                       Total
                     </td>
                     <td className="summary-table__td summary-table__td--right summary-table__td--orange">
@@ -155,6 +179,52 @@ const ExpensesModal = ({ visible, onClose, periodExpenses, period }) => {
                     <td className="summary-table__td summary-table__td--bolder">Total</td>
                     <td className="summary-table__td summary-table__td--right summary-table__td--bolder">
                       {byCategory.reduce((s, c) => s + c.count, 0)}
+                    </td>
+                    <td className="summary-table__td summary-table__td--right summary-table__td--orange">
+                      {fmt(checkedTotal)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
+          </CTabPane>
+          <CTabPane visible={tab === 'plate'}>
+            {byPlate.length === 0 ? (
+              <span className="master-empty">{t('taxis.settlements.summary.noRecords')}</span>
+            ) : (
+              <table className="summary-table">
+                <thead>
+                  <tr className="summary-table__head-row">
+                    <th className="summary-table__th">Placa</th>
+                    <th className="summary-table__th">Conductor</th>
+                    <th className="summary-table__th summary-table__th--right">Gastos</th>
+                    <th className="summary-table__th summary-table__th--right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {byPlate.map((p, i) => (
+                    <tr
+                      key={p.plate}
+                      className={`summary-table__row${i % 2 !== 0 ? ' summary-table__row--alt' : ''}`}
+                    >
+                      <td className="summary-table__td summary-table__td--bold">{p.plate}</td>
+                      <td className="summary-table__td summary-table__td--muted">{p.drivers}</td>
+                      <td className="summary-table__td summary-table__td--right summary-table__td--muted">
+                        {p.count}
+                      </td>
+                      <td className="summary-table__td summary-table__td--right summary-table__td--bold">
+                        {fmt(p.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="summary-table__foot-row">
+                    <td colSpan={2} className="summary-table__td summary-table__td--bolder">
+                      Total
+                    </td>
+                    <td className="summary-table__td summary-table__td--right summary-table__td--bolder">
+                      {byPlate.reduce((s, p) => s + p.count, 0)}
                     </td>
                     <td className="summary-table__td summary-table__td--right summary-table__td--orange">
                       {fmt(checkedTotal)}
