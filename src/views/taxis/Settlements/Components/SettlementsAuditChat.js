@@ -1,8 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import ReactMarkdown from 'react-markdown'
-import { CCard, CCardHeader, CCardBody } from '@coreui/react'
-import { hasAuditChatKey, sendAuditMessage } from 'src/services/anthropic/auditChat'
+import {
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+} from '@coreui/react'
+import * as taxiAuditNoteActions from 'src/actions/taxi/taxiAuditNoteActions'
+import {
+  hasAuditChatKey,
+  sendAuditMessage,
+  proposeAuditNotes,
+} from 'src/services/anthropic/auditChat'
 
 const SUGGESTIONS = [
   'Audita este período',
@@ -61,12 +75,16 @@ const ChatMessage = ({ msg }) => {
   )
 }
 
-const SettlementsAuditChat = ({ period, settlements, expenses }) => {
+const SettlementsAuditChat = ({ period, settlements, expenses, periodDrivers, auditDays }) => {
+  const dispatch = useDispatch()
   const { attachments } = useSelector((s) => s.taxiPeriodAttachment)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [proposing, setProposing] = useState(false)
+  const [proposedNotes, setProposedNotes] = useState([])
+  const [showNotesModal, setShowNotesModal] = useState(false)
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -92,6 +110,8 @@ const SettlementsAuditChat = ({ period, settlements, expenses }) => {
         settlements,
         expenses,
         attachments,
+        periodDrivers,
+        auditDays,
       })
       setMessages([...history, { role: 'assistant', content: reply }])
     } catch (e) {
@@ -99,6 +119,60 @@ const SettlementsAuditChat = ({ period, settlements, expenses }) => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const proposeNotes = async () => {
+    setProposing(true)
+    setError(null)
+    try {
+      const result = await proposeAuditNotes({
+        period,
+        settlements,
+        expenses,
+        attachments,
+        periodDrivers,
+        auditDays,
+      })
+      const validNotes = (result.notes ?? []).filter((n) =>
+        periodDrivers.some((d) => d.name === n.driver),
+      )
+      if (validNotes.length === 0) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: 'No encontré hallazgos que ameriten una nota nueva.' },
+        ])
+      } else {
+        setProposedNotes(validNotes.map((n, i) => ({ ...n, id: i, approved: true })))
+        setShowNotesModal(true)
+      }
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setProposing(false)
+    }
+  }
+
+  const toggleProposedNote = (id) =>
+    setProposedNotes((prev) => prev.map((n) => (n.id === id ? { ...n, approved: !n.approved } : n)))
+
+  const confirmCreateNotes = () => {
+    const toCreate = proposedNotes.filter((n) => n.approved)
+    toCreate.forEach((n) => {
+      dispatch(
+        taxiAuditNoteActions.upsertRequest({
+          date: n.date,
+          driver: n.driver,
+          note: n.note,
+          resolved: false,
+          noteType: 'book',
+        }),
+      )
+    })
+    setShowNotesModal(false)
+    setMessages((prev) => [
+      ...prev,
+      { role: 'assistant', content: `Creé ${toCreate.length} nota(s) de auditoría.` },
+    ])
   }
 
   return (
@@ -188,7 +262,101 @@ const SettlementsAuditChat = ({ period, settlements, expenses }) => {
             Enviar
           </button>
         </div>
+
+        <button
+          disabled={proposing}
+          onClick={proposeNotes}
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            padding: '6px 14px',
+            borderRadius: 6,
+            border: '1px solid #7c3aed',
+            background: '#faf5ff',
+            color: '#7c3aed',
+            cursor: proposing ? 'default' : 'pointer',
+            marginTop: 8,
+          }}
+        >
+          {proposing ? 'Analizando…' : '🔖 Proponer notas de auditoría'}
+        </button>
       </CCardBody>
+
+      <CModal
+        visible={showNotesModal}
+        onClose={() => setShowNotesModal(false)}
+        size="lg"
+        alignment="center"
+        scrollable
+      >
+        <CModalHeader>
+          <CModalTitle style={{ fontSize: 14 }}>Notas automáticas de auditoría</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p style={{ fontSize: 12, color: 'var(--cui-secondary-color)', marginBottom: 12 }}>
+            Claude propuso estas notas a partir de las liquidaciones, gastos y soportes del período.
+            Desmarca las que no quieras crear y confirma — no se guarda nada hasta que apruebes.
+          </p>
+          {proposedNotes.map((n) => (
+            <label
+              key={n.id}
+              style={{
+                display: 'flex',
+                gap: 8,
+                alignItems: 'flex-start',
+                padding: '8px 0',
+                borderBottom: '1px solid var(--cui-border-color)',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={n.approved}
+                onChange={() => toggleProposedNote(n.id)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1e3a5f' }}>
+                  {n.date} — {n.driver}
+                </div>
+                <div style={{ fontSize: 13 }}>{n.note}</div>
+              </div>
+            </label>
+          ))}
+        </CModalBody>
+        <CModalFooter>
+          <button
+            onClick={() => setShowNotesModal(false)}
+            style={{
+              fontSize: 12,
+              padding: '6px 14px',
+              borderRadius: 6,
+              border: '1px solid var(--cui-border-color)',
+              background: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            disabled={!proposedNotes.some((n) => n.approved)}
+            onClick={confirmCreateNotes}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              padding: '6px 14px',
+              borderRadius: 6,
+              border: '1px solid #1e3a5f',
+              background: '#1e3a5f',
+              color: '#fff',
+              cursor: proposedNotes.some((n) => n.approved) ? 'pointer' : 'default',
+              opacity: proposedNotes.some((n) => n.approved) ? 1 : 0.5,
+            }}
+          >
+            Crear {proposedNotes.filter((n) => n.approved).length} nota(s)
+          </button>
+        </CModalFooter>
+      </CModal>
     </CCard>
   )
 }

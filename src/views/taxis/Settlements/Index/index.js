@@ -984,7 +984,13 @@ const Taxis = () => {
 
       <PeriodNotes period={period} />
       <PeriodAttachments period={period} />
-      <SettlementsAuditChat period={period} settlements={filtered} expenses={periodExpenses} />
+      <SettlementsAuditChat
+        period={period}
+        settlements={filtered}
+        expenses={periodExpenses}
+        periodDrivers={periodDrivers}
+        auditDays={auditDays}
+      />
     </>
   )
 }

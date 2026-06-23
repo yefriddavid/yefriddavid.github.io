@@ -18,6 +18,41 @@ const EXPENSES = [
 const ATTACHMENTS = [
   { id: 'a1', image: 'data:image/jpeg;base64,AAAA', description: 'Soporte gastos' },
 ]
+const PERIOD_DRIVERS = [
+  { name: 'Alonso', defaultVehicle: 'ABC123', defaultAmount: 85000, defaultAmountSunday: 95000 },
+]
+const AUDIT_DAYS = [
+  {
+    dateStr: '2026-06-13',
+    status: 'full',
+    isHoliday: false,
+    isSunday: false,
+    hasPicoPlaca: false,
+    isFuture: false,
+    missing: [],
+    underpaidVehicles: [],
+  },
+  {
+    dateStr: '2026-06-14',
+    status: 'partial',
+    isHoliday: false,
+    isSunday: true,
+    hasPicoPlaca: false,
+    isFuture: false,
+    missing: ['Vladimir'],
+    underpaidVehicles: ['XYZ999'],
+  },
+  {
+    dateStr: '2026-06-30',
+    status: 'future',
+    isHoliday: false,
+    isSunday: false,
+    hasPicoPlaca: false,
+    isFuture: true,
+    missing: [],
+    underpaidVehicles: [],
+  },
+]
 
 const mockFetch = (body, ok = true, status = 200) => {
   global.fetch = vi.fn().mockResolvedValue({
@@ -46,6 +81,8 @@ describe('sendAuditMessage', () => {
       settlements: SETTLEMENTS,
       expenses: EXPENSES,
       attachments: ATTACHMENTS,
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     expect(fetch).toHaveBeenCalledWith(
@@ -62,6 +99,8 @@ describe('sendAuditMessage', () => {
       settlements: SETTLEMENTS,
       expenses: EXPENSES,
       attachments: ATTACHMENTS,
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const [, options] = fetch.mock.calls[0]
@@ -78,6 +117,8 @@ describe('sendAuditMessage', () => {
       settlements: SETTLEMENTS,
       expenses: EXPENSES,
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -95,6 +136,8 @@ describe('sendAuditMessage', () => {
       settlements: [],
       expenses: EXPENSES,
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -112,11 +155,70 @@ describe('sendAuditMessage', () => {
       settlements: [],
       expenses: [],
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
     const contextText = body.messages[0].content[0].text
     expect(contextText).toContain('sin gastos en este período')
+  })
+
+  it('includes driver expected amounts in the context block', async () => {
+    mockFetch({ content: [{ text: 'Todo en orden.' }] })
+    await sendAuditMessage({
+      messages: MESSAGES,
+      period: PERIOD,
+      settlements: [],
+      expenses: [],
+      attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: [],
+    })
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body)
+    const contextText = body.messages[0].content[0].text
+    expect(contextText).toContain('Alonso')
+    expect(contextText).toContain('85000')
+    expect(contextText).toContain('95000')
+  })
+
+  it('includes the already-computed day coverage status, excluding future days', async () => {
+    mockFetch({ content: [{ text: 'Todo en orden.' }] })
+    await sendAuditMessage({
+      messages: MESSAGES,
+      period: PERIOD,
+      settlements: [],
+      expenses: [],
+      attachments: [],
+      periodDrivers: [],
+      auditDays: AUDIT_DAYS,
+    })
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body)
+    const contextText = body.messages[0].content[0].text
+    expect(contextText).toContain('2026-06-13 | estado: full')
+    expect(contextText).toContain('domingo')
+    expect(contextText).toContain('faltan: Vladimir')
+    expect(contextText).toContain('pago insuficiente en placa(s): XYZ999')
+    expect(contextText).not.toContain('2026-06-30')
+  })
+
+  it('shows a placeholder when there are no past audit days', async () => {
+    mockFetch({ content: [{ text: 'Todo en orden.' }] })
+    await sendAuditMessage({
+      messages: MESSAGES,
+      period: PERIOD,
+      settlements: [],
+      expenses: [],
+      attachments: [],
+      periodDrivers: [],
+      auditDays: [],
+    })
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body)
+    const contextText = body.messages[0].content[0].text
+    expect(contextText).toContain('sin días transcurridos en este período')
   })
 
   it('includes attachment images as base64 blocks with their description', async () => {
@@ -127,6 +229,8 @@ describe('sendAuditMessage', () => {
       settlements: [],
       expenses: [],
       attachments: ATTACHMENTS,
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -144,6 +248,8 @@ describe('sendAuditMessage', () => {
       settlements: [],
       expenses: [],
       attachments: [{ id: 'bad', image: 'not-a-data-url', description: 'x' }],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -159,6 +265,8 @@ describe('sendAuditMessage', () => {
       settlements: [],
       expenses: [],
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -174,6 +282,8 @@ describe('sendAuditMessage', () => {
       settlements: SETTLEMENTS,
       expenses: EXPENSES,
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
 
     const body = JSON.parse(fetch.mock.calls[0][1].body)
@@ -189,6 +299,8 @@ describe('sendAuditMessage', () => {
       settlements: SETTLEMENTS,
       expenses: EXPENSES,
       attachments: [],
+      periodDrivers: PERIOD_DRIVERS,
+      auditDays: AUDIT_DAYS,
     })
     expect(result).toBe('Hallé 2 inconsistencias.')
   })
@@ -202,6 +314,8 @@ describe('sendAuditMessage', () => {
         settlements: SETTLEMENTS,
         expenses: EXPENSES,
         attachments: [],
+        periodDrivers: PERIOD_DRIVERS,
+        auditDays: AUDIT_DAYS,
       }),
     ).rejects.toThrow('invalid_api_key')
   })
@@ -219,6 +333,8 @@ describe('sendAuditMessage', () => {
         settlements: SETTLEMENTS,
         expenses: EXPENSES,
         attachments: [],
+        periodDrivers: PERIOD_DRIVERS,
+        auditDays: AUDIT_DAYS,
       }),
     ).rejects.toThrow('Error 500')
   })
