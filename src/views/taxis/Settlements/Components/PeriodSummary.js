@@ -22,6 +22,7 @@ import { fmt } from './utils'
 import StatCard from 'src/components/StatCard'
 import './PeriodSummary.scss'
 import Spinner from 'src/components/shared/Spinner'
+import ExpensesModal from './ExpensesModal'
 
 const PeriodSummary = ({
   summaryOpen,
@@ -49,7 +50,6 @@ const PeriodSummary = ({
   const [pendingModalOpen, setPendingModalOpen] = useState(false)
   const [totalSettledModalOpen, setTotalSettledModalOpen] = useState(false)
   const [totalSettledTab, setTotalSettledTab] = useState('byVehicle')
-  const [checkedExpenses, setCheckedExpenses] = useState(new Set())
   const [includePending, setIncludePending] = useState(false)
 
   return (
@@ -190,7 +190,6 @@ const PeriodSummary = ({
                 disabled={periodExpenses.length === 0}
                 onClick={(e) => {
                   e.stopPropagation()
-                  setCheckedExpenses(new Set(periodExpenses.map((r) => r.id)))
                   setExpensesModalOpen(true)
                 }}
                 className="period-summary__stat-btn"
@@ -199,81 +198,12 @@ const PeriodSummary = ({
               </CButton>
             </StatCard>
 
-            <CModal
+            <ExpensesModal
               visible={expensesModalOpen}
               onClose={() => setExpensesModalOpen(false)}
-              size="lg"
-              alignment="center"
-            >
-              <CModalHeader>
-                <CModalTitle>
-                  {t('taxis.settlements.summary.totalExpenses')} — {period.month}/{period.year}
-                </CModalTitle>
-              </CModalHeader>
-              <CModalBody>
-                {periodExpenses.length === 0 ? (
-                  <span className="master-empty">{t('taxis.settlements.summary.noRecords')}</span>
-                ) : (
-                  (() => {
-                    const checkedTotal = periodExpenses
-                      .filter((r) => checkedExpenses.has(r.id))
-                      .reduce((acc, r) => acc + (r.amount || 0), 0)
-                    return (
-                      <table className="summary-table">
-                        <thead>
-                          <tr className="summary-table__head-row">
-                            <th className="summary-table__th summary-table__th--icon" />
-                            <th className="summary-table__th">Fecha</th>
-                            <th className="summary-table__th">Descripción</th>
-                            <th className="summary-table__th">Categoría</th>
-                            <th className="summary-table__th">Placa</th>
-                            <th className="summary-table__th summary-table__th--right">Monto</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {periodExpenses.map((r) => {
-                            const checked = checkedExpenses.has(r.id)
-                            return (
-                              <tr
-                                key={r.id}
-                                className="summary-table__row summary-table__row--clickable"
-                                style={{ opacity: checked ? 1 : 0.4 }}
-                                onClick={() =>
-                                  setCheckedExpenses((prev) => {
-                                    const next = new Set(prev)
-                                    checked ? next.delete(r.id) : next.add(r.id)
-                                    return next
-                                  })
-                                }
-                              >
-                                <td className="summary-table__td summary-table__td--icon">
-                                  <input type="checkbox" checked={checked} onChange={() => {}} />
-                                </td>
-                                <td className="summary-table__td">{r.date}</td>
-                                <td className="summary-table__td">{r.description}</td>
-                                <td className="summary-table__td">{r.category}</td>
-                                <td className="summary-table__td">{r.plate ?? '—'}</td>
-                                <td className="summary-table__td summary-table__td--right summary-table__td--bold">
-                                  {fmt(r.amount)}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                        <tfoot>
-                          <tr className="summary-table__foot-row">
-                            <td colSpan={5} className="summary-table__td summary-table__td--bolder">Total</td>
-                            <td className="summary-table__td summary-table__td--right summary-table__td--orange">
-                              {fmt(checkedTotal)}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    )
-                  })()
-                )}
-              </CModalBody>
-            </CModal>
+              periodExpenses={periodExpenses}
+              period={period}
+            />
           </CCol>
 
           {/* Net */}
