@@ -147,7 +147,8 @@ $domotica-accent: #52b788;
   .sidebar-footer-btn {
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
-    font-size: var(--fs-lg);
+    font-size: var(--fs-base);
+    /*font-size: var(--fs-lg);*/
     letter-spacing: 0.04em;
   }
 }
