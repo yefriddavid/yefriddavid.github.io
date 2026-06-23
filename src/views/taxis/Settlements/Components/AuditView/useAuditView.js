@@ -22,6 +22,17 @@ export const useAuditView = ({ weekdayFull, auditDays, dayFilter, periodDrivers 
   const [addingSettlementDay, setAddingSettlementDay] = useState(null)
   const [editingNote, setEditingNote] = useState(null)
   const [selected, setSelected] = useState('edicion')
+  const [selectedAuditRows, setSelectedAuditRows] = useState(new Set())
+  const [auditSummaryOperation, setAuditSummaryOperation] = useState('sum')
+
+  const toggleAuditRowSelection = (dayKey) =>
+    setSelectedAuditRows((prev) => {
+      const next = new Set(prev)
+      next.has(dayKey) ? next.delete(dayKey) : next.add(dayKey)
+      return next
+    })
+
+  const clearAuditRowSelection = () => setSelectedAuditRows(new Set())
 
   const theadRef = useRef(null)
   const scrollDivRef = useRef(null)
@@ -64,6 +75,11 @@ export const useAuditView = ({ weekdayFull, auditDays, dayFilter, periodDrivers 
     setEditingNote,
     selected,
     setSelected,
+    selectedAuditRows,
+    toggleAuditRowSelection,
+    clearAuditRowSelection,
+    auditSummaryOperation,
+    setAuditSummaryOperation,
     theadRef,
     scrollDivRef,
     stickyScrollDivRef,

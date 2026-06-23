@@ -5,6 +5,7 @@ import AuditMissingCell from '../AuditMissingCell'
 import AuditNotesCell from '../AuditNotesCell'
 import AuditSettledCell from '../AuditSettledCell'
 import AuditDayDetail from '../AuditDayDetail'
+import AuditRowCheckbox from './AuditRowCheckbox'
 
 const AuditTable = ({
   t,
@@ -26,6 +27,8 @@ const AuditTable = ({
   stickyOverlayRef,
   stickyTheadRef,
   stickyScrollDivRef,
+  selectedAuditRows,
+  toggleAuditRowSelection,
   auditDriverFilter,
   simulateDay,
   loadingDay,
@@ -76,6 +79,15 @@ const AuditTable = ({
               <tr style={{ background: '#1e3a5f' }}>
                 <th
                   style={{
+                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                    position: 'sticky',
+                    left: 0,
+                    background: '#1e3a5f',
+                    zIndex: 3,
+                  }}
+                />
+                <th
+                  style={{
                     padding: '9px 12px',
                     textAlign: 'left',
                     fontSize: 11,
@@ -86,7 +98,7 @@ const AuditTable = ({
                     whiteSpace: 'nowrap',
                     borderRight: '1px solid rgba(255,255,255,0.1)',
                     position: 'sticky',
-                    left: 0,
+                    left: 36,
                     background: '#1e3a5f',
                     zIndex: 3,
                   }}
@@ -132,6 +144,17 @@ const AuditTable = ({
             <tr style={{ background: '#1e3a5f' }}>
               <th
                 style={{
+                  borderRight: '1px solid rgba(255,255,255,0.1)',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 3,
+                  background: '#1e3a5f',
+                  width: 36,
+                  minWidth: 36,
+                }}
+              />
+              <th
+                style={{
                   padding: '9px 12px',
                   textAlign: 'left',
                   fontSize: 11,
@@ -142,7 +165,7 @@ const AuditTable = ({
                   whiteSpace: 'nowrap',
                   borderRight: '1px solid rgba(255,255,255,0.1)',
                   position: 'sticky',
-                  left: 0,
+                  left: 36,
                   zIndex: 3,
                   background: '#1e3a5f',
                   width: 60,
@@ -166,7 +189,7 @@ const AuditTable = ({
                     borderRight: '1px solid rgba(255,255,255,0.1)',
                     ...(key === 'weekday' && {
                       position: 'sticky',
-                      left: 60,
+                      left: 96,
                       zIndex: 3,
                       background: '#1e3a5f',
                       boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
@@ -224,6 +247,27 @@ const AuditTable = ({
                         transition: 'box-shadow 0.1s',
                       }}
                     >
+                      {/* Selection checkbox cell — no header title; stopPropagation so it
+                          doesn't also trigger the row's onClick (day detail toggle) */}
+                      <td
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          padding: 0,
+                          textAlign: 'center',
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 1,
+                          background: 'inherit',
+                          width: 36,
+                          minWidth: 36,
+                        }}
+                      >
+                        <AuditRowCheckbox
+                          checked={selectedAuditRows.has(day.d)}
+                          onToggle={() => toggleAuditRowSelection(day.d)}
+                        />
+                      </td>
+
                       {/* Day number cell */}
                       <td
                         style={{
@@ -233,7 +277,7 @@ const AuditTable = ({
                           color: day.isFuture ? '#adb5bd' : '#1e3a5f',
                           whiteSpace: 'nowrap',
                           position: 'sticky',
-                          left: 0,
+                          left: 36,
                           zIndex: 1,
                           background: 'inherit',
                           width: 60,
@@ -288,7 +332,7 @@ const AuditTable = ({
                                         : '#64748b',
                                   fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
                                   position: 'sticky',
-                                  left: 60,
+                                  left: 96,
                                   zIndex: 1,
                                   background: 'inherit',
                                   boxShadow: '2px 0 4px rgba(0,0,0,0.08)',
@@ -547,6 +591,7 @@ const AuditTable = ({
                 borderTop: '2px solid #1e3a5f',
               }}
             >
+              <td />
               <td
                 style={{
                   padding: '9px 12px',

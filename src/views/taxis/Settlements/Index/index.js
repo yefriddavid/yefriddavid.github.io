@@ -99,6 +99,7 @@ const Taxis = () => {
   const [weekdayFull, setWeekdayFull] = useState(
     () => localStorage.getItem('settlements_weekdayFull') === 'true',
   )
+  const [includePending, setIncludePending] = useState(false)
 
   useEffect(() => {
     const handler = (e) => {
@@ -222,6 +223,7 @@ const Taxis = () => {
   const totalExpensesPaid = periodExpenses
     .filter((r) => r.paid === true)
     .reduce((acc, r) => acc + (r.amount || 0), 0)
+  const net = total - (includePending ? totalExpenses : totalExpensesPaid)
 
   const isCurrentPeriod = period.year === now.getFullYear() && period.month === now.getMonth() + 1
   const daysElapsed = isCurrentPeriod ? now.getDate() : null
@@ -411,6 +413,8 @@ const Taxis = () => {
     now,
     colombianHolidaysCalc,
   ])
+
+  const pendingTotal = pendingRows.reduce((s, r) => s + r.amount, 0)
 
   const settlementAbbr = t('taxis.settlements.settlementAbbr')
 
@@ -670,12 +674,15 @@ const Taxis = () => {
         periodExpenses={periodExpenses}
         byDriver={byDriver}
         byVehicle={byVehicle}
-        totalExpensesPaid={totalExpensesPaid}
         settlementAbbr={settlementAbbr}
         pendingRows={pendingRows}
+        pendingTotal={pendingTotal}
         now={now}
         period={period}
         loading={loading}
+        net={net}
+        includePending={includePending}
+        setIncludePending={setIncludePending}
       />
 
       <CCard>
@@ -966,6 +973,8 @@ const Taxis = () => {
               auditLeftBorder={auditLeftBorder}
               exportAuditToExcel={exportAuditToExcel}
               exportAuditToPdf={exportAuditToPdf}
+              net={net}
+              pendingTotal={pendingTotal}
             />
           ) : null}
         </CCardBody>

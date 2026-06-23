@@ -3,6 +3,7 @@ import { useAuditView } from './useAuditView'
 import AuditStatusStrip from './AuditStatusStrip'
 import AuditFiltersBar from './AuditFiltersBar'
 import AuditTable from './AuditTable'
+import AuditSelectionBar from './AuditSelectionBar'
 import AnalysisModal from './AnalysisModal'
 import InstructionsModal from './InstructionsModal'
 
@@ -25,6 +26,8 @@ const AuditView = (props) => {
     handleNoteSave,
     handleBookNoteSave,
     handleBookResolvedToggle,
+    net,
+    pendingTotal,
   } = props
 
   const hook = useAuditView(props)
@@ -87,6 +90,7 @@ const AuditView = (props) => {
         handleBookNoteSave={handleBookNoteSave}
         handleBookResolvedToggle={handleBookResolvedToggle}
       />
+      <AuditSelectionBar {...hook} net={net} pendingTotal={pendingTotal} />
     </div>
   )
 }

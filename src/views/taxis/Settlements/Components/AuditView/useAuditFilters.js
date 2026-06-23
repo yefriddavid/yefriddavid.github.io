@@ -46,6 +46,19 @@ export const useAuditFilters = ({ auditDays, dayFilter, periodDrivers }) => {
 
   const hasFilters = auditPlateFilter || auditDriverFilter.size > 0 || auditStatusFilter.size > 0
 
+  // Per-day totals: `real` is the amount actually recorded that day, `ideal`
+  // is what drivers were supposed to pay that day regardless of whether they
+  // already did. Single source of truth so the audit table cells and the
+  // selection summary bar never compute this differently.
+  const getDayTotals = (day) => {
+    const recs =
+      auditDriverFilter.size > 0
+        ? day.dayRecords.filter((r) => auditDriverFilter.has(r.driver))
+        : day.dayRecords
+    const real = day.isFuture ? 0 : recs.reduce((s, r) => s + (r.amount || 0), 0)
+    return { real, ideal: simulateDay(day).total }
+  }
+
   return {
     auditPlateFilter,
     setAuditPlateFilter,
@@ -54,6 +67,7 @@ export const useAuditFilters = ({ auditDays, dayFilter, periodDrivers }) => {
     auditStatusFilter,
     setAuditStatusFilter,
     simulateDay,
+    getDayTotals,
     auditFilteredDays,
     hasFilters,
   }

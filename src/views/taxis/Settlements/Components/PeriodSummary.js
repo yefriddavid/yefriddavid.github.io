@@ -36,12 +36,15 @@ const PeriodSummary = ({
   periodExpenses,
   byDriver,
   byVehicle,
-  totalExpensesPaid,
   settlementAbbr,
   pendingRows,
+  pendingTotal,
   now,
   period,
   loading,
+  net,
+  includePending,
+  setIncludePending,
 }) => {
   const { t } = useTranslation()
 
@@ -50,7 +53,6 @@ const PeriodSummary = ({
   const [pendingModalOpen, setPendingModalOpen] = useState(false)
   const [totalSettledModalOpen, setTotalSettledModalOpen] = useState(false)
   const [totalSettledTab, setTotalSettledTab] = useState('byVehicle')
-  const [includePending, setIncludePending] = useState(false)
 
   return (
     <>
@@ -208,25 +210,21 @@ const PeriodSummary = ({
 
           {/* Net */}
           <CCol xs={6} sm={2}>
-            {(() => {
-              const net = total - (includePending ? totalExpenses : totalExpensesPaid)
-              return (
-                <StatCard
-                  label={t('taxis.settlements.summary.net')}
-                  value={fmt(net)}
-                  color={net >= 0 ? '#1e40af' : '#e03131'}
-                  tip="Total liquidado menos gastos. Activar 'Incluir pendientes' para descontar también los gastos aún no pagados."
-                >
-                  <label
-                    className="period-summary__include-label"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <input type="checkbox" checked={includePending} onChange={(e) => setIncludePending(e.target.checked)} />
-                    Incluir pendientes
-                  </label>
-                </StatCard>
-              )
-            })()}
+            <StatCard
+              label={t('taxis.settlements.summary.net')}
+              value={fmt(net)}
+              color={net >= 0 ? '#1e40af' : '#e03131'}
+              tip="Total liquidado menos gastos. Activar 'Incluir pendientes' para descontar también los gastos aún no pagados."
+            >
+              <label className="period-summary__include-label" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={includePending}
+                  onChange={(e) => setIncludePending(e.target.checked)}
+                />
+                Incluir pendientes
+              </label>
+            </StatCard>
           </CCol>
 
           {/* By driver */}
@@ -332,7 +330,7 @@ const PeriodSummary = ({
           <CCol xs={6} sm={2}>
             <StatCard
               label={t('taxis.settlements.summary.pendingDrivers')}
-              value={isCurrentPeriod ? fmt(pendingRows.reduce((s, r) => s + r.amount, 0)) : '—'}
+              value={isCurrentPeriod ? fmt(pendingTotal) : '—'}
               color={isCurrentPeriod && pendingRows.length > 0 ? '#e67700' : '#2f9e44'}
               tip="Monto que los conductores activos aún deben pagar por los días restantes del mes actual, calculado a su valor por defecto."
               fade={!isCurrentPeriod}
@@ -406,7 +404,7 @@ const PeriodSummary = ({
                       <tr className="summary-table__foot-row">
                         <td colSpan={3} className="summary-table__td summary-table__td--bolder">Total esperado</td>
                         <td className="summary-table__td summary-table__td--right summary-table__td--orange">
-                          {fmt(pendingRows.reduce((s, r) => s + r.amount, 0))}
+                          {fmt(pendingTotal)}
                         </td>
                       </tr>
                     </tfoot>

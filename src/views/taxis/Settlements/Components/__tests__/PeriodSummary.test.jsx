@@ -35,9 +35,13 @@ const defaultProps = {
   totalExpensesPaid: 50000,
   settlementAbbr: 'liq.',
   pendingRows: [],
+  pendingTotal: 0,
   now,
   period,
   loading: false,
+  net: 450000,
+  includePending: false,
+  setIncludePending: vi.fn(),
 }
 
 const renderSummary = (props = {}) => render(<PeriodSummary {...defaultProps} {...props} />)
@@ -88,14 +92,19 @@ describe('PeriodSummary — net card', () => {
     expect(screen.getByText('taxis.settlements.summary.net')).toBeTruthy()
   })
 
-  it('"Incluir pendientes" checkbox toggles net calculation', () => {
-    renderSummary({ total: 500000, totalExpensesPaid: 50000, totalExpenses: 80000 })
+  it('"Incluir pendientes" checkbox calls setIncludePending on toggle', () => {
+    const setIncludePending = vi.fn()
+    renderSummary({ includePending: false, setIncludePending })
     const checkbox = screen.getByRole('checkbox')
-    // Initially unchecked: net = total - totalExpensesPaid = 450000
     expect(checkbox.checked).toBe(false)
     fireEvent.click(checkbox)
+    expect(setIncludePending).toHaveBeenCalledWith(true)
+  })
+
+  it('reflects includePending=true via the checked prop', () => {
+    renderSummary({ includePending: true })
+    const checkbox = screen.getByRole('checkbox')
     expect(checkbox.checked).toBe(true)
-    // After checking: net = total - totalExpenses = 420000
   })
 })
 
