@@ -26,7 +26,9 @@ export const useAuditView = ({ weekdayFull, auditDays, dayFilter, periodDrivers 
   const theadRef = useRef(null)
   const scrollDivRef = useRef(null)
   const stickyScrollDivRef = useRef(null)
-  const [stickyData] = useStickyAuditHeader(theadRef, scrollDivRef)
+  const stickyOverlayRef = useRef(null)
+  const stickyTheadRef = useRef(null)
+  useStickyAuditHeader(theadRef, scrollDivRef, stickyOverlayRef, stickyTheadRef)
 
   useEffect(() => {
     if (prevFetchingRef.current && !settlementFetching) setLoadingDay(null)
@@ -65,7 +67,8 @@ export const useAuditView = ({ weekdayFull, auditDays, dayFilter, periodDrivers 
     theadRef,
     scrollDivRef,
     stickyScrollDivRef,
-    stickyData,
+    stickyOverlayRef,
+    stickyTheadRef,
     handleTableScroll,
     dispatchCreate,
     ...filterHook,

@@ -23,7 +23,8 @@ const AuditTable = ({
   scrollDivRef,
   handleTableScroll,
   theadRef,
-  stickyData,
+  stickyOverlayRef,
+  stickyTheadRef,
   stickyScrollDivRef,
   auditDriverFilter,
   simulateDay,
@@ -50,37 +51,52 @@ const AuditTable = ({
 }) => {
   return (
     <>
-      {/* Sticky header — fixed position so escapes any overflow/scroll container */}
-      {stickyData.show && stickyData.colWidths.length > 0 && (
+      {/* Sticky header clone — fixed position so it escapes any overflow/scroll
+          container. Visibility/position/column widths are mutated directly in
+          the DOM by useStickyAuditHeader's rAF loop (see that hook for why:
+          going through React state lagged a paint behind native scroll). */}
+      <div
+        ref={stickyOverlayRef}
+        data-testid="audit-sticky-header"
+        style={{
+          display: 'none',
+          position: 'fixed',
+          right: 0,
+          zIndex: 1000,
+          background: '#1e3a5f',
+          overflow: 'hidden',
+        }}
+      >
         <div
-          data-testid="audit-sticky-header"
-          style={{
-            position: 'fixed',
-            top: stickyData.top,
-            left: stickyData.left,
-            right: 0,
-            zIndex: 1000,
-            background: '#1e3a5f',
-            overflow: 'hidden',
-          }}
+          ref={stickyScrollDivRef}
+          style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          <div
-            ref={stickyScrollDivRef}
-            style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <table
-              style={{
-                borderCollapse: 'collapse',
-                fontSize: 13,
-                tableLayout: 'fixed',
-                width: stickyData.colWidths.reduce((a, b) => a + b, 0),
-              }}
-            >
-              <thead>
-                <tr style={{ background: '#1e3a5f' }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: 13, tableLayout: 'fixed' }}>
+            <thead ref={stickyTheadRef}>
+              <tr style={{ background: '#1e3a5f' }}>
+                <th
+                  style={{
+                    padding: '9px 12px',
+                    textAlign: 'left',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'rgba(255,255,255,0.9)',
+                    whiteSpace: 'nowrap',
+                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                    position: 'sticky',
+                    left: 0,
+                    background: '#1e3a5f',
+                    zIndex: 3,
+                  }}
+                >
+                  {t('taxis.settlements.audit.colDay')}
+                </th>
+                {colOrder.map((key) => (
                   <th
+                    key={key}
                     style={{
-                      width: stickyData.colWidths[0],
                       padding: '9px 12px',
                       textAlign: 'left',
                       fontSize: 11,
@@ -90,47 +106,24 @@ const AuditTable = ({
                       color: 'rgba(255,255,255,0.9)',
                       whiteSpace: 'nowrap',
                       borderRight: '1px solid rgba(255,255,255,0.1)',
-                      position: 'sticky',
-                      left: 0,
-                      background: '#1e3a5f',
-                      zIndex: 3,
+                      ...(key === 'weekday' && {
+                        position: 'sticky',
+                        left: 60,
+                        background: '#1e3a5f',
+                        zIndex: 3,
+                        boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
+                      }),
+                      ...col(key),
                     }}
                   >
-                    {t('taxis.settlements.audit.colDay')}
+                    {colLabels[key]}
                   </th>
-                  {colOrder.map((key, i) => (
-                    <th
-                      key={key}
-                      style={{
-                        width: stickyData.colWidths[i + 1],
-                        padding: '9px 12px',
-                        textAlign: 'left',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.06em',
-                        color: 'rgba(255,255,255,0.9)',
-                        whiteSpace: 'nowrap',
-                        borderRight: '1px solid rgba(255,255,255,0.1)',
-                        ...(key === 'weekday' && {
-                          position: 'sticky',
-                          left: stickyData.colWidths[0],
-                          background: '#1e3a5f',
-                          zIndex: 3,
-                          boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
-                        }),
-                        ...col(key),
-                      }}
-                    >
-                      {colLabels[key]}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-            </table>
-          </div>
+                ))}
+              </tr>
+            </thead>
+          </table>
         </div>
-      )}
+      </div>
 
       {/* Main scrollable table */}
       <div ref={scrollDivRef} style={{ overflowX: 'auto' }} onScroll={handleTableScroll}>
