@@ -51,8 +51,8 @@ export const cartaLaboral = {
   fields: [
     { key: 'ciudad', label: 'Ciudad', placeholder: 'Medellín' },
     { key: 'fecha', label: 'Fecha', placeholder: '6 de octubre de 2022', autoFill: todayLabel },
-    { key: 'empleadorNombre', label: 'Nombre del Empleador', placeholder: 'Yefrin David Ríos Mora' },
-    { key: 'empleadorCedula', label: 'Cédula del Empleador', placeholder: '1036622381' },
+    { key: 'empleadorNombre', label: 'Nombre del Empleador', placeholder: 'Romer Rolver Rios Sanchez' },
+    { key: 'empleadorCedula', label: 'Cédula del Empleador', placeholder: '71699694' },
     { key: 'empleadoNombre', label: 'Nombre del Empleado', placeholder: 'Andrés Enrique Ramírez Mejía' },
     { key: 'empleadoCedula', label: 'Cédula del Empleado', placeholder: '71.377.779' },
     { key: 'cargo', label: 'Cargo', placeholder: 'Conductor de Taxi' },
