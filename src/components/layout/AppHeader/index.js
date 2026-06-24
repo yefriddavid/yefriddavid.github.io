@@ -152,7 +152,7 @@ const AppHeader = () => {
             fontWeight: 500,
           }}
         >
-          <span>Nueva versión disponible</span>
+          <span style={{ fontSize: 'var(--fs-base)' }}>Nueva versión disponible</span>
           <button
             onClick={() => window.location.reload()}
             style={{
@@ -163,7 +163,7 @@ const AppHeader = () => {
               padding: '2px 10px',
               fontWeight: 700,
               cursor: 'pointer',
-              fontSize: 12,
+              fontSize: 'var(--fs-base)',
             }}
           >
             Actualizar
