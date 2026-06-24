@@ -158,6 +158,16 @@ const SelectApp = () => {
                   <ArrowRight />
                 </span>
               </button>
+              {id === 'shortcuts' && (
+                <div className="select-app__divider select-app__divider--label">
+                  <span>Platforms</span>
+                </div>
+              )}
+              {id === 'domotica' && role === 'superAdmin' && (
+                <div className="select-app__divider select-app__divider--label">
+                  <span>Admin</span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
