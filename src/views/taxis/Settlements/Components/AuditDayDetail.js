@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
+import AuditRowCheckbox from './AuditView/AuditRowCheckbox'
 import { fmt } from './utils'
 import './Settlements.scss'
 
@@ -64,9 +65,24 @@ const SettlementRow = ({ record }) => {
   )
 }
 
-const AuditDayDetail = ({ day, periodDrivers, getNote, t }) => (
-  <tr>
-    <td colSpan={7} className="audit-day-cell">
+const AuditDayDetail = ({ day, periodDrivers, getNote, t, borderColor, checked, onToggle }) => (
+  <tr style={{ borderLeft: `4px solid ${borderColor}` }}>
+    <td
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        padding: 0,
+        textAlign: 'center',
+        position: 'sticky',
+        left: 0,
+        zIndex: 1,
+        background: 'inherit',
+        width: 36,
+        minWidth: 36,
+      }}
+    >
+      <AuditRowCheckbox checked={checked} onToggle={onToggle} />
+    </td>
+    <td colSpan={6} className="audit-day-cell">
       <DetailPanel columns={2}>
         <DetailSection title={t('taxis.settlements.audit.colDay')}>
           <DetailRow label={t('taxis.settlements.fields.date')} value={day.dateStr} />

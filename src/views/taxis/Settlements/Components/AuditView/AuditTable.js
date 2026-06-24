@@ -577,6 +577,9 @@ const AuditTable = ({
                         periodDrivers={periodDrivers}
                         getNote={getNote}
                         t={t}
+                        borderColor={auditLeftBorder(day)}
+                        checked={selectedAuditRows.has(day.d)}
+                        onToggle={() => toggleAuditRowSelection(day.d)}
                       />
                     )}
                   </React.Fragment>
