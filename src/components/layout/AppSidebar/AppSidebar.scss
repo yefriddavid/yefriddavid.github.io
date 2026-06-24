@@ -56,6 +56,10 @@ $domotica-accent: #52b788;
       background: rgba(255, 193, 7, 0.07);
     }
   }
+  .nav-link {
+    font-size: var(--fs-base);
+
+  }
 }
 
 // Sidebar header details from _theme.scss
@@ -147,7 +151,7 @@ $domotica-accent: #52b788;
   .sidebar-footer-btn {
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
-    font-size: var(--fs-base);
+    /*font-size: var(--fs-base);*/
     /*font-size: var(--fs-lg);*/
     letter-spacing: 0.04em;
   }
@@ -195,14 +199,14 @@ $domotica-accent: #52b788;
   .nav-link {
     font-family: 'Rajdhani', sans-serif;
     font-weight: 500;
-    font-size: var(--fs-lg);
+    /*font-size: var(--fs-lg);*/
     letter-spacing: 0.03em;
   }
 
   .sidebar-footer-btn {
     font-family: 'Rajdhani', sans-serif;
     font-weight: 500;
-    font-size: var(--fs-lg);
+    /*font-size: var(--fs-lg);*/
     letter-spacing: 0.03em;
   }
 
