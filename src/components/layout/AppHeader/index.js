@@ -37,6 +37,7 @@ import { AppBreadcrumb } from '../../index'
 import AppHeaderDropdown from '../AppHeaderDropdown'
 import LanguageSwitcher from '../../shared/LanguageSwitcher'
 import useVersionCheck from '../../../hooks/useVersionCheck'
+import { InfoTip } from '../../StatCard/StatCard'
 import './AppHeader.scss'
 import { setUi } from 'src/reducers/uiReducer'
 import { uiStorage } from 'src/utils/storage'
@@ -70,7 +71,7 @@ const AppHeader = () => {
     (state.contactMessage?.data ?? []).filter((m) => !m.read).length
   )
   const hideHeader = () => dispatch(setUi({ headerShow: false }))
-  const hasUpdate = useVersionCheck()
+  const { hasUpdate, commitMessage } = useVersionCheck()
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -152,7 +153,10 @@ const AppHeader = () => {
             fontWeight: 500,
           }}
         >
-          <span style={{ fontSize: 'var(--fs-base)' }}>Nueva versión disponible</span>
+          <span style={{ fontSize: 'var(--fs-base)' }}>
+            Nueva versión disponible
+            {commitMessage && <InfoTip content={commitMessage} />}
+          </span>
           <button
             onClick={() => window.location.reload()}
             style={{

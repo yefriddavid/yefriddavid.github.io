@@ -4,6 +4,7 @@ const CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutos
 
 const useVersionCheck = () => {
   const [hasUpdate, setHasUpdate] = useState(false)
+  const [commitMessage, setCommitMessage] = useState('')
   const currentVersion = useRef(null)
 
   useEffect(() => {
@@ -14,11 +15,12 @@ const useVersionCheck = () => {
         // const res = await fetch('./version.json?t=' + Date.now())
         const res = await fetch('/version.json?t=' + Date.now())
         if (!res.ok) return
-        const { hash } = await res.json()
+        const { hash, commitMessage: msg } = await res.json()
         if (currentVersion.current === null) {
           currentVersion.current = hash
         } else if (hash !== currentVersion.current) {
           setHasUpdate(true)
+          setCommitMessage(msg ?? '')
         }
       } catch {}
     }
@@ -28,7 +30,7 @@ const useVersionCheck = () => {
     return () => clearInterval(id)
   }, [])
 
-  return hasUpdate
+  return { hasUpdate, commitMessage }
 }
 
 export default useVersionCheck
