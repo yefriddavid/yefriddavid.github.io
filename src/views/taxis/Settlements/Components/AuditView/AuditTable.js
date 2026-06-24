@@ -98,7 +98,7 @@ const AuditTable = ({
                     whiteSpace: 'nowrap',
                     borderRight: '1px solid rgba(255,255,255,0.1)',
                     position: 'sticky',
-                    left: 36,
+                    left: 15,
                     background: '#1e3a5f',
                     zIndex: 3,
                   }}
@@ -120,7 +120,7 @@ const AuditTable = ({
                       borderRight: '1px solid rgba(255,255,255,0.1)',
                       ...(key === 'weekday' && {
                         position: 'sticky',
-                        left: 60,
+                        left: 75,
                         background: '#1e3a5f',
                         zIndex: 3,
                         boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
@@ -149,8 +149,8 @@ const AuditTable = ({
                   left: 0,
                   zIndex: 3,
                   background: '#1e3a5f',
-                  width: 36,
-                  minWidth: 36,
+                  width: 15,
+                  minWidth: 15,
                 }}
               />
               <th
@@ -165,7 +165,7 @@ const AuditTable = ({
                   whiteSpace: 'nowrap',
                   borderRight: '1px solid rgba(255,255,255,0.1)',
                   position: 'sticky',
-                  left: 36,
+                  left: 15,
                   zIndex: 3,
                   background: '#1e3a5f',
                   width: 60,
@@ -189,7 +189,7 @@ const AuditTable = ({
                     borderRight: '1px solid rgba(255,255,255,0.1)',
                     ...(key === 'weekday' && {
                       position: 'sticky',
-                      left: 96,
+                      left: 75,
                       zIndex: 3,
                       background: '#1e3a5f',
                       boxShadow: '2px 0 4px rgba(0,0,0,0.15)',
@@ -258,8 +258,8 @@ const AuditTable = ({
                           left: 0,
                           zIndex: 1,
                           background: 'inherit',
-                          width: 36,
-                          minWidth: 36,
+                          width: 15,
+                          minWidth: 15,
                         }}
                       >
                         <AuditRowCheckbox
@@ -277,7 +277,7 @@ const AuditTable = ({
                           color: day.isFuture ? '#adb5bd' : '#1e3a5f',
                           whiteSpace: 'nowrap',
                           position: 'sticky',
-                          left: 36,
+                          left: 15,
                           zIndex: 1,
                           background: 'inherit',
                           width: 60,
@@ -332,7 +332,7 @@ const AuditTable = ({
                                         : '#64748b',
                                   fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
                                   position: 'sticky',
-                                  left: 96,
+                                  left: 75,
                                   zIndex: 1,
                                   background: 'inherit',
                                   boxShadow: '2px 0 4px rgba(0,0,0,0.08)',

@@ -76,8 +76,8 @@ const AuditDayDetail = ({ day, periodDrivers, getNote, t, borderColor, checked, 
         left: 0,
         zIndex: 1,
         background: 'inherit',
-        width: 36,
-        minWidth: 36,
+        width: 15,
+        minWidth: 15,
       }}
     >
       <AuditRowCheckbox checked={checked} onToggle={onToggle} />
