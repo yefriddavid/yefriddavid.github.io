@@ -11,11 +11,16 @@
     display: block;
   }
 
+  &__user-name {
+    font-size: var(--fs-base);
+  }
+
   &__user-role {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-base);
   }
 
   &__item {
     cursor: pointer;
+    font-size: var(--fs-base);
   }
 }

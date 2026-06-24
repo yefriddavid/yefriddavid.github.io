@@ -61,7 +61,7 @@ const AppHeaderDropdown = () => {
           {displayName && (
             <>
               <div className="px-3 py-2 border-bottom">
-                <div className="fw-semibold small">{displayName}</div>
+                <div className="fw-semibold header-dropdown__user-name">{displayName}</div>
                 {profile?.role && (
                   <div className="text-secondary header-dropdown__user-role">
                     {ROLE_LABELS[profile.role] ?? profile.role}
