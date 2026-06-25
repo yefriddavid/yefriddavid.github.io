@@ -10,6 +10,7 @@ import { onAuthChange } from '../../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
 import { validateSession } from '../../../services/firebase/security/sessions'
 import routes from '../../../routes'
+import financeRoutes from '../../../routes.finance'
 import useNotifications from '../../../hooks/useNotifications'
 
 const AppContent = () => {
@@ -92,6 +93,15 @@ const AppContent = () => {
               return (
                 Component &&
                 canAccess(route) && <Route key={idx} path={route.path} element={<Component />} />
+              )
+            })}
+            {financeRoutes.map((route, idx) => {
+              const Component = route.element
+              return (
+                Component &&
+                canAccess(route) && (
+                  <Route key={`f${idx}`} path={`/finance${route.path}`} element={<Component />} />
+                )
               )
             })}
             <Route path="/" element={<Navigate to="/selectApp" replace />} />

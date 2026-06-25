@@ -42,6 +42,7 @@ import sagaDomoticaCommands from './domotica/domoticaCommandSagas'
 import sagaDomoticaCommandDictionary from './domotica/domoticaCommandDictionarySagas'
 import sagaDomoticaCommandProfiles from './domotica/domoticaCommandProfileSagas'
 import sagaDomoticaSolarBattery from './domotica/domoticaSolarBatterySagas'
+import sagaDomoticaSolarCalc from './domotica/domoticaSolarCalcSagas'
 import sagaErrorLogs from './system/errorLogSagas'
 import sagaAuditLogs from './system/auditLogSagas'
 import sagaPerfLogs from './system/perfLogSagas'
@@ -106,6 +107,7 @@ export default function* rootSagas() {
     sagaDomoticaCommandDictionary(),
     sagaDomoticaCommandProfiles(),
     sagaDomoticaSolarBattery(),
+    sagaDomoticaSolarCalc(),
     sagaErrorLogs(),
     sagaAuditLogs(),
     sagaPerfLogs(),

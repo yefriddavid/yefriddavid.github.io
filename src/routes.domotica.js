@@ -8,6 +8,8 @@ const CommandDictionary = React.lazy(
   () => import('./views/domotica/SerialConsole/CommandDictionary'),
 )
 const Cleanup = React.lazy(() => import('./views/domotica/Cleanup/Cleanup'))
+const SolarCalculator = React.lazy(() => import('./views/domotica/SolarCalculator/SolarCalculator'))
+const SolarCalculatorConfigs = React.lazy(() => import('./views/domotica/SolarCalculatorConfigs'))
 
 const domoticaRoutes = [
   {
@@ -45,6 +47,18 @@ const domoticaRoutes = [
     name: 'Cleanup',
     tKey: 'nav.cleanup',
     element: Cleanup,
+  },
+  {
+    path: '/domotica/solar-calculator-configs',
+    name: 'Solar Calculator Configs',
+    tKey: 'nav.solarCalculatorConfigs',
+    element: SolarCalculatorConfigs,
+  },
+  {
+    path: '/domotica/solar-calculator',
+    name: 'Solar Calculator',
+    tKey: 'nav.solarCalculator',
+    element: SolarCalculator,
   },
 ]
 

@@ -109,6 +109,7 @@ export const COL_DOMOTICA_COMMAND = 'Domotica_command'
 export const COL_DOMOTICA_COMMAND_DICTIONARY = 'Domotica_command_dictionary'
 export const COL_DOMOTICA_COMMAND_PROFILES = 'Domotica_command_profiles'
 export const COL_DOMOTICA_COMMAND_PROFILE_ITEMS = 'Domotica_command_profile_items'
+export const COL_DOMOTICA_SOLAR_CALC = 'Domotica_solar_calc'
 
 // Misc
 export const COL_MISC_TASKS = 'Misc_tasks'

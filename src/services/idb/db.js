@@ -52,6 +52,9 @@ export function openDB() {
       if (!db.objectStoreNames.contains(S.FINANCE_LOANS)) {
         db.createObjectStore(S.FINANCE_LOANS, { keyPath: 'id' })
       }
+      if (!db.objectStoreNames.contains(S.DOMOTICA_SOLAR_CALC)) {
+        db.createObjectStore(S.DOMOTICA_SOLAR_CALC, { keyPath: 'id' })
+      }
     }
 
     req.onsuccess = (e) => {

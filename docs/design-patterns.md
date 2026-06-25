@@ -43,6 +43,28 @@ const { register, handleSubmit, formState: { errors } } = useForm({ defaultValue
 // handleSubmit valida → llama onSave solo si todo es válido
 ```
 
+## Acceso a datos — Strategy (facade configurable)
+
+Cuando una feature necesita soportar múltiples fuentes de datos (Firebase, IndexedDB, REST…) sin que el saga ni el componente sepan cuál está activa, se usa un facade con estado de implementación intercambiable.
+
+```js
+// domoticaSolarCalcFacade.js
+let _impl = remote   // default
+
+export const configure = (storage) => {
+  _impl = storage === 'local' ? local : remote
+}
+
+export const fetchSolarCalcConfigs = () => _impl.fetchSolarCalcConfigs()
+export const createSolarCalcConfig = (data) => _impl.createSolarCalcConfig(data)
+```
+
+El componente llama `configureFacade('local' | 'remote')` al montar. El saga solo conoce la interfaz del facade — nunca sabe si habla con Firestore o IndexedDB.
+
+**Cuándo usarlo**: misma pantalla, misma lógica, distinta persistencia. Ejemplo: calculadora solar con versión Firebase (multi-config, nube) y versión local (una config, offline, sin login).
+
+**Trade-off**: el facade tiene estado mutable global a nivel de módulo. Funciona correctamente porque las dos rutas nunca coexisten. En una app con rutas concurrentes o tests paralelos habría que usar inyección de dependencia explícita.
+
 ## Resumen por capa
 
 | Capa | Patrón |
@@ -52,4 +74,5 @@ const { register, handleSubmit, formState: { errors } } = useForm({ defaultValue
 | Estado local + lógica | Custom Hook |
 | Composición de UI | Composite / Orchestrator |
 | Acceso a datos | Repository |
+| Multi-storage | Strategy (facade configurable) |
 | Formularios | Template Method (RHF) |

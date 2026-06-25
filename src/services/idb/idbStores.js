@@ -1,5 +1,5 @@
 export const IDB_NAME = 'my-admin-local'
-export const IDB_VERSION = 10
+export const IDB_VERSION = 11
 
 export const IDB_STORES = {
   // CashFlow module
@@ -18,6 +18,9 @@ export const IDB_STORES = {
 
   // Misc
   MISC_TASKS: 'misc_tasks',
+
+  // Domotica module
+  DOMOTICA_SOLAR_CALC: 'domotica_solar_calc',
 
   // App-level
   APP_METADATA: 'app_metadata',

@@ -1,7 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppHeader, AppFooter, AppSidebar, ErrorBoundary } from '../components/index'
-import FinanceContent from '../components/finance/FinanceContent'
+import { AppContent, AppSidebar, AppFooter, AppHeader, ErrorBoundary } from '../components/index'
 import InstallBanner from '../components/shared/InstallBanner'
 import NotificationToaster from '../components/shared/NotificationToaster'
 import OfflineBanner from '../components/shared/OfflineBanner'
@@ -45,8 +44,8 @@ const FinanceLayout = () => {
           </button>
         )}
         <div className="app-layout__body flex-grow-1">
-          <ErrorBoundary module="finance">
-            <FinanceContent />
+          <ErrorBoundary module="app">
+            <AppContent />
           </ErrorBoundary>
         </div>
         <AppFooter />

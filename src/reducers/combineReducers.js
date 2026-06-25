@@ -43,6 +43,7 @@ import domoticaCommand from './domotica/domoticaCommandReducer'
 import domoticaCommandDictionary from './domotica/domoticaCommandDictionaryReducer'
 import domoticaCommandProfile from './domotica/domoticaCommandProfileReducer'
 import domoticaSolarBattery from './domotica/domoticaSolarBatteryReducer'
+import domoticaSolarCalc from './domotica/domoticaSolarCalcReducer'
 import notifications from './notificationsSlice'
 import errorLog from './system/errorLogReducer'
 import auditLog from './system/auditLogReducer'
@@ -108,6 +109,7 @@ const combinedReducers = combineReducers({
   domoticaCommandDictionary,
   domoticaCommandProfile,
   domoticaSolarBattery,
+  domoticaSolarCalc,
   note,
   notifications,
   errorLog,

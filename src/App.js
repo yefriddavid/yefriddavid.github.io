@@ -14,7 +14,6 @@ import './scss/examples.scss'
 import './i18n'
 
 // Containers
-const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const EmptyLayout = React.lazy(() => import('./layout/EmptyLayout'))
 const FinanceLayout = React.lazy(() => import('./layout/FinanceLayout'))
 const MiscelaneaLayout = React.lazy(() => import('./layout/MiscelaneaLayout'))
@@ -29,6 +28,7 @@ const GenerarContrato = React.lazy(
 )
 const GalleryPage = React.lazy(() => import('./views/Public/GalleryPage'))
 const Calc = React.lazy(() => import('./views/Miscelanea/Tools/Calc'))
+const SolarCalculatorLocal = React.lazy(() => import('./views/domotica/SolarCalculator/SolarCalculatorLocal'))
 
 // Pages
 const Login = React.lazy(() => import('./views/login/Login'))
@@ -158,13 +158,14 @@ const App = () => {
               <Route path="/contratos/generar" element={<GenerarContrato />} />
               <Route path="/gallery/:folder" element={<GalleryPage />} />
               <Route path="/tools/calc" element={<Calc />} />
+              <Route path="/domotica/solar-calculator-local" element={<SolarCalculatorLocal />} />
             </Route>
             <Route path="/finance/*" element={<FinanceLayout />} />
             <Route path="/miscelanea/*" element={<MiscelaneaLayout />} />
             <Route path="/domotica/*" element={<DomoticaLayout />} />
             <Route path="/taxis/*" element={<TaxisLayout />} />
             <Route path="/system/*" element={<SystemLayout />} />
-            <Route path="/*" element={<DefaultLayout />} />
+            <Route path="/*" element={<FinanceLayout />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
