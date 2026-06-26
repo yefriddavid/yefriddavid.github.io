@@ -9,12 +9,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://yefriddavid.github.io/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "matches": ["https://yefriddavid.github.io/*", "https://localhost/*", "http://localhost/*", "http://127.0.0.1/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }
   ],
   "externally_connectable": {
-    "matches": ["https://yefriddavid.github.io/*", "http://localhost/*", "http://127.0.0.1/*"]
+    "matches": ["https://yefriddavid.github.io/*", "https://localhost/*", "http://localhost/*", "http://127.0.0.1/*"]
   }
 }
