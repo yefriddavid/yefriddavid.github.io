@@ -14,7 +14,7 @@ import {
   CFormLabel,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay } from '@coreui/icons'
+import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay, cilBan } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
@@ -90,6 +90,11 @@ const Programs = () => {
     setFormOpen(false)
   }
 
+  const toggleDisabled = (id, e) => {
+    e.stopPropagation()
+    persist(programs.map((p) => (p.id === id ? { ...p, disabled: !p.disabled } : p)))
+  }
+
   const deleteProgram = (id, e) => {
     e.stopPropagation()
     persist(programs.filter((p) => p.id !== id))
@@ -163,13 +168,22 @@ const Programs = () => {
                     {p.hooks?.length > 0 && (
                       <div className="lp-item__hooks">
                         {p.hooks.map((h) => (
-                          <span key={h} className="lp-item__hook">{h}</span>
+                          <span key={h} className={`lp-item__hook${p.disabled ? ' lp-item__hook--off' : ''}`}>{h}</span>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="lp-item__actions">
+                  <CButton
+                    size="sm"
+                    color={p.disabled ? 'warning' : 'secondary'}
+                    variant="ghost"
+                    title={p.disabled ? 'Hooks deshabilitados (clic para habilitar)' : 'Deshabilitar hooks'}
+                    onClick={(e) => toggleDisabled(p.id, e)}
+                  >
+                    <CIcon icon={cilBan} />
+                  </CButton>
                   <CButton
                     size="sm"
                     color="success"

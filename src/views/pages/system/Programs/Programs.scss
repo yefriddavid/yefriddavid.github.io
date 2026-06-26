@@ -110,6 +110,13 @@
     border: 1px solid var(--cui-info-border-subtle);
     border-radius: 3px;
     padding: 0 5px;
+
+    &--off {
+      color: var(--cui-secondary-color);
+      background: var(--cui-secondary-bg);
+      border-color: var(--cui-border-color);
+      text-decoration: line-through;
+    }
   }
 
   &__actions {

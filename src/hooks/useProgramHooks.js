@@ -29,7 +29,7 @@ export default function useProgramHooks() {
     pending.forEach((hook) => {
       dispatch(resolveHook(hook.id))
 
-      const matches = programs.filter((p) => p.hooks?.includes(hook.tag))
+      const matches = programs.filter((p) => p.hooks?.includes(hook.tag) && !p.disabled)
       matches.forEach((program) => {
         // eslint-disable-next-line no-undef
         chrome.runtime.sendMessage(extId, { binary: program.binary, args: program.args }, (response) => {
