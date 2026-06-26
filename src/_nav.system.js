@@ -1,6 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilPeople, cilSettings, cilBell, cilGroup, cilBug, cilList, cilSpeedometer, cilEnvelopeClosed } from '@coreui/icons'
+import { cilPeople, cilSettings, cilBell, cilGroup, cilBug, cilList, cilSpeedometer, cilEnvelopeClosed, cilTerminal } from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
 const getSystemNav = () => [
@@ -57,6 +57,12 @@ const getSystemNav = () => [
     name: 'Performance',
     to: '/system/perf-logs',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Programas',
+    to: '/system/programs',
+    icon: <CIcon icon={cilTerminal} customClassName="nav-icon" />,
   },
 ]
 
