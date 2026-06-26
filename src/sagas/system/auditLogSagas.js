@@ -1,4 +1,4 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { call, all, takeEvery, takeLatest, put } from 'redux-saga/effects'
 import * as actions from '../../actions/system/auditLogActions'
 import * as service from '../../services/firebase/system/auditLogs'
 
@@ -12,6 +12,13 @@ function* fetchAuditLogs() {
   }
 }
 
+function* writeLog({ payload }) {
+  yield call(service.writeAuditLog, payload)
+}
+
 export default function* rootSagas() {
-  yield all([takeLatest(actions.fetchRequest, fetchAuditLogs)])
+  yield all([
+    takeLatest(actions.fetchRequest, fetchAuditLogs),
+    takeEvery(actions.logRequest, writeLog),
+  ])
 }

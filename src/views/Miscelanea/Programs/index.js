@@ -16,8 +16,10 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
+import { useDispatch } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import { PROGRAM_HOOKS } from 'src/constants/programHooks'
+import { logRequest as auditLog } from 'src/actions/system/auditLogActions'
 import './Programs.scss'
 
 const STORAGE_KEY = 'localrunner_programs'
@@ -38,6 +40,7 @@ const loadPrograms = () => {
 }
 
 const Programs = () => {
+  const dispatch = useDispatch()
   const [programs, setPrograms] = useState(loadPrograms)
   const [extId, setExtId] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -107,15 +110,25 @@ const Programs = () => {
       chrome.runtime.sendMessage(extId, { binary: program.binary, args: program.args }, (response) => {
         setRunning(false)
         // eslint-disable-next-line no-undef
-        if (chrome.runtime.lastError) {
-          // eslint-disable-next-line no-undef
-          setOutput({ error: chrome.runtime.lastError.message })
-        } else {
-          setOutput(response)
-        }
+        const runtimeErr = chrome.runtime.lastError?.message
+        const result = runtimeErr ? { error: runtimeErr } : response
+        setOutput(result)
+
+        dispatch(
+          auditLog({
+            operation: 'RUN',
+            entity: 'program',
+            program: program.name,
+            binary: program.binary,
+            exitCode: response?.exitCode ?? null,
+            stdout: response?.stdout ?? null,
+            stderr: response?.stderr ?? null,
+            error: runtimeErr ?? response?.error ?? null,
+          }),
+        )
       })
     },
-    [extId, running],
+    [extId, running, dispatch],
   )
 
   const exitColor = output?.error || output?.exitCode !== 0 ? 'danger' : 'success'

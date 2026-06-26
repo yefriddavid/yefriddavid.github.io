@@ -1,4 +1,5 @@
 import { createCRUDActions } from 'src/utils/crudFactory'
+import { createAction } from '@reduxjs/toolkit'
 
 export const {
   fetchRequest,
@@ -10,3 +11,5 @@ export const {
   successRequestDelete,
   errorRequestDelete,
 } = createCRUDActions('auditLog')
+
+export const logRequest = createAction('auditLog/logRequest')
