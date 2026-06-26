@@ -105,14 +105,25 @@ tasks:
     desc: "Monthly account status — requires --tenant <id>; optional: --month <1-12> --year <n> --type Incoming|Outcoming|all --user <u> --pass <p> --format table|json"
     cmd: npm run cli -- finance account-status {{.CLI_ARGS}}
 
+  auth:sync:build:
+    desc: Compile the Firebase Auth sync binary
+    dir: scripts/sync-firebase-auth
+    cmd: go build -o sync-firebase-auth .
+    sources:
+      - "*.go"
+    generates:
+      - sync-firebase-auth
+
   auth:sync:
     desc: Sync Firestore users → Firebase Auth (creates/updates accounts from salt field)
+    deps: [auth:sync:build]
     dir: scripts/sync-firebase-auth
-    cmd: go run .
+    cmd: ./sync-firebase-auth
     # cmd: python3 ../sync-firebase-auth.py
 
   auth:sync:dry:
     desc: Preview Firebase Auth sync without writing (dry run)
+    deps: [auth:sync:build]
     dir: scripts/sync-firebase-auth
-    cmd: go run . --dry-run
+    cmd: ./sync-firebase-auth --dry-run
     # cmd: python3 ../sync-firebase-auth.py --dry-run
