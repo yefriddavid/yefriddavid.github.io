@@ -14,6 +14,7 @@ function* fetchAuditLogs() {
 
 function* writeLog({ payload }) {
   yield call(service.writeAuditLog, payload)
+  yield put(actions.successRequestCreate({ id: `local-${Date.now()}`, ...payload, timestamp: new Date() }))
 }
 
 export default function* rootSagas() {

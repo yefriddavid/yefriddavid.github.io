@@ -6,6 +6,7 @@ export const {
   beginRequestFetch,
   successRequestFetch,
   errorRequestFetch,
+  successRequestCreate,
   deleteRequest,
   beginRequestDelete,
   successRequestDelete,
