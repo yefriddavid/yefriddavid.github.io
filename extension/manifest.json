@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "MyAdmin Local Runner",
+  "description": "Executes local binaries on behalf of MyAdmin",
+  "version": "1.0.0",
+  "permissions": ["nativeMessaging"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://yefriddavid.github.io/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["https://yefriddavid.github.io/*", "http://localhost/*", "http://127.0.0.1/*"]
+  }
+}

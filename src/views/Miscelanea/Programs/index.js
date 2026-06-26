@@ -20,7 +20,6 @@ import Spinner from 'src/components/shared/Spinner'
 import './Programs.scss'
 
 const STORAGE_KEY = 'localrunner_programs'
-const EXT_EVENT = 'localrunner:ready'
 
 const fieldError = (err) =>
   err ? (
@@ -54,13 +53,8 @@ const Programs = () => {
   } = useForm()
 
   useEffect(() => {
-    if (window.__localrunner_ext_id__) {
-      setExtId(window.__localrunner_ext_id__)
-      return
-    }
-    const handler = (e) => setExtId(e.detail.extId)
-    window.addEventListener(EXT_EVENT, handler)
-    return () => window.removeEventListener(EXT_EVENT, handler)
+    const id = sessionStorage.getItem('__localrunner_ext_id__')
+    if (id) setExtId(id)
   }, [])
 
   const persist = (next) => {
