@@ -107,10 +107,12 @@ tasks:
 
   auth:sync:
     desc: Sync Firestore users → Firebase Auth (creates/updates accounts from salt field)
-    cmd: go run ./scripts/sync-firebase-auth/
-    # cmd: python3 scripts/sync-firebase-auth.py
+    dir: scripts/sync-firebase-auth
+    cmd: go run .
+    # cmd: python3 ../sync-firebase-auth.py
 
   auth:sync:dry:
     desc: Preview Firebase Auth sync without writing (dry run)
-    cmd: go run ./scripts/sync-firebase-auth/ --dry-run
-    # cmd: python3 scripts/sync-firebase-auth.py --dry-run
+    dir: scripts/sync-firebase-auth
+    cmd: go run . --dry-run
+    # cmd: python3 ../sync-firebase-auth.py --dry-run
