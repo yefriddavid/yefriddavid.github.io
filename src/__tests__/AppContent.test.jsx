@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -45,6 +45,13 @@ vi.mock('../routes', () => ({
   default: [
     { path: '/public', name: 'Public', element: () => <div>Public Route</div> },
     { path: '/admin', name: 'Admin', element: () => <div>Admin Route</div>, roles: ['superAdmin'] },
+  ],
+}))
+
+vi.mock('../routes.finance', () => ({
+  default: [
+    { path: '/dashboard', name: 'Dashboard', element: () => <div>Finance Dashboard</div>, landingPage: true },
+    { path: '/secret', name: 'Secret', element: () => <div>Finance Secret</div>, roles: ['superAdmin'] },
   ],
 }))
 
@@ -141,5 +148,64 @@ describe('AppContent Routing', () => {
     )
 
     expect(await screen.findByText('Admin Route')).toBeTruthy()
+  })
+})
+
+// AppContent is rendered as element of <Route path="/finance/*"> in App.js.
+// React Router v6 strips the matched prefix (/finance/) before the inner <Routes>
+// sees the path. Finance routes must be registered WITHOUT the /finance prefix
+// (just route.path) so they match correctly in this nested context.
+describe('AppContent — finance route prefix (regression)', () => {
+  const mockUseSelector = vi.mocked(reactRedux.useSelector)
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockUseSelector.mockImplementation((selector) =>
+      selector({ profile: { data: { role: 'user', landingPage: '/finance/dashboard' } } }),
+    )
+    vi.mocked(onAuthChange).mockImplementation((cb) => {
+      cb({ uid: '123' })
+      return vi.fn()
+    })
+  })
+
+  it('renders a finance route when mounted inside the /finance/* parent context', async () => {
+    render(
+      <MemoryRouter initialEntries={['/finance/dashboard']}>
+        <Routes>
+          <Route path="/finance/*" element={<AppContent />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Finance Dashboard')).toBeTruthy()
+  })
+
+  it('does not render a finance route when only the bare path is visited outside /finance/*', async () => {
+    // /dashboard alone is not a valid app route — no match expected
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <AppContent />
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByText('Finance Dashboard')).toBeNull()
+    })
+  })
+
+  it('respects role restriction on finance routes inside /finance/* context', async () => {
+    render(
+      <MemoryRouter initialEntries={['/finance/secret']}>
+        <Routes>
+          <Route path="/finance/*" element={<AppContent />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    // role is 'user', route requires 'superAdmin' → should not render
+    await waitFor(() => {
+      expect(screen.queryByText('Finance Secret')).toBeNull()
+    })
   })
 })

@@ -100,7 +100,7 @@ const AppContent = () => {
               return (
                 Component &&
                 canAccess(route) && (
-                  <Route key={`f${idx}`} path={`/finance${route.path}`} element={<Component />} />
+                  <Route key={`f${idx}`} path={route.path} element={<Component />} />
                 )
               )
             })}
