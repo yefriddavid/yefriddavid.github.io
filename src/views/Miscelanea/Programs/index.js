@@ -17,6 +17,7 @@ import CIcon from '@coreui/icons-react'
 import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import Spinner from 'src/components/shared/Spinner'
+import { PROGRAM_HOOKS } from 'src/constants/programHooks'
 import './Programs.scss'
 
 const STORAGE_KEY = 'localrunner_programs'
@@ -63,24 +64,25 @@ const Programs = () => {
   }
 
   const openAdd = () => {
-    reset({ name: '', binary: '', args: '' })
+    reset({ name: '', binary: '', args: '', hooks: [] })
     setEditId(null)
     setFormOpen(true)
   }
 
   const openEdit = (p, e) => {
     e.stopPropagation()
-    reset({ name: p.name, binary: p.binary, args: p.args.join(' ') })
+    reset({ name: p.name, binary: p.binary, args: p.args.join(' '), hooks: p.hooks || [] })
     setEditId(p.id)
     setFormOpen(true)
   }
 
   const onSubmit = (data) => {
     const args = data.args.trim() ? data.args.trim().split(/\s+/) : []
+    const hooks = Array.isArray(data.hooks) ? data.hooks : data.hooks ? [data.hooks] : []
     if (editId) {
-      persist(programs.map((p) => (p.id === editId ? { ...p, name: data.name, binary: data.binary, args } : p)))
+      persist(programs.map((p) => (p.id === editId ? { ...p, name: data.name, binary: data.binary, args, hooks } : p)))
     } else {
-      persist([...programs, { id: Date.now().toString(), name: data.name, binary: data.binary, args }])
+      persist([...programs, { id: Date.now().toString(), name: data.name, binary: data.binary, args, hooks }])
     }
     setFormOpen(false)
   }
@@ -145,6 +147,13 @@ const Programs = () => {
                   <div className="lp-item__text">
                     <div className="lp-item__name">{p.name}</div>
                     <div className="lp-item__path">{p.binary}</div>
+                    {p.hooks?.length > 0 && (
+                      <div className="lp-item__hooks">
+                        {p.hooks.map((h) => (
+                          <span key={h} className="lp-item__hook">{h}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="lp-item__actions">
@@ -232,6 +241,16 @@ const Programs = () => {
           <div className="mb-3">
             <CFormLabel>Argumentos (separados por espacios)</CFormLabel>
             <CFormInput placeholder="--flag valor" {...register('args')} />
+          </div>
+          <div className="mb-3">
+            <CFormLabel>Hooks (Ctrl+clic para seleccionar varios)</CFormLabel>
+            <select multiple className="lp-hooks-select" {...register('hooks')}>
+              {PROGRAM_HOOKS.map((h) => (
+                <option key={h.key} value={h.key}>
+                  {h.label}
+                </option>
+              ))}
+            </select>
           </div>
         </CModalBody>
         <CModalFooter>

@@ -12,6 +12,7 @@ import { validateSession } from '../../../services/firebase/security/sessions'
 import routes from '../../../routes'
 import financeRoutes from '../../../routes.finance'
 import useNotifications from '../../../hooks/useNotifications'
+import useProgramHooks from '../../../hooks/useProgramHooks'
 
 const AppContent = () => {
   // undefined = Firebase still resolving, null = signed out, object = signed in
@@ -56,6 +57,7 @@ const AppContent = () => {
   }, [firebaseUser])
 
   useNotifications()
+  useProgramHooks()
 
   // ── Waiting for Firebase to resolve auth state ───────────────────────────────
   if (firebaseUser === undefined) {

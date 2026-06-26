@@ -96,6 +96,22 @@
     text-overflow: ellipsis;
   }
 
+  &__hooks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 3px;
+  }
+
+  &__hook {
+    font-size: var(--fs-xs);
+    color: var(--cui-info);
+    background: var(--cui-info-bg-subtle);
+    border: 1px solid var(--cui-info-border-subtle);
+    border-radius: 3px;
+    padding: 0 5px;
+  }
+
   &__actions {
     display: flex;
     gap: 0.15rem;
@@ -149,6 +165,27 @@
 
   &--error {
     color: #ff6b6b;
+  }
+}
+
+.lp-hooks-select {
+  width: 100%;
+  min-height: 140px;
+  border: 1px solid var(--cui-border-color);
+  border-radius: 6px;
+  padding: 0.25rem;
+  font-size: var(--fs-base);
+  background: var(--cui-body-bg);
+  color: var(--cui-body-color);
+
+  option {
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+
+    &:checked {
+      background: var(--cui-primary);
+      color: #fff;
+    }
   }
 }
 
