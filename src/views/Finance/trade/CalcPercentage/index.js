@@ -94,8 +94,8 @@ function computeDerived(srcA, srcB, vals, sign) {
 const CalcPercentage = () => {
   const [mode, setMode] = useState('increase')
   const [vals, setVals] = useState({ initial: '', pct: '', change: '', final: '' })
-  // last 2 fields the user has typed in (most recent first)
   const [sources, setSources] = useState(['initial', 'pct'])
+  const [refVal, setRefVal] = useState('')
 
   const sign = mode === 'increase' ? 1 : -1
 
@@ -150,7 +150,16 @@ const CalcPercentage = () => {
   const handleClear = () => {
     setVals({ initial: '', pct: '', change: '', final: '' })
     setSources(['initial', 'pct'])
+    setRefVal('')
   }
+
+  const refNum = parse(refVal)
+  const pctNum = parse(vals.pct)
+  const refResult =
+    refNum !== null && pctNum !== null
+      ? refNum + sign * (refNum * pctNum) / 100
+      : null
+  const refChange = refNum !== null && pctNum !== null ? (refNum * pctNum) / 100 : null
 
   const isSource = (f) => sources.includes(f)
 
@@ -213,6 +222,29 @@ const CalcPercentage = () => {
           </span>
         </div>
       )}
+
+      <div className="cp-ref">
+        <label className="cp-ref__label">Valor de referencia <span className="cp-ref__optional">(opcional)</span></label>
+        <div className="cp-ref__row">
+          <input
+            className="cp-ref__input"
+            type="number"
+            inputMode="decimal"
+            placeholder="0"
+            value={refVal}
+            onChange={(e) => setRefVal(e.target.value)}
+          />
+          {refResult !== null && (
+            <div className="cp-ref__result">
+              <span className={`cp-ref__arrow${mode === 'increase' ? ' cp-ref__arrow--up' : ' cp-ref__arrow--down'}`}>
+                {mode === 'increase' ? '▲' : '▼'}
+              </span>
+              <span className="cp-ref__change">{mode === 'increase' ? '+' : '−'}{fmt(refChange)}</span>
+              <span className="cp-ref__final">{fmt(refResult)}</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
