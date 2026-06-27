@@ -69,7 +69,9 @@ export async function signIn(username, password, onStep) {
       firebaseErr.code === 'auth/user-not-found' ||
       firebaseErr.code === 'auth/invalid-credential' ||
       firebaseErr.code === 'auth/invalid-email' ||
-      firebaseErr.code === 'auth/operation-not-allowed'
+      firebaseErr.code === 'auth/operation-not-allowed' ||
+      // Admin may have reset the Firestore hash without updating Firebase Auth
+      firebaseErr.code === 'auth/wrong-password'
     ) {
       // ── Step 2: legacy Firestore hash check ─────────────────────────────────
       firestoreUser = await getUserForAuth(username.trim())
@@ -86,8 +88,6 @@ export async function signIn(username, password, onStep) {
         // If creation fails (already exists with different password, etc.) continue anyway
         // The user is authenticated via legacy method for this session
       }
-    } else if (firebaseErr.code === 'auth/wrong-password') {
-      throw new Error('Credenciales incorrectas')
     } else {
       throw new Error(firebaseErr.message)
     }

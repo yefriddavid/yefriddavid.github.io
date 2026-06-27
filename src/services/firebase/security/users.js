@@ -58,7 +58,8 @@ export const getAllUsers = async () => {
 }
 
 export const createUser = async ({ username, name, role, email, active, password }) => {
-  const passwordHash = await hashPassword(password)
+  const { encryptPassword } = await import('src/utils/cryptoHelper')
+  const [passwordHash, salt] = await Promise.all([hashPassword(password), encryptPassword(password)])
   await firestoreCall(() =>
     setDoc(doc(db, COL, username), {
       name,
@@ -67,6 +68,7 @@ export const createUser = async ({ username, name, role, email, active, password
       avatar: null,
       active: active !== false,
       passwordHash,
+      salt,
       createdAt: serverTimestamp(),
     }),
   )

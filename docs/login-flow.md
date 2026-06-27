@@ -25,15 +25,16 @@ flowchart TD
     J --> K{Firebase Auth\nsignInWithEmailAndPassword}
 
     K -- ✅ OK --> N[Firebase Auth activo\ntoken en IndexedDB]
-    K -- ❌ user-not-found\ninvalid-credential --> L[Ruta legacy:\ngetUserForAuth en Firestore]
+    K -- "❌ user-not-found\ninvalid-credential\nwrong-password¹" --> L[Ruta legacy:\ngetUserForAuth en Firestore]
 
     L -- no existe --> M[❌ Error: Credenciales incorrectas]
     L -- inactivo --> M
 
     L --> O{hashPassword\n¿coincide?}
     O -- ❌ no --> M
-    O -- ✅ sí --> P[createUserWithEmailAndPassword\nMigración lazy automática]
-    P --> N
+    O -- ✅ sí --> P[createUserWithEmailAndPassword\nMigración lazy / cuenta nueva]
+    P -- ✅ creada --> N
+    P -- "❌ email-already-in-use\n(Firebase Auth desfasado)" --> N2[⚠️ Sesión legacy\nauth.currentUser = null]
 
     N --> Q[getUserForAuth\nObtiene perfil Firestore\nrol, nombre, landingPage]
     Q --> R[createSession\nen Firestore]
@@ -68,7 +69,8 @@ flowchart TD
 |---|---|
 | **Arranque** | Firebase resuelve estado desde IndexedDB antes de mostrar cualquier ruta |
 | **Login normal** | `signInWithEmailAndPassword` → perfil Firestore → session record |
-| **Login legacy** | Firestore hash check → migración automática a Firebase Auth → continúa |
+| **Login legacy** | `user-not-found` / `invalid-credential` → Firestore hash check → migración lazy a Firebase Auth |
+| **Login con password de admin-reset** | `wrong-password` → mismo fallback legacy; si Firebase Auth tiene pw viejo, sesión queda sin token → **correr `task auth:sync` antes** (ver `docs/auth-sync.md`) |
 | **Session validation** | Al arrancar con sesión activa, verifica el sessionId en Firestore (previene sesiones robadas) |
 | **Refresh token** | Firebase SDK lo maneja solo en IndexedDB, sin intervención manual |
 | **Middleware** | Cada llamada a Firestore/API inyecta un token fresco; en 401 fuerza refresh y reintenta |
@@ -79,7 +81,7 @@ flowchart TD
 | Archivo | Responsabilidad |
 |---|---|
 | `src/views/pages/login/Login.js` | Formulario y submit handler |
-| `src/services/auth/firebaseAuth.js` | `signIn`, `signOut`, `getToken`, `onAuthChange` |
+| `src/services/firebase/auth.js` | `signIn`, `signOut`, `getToken`, `onAuthChange` |
 | `src/components/AppContent.js` | Guard de rutas vía `onAuthStateChanged` |
 | `src/services/providers/firebase/firebaseClient.js` | Middleware Firestore (token + retry + errores) |
 | `src/services/providers/api/utilApi.js` | Interceptor Axios (token + retry en 401) |
