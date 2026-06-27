@@ -3,6 +3,7 @@ import CIcon from '@coreui/icons-react'
 import { cilWifiSignal4, cilWifiSignalOff } from '@coreui/icons'
 import TaskItem from './TaskItem'
 import TaskQuickAdd from './TaskQuickAdd'
+import TaskSyncStatusModal from './TaskSyncStatusModal'
 import { FILTER_KEYS, FILTER_LABELS, filterTasks, groupTasks, taskStats } from './taskUtils'
 
 const useOnlineStatus = () => {
@@ -51,6 +52,7 @@ const DoneSection = ({ tasks, onSave, onDelete }) => {
 
 const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync }) => {
   const [filter, setFilter] = useState('all')
+  const [showSyncModal, setShowSyncModal] = useState(false)
   const online = useOnlineStatus()
 
   const stats  = taskStats(tasks)
@@ -82,6 +84,15 @@ const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync
           </button>
           {hasPending && !syncing && <span className="tk__sync-dot" />}
         </div>
+
+        <button
+          type="button"
+          className="tk__status-btn"
+          onClick={() => setShowSyncModal(true)}
+          title="Ver estado de sincronización"
+        >
+          Estado sync
+        </button>
         <div className="tk__stats">
           <div className="tk__stat">
             <span className="tk__stat-value">{stats.pending}</span>
@@ -121,6 +132,16 @@ const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync
 
       {/* Quick add */}
       {filter !== 'done' && <TaskQuickAdd onAdd={onAdd} />}
+
+      {/* Sync status modal */}
+      <TaskSyncStatusModal
+        visible={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        tasks={tasks}
+        syncing={syncing}
+        online={online}
+        onSync={onSync}
+      />
 
       {/* Task list */}
       <div className="tk__list">
