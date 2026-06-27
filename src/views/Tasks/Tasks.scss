@@ -34,6 +34,18 @@
     color: var(--cui-body-color);
   }
 
+  // ── WiFi indicator ──────────────────────────────────────────────────────────
+  &__wifi {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--fs-xl);
+
+    svg { width: 1.2em; height: 1.2em; }
+
+    &--on  { color: #22c55e; }
+    &--off { color: #ef4444; }
+  }
+
   // ── Sync button ─────────────────────────────────────────────────────────────
   &__sync-wrap {
     position: relative;

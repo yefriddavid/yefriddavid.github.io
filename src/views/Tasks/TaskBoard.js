@@ -1,7 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import CIcon from '@coreui/icons-react'
+import { cilWifiSignal4, cilWifiSignalOff } from '@coreui/icons'
 import TaskItem from './TaskItem'
 import TaskQuickAdd from './TaskQuickAdd'
 import { FILTER_KEYS, FILTER_LABELS, filterTasks, groupTasks, taskStats } from './taskUtils'
+
+const useOnlineStatus = () => {
+  const [online, setOnline] = useState(navigator.onLine)
+  useEffect(() => {
+    const on  = () => setOnline(true)
+    const off = () => setOnline(false)
+    window.addEventListener('online',  on)
+    window.addEventListener('offline', off)
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
+  }, [])
+  return online
+}
 
 const Section = ({ title, accent, tasks, onSave, onDelete }) => {
   if (!tasks.length) return null
@@ -37,6 +51,7 @@ const DoneSection = ({ tasks, onSave, onDelete }) => {
 
 const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync }) => {
   const [filter, setFilter] = useState('all')
+  const online = useOnlineStatus()
 
   const stats  = taskStats(tasks)
   const active = filterTasks(tasks, filter)
@@ -51,6 +66,10 @@ const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync
           <div className="tk__header-indicator" />
           <h1 className="tk__header-title">Tasks</h1>
         </div>
+        <span className={`tk__wifi${online ? ' tk__wifi--on' : ' tk__wifi--off'}`} title={online ? 'En línea' : 'Sin conexión'}>
+          <CIcon icon={online ? cilWifiSignal4 : cilWifiSignalOff} />
+        </span>
+
         <div className="tk__sync-wrap">
           <button
             type="button"
