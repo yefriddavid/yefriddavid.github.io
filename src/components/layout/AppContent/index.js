@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../../actions/authActions'
 import * as contactMessageActions from '../../../actions/system/contactMessageActions'
 import { onAuthChange, signOut } from '../../../services/firebase/auth'
-import { onAuthSignedOut } from 'src/utils/broadcastChannel'
+import { onAuthSignedOut, onAuthSignedIn } from 'src/utils/broadcastChannel'
 import { authStorage } from 'src/utils/storage'
 import { validateSession } from '../../../services/firebase/security/sessions'
 import routes from '../../../routes'
@@ -26,8 +26,9 @@ const AppContent = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  // ── Sign out in other tabs when one tab logs out ─────────────────────────────
+  // ── Cross-tab auth sync ───────────────────────────────────────────────────────
   useEffect(() => onAuthSignedOut(() => signOut()), [])
+  useEffect(() => onAuthSignedIn(() => window.location.reload()), [])
 
   // ── Subscribe to Firebase Auth state changes ─────────────────────────────────
   // Firebase automatically uses the stored refresh token to restore the session

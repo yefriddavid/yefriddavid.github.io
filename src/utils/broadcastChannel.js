@@ -9,6 +9,7 @@ const PICTURE_EVENTS = {
 
 const AUTH_EVENTS = {
   SIGNED_OUT: 'auth:signed-out',
+  SIGNED_IN: 'auth:signed-in',
 }
 
 const getChannel = (name) => {
@@ -48,6 +49,22 @@ export const onAuthSignedOut = (handler) => {
   if (!ch) return () => {}
   ch.onmessage = ({ data }) => {
     if (data?.type === AUTH_EVENTS.SIGNED_OUT) handler()
+  }
+  return () => ch.close()
+}
+
+export const emitAuthSignedIn = () => {
+  const ch = getChannel(CHANNELS.AUTH)
+  if (!ch) return
+  ch.postMessage({ type: AUTH_EVENTS.SIGNED_IN })
+  ch.close()
+}
+
+export const onAuthSignedIn = (handler) => {
+  const ch = getChannel(CHANNELS.AUTH)
+  if (!ch) return () => {}
+  ch.onmessage = ({ data }) => {
+    if (data?.type === AUTH_EVENTS.SIGNED_IN) handler()
   }
   return () => ch.close()
 }

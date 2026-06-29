@@ -32,7 +32,7 @@ import {
 import { createSession } from 'src/services/firebase/security/sessions'
 import { clearTenantId } from 'src/services/tenantContext'
 import { authStorage } from 'src/utils/storage'
-import { emitAuthSignedOut } from 'src/utils/broadcastChannel'
+import { emitAuthSignedOut, emitAuthSignedIn } from 'src/utils/broadcastChannel'
 
 // ── Convention ─────────────────────────────────────────────────────────────────
 
@@ -130,6 +130,8 @@ export async function signIn(username, password, onStep) {
 
   await createSession(sessionId, firestoreUser.username, token).catch(() => {})
   onStep?.(4)
+
+  emitAuthSignedIn()
 
   return {
     username: firestoreUser.username,
