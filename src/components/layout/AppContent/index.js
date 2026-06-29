@@ -6,7 +6,8 @@ import Spinner from '../../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../../actions/authActions'
 import * as contactMessageActions from '../../../actions/system/contactMessageActions'
-import { onAuthChange } from '../../../services/firebase/auth'
+import { onAuthChange, signOut } from '../../../services/firebase/auth'
+import { onAuthSignedOut } from 'src/utils/broadcastChannel'
 import { authStorage } from 'src/utils/storage'
 import { validateSession } from '../../../services/firebase/security/sessions'
 import routes from '../../../routes'
@@ -24,6 +25,9 @@ const AppContent = () => {
     '/finance/dashboard'
   const dispatch = useDispatch()
   const navigate = useNavigate()
+
+  // ── Sign out in other tabs when one tab logs out ─────────────────────────────
+  useEffect(() => onAuthSignedOut(() => signOut()), [])
 
   // ── Subscribe to Firebase Auth state changes ─────────────────────────────────
   // Firebase automatically uses the stored refresh token to restore the session
