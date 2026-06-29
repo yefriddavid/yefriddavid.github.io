@@ -34,24 +34,31 @@ export const getNotes = async () => {
   })
 }
 
-export const createNote = async ({ title, content, color }) => {
+export const createNote = async ({ title, content, color, mode }) => {
   const now = new Date().toISOString()
   const ref = await firestoreCall(() =>
     addDoc(collection(db, COL_MISC_NOTES), {
       title,
       content,
       color,
+      mode: mode || 'textarea',
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }),
   )
-  return { id: ref.id, title, content, color, createdAt: now, updatedAt: now }
+  return { id: ref.id, title, content, color, mode: mode || 'textarea', createdAt: now, updatedAt: now }
 }
 
-export const updateNote = async ({ id, title, content, color }) => {
+export const updateNote = async ({ id, title, content, color, mode }) => {
   await firestoreCall(() =>
-    updateDoc(doc(db, COL_MISC_NOTES, id), { title, content, color, updatedAt: serverTimestamp() }),
+    updateDoc(doc(db, COL_MISC_NOTES, id), {
+      title,
+      content,
+      color,
+      mode: mode || 'textarea',
+      updatedAt: serverTimestamp(),
+    }),
   )
 }
 

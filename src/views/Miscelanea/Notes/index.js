@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilPlus, cilX, cilSave, cilFullscreen } from '@coreui/icons'
+import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen } from '@coreui/icons'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
@@ -32,17 +32,16 @@ const QUILL_MODULES = {
 }
 
 const QUILL_FORMATS = [
-  'header',
-  'bold',
-  'italic',
-  'underline',
-  'strike',
-  'list',
-  'bullet',
-  'blockquote',
-  'code-block',
-  'link',
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet', 'blockquote', 'code-block', 'link',
 ]
+
+const parseCsv = (str) => {
+  if (!str?.trim()) return [['', ''], ['', '']]
+  return str.split('\n').map((r) => r.split(','))
+}
+
+const serializeCsv = (rows) => rows.map((r) => r.join(',')).join('\n')
 
 const formatDate = (ts) => {
   if (!ts) return ''
@@ -56,7 +55,112 @@ const formatDate = (ts) => {
   })
 }
 
-// ── Note card ────────────────────────────────────────────────────────────────
+// ── TableEditor ───────────────────────────────────────────────────────────────
+
+const TableEditor = ({ rows, onChange }) => {
+  const colCount = rows[0]?.length ?? 1
+
+  const updateCell = (ri, ci, val) =>
+    onChange(rows.map((r, i) => (i === ri ? r.map((c, j) => (j === ci ? val : c)) : r)))
+
+  const addRow = () => onChange([...rows, new Array(colCount).fill('')])
+
+  const addCol = () => onChange(rows.map((r) => [...r, '']))
+
+  const removeRow = (ri) => {
+    if (rows.length <= 1) return
+    onChange(rows.filter((_, i) => i !== ri))
+  }
+
+  const removeCol = (ci) => {
+    if (colCount <= 1) return
+    onChange(rows.map((r) => r.filter((_, j) => j !== ci)))
+  }
+
+  return (
+    <div className="note-table-editor">
+      <div className="note-table-editor__scroll">
+        <table className="note-table-editor__table">
+          <thead>
+            <tr>
+              {rows[0]?.map((_, ci) => (
+                <th key={ci} className="note-table-editor__col-head">
+                  {colCount > 1 && (
+                    <button
+                      type="button"
+                      className="note-table-editor__rm-btn"
+                      onClick={() => removeCol(ci)}
+                      title="Eliminar columna"
+                    >
+                      ×
+                    </button>
+                  )}
+                </th>
+              ))}
+              <th className="note-table-editor__col-head note-table-editor__col-head--add">
+                <button type="button" className="note-table-editor__add-btn" onClick={addCol}>
+                  + col
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => (
+                  <td key={ci} className="note-table-editor__cell-td">
+                    <input
+                      className="note-table-editor__cell"
+                      value={cell}
+                      onChange={(e) => updateCell(ri, ci, e.target.value)}
+                    />
+                  </td>
+                ))}
+                <td className="note-table-editor__row-actions">
+                  {rows.length > 1 && (
+                    <button
+                      type="button"
+                      className="note-table-editor__rm-btn"
+                      onClick={() => removeRow(ri)}
+                      title="Eliminar fila"
+                    >
+                      ×
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" className="note-table-editor__add-row-btn" onClick={addRow}>
+        + fila
+      </button>
+    </div>
+  )
+}
+
+// ── NoteTable (read-only) ─────────────────────────────────────────────────────
+
+const NoteTable = ({ content, className }) => {
+  const rows = content?.trim() ? content.split('\n').map((r) => r.split(',')) : []
+  if (!rows.length) return null
+  const [head, ...body] = rows
+  return (
+    <table className={`note-table${className ? ` ${className}` : ''}`}>
+      <thead>
+        <tr>{head.map((c, i) => <th key={i}>{c}</th>)}</tr>
+      </thead>
+      <tbody>
+        {body.map((row, ri) => (
+          <tr key={ri}>{row.map((c, ci) => <td key={ci}>{c}</td>)}</tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+// ── NoteCard ──────────────────────────────────────────────────────────────────
 
 const NoteCard = ({ note, onEdit, onDelete, onView }) => (
   <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
@@ -69,24 +173,26 @@ const NoteCard = ({ note, onEdit, onDelete, onView }) => (
         <button className="note-card__btn" onClick={onEdit} title="Editar">
           <CIcon icon={cilPencil} size="sm" />
         </button>
-        <button
-          className="note-card__btn note-card__btn--danger"
-          onClick={onDelete}
-          title="Eliminar"
-        >
+        <button className="note-card__btn note-card__btn--danger" onClick={onDelete} title="Eliminar">
           <CIcon icon={cilTrash} size="sm" />
         </button>
       </div>
     </div>
     <div className="note-card__date">{formatDate(note.updatedAt)}</div>
-    <div
-      className="note-card__preview ql-editor"
-      dangerouslySetInnerHTML={{ __html: note.content }}
-    />
+    {note.mode === 'table' ? (
+      <div className="note-card__preview note-card__preview--table">
+        <NoteTable content={note.content} />
+      </div>
+    ) : (
+      <div
+        className="note-card__preview ql-editor"
+        dangerouslySetInnerHTML={{ __html: note.content }}
+      />
+    )}
   </div>
 )
 
-// ── Editor modal ─────────────────────────────────────────────────────────────
+// ── NoteEditorModal ───────────────────────────────────────────────────────────
 
 const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const { register, handleSubmit, watch, setValue } = useForm({
@@ -94,13 +200,35 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
       title: note?.title || '',
       content: note?.content || '',
       color: note?.color || '#ffffff',
+      mode: note?.mode || 'textarea',
     },
   })
 
   const content = watch('content')
   const color = watch('color')
+  const mode = watch('mode')
 
-  const onSubmit = (data) => onSave(data)
+  const [tableRows, setTableRows] = useState(() =>
+    note?.mode === 'table' ? parseCsv(note?.content) : [['', ''], ['', '']],
+  )
+
+  const handleModeSwitch = (newMode) => {
+    if (newMode === mode) return
+    setValue('mode', newMode)
+    if (newMode === 'table') {
+      setTableRows([['', ''], ['', '']])
+    } else {
+      setValue('content', '')
+    }
+  }
+
+  const buildPayload = (data) => ({
+    ...data,
+    content: data.mode === 'table' ? serializeCsv(tableRows) : data.content,
+  })
+
+  const onSubmit = (data) => onSave(buildPayload(data), false)
+  const onSubmitKeep = (data) => onSave(buildPayload(data), true)
 
   return (
     <div className="note-editor-overlay" onClick={onClose}>
@@ -111,6 +239,22 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
             placeholder="Título de la nota…"
             {...register('title')}
           />
+          <div className="note-editor__mode-toggle">
+            <button
+              type="button"
+              className={`note-editor__mode-btn${mode === 'textarea' ? ' note-editor__mode-btn--active' : ''}`}
+              onClick={() => handleModeSwitch('textarea')}
+            >
+              Texto
+            </button>
+            <button
+              type="button"
+              className={`note-editor__mode-btn${mode === 'table' ? ' note-editor__mode-btn--active' : ''}`}
+              onClick={() => handleModeSwitch('table')}
+            >
+              Tabla
+            </button>
+          </div>
           <div className="note-editor__colors">
             {NOTE_COLORS.map((c) => (
               <button
@@ -129,14 +273,18 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
         </div>
 
         <div className="note-editor__body">
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={(val) => setValue('content', val)}
-            modules={QUILL_MODULES}
-            formats={QUILL_FORMATS}
-            className="note-editor__quill"
-          />
+          {mode === 'table' ? (
+            <TableEditor rows={tableRows} onChange={setTableRows} />
+          ) : (
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={(val) => setValue('content', val)}
+              modules={QUILL_MODULES}
+              formats={QUILL_FORMATS}
+              className="note-editor__quill"
+            />
+          )}
         </div>
 
         <div className="note-editor__footer">
@@ -144,17 +292,18 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
             Cancelar
           </button>
           <button
+            className="note-editor__btn note-editor__btn--save-keep"
+            onClick={handleSubmit(onSubmitKeep)}
+            disabled={saving}
+          >
+            {saving ? <Spinner size="sm" /> : 'Guardar'}
+          </button>
+          <button
             className="note-editor__btn note-editor__btn--save"
             onClick={handleSubmit(onSubmit)}
             disabled={saving}
           >
-            {saving ? (
-              <Spinner size="sm" />
-            ) : (
-              <>
-                <CIcon icon={cilSave} className="me-1" /> Guardar
-              </>
-            )}
+            {saving ? <Spinner size="sm" /> : <><CIcon icon={cilSave} className="me-1" /> Guardar y cerrar</>}
           </button>
         </div>
       </div>
@@ -162,7 +311,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   )
 }
 
-// ── View modal ────────────────────────────────────────────────────────────────
+// ── NoteViewModal ─────────────────────────────────────────────────────────────
 
 const NoteViewModal = ({ note, onClose, onEdit }) => (
   <div className="note-view-overlay" onClick={onClose}>
@@ -183,34 +332,41 @@ const NoteViewModal = ({ note, onClose, onEdit }) => (
         </div>
       </div>
       <div className="note-view__date">{formatDate(note.updatedAt)}</div>
-      <div
-        className="note-view__content ql-editor"
-        dangerouslySetInnerHTML={{ __html: note.content }}
-      />
+      {note.mode === 'table' ? (
+        <div className="note-view__content note-view__content--table">
+          <NoteTable content={note.content} />
+        </div>
+      ) : (
+        <div
+          className="note-view__content ql-editor"
+          dangerouslySetInnerHTML={{ __html: note.content }}
+        />
+      )}
     </div>
   </div>
 )
 
-// ── Main view ────────────────────────────────────────────────────────────────
+// ── Main view ─────────────────────────────────────────────────────────────────
 
 const Notes = () => {
   const dispatch = useDispatch()
   const { data, fetching, saving } = useSelector((s) => s.note)
   const notes = data ?? []
-  const [editing, setEditing] = useState(null) // null | 'new' | note
-  const [viewing, setViewing] = useState(null) // null | note
+  const [editing, setEditing] = useState(null)
+  const [viewing, setViewing] = useState(null)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
   }, [dispatch])
 
-  const handleSave = (form) => {
+  const handleSave = (form, keepOpen = false) => {
     if (editing === 'new') {
       dispatch(actions.createRequest(form))
+      setEditing(null)
     } else {
       dispatch(actions.updateRequest({ id: editing.id, ...form }))
+      if (!keepOpen) setEditing(null)
     }
-    setEditing(null)
   }
 
   const handleDelete = (note) => {
@@ -223,8 +379,7 @@ const Notes = () => {
       <div className="notes__header">
         <h5 className="notes__title">Notas</h5>
         <button className="notes__new-btn" onClick={() => setEditing('new')}>
-          <CIcon icon={cilPlus} className="me-1" />
-          Nueva nota
+          + Nueva nota
         </button>
       </div>
 
@@ -255,7 +410,10 @@ const Notes = () => {
         <NoteViewModal
           note={viewing}
           onClose={() => setViewing(null)}
-          onEdit={() => { setEditing(viewing); setViewing(null) }}
+          onEdit={() => {
+            setEditing(viewing)
+            setViewing(null)
+          }}
         />
       )}
 
