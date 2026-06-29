@@ -1,13 +1,25 @@
-import { put, call, all, takeLatest } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga'
+import { put, call, take, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/misc/noteActions'
 import * as service from '../../services/firebase/misc/notes'
 import { push as notify } from '../../reducers/notificationsSlice'
 
+function createNotesChannel() {
+  return eventChannel((emit) => service.subscribeNotes(emit))
+}
+
 function* fetchNotes() {
   try {
     yield put(actions.beginRequestFetch())
-    const data = yield call(service.getNotes)
-    yield put(actions.successRequestFetch(data))
+    const channel = yield call(createNotesChannel)
+    try {
+      while (true) {
+        const data = yield take(channel)
+        yield put(actions.successRequestFetch(data))
+      }
+    } finally {
+      channel.close()
+    }
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
   }

@@ -9,6 +9,7 @@ import {
   query,
   orderBy,
   where,
+  onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
@@ -64,4 +65,25 @@ export const updateNote = async ({ id, title, content, color, mode }) => {
 
 export const deleteNote = async (id) => {
   await firestoreCall(() => deleteDoc(doc(db, COL_MISC_NOTES, id)))
+}
+
+export const subscribeNotes = (onData) => {
+  const q = query(
+    collection(db, COL_MISC_NOTES),
+    where('tenantId', '==', getTenantId()),
+    orderBy('updatedAt', 'desc'),
+  )
+  return onSnapshot(q, (snap) => {
+    onData(
+      snap.docs.map((d) => {
+        const data = d.data()
+        return {
+          id: d.id,
+          ...data,
+          createdAt: serializeTs(data.createdAt),
+          updatedAt: serializeTs(data.updatedAt),
+        }
+      }),
+    )
+  })
 }
