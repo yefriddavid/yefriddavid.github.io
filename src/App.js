@@ -44,6 +44,7 @@ import * as accountsMasterActions from './actions/cashflow/accountsMasterActions
 import * as taskActions from './actions/taskActions'
 import { reportError } from './services/errorReporter'
 import { authStorage } from './utils/storage'
+import { onAuthSignedIn } from './utils/broadcastChannel'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -65,6 +66,14 @@ const App = () => {
       window.removeEventListener('unhandledrejection', onUnhandled)
     }
   }, [])
+
+  // ── Redirect public pages when another tab logs in ───────────────────────────
+  useEffect(() => onAuthSignedIn(() => {
+    const PUBLIC = ['/login', '/register', '/aboutMe']
+    if (PUBLIC.some((p) => window.location.pathname.startsWith(p))) {
+      window.location.replace('/')
+    }
+  }), [])
 
   // Background sync for accounting accounts and tasks — only when authenticated
   useEffect(() => {
