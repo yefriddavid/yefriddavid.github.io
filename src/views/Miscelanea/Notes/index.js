@@ -74,7 +74,7 @@ const toTableRows = (content) => {
   try { return JSON.parse(content) } catch { return parseCsv(content) }
 }
 
-const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date']
+const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date', 'check']
 
 const isPrefix = (part) => KNOWN_PREFIXES.includes(part) || part.toLowerCase().startsWith('select(')
 
@@ -117,6 +117,8 @@ const formatCellValue = (value, type) => {
       const d = new Date(value + 'T00:00:00')
       return isNaN(d.getTime()) ? value : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
     }
+    case 'check':
+      return value === 'true' ? '✓' : '✗'
     default:
       return value
   }
@@ -190,6 +192,17 @@ const TableEditor = ({ rows, onChange }) => {
           <option value="">—</option>
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
+      )
+    }
+    if (type === 'check') {
+      return (
+        <div className="note-table-editor__cell-check">
+          <input
+            type="checkbox"
+            checked={cell === 'true'}
+            onChange={(e) => updateCell(ri, ci, e.target.checked ? 'true' : 'false')}
+          />
+        </div>
       )
     }
     return <input {...base} />
@@ -778,6 +791,7 @@ const Notes = () => {
                 ['decimal:Precio', 'Decimal, valida en tiempo real'],
                 ['date:Fecha', 'Selector de fecha'],
                 ['select(A,B,C):Estado', 'Lista desplegable con opciones'],
+                ['check:Activo', 'Casilla de verificación (✓ / ✗)'],
               ].map(([op, desc]) => (
                 <div key={op} className="notes__help-row">
                   <code className="notes__help-code">{op}</code>

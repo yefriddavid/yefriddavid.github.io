@@ -761,6 +761,21 @@
     &--date { min-width: 140px; }
   }
 
+  &__cell-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 5px 0;
+
+    input[type='checkbox'] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--cui-primary, #4f46e5);
+    }
+  }
+
   &__rm-btn {
     display: flex;
     align-items: center;
