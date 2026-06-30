@@ -9,6 +9,7 @@ import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from 
 import { SortableContext, useSortable, arrayMove, rectSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
+import { NOTE_CATEGORIES, DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
 
@@ -555,6 +556,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
       content: note?.content || '',
       color: note?.color || '#ffffff',
       mode: note?.mode || 'textarea',
+      category: note?.category || DEFAULT_NOTE_CATEGORY,
     },
   })
 
@@ -599,6 +601,11 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
             placeholder="Título de la nota…"
             {...register('title')}
           />
+          <select className="note-editor__category-select" {...register('category')}>
+            {NOTE_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
           <div className="note-editor__mode-toggle">
             <button
               type="button"
@@ -740,6 +747,7 @@ const Notes = () => {
   const [dragging, setDragging] = useState(false)
   const [activeTab, setActiveTab] = useState('active')
   const [showHelp, setShowHelp] = useState(false)
+  const [grouped, setGrouped] = useState(true)
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
 
@@ -823,11 +831,20 @@ const Notes = () => {
             {showHelp ? '✕' : '?'} Operadores
           </button>
         </div>
-        {activeTab === 'active' && (
-          <button className="notes__new-btn" onClick={() => setEditing('new')}>
-            + Nueva nota
+        <div className="notes__header-actions">
+          <button
+            className={`notes__group-btn${grouped ? ' notes__group-btn--active' : ''}`}
+            onClick={() => setGrouped((v) => !v)}
+            title={grouped ? 'Ver todas sin agrupar' : 'Agrupar por categoría'}
+          >
+            {grouped ? '⊞ Agrupado' : '⊟ Sin agrupar'}
           </button>
-        )}
+          {activeTab === 'active' && (
+            <button className="notes__new-btn" onClick={() => setEditing('new')}>
+              + Nueva nota
+            </button>
+          )}
+        </div>
       </div>
 
       {showHelp && (
@@ -900,7 +917,7 @@ const Notes = () => {
             <p>No hay notas archivadas.</p>
           )}
         </div>
-      ) : (
+      ) : !grouped ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <SortableContext items={visibleItems.map((n) => n.id)} strategy={rectSortingStrategy}>
             <div className="notes__grid">
@@ -918,6 +935,45 @@ const Notes = () => {
             </div>
           </SortableContext>
         </DndContext>
+      ) : (
+        NOTE_CATEGORIES.map(({ value, label }) => {
+          const groupItems = visibleItems.filter((n) => (n.category || DEFAULT_NOTE_CATEGORY) === value)
+          if (!groupItems.length) return null
+          const handleGroupDragEnd = ({ active, over }) => {
+            setDragging(false)
+            if (!over || active.id === over.id) return
+            const oldIndex = groupItems.findIndex((n) => n.id === active.id)
+            const newIndex = groupItems.findIndex((n) => n.id === over.id)
+            const reordered = arrayMove(groupItems, oldIndex, newIndex)
+            setItems((prev) => {
+              const others = prev.filter((n) => (n.category || DEFAULT_NOTE_CATEGORY) !== value)
+              return [...others, ...reordered]
+            })
+            dispatch(actions.reorderRequest(reordered.map((n, i) => ({ id: n.id, order: i }))))
+          }
+          return (
+            <div key={value} className="notes__group">
+              <h6 className="notes__group-title">{label}</h6>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleGroupDragEnd}>
+                <SortableContext items={groupItems.map((n) => n.id)} strategy={rectSortingStrategy}>
+                  <div className="notes__grid">
+                    {groupItems.map((note) => (
+                      <SortableNoteCard
+                        key={note.id}
+                        note={note}
+                        onView={() => setViewing(note)}
+                        onEdit={() => setEditing(note)}
+                        onClone={() => handleClone(note)}
+                        onArchive={() => handleArchive(note)}
+                        onDelete={() => handleDelete(note)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          )
+        })
       )}
 
       {viewing && !editing && (

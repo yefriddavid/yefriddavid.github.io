@@ -36,7 +36,7 @@ export const getNotes = async () => {
   })
 }
 
-export const createNote = async ({ title, content, color, mode }) => {
+export const createNote = async ({ title, content, color, mode, category }) => {
   const now = new Date().toISOString()
   const ref = await firestoreCall(() =>
     addDoc(collection(db, COL_MISC_NOTES), {
@@ -44,21 +44,23 @@ export const createNote = async ({ title, content, color, mode }) => {
       content,
       color,
       mode: mode || 'textarea',
+      category: category || 'general',
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }),
   )
-  return { id: ref.id, title, content, color, mode: mode || 'textarea', createdAt: now, updatedAt: now }
+  return { id: ref.id, title, content, color, mode: mode || 'textarea', category: category || 'general', createdAt: now, updatedAt: now }
 }
 
-export const updateNote = async ({ id, title, content, color, mode, archived }) => {
+export const updateNote = async ({ id, title, content, color, mode, archived, category }) => {
   const patch = { updatedAt: serverTimestamp() }
   if (title !== undefined) patch.title = title
   if (content !== undefined) patch.content = content
   if (color !== undefined) patch.color = color
   if (mode !== undefined) patch.mode = mode
   if (archived !== undefined) patch.archived = archived
+  if (category !== undefined) patch.category = category
   await firestoreCall(() => updateDoc(doc(db, COL_MISC_NOTES, id), patch))
 }
 
