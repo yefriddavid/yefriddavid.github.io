@@ -48,6 +48,8 @@ const Programs = () => {
   const [running, setRunning] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editId, setEditId] = useState(null)
+  const [promptProgram, setPromptProgram] = useState(null)
+  const [promptValues, setPromptValues] = useState({})
 
   const {
     register,
@@ -115,9 +117,8 @@ const Programs = () => {
     }
   }
 
-  const run = useCallback(
-    (program) => {
-      if (!extId || running) return
+  const execProgram = useCallback(
+    (program, resolvedArgs) => {
       setSelected(program)
       setRunning(true)
       setOutput(null)
@@ -125,7 +126,7 @@ const Programs = () => {
       // eslint-disable-next-line no-undef
       chrome.runtime.sendMessage(
         extId,
-        { binary: program.binary, args: program.args },
+        { binary: program.binary, args: resolvedArgs },
         (response) => {
           setRunning(false)
           // eslint-disable-next-line no-undef
@@ -148,8 +149,34 @@ const Programs = () => {
         },
       )
     },
-    [extId, running, dispatch],
+    [extId, dispatch],
   )
+
+  const run = useCallback(
+    (program) => {
+      if (!extId || running) return
+      const vars = [
+        ...new Set(
+          program.args.flatMap((a) => (a.match(/\{\{(\w+)\}\}/g) ?? []).map((m) => m.slice(2, -2))),
+        ),
+      ]
+      if (vars.length > 0) {
+        setPromptValues(Object.fromEntries(vars.map((v) => [v, ''])))
+        setPromptProgram(program)
+      } else {
+        execProgram(program, program.args)
+      }
+    },
+    [extId, running, execProgram],
+  )
+
+  const runFromPrompt = () => {
+    const resolved = promptProgram.args.map((a) =>
+      a.replace(/\{\{(\w+)\}\}/g, (_, k) => promptValues[k] ?? ''),
+    )
+    setPromptProgram(null)
+    execProgram(promptProgram, resolved)
+  }
 
   const exitColor = output?.error || output?.exitCode !== 0 ? 'danger' : 'success'
 
@@ -331,6 +358,35 @@ const Programs = () => {
           </CButton>
           <CButton color="primary" onClick={handleSubmit(onSubmit)}>
             Guardar
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      <CModal visible={!!promptProgram} onClose={() => setPromptProgram(null)}>
+        <CModalHeader>
+          <CModalTitle>Argumentos — {promptProgram?.name}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {Object.keys(promptValues).map((v) => (
+            <div key={v} className="mb-3">
+              <CFormLabel>
+                <code>{`{{${v}}}`}</code>
+              </CFormLabel>
+              <CFormInput
+                value={promptValues[v]}
+                onChange={(e) => setPromptValues((prev) => ({ ...prev, [v]: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && runFromPrompt()}
+                autoFocus={Object.keys(promptValues)[0] === v}
+              />
+            </div>
+          ))}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setPromptProgram(null)}>
+            Cancelar
+          </CButton>
+          <CButton color="success" onClick={runFromPrompt}>
+            Ejecutar
           </CButton>
         </CModalFooter>
       </CModal>

@@ -1,3 +1,5 @@
+import { authStorage } from './storage'
+
 const STORAGE_KEY = 'localrunner_programs'
 
 const loadPrograms = () => {
@@ -8,8 +10,10 @@ const loadPrograms = () => {
   }
 }
 
-export const getHookPrograms = (hookKey) =>
-  loadPrograms().filter((p) => !p.disabled && p.hooks?.includes(hookKey))
+export const getHookPrograms = (hookKey) => {
+  if (authStorage.getRole() !== 'superAdmin') return []
+  return loadPrograms().filter((p) => !p.disabled && p.hooks?.includes(hookKey))
+}
 
 export const runProgram = (program) =>
   new Promise((resolve) => {
