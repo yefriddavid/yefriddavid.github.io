@@ -4,13 +4,20 @@ import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen, cilCopy, cilStorage, cilActionUndo } from '@coreui/icons'
+import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen, cilStorage, cilActionUndo } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
+
+const IconClone = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="0.5" width="10" height="10" rx="2" />
+    <rect x="0.5" y="3" width="10" height="10" rx="2" fill="var(--note-bg, var(--cui-body-bg, #fff))" />
+  </svg>
+)
 
 const NOTE_COLORS = [
   { value: '#ffffff', label: 'Blanco' },
@@ -345,7 +352,7 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
           <CIcon icon={cilFullscreen} size="sm" />
         </button>
         <button className="note-card__btn" onClick={onClone} title="Clonar">
-          <CIcon icon={cilCopy} size="sm" />
+          <IconClone />
         </button>
         {note.archived ? (
           <button className="note-card__btn" onClick={onArchive} title="Restaurar">
