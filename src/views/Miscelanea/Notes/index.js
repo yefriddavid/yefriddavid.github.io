@@ -41,6 +41,22 @@ const parseCsv = (str) => {
   return str.split('\n').map((r) => r.split(','))
 }
 
+const calcTableTotals = (content) => {
+  if (!content?.trim()) return []
+  const rows = content.split('\n').map((r) => r.split(','))
+  if (rows.length < 2) return []
+  const [head, ...body] = rows
+  return head
+    .map((col, ci) => ({ col: col.trim(), ci }))
+    .filter(({ col }) => col.toLowerCase() === 'total')
+    .map(({ ci }) =>
+      body.reduce((acc, row) => {
+        const val = parseFloat(row[ci])
+        return acc + (isNaN(val) ? 0 : val)
+      }, 0),
+    )
+}
+
 const serializeCsv = (rows) => rows.map((r) => r.join(',')).join('\n')
 
 const formatDate = (ts) => {
@@ -162,10 +178,50 @@ const NoteTable = ({ content, className }) => {
 
 // ── NoteCard ──────────────────────────────────────────────────────────────────
 
-const NoteCard = ({ note, onEdit, onDelete, onView }) => (
+const NoteCard = ({ note, onEdit, onDelete, onView }) => {
+  const dispatch = useDispatch()
+  const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleValue, setTitleValue] = useState(note.title || '')
+
+  const commitTitle = () => {
+    setEditingTitle(false)
+    const trimmed = titleValue.trim()
+    if (trimmed !== (note.title || '')) {
+      dispatch(actions.updateRequest({ id: note.id, title: trimmed, content: note.content, color: note.color, mode: note.mode }))
+    }
+  }
+
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') e.target.blur()
+    if (e.key === 'Escape') { setTitleValue(note.title || ''); setEditingTitle(false) }
+  }
+
+  return (
   <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
     <div className="note-card__header">
-      <h6 className="note-card__title">{note.title || <em>Sin título</em>}</h6>
+      <h6 className="note-card__title">
+        {editingTitle ? (
+          <input
+            className="note-card__title-input"
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={handleTitleKeyDown}
+            autoFocus
+          />
+        ) : (
+          <span
+            className="note-card__title-text"
+            onClick={() => { setTitleValue(note.title || ''); setEditingTitle(true) }}
+          >
+            {note.title || <em>Sin título</em>}
+          </span>
+        )}
+        {totals.map((t, i) => (
+          <span key={i} className="note-card__total">{t.toLocaleString('es-CO')}</span>
+        ))}
+      </h6>
       <div className="note-card__actions">
         <button className="note-card__btn" onClick={onView} title="Ver">
           <CIcon icon={cilFullscreen} size="sm" />
@@ -190,7 +246,8 @@ const NoteCard = ({ note, onEdit, onDelete, onView }) => (
       />
     )}
   </div>
-)
+  )
+}
 
 // ── NoteEditorModal ───────────────────────────────────────────────────────────
 
@@ -313,7 +370,9 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
 
 // ── NoteViewModal ─────────────────────────────────────────────────────────────
 
-const NoteViewModal = ({ note, onClose, onEdit }) => (
+const NoteViewModal = ({ note, onClose, onEdit }) => {
+  const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
+  return (
   <div className="note-view-overlay" onClick={onClose}>
     <div
       className="note-view"
@@ -321,7 +380,12 @@ const NoteViewModal = ({ note, onClose, onEdit }) => (
       onClick={(e) => e.stopPropagation()}
     >
       <div className="note-view__bar">
-        <h5 className="note-view__title">{note.title || <em>Sin título</em>}</h5>
+        <h5 className="note-view__title">
+          {note.title || <em>Sin título</em>}
+          {totals.map((t, i) => (
+            <span key={i} className="note-view__total">{t.toLocaleString('es-CO')}</span>
+          ))}
+        </h5>
         <div className="note-view__bar-actions">
           <button className="note-editor__icon-btn" onClick={onEdit} title="Editar">
             <CIcon icon={cilPencil} />
@@ -344,7 +408,8 @@ const NoteViewModal = ({ note, onClose, onEdit }) => (
       )}
     </div>
   </div>
-)
+  )
+}
 
 // ── Main view ─────────────────────────────────────────────────────────────────
 

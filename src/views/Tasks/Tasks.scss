@@ -782,13 +782,34 @@
   @media (max-width: 600px) {
     padding: 12px;
 
-    &__header { margin-bottom: 14px; }
+    // Header: title expands to push wifi + sync to the right;
+    // stats drop to their own full-width row below.
+    &__header {
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    &__header-left {
+      flex: 1; // absorbs available space → controls align right on same row
+    }
+
     &__header-title { font-size: var(--fs-xl); }
 
-    &__stats { gap: 14px; }
+    // Secondary control — hides to free header space on mobile
+    &__status-btn { display: none; }
+
+    // Stats: own full-width row with divider
+    &__stats {
+      width: 100%;
+      gap: 0;
+      justify-content: space-around;
+      padding-top: 8px;
+      border-top: 1px solid var(--cui-border-color);
+    }
+
     &__stat-value { font-size: var(--fs-xl); }
 
-    // Horizontal scroll — no wrapping to multiple lines
+    // Filters: horizontal scroll — no line-wrap
     &__filters {
       flex-wrap: nowrap;
       overflow-x: auto;
@@ -800,7 +821,40 @@
 
     &__filter-btn { flex-shrink: 0; }
 
-    // Keep due date visible — hide tags only
+    // Quick add: 2-row layout — input full-width on top, priority + button below
+    &__quick-add {
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 12px;
+    }
+
+    &__quick-icon { display: none; } // "+" redundant with the button below
+
+    &__quick-input {
+      flex: 1 1 100%; // own row, full width
+      min-width: 0;   // lets flex shrink past browser's default input min-width
+      font-size: 16px;
+    }
+
+    &__quick-priority { flex-shrink: 0; font-size: 16px; }
+
+    &__quick-date { display: none; }
+
+    &__quick-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+
+    // iOS zoom prevention for edit form inputs
+    &__edit-title,
+    &__edit-notes,
+    &__tag-input    { font-size: 16px; }
+
+    &__edit-select,
+    &__edit-input   { font-size: 16px; }
+
+    // Hide tags in compact row view — visible in expanded form
     &__tag { display: none; }
 
     // Larger touch targets
@@ -815,19 +869,23 @@
       min-height: 52px;
     }
 
-    // Delete button always visible on touch devices
+    // Delete button always visible on touch
     &__delete {
       opacity: 1;
       color: var(--cui-secondary-color);
       padding: 8px;
     }
 
+    // Shorter textarea — preserve vertical space on small screens
+    &__edit-notes { min-height: 80px; }
+
+    // Edit form: single column
     &__edit-row { grid-template-columns: 1fr; }
 
-    &__edit-select,
-    &__edit-input { font-size: var(--fs-xl); } // prevents iOS zoom on focus
-
+    // Larger action buttons
     &__btn {
+      flex: 1;
+      justify-content: center;
       padding: 10px 16px;
       font-size: var(--fs-md);
     }

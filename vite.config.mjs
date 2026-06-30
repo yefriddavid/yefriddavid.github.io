@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => {
       exclude: /src\/views\/BACKUP\//,
     },
     optimizeDeps: {
-      force: true,
+      entries: ['index.html'],
       esbuildOptions: {
         loader: {
           '.js': 'jsx',
