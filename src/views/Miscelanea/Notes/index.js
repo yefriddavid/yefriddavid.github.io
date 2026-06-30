@@ -70,6 +70,12 @@ const serializeCsv = (rows) =>
     ).join(','),
   ).join('\n')
 
+const parseChecklist = (content) => {
+  if (!content?.trim()) return [{ text: '', done: false }]
+  try { return JSON.parse(content) } catch { return [{ text: '', done: false }] }
+}
+const serializeChecklist = (items) => JSON.stringify(items)
+
 const calcTableTotals = (content) => {
   if (!content?.trim()) return []
   const rows = parseCsv(content)
@@ -204,6 +210,84 @@ const NoteTable = ({ content, className }) => {
   )
 }
 
+// ── ChecklistEditor ───────────────────────────────────────────────────────────
+
+const ChecklistEditor = ({ items, onChange }) => {
+  const inputRefs = React.useRef([])
+
+  const addItem = (afterIndex) => {
+    const next = [...items]
+    next.splice(afterIndex + 1, 0, { text: '', done: false })
+    onChange(next)
+    setTimeout(() => inputRefs.current[afterIndex + 1]?.focus(), 0)
+  }
+
+  const removeItem = (i) => {
+    if (items.length <= 1) return onChange([{ text: '', done: false }])
+    onChange(items.filter((_, idx) => idx !== i))
+  }
+
+  const updateText = (i, text) =>
+    onChange(items.map((item, idx) => (idx === i ? { ...item, text } : item)))
+
+  const toggleDone = (i) =>
+    onChange(items.map((item, idx) => (idx === i ? { ...item, done: !item.done } : item)))
+
+  const handleKeyDown = (e, i) => {
+    if (e.key === 'Enter') { e.preventDefault(); addItem(i) }
+    if (e.key === 'Backspace' && items[i].text === '') { e.preventDefault(); removeItem(i); setTimeout(() => inputRefs.current[i - 1]?.focus(), 0) }
+  }
+
+  return (
+    <div className="note-checklist-editor">
+      {items.map((item, i) => (
+        <div key={i} className="note-checklist-editor__item">
+          <input
+            type="checkbox"
+            className="note-checklist-editor__check"
+            checked={item.done}
+            onChange={() => toggleDone(i)}
+          />
+          <input
+            ref={(el) => (inputRefs.current[i] = el)}
+            className={`note-checklist-editor__text${item.done ? ' note-checklist-editor__text--done' : ''}`}
+            value={item.text}
+            placeholder="Ítem…"
+            onChange={(e) => updateText(i, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+          />
+          <button type="button" className="note-checklist-editor__rm" onClick={() => removeItem(i)}>×</button>
+        </div>
+      ))}
+      <button type="button" className="note-checklist-editor__add" onClick={() => addItem(items.length - 1)}>
+        + Agregar ítem
+      </button>
+    </div>
+  )
+}
+
+// ── NoteChecklist (read-only) ─────────────────────────────────────────────────
+
+const NoteChecklist = ({ content, className }) => {
+  const items = parseChecklist(content)
+  const done = items.filter((i) => i.done).length
+  return (
+    <div className={`note-checklist${className ? ` ${className}` : ''}`}>
+      {items.map((item, i) => (
+        <div key={i} className={`note-checklist__item${item.done ? ' note-checklist__item--done' : ''}`}>
+          <span className="note-checklist__mark">{item.done ? '✓' : '○'}</span>
+          <span className="note-checklist__text">{item.text || <em>sin texto</em>}</span>
+        </div>
+      ))}
+      {items.length > 0 && (
+        <div className="note-checklist__progress">
+          {done}/{items.length}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── NoteCard ──────────────────────────────────────────────────────────────────
 
 const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners }) => {
@@ -273,6 +357,8 @@ const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners
       <div className="note-card__preview note-card__preview--table">
         <NoteTable content={note.content} />
       </div>
+    ) : note.mode === 'checklist' ? (
+      <NoteChecklist content={note.content} className="note-card__preview" />
     ) : (
       <div
         className="note-card__preview ql-editor"
@@ -319,19 +405,25 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
     note?.mode === 'table' ? parseCsv(note?.content) : [['', ''], ['', '']],
   )
 
+  const [checklistItems, setChecklistItems] = useState(() =>
+    note?.mode === 'checklist' ? parseChecklist(note?.content) : [{ text: '', done: false }],
+  )
+
   const handleModeSwitch = (newMode) => {
     if (newMode === mode) return
     setValue('mode', newMode)
-    if (newMode === 'table') {
-      setTableRows([['', ''], ['', '']])
-    } else {
-      setValue('content', '')
-    }
+    if (newMode === 'table') setTableRows([['', ''], ['', '']])
+    else if (newMode === 'checklist') setChecklistItems([{ text: '', done: false }])
+    else setValue('content', '')
   }
 
   const buildPayload = (data) => ({
     ...data,
-    content: data.mode === 'table' ? serializeCsv(tableRows) : data.content,
+    content: data.mode === 'table'
+      ? serializeCsv(tableRows)
+      : data.mode === 'checklist'
+      ? serializeChecklist(checklistItems)
+      : data.content,
   })
 
   const onSubmit = (data) => onSave(buildPayload(data), false)
@@ -361,6 +453,13 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
             >
               Tabla
             </button>
+            <button
+              type="button"
+              className={`note-editor__mode-btn${mode === 'checklist' ? ' note-editor__mode-btn--active' : ''}`}
+              onClick={() => handleModeSwitch('checklist')}
+            >
+              Lista
+            </button>
           </div>
           <div className="note-editor__colors">
             {NOTE_COLORS.map((c) => (
@@ -382,6 +481,8 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
         <div className="note-editor__body">
           {mode === 'table' ? (
             <TableEditor rows={tableRows} onChange={setTableRows} />
+          ) : mode === 'checklist' ? (
+            <ChecklistEditor items={checklistItems} onChange={setChecklistItems} />
           ) : (
             <ReactQuill
               theme="snow"
@@ -450,6 +551,8 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
         <div className="note-view__content note-view__content--table">
           <NoteTable content={note.content} />
         </div>
+      ) : note.mode === 'checklist' ? (
+        <NoteChecklist content={note.content} className="note-view__content note-view__content--checklist" />
       ) : (
         <div
           className="note-view__content ql-editor"
