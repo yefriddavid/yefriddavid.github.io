@@ -57,6 +57,7 @@ import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
 import sagaLoans from './finance/loanSagas'
 import sagaTasks from './misc/taskSagas'
 import sagaNotes from './misc/noteSagas'
+import sagaHookExecutor from './misc/hookExecutorSaga'
 import sagaTaxiTrend from './taxi/taxiTrendSagas'
 import sagaAppSettings from './system/appSettingsSagas'
 import sagaUsageMetrics from './system/usageMetricsSagas'
@@ -122,6 +123,7 @@ export default function* rootSagas() {
     sagaLoans(),
     sagaTasks(),
     sagaNotes(),
+    sagaHookExecutor(),
     sagaTaxiTrend(),
     sagaAppSettings(),
     sagaUsageMetrics(),
