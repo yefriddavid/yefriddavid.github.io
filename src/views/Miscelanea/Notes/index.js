@@ -74,7 +74,7 @@ const toTableRows = (content) => {
   try { return JSON.parse(content) } catch { return parseCsv(content) }
 }
 
-const KNOWN_PREFIXES = ['sum', 'string', 'number', 'decimal', 'date']
+const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date']
 
 const isPrefix = (part) => KNOWN_PREFIXES.includes(part) || part.toLowerCase().startsWith('select(')
 
@@ -128,21 +128,28 @@ const parseChecklist = (content) => {
 }
 const serializeChecklist = (items) => JSON.stringify(items)
 
+const AGGREGATE_PREFIXES = ['sum', 'max', 'min', 'avg']
+
 const calcTableTotals = (content) => {
   if (!content) return []
   const rows = toTableRows(content)
   if (rows.length < 2) return []
   const [head, ...body] = rows
-  return head
-    .map((col, ci) => ({ col: col.trim(), ci }))
-    .filter(({ col }) => col.toLowerCase().includes('sum:'))
-    .map(({ col, ci }) => ({
-      label: stripPrefixes(col),
-      sum: body.reduce((acc, row) => {
-        const val = parseFloat(row[ci])
-        return acc + (isNaN(val) ? 0 : val)
-      }, 0),
-    }))
+  const results = []
+  head.forEach((col, ci) => {
+    const lower = col.toLowerCase()
+    const agg = AGGREGATE_PREFIXES.find((p) => lower.includes(p + ':') || lower.startsWith(p + ':'))
+    if (!agg) return
+    const nums = body.map((row) => parseFloat(row[ci])).filter((v) => !isNaN(v))
+    if (!nums.length) return
+    let value
+    if (agg === 'sum') value = nums.reduce((a, b) => a + b, 0)
+    else if (agg === 'max') value = Math.max(...nums)
+    else if (agg === 'min') value = Math.min(...nums)
+    else if (agg === 'avg') value = nums.reduce((a, b) => a + b, 0) / nums.length
+    results.push({ label: stripPrefixes(col), value })
+  })
+  return results
 }
 
 const formatDate = (ts) => {
@@ -442,7 +449,7 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
         {totals.length > 0 && (
           <div className="note-card__totals">
             {totals.map((t, i) => (
-              <span key={i} className="note-card__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
+              <span key={i} className="note-card__total">{t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
             ))}
           </div>
         )}
@@ -641,7 +648,7 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
           {totals.length > 0 && (
             <div className="note-view__totals">
               {totals.map((t, i) => (
-                <span key={i} className="note-view__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
+                <span key={i} className="note-view__total">{t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
               ))}
             </div>
           )}
@@ -669,6 +676,7 @@ const Notes = () => {
   const [items, setItems] = useState([])
   const [dragging, setDragging] = useState(false)
   const [activeTab, setActiveTab] = useState('active')
+  const [showHelp, setShowHelp] = useState(false)
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
 
@@ -729,18 +737,27 @@ const Notes = () => {
   return (
     <div className="notes">
       <div className="notes__header">
-        <div className="notes__tabs">
+        <div className="notes__header-left">
+          <div className="notes__tabs">
+            <button
+              className={`notes__tab${activeTab === 'active' ? ' notes__tab--active' : ''}`}
+              onClick={() => setActiveTab('active')}
+            >
+              Activas
+            </button>
+            <button
+              className={`notes__tab${activeTab === 'archived' ? ' notes__tab--active' : ''}`}
+              onClick={() => setActiveTab('archived')}
+            >
+              Archivadas
+            </button>
+          </div>
           <button
-            className={`notes__tab${activeTab === 'active' ? ' notes__tab--active' : ''}`}
-            onClick={() => setActiveTab('active')}
+            className={`notes__help-btn${showHelp ? ' notes__help-btn--active' : ''}`}
+            onClick={() => setShowHelp((v) => !v)}
+            title="Ayuda de operadores"
           >
-            Activas
-          </button>
-          <button
-            className={`notes__tab${activeTab === 'archived' ? ' notes__tab--active' : ''}`}
-            onClick={() => setActiveTab('archived')}
-          >
-            Archivadas
+            {showHelp ? '✕' : '?'} Operadores
           </button>
         </div>
         {activeTab === 'active' && (
@@ -749,6 +766,60 @@ const Notes = () => {
           </button>
         )}
       </div>
+
+      {showHelp && (
+        <div className="notes__help">
+          <div className="notes__help-section">
+            <span className="notes__help-title">Tipos de columna</span>
+            <div className="notes__help-grid">
+              {[
+                ['string:Nombre', 'Texto libre'],
+                ['number:Cantidad', 'Entero, valida en tiempo real'],
+                ['decimal:Precio', 'Decimal, valida en tiempo real'],
+                ['date:Fecha', 'Selector de fecha'],
+                ['select(A,B,C):Estado', 'Lista desplegable con opciones'],
+              ].map(([op, desc]) => (
+                <div key={op} className="notes__help-row">
+                  <code className="notes__help-code">{op}</code>
+                  <span className="notes__help-desc">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="notes__help-section">
+            <span className="notes__help-title">Agregados (badge bajo la tabla)</span>
+            <div className="notes__help-grid">
+              {[
+                ['sum:Total', 'Suma de la columna'],
+                ['max:Máximo', 'Valor máximo'],
+                ['min:Mínimo', 'Valor mínimo'],
+                ['avg:Promedio', 'Promedio de la columna'],
+              ].map(([op, desc]) => (
+                <div key={op} className="notes__help-row">
+                  <code className="notes__help-code">{op}</code>
+                  <span className="notes__help-desc">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="notes__help-section">
+            <span className="notes__help-title">Combinaciones válidas</span>
+            <div className="notes__help-grid">
+              {[
+                ['sum:number:Total', 'Entero + suma'],
+                ['sum:decimal:Precio', 'Decimal + suma'],
+                ['max:decimal:Precio', 'Decimal + máximo'],
+                ['avg:number:Días', 'Entero + promedio'],
+              ].map(([op, desc]) => (
+                <div key={op} className="notes__help-row">
+                  <code className="notes__help-code">{op}</code>
+                  <span className="notes__help-desc">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {fetching ? (
         <Spinner mode="section" />
