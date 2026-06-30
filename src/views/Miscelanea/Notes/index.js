@@ -283,7 +283,7 @@ const TableEditor = ({ rows, onChange }) => {
 
 // ── NoteTable (read-only) ─────────────────────────────────────────────────────
 
-const NoteTable = ({ content, className }) => {
+const NoteTable = ({ content, className, onToggleCheck }) => {
   const rows = content ? toTableRows(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
@@ -295,7 +295,21 @@ const NoteTable = ({ content, className }) => {
       </thead>
       <tbody>
         {body.map((row, ri) => (
-          <tr key={ri}>{row.map((c, ci) => <td key={ci}>{formatCellValue(c, types[ci])}</td>)}</tr>
+          <tr key={ri}>
+            {row.map((c, ci) =>
+              types[ci] === 'check' && onToggleCheck ? (
+                <td key={ci} className="note-table__cell--check">
+                  <input
+                    type="checkbox"
+                    checked={c === 'true'}
+                    onChange={(e) => onToggleCheck(ri, ci, e.target.checked ? 'true' : 'false')}
+                  />
+                </td>
+              ) : (
+                <td key={ci}>{formatCellValue(c, types[ci])}</td>
+              )
+            )}
+          </tr>
         ))}
       </tbody>
     </table>
@@ -388,6 +402,12 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(note.title || '')
 
+  const handleToggleCheck = (ri, ci, val) => {
+    const rows = toTableRows(note.content)
+    const updated = rows.map((r, i) => i === ri + 1 ? r.map((c, j) => j === ci ? val : c) : r)
+    dispatch(actions.updateRequest({ id: note.id, content: JSON.stringify(updated) }))
+  }
+
   const commitTitle = () => {
     setEditingTitle(false)
     const trimmed = titleValue.trim()
@@ -457,7 +477,7 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
     {note.mode === 'table' ? (
       <>
         <div className="note-card__preview note-card__preview--table">
-          <NoteTable content={note.content} />
+          <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
         </div>
         {totals.length > 0 && (
           <div className="note-card__totals">

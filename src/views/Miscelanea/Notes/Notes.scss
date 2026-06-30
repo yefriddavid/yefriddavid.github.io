@@ -845,6 +845,17 @@
   }
 
   td { color: var(--cui-body-color, #444); }
+
+  &__cell--check {
+    text-align: center;
+
+    input[type='checkbox'] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      accent-color: var(--cui-primary, #4f46e5);
+    }
+  }
 }
 
 .note-card__preview--table {
