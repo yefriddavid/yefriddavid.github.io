@@ -89,7 +89,7 @@ const getColType = (header) => {
   const parts = (header || '').split(':')
   for (const part of parts) {
     const lower = part.toLowerCase()
-    if (['string', 'number', 'decimal', 'date'].includes(lower)) return lower
+    if (['string', 'number', 'decimal', 'date', 'check'].includes(lower)) return lower
     if (lower.startsWith('select(')) return 'select'
   }
   return 'string'
