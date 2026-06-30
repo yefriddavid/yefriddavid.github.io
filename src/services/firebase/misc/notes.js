@@ -11,6 +11,7 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
@@ -65,6 +66,12 @@ export const updateNote = async ({ id, title, content, color, mode }) => {
 
 export const deleteNote = async (id) => {
   await firestoreCall(() => deleteDoc(doc(db, COL_MISC_NOTES, id)))
+}
+
+export const reorderNotes = async (updates) => {
+  const batch = writeBatch(db)
+  updates.forEach(({ id, order }) => batch.update(doc(db, COL_MISC_NOTES, id), { order }))
+  await firestoreCall(() => batch.commit())
 }
 
 export const subscribeNotes = (onData) => {

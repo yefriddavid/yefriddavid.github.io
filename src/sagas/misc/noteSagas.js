@@ -60,11 +60,20 @@ function* deleteNote({ payload }) {
   }
 }
 
+function* reorderNotes({ payload }) {
+  try {
+    yield call(service.reorderNotes, payload)
+  } catch (e) {
+    yield put(notify({ type: 'error', message: `Error al reordenar: ${e.message}` }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchNotes),
     takeLatest(actions.createRequest, createNote),
     takeLatest(actions.updateRequest, updateNote),
     takeLatest(actions.deleteRequest, deleteNote),
+    takeLatest(actions.reorderRequest, reorderNotes),
   ])
 }

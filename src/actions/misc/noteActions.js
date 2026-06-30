@@ -1,3 +1,4 @@
+import { createAction } from '@reduxjs/toolkit'
 import { createCRUDActions } from 'src/utils/crudFactory'
 
 export const {
@@ -18,3 +19,6 @@ export const {
   successRequestDelete,
   errorRequestDelete,
 } = createCRUDActions('note')
+
+// payload: [{ id, order }, ...]
+export const reorderRequest = createAction('note/reorderRequest')

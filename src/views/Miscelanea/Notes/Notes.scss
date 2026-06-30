@@ -108,6 +108,26 @@
     flex-shrink: 0;
   }
 
+  &__drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--cui-secondary-color, #aaa);
+    font-size: 16px;
+    cursor: grab;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+
+    &:hover { color: var(--cui-body-color, #555); }
+    &:active { cursor: grabbing; }
+  }
+
   &__btn {
     display: flex;
     align-items: center;

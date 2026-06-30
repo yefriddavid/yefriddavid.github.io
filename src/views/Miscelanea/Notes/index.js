@@ -5,6 +5,9 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen } from '@coreui/icons'
+import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
@@ -203,7 +206,7 @@ const NoteTable = ({ content, className }) => {
 
 // ── NoteCard ──────────────────────────────────────────────────────────────────
 
-const NoteCard = ({ note, onEdit, onDelete, onView }) => {
+const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners }) => {
   const dispatch = useDispatch()
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
   const [editingTitle, setEditingTitle] = useState(false)
@@ -248,6 +251,12 @@ const NoteCard = ({ note, onEdit, onDelete, onView }) => {
         ))}
       </h6>
       <div className="note-card__actions">
+        <button
+          ref={dragHandleRef}
+          className="note-card__drag-handle"
+          title="Mover"
+          {...dragListeners}
+        >⠿</button>
         <button className="note-card__btn" onClick={onView} title="Ver">
           <CIcon icon={cilFullscreen} size="sm" />
         </button>
@@ -271,6 +280,22 @@ const NoteCard = ({ note, onEdit, onDelete, onView }) => {
       />
     )}
   </div>
+  )
+}
+
+// ── SortableNoteCard ──────────────────────────────────────────────────────────
+
+const SortableNoteCard = (props) => {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id: props.note.id })
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      {...attributes}
+    >
+      <NoteCard {...props} dragHandleRef={setActivatorNodeRef} dragListeners={listeners} />
+    </div>
   )
 }
 
@@ -438,16 +463,37 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
 
 // ── Main view ─────────────────────────────────────────────────────────────────
 
+const sortByOrder = (arr) => [...arr].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999))
+
 const Notes = () => {
   const dispatch = useDispatch()
   const { data, fetching, saving } = useSelector((s) => s.note)
-  const notes = data ?? []
+  const [items, setItems] = useState([])
+  const [dragging, setDragging] = useState(false)
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
   }, [dispatch])
+
+  useEffect(() => {
+    if (!dragging) setItems(sortByOrder(data ?? []))
+  }, [data, dragging])
+
+  const handleDragStart = () => setDragging(true)
+
+  const handleDragEnd = ({ active, over }) => {
+    setDragging(false)
+    if (!over || active.id === over.id) return
+    const oldIndex = items.findIndex((n) => n.id === active.id)
+    const newIndex = items.findIndex((n) => n.id === over.id)
+    const reordered = arrayMove(items, oldIndex, newIndex)
+    setItems(reordered)
+    dispatch(actions.reorderRequest(reordered.map((n, i) => ({ id: n.id, order: i }))))
+  }
 
   const handleSave = (form, keepOpen = false) => {
     if (editing === 'new') {
@@ -475,7 +521,7 @@ const Notes = () => {
 
       {fetching ? (
         <Spinner mode="section" />
-      ) : notes.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="notes__empty">
           <p>No hay notas todavía.</p>
           <button className="notes__new-btn" onClick={() => setEditing('new')}>
@@ -483,17 +529,21 @@ const Notes = () => {
           </button>
         </div>
       ) : (
-        <div className="notes__grid">
-          {notes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onView={() => setViewing(note)}
-              onEdit={() => setEditing(note)}
-              onDelete={() => handleDelete(note)}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <SortableContext items={items.map((n) => n.id)} strategy={rectSortingStrategy}>
+            <div className="notes__grid">
+              {items.map((note) => (
+                <SortableNoteCard
+                  key={note.id}
+                  note={note}
+                  onView={() => setViewing(note)}
+                  onEdit={() => setEditing(note)}
+                  onDelete={() => handleDelete(note)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {viewing && !editing && (
