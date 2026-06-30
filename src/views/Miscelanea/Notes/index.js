@@ -337,9 +337,6 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
             {note.title || <em>Sin título</em>}
           </span>
         )}
-        {totals.map((t, i) => (
-          <span key={i} className="note-card__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
-        ))}
       </h6>
       <div className="note-card__actions">
         <button
@@ -375,9 +372,18 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
     </div>
     <div className="note-card__date">{formatDate(note.updatedAt)}</div>
     {note.mode === 'table' ? (
-      <div className="note-card__preview note-card__preview--table">
-        <NoteTable content={note.content} />
-      </div>
+      <>
+        <div className="note-card__preview note-card__preview--table">
+          <NoteTable content={note.content} />
+        </div>
+        {totals.length > 0 && (
+          <div className="note-card__totals">
+            {totals.map((t, i) => (
+              <span key={i} className="note-card__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
+            ))}
+          </div>
+        )}
+      </>
     ) : note.mode === 'checklist' ? (
       <NoteChecklist content={note.content} className="note-card__preview" />
     ) : (
@@ -555,9 +561,6 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
       <div className="note-view__bar">
         <h5 className="note-view__title">
           {note.title || <em>Sin título</em>}
-          {totals.map((t, i) => (
-            <span key={i} className="note-view__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
-          ))}
         </h5>
         <div className="note-view__bar-actions">
           <button className="note-editor__icon-btn" onClick={onEdit} title="Editar">
@@ -572,6 +575,13 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
       {note.mode === 'table' ? (
         <div className="note-view__content note-view__content--table">
           <NoteTable content={note.content} />
+          {totals.length > 0 && (
+            <div className="note-view__totals">
+              {totals.map((t, i) => (
+                <span key={i} className="note-view__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
+              ))}
+            </div>
+          )}
         </div>
       ) : note.mode === 'checklist' ? (
         <NoteChecklist content={note.content} className="note-view__content note-view__content--checklist" />
