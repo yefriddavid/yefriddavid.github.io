@@ -468,11 +468,63 @@ const TableEditor = ({ rows, onChange }) => {
 
 // ── NoteTable (read-only) ─────────────────────────────────────────────────────
 
-const NoteTable = ({ content, className, onToggleCheck }) => {
+const NoteTable = ({ content, className, onToggleCheck, onCellChange }) => {
   const rows = content ? toTableRows(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
   const types = head.map((h) => getColType(h))
+
+  const renderEditableCell = (c, ri, ci) => {
+    const type = types[ci]
+    const header = head[ci]
+    if (type === 'select') {
+      const options = getColOptions(header)
+      return (
+        <select
+          className="note-table__cell-input"
+          defaultValue={c}
+          onChange={(e) => onCellChange(ri, ci, e.target.value)}
+        >
+          <option value="">—</option>
+          {options.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      )
+    }
+    if (type === 'date') {
+      return (
+        <input
+          className="note-table__cell-input"
+          type="date"
+          defaultValue={c}
+          onBlur={(e) => onCellChange(ri, ci, e.target.value)}
+        />
+      )
+    }
+    if (type === 'number' || type === 'decimal' || type === 'currency') {
+      return (
+        <input
+          className="note-table__cell-input note-table__cell-input--num"
+          type="number"
+          step={type === 'number' ? '1' : '0.01'}
+          defaultValue={c}
+          onBlur={(e) => onCellChange(ri, ci, e.target.value)}
+        />
+      )
+    }
+    return (
+      <input
+        className="note-table__cell-input"
+        type="text"
+        defaultValue={c}
+        onBlur={(e) => onCellChange(ri, ci, e.target.value)}
+      />
+    )
+  }
+
   return (
     <table className={`note-table${className ? ` ${className}` : ''}`}>
       <thead>
@@ -498,6 +550,10 @@ const NoteTable = ({ content, className, onToggleCheck }) => {
                         : undefined
                     }
                   />
+                </td>
+              ) : onCellChange ? (
+                <td key={ci} className="note-table__cell--editable">
+                  {renderEditableCell(c, ri, ci)}
                 </td>
               ) : (
                 <td key={ci}>{formatCellValue(c, types[ci], head[ci])}</td>
@@ -1011,6 +1067,14 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
     dispatch(actions.updateRequest({ id: note.id, content: JSON.stringify(updated) }))
   }
 
+  const handleCellChange = (ri, ci, val) => {
+    const rows = toTableRows(note.content)
+    const updated = rows.map((row, r) =>
+      r === ri + 1 ? row.map((cell, c) => (c === ci ? val : cell)) : row,
+    )
+    dispatch(actions.updateRequest({ id: note.id, content: JSON.stringify(updated) }))
+  }
+
   const handleToggleChecklist = (index) => {
     const items = parseChecklist(note.content)
     const updated = items.map((item, i) => (i === index ? { ...item, done: !item.done } : item))
@@ -1038,7 +1102,11 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
         <div className="note-view__date">{formatDate(note.updatedAt)}</div>
         {note.mode === 'table' ? (
           <div className="note-view__content note-view__content--table">
-            <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
+            <NoteTable
+              content={note.content}
+              onToggleCheck={handleToggleCheck}
+              onCellChange={handleCellChange}
+            />
             {totals.length > 0 && (
               <div className="note-view__totals">
                 {totals.map((t, i) => (

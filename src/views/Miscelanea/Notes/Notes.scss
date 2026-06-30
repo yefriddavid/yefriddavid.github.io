@@ -993,6 +993,28 @@
       accent-color: var(--cui-primary, #4f46e5);
     }
   }
+
+  &__cell--editable {
+    padding: 0 !important;
+  }
+
+  &__cell-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 5px 10px;
+    font-size: inherit;
+    color: var(--cui-body-color, #444);
+    outline: none;
+    font-family: inherit;
+
+    &:focus {
+      background: var(--cui-primary-bg-subtle, #eef2ff);
+      outline: none;
+    }
+
+    &--num { text-align: right; }
+  }
 }
 
 .note-card__preview--table {
