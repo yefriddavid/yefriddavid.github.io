@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
@@ -668,6 +669,7 @@ const NoteCard = ({
   onEdit,
   onDelete,
   onView,
+  onOpen,
   onClone,
   onArchive,
   dragHandleRef,
@@ -750,6 +752,9 @@ const NoteCard = ({
           </button>
           <button className="note-card__btn" onClick={onView} title="Ver">
             <CIcon icon={cilFullscreen} size="sm" />
+          </button>
+          <button className="note-card__btn" onClick={onOpen} title="Abrir pantalla completa">
+            <CIcon icon={cilStorage} size="sm" />
           </button>
           <button className="note-card__btn" onClick={onClone} title="Clonar">
             <IconClone />
@@ -1140,6 +1145,7 @@ const sortByOrder = (arr) => [...arr].sort((a, b) => (a.order ?? 9999) - (b.orde
 
 const Notes = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { data, fetching, saving } = useSelector((s) => s.note)
   const [items, setItems] = useState([])
   const [dragging, setDragging] = useState(false)
@@ -1336,6 +1342,7 @@ const Notes = () => {
                   note={note}
                   onView={() => setViewing(note)}
                   onEdit={() => setEditing(note)}
+                  onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
                   onClone={() => handleClone(note)}
                   onArchive={() => handleArchive(note)}
                   onDelete={() => handleDelete(note)}
@@ -1379,6 +1386,7 @@ const Notes = () => {
                         note={note}
                         onView={() => setViewing(note)}
                         onEdit={() => setEditing(note)}
+                        onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
                         onClone={() => handleClone(note)}
                         onArchive={() => handleArchive(note)}
                         onDelete={() => handleDelete(note)}
