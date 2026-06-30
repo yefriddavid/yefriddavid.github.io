@@ -13,6 +13,7 @@ import {
   cilFullscreen,
   cilStorage,
   cilActionUndo,
+  cilWindowMaximize,
 } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import {
@@ -754,7 +755,7 @@ const NoteCard = ({
             <CIcon icon={cilFullscreen} size="sm" />
           </button>
           <button className="note-card__btn" onClick={onOpen} title="Abrir pantalla completa">
-            <CIcon icon={cilStorage} size="sm" />
+            <CIcon icon={cilWindowMaximize} size="sm" />
           </button>
           <button className="note-card__btn" onClick={onClone} title="Clonar">
             <IconClone />
