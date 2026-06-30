@@ -360,11 +360,9 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
             <CIcon icon={cilStorage} size="sm" />
           </button>
         )}
-        {!note.archived && (
-          <button className="note-card__btn" onClick={onEdit} title="Editar">
-            <CIcon icon={cilPencil} size="sm" />
-          </button>
-        )}
+        <button className="note-card__btn" onClick={onEdit} title="Editar">
+          <CIcon icon={cilPencil} size="sm" />
+        </button>
         <button className="note-card__btn note-card__btn--danger" onClick={onDelete} title="Eliminar">
           <CIcon icon={cilTrash} size="sm" />
         </button>
