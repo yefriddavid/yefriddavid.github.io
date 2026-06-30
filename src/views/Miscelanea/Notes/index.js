@@ -374,13 +374,17 @@ const ChecklistEditor = ({ items, onChange }) => {
 
 // ── NoteChecklist (read-only) ─────────────────────────────────────────────────
 
-const NoteChecklist = ({ content, className }) => {
+const NoteChecklist = ({ content, className, onToggle }) => {
   const items = parseChecklist(content)
   const done = items.filter((i) => i.done).length
   return (
     <div className={`note-checklist${className ? ` ${className}` : ''}`}>
       {items.map((item, i) => (
-        <div key={i} className={`note-checklist__item${item.done ? ' note-checklist__item--done' : ''}`}>
+        <div
+          key={i}
+          className={`note-checklist__item${item.done ? ' note-checklist__item--done' : ''}${onToggle ? ' note-checklist__item--interactive' : ''}`}
+          onClick={() => onToggle?.(i)}
+        >
           <span className="note-checklist__mark">{item.done ? '✓' : '○'}</span>
           <span className="note-checklist__text">{item.text || <em>sin texto</em>}</span>
         </div>
@@ -401,6 +405,12 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(note.title || '')
+
+  const handleToggleChecklist = (index) => {
+    const items = parseChecklist(note.content)
+    const updated = items.map((item, i) => i === index ? { ...item, done: !item.done } : item)
+    dispatch(actions.updateRequest({ id: note.id, content: serializeChecklist(updated) }))
+  }
 
   const handleToggleCheck = (ri, ci, val) => {
     const rows = toTableRows(note.content)
@@ -488,7 +498,7 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
         )}
       </>
     ) : note.mode === 'checklist' ? (
-      <NoteChecklist content={note.content} className="note-card__preview" />
+      <NoteChecklist content={note.content} className="note-card__preview" onToggle={handleToggleChecklist} />
     ) : (
       <div
         className="note-card__preview ql-editor"

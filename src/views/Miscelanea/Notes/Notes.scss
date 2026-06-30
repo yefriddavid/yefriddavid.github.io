@@ -684,6 +684,16 @@
       text-decoration: line-through;
       color: var(--cui-secondary-color, #aaa);
     }
+
+    &--interactive {
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 1px 3px;
+      margin: 0 -3px;
+      transition: background 0.12s;
+
+      &:hover { background: rgba(0, 0, 0, 0.05); }
+    }
   }
 
   &__mark {
