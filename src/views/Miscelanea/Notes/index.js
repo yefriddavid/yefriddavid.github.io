@@ -68,14 +68,7 @@ const parseCsv = (str) => {
   })
 }
 
-const serializeCsv = (rows) =>
-  rows.map((r) =>
-    r.map((cell) =>
-      cell.includes(',') || cell.includes('"') || cell.includes('\n')
-        ? `"${cell.replace(/"/g, '""')}"`
-        : cell,
-    ).join(','),
-  ).join('\n')
+const toTableRows = (content) => Array.isArray(content) ? content : parseCsv(content)
 
 const parseChecklist = (content) => {
   if (!content?.trim()) return [{ text: '', done: false }]
@@ -84,8 +77,8 @@ const parseChecklist = (content) => {
 const serializeChecklist = (items) => JSON.stringify(items)
 
 const calcTableTotals = (content) => {
-  if (!content?.trim()) return []
-  const rows = parseCsv(content)
+  if (!content) return []
+  const rows = toTableRows(content)
   if (rows.length < 2) return []
   const [head, ...body] = rows
   return head
@@ -200,7 +193,7 @@ const TableEditor = ({ rows, onChange }) => {
 // ── NoteTable (read-only) ─────────────────────────────────────────────────────
 
 const NoteTable = ({ content, className }) => {
-  const rows = content?.trim() ? parseCsv(content) : []
+  const rows = content ? toTableRows(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
   return (
@@ -428,7 +421,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const mode = watch('mode')
 
   const [tableRows, setTableRows] = useState(() =>
-    note?.mode === 'table' ? parseCsv(note?.content) : [['', ''], ['', '']],
+    note?.mode === 'table' ? toTableRows(note?.content) : [['', ''], ['', '']],
   )
 
   const [checklistItems, setChecklistItems] = useState(() =>
@@ -446,7 +439,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const buildPayload = (data) => ({
     ...data,
     content: data.mode === 'table'
-      ? serializeCsv(tableRows)
+      ? tableRows
       : data.mode === 'checklist'
       ? serializeChecklist(checklistItems)
       : data.content,
