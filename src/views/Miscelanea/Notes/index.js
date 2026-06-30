@@ -572,6 +572,28 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
     note?.mode === 'checklist' ? parseChecklist(note?.content) : [{ text: '', done: false }],
   )
 
+  const [showSource, setShowSource] = useState(false)
+  const [sourceValue, setSourceValue] = useState('')
+
+  const getRawSource = () => {
+    if (mode === 'table') return JSON.stringify(tableRows, null, 2)
+    if (mode === 'checklist') return JSON.stringify(checklistItems, null, 2)
+    return content
+  }
+
+  const toggleSource = () => {
+    if (!showSource) {
+      setSourceValue(getRawSource())
+    } else {
+      try {
+        if (mode === 'table') setTableRows(JSON.parse(sourceValue))
+        else if (mode === 'checklist') setChecklistItems(JSON.parse(sourceValue))
+        else setValue('content', sourceValue)
+      } catch {}
+    }
+    setShowSource((v) => !v)
+  }
+
   const handleModeSwitch = (newMode) => {
     if (newMode === mode) return
     setValue('mode', newMode)
@@ -641,13 +663,28 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
               />
             ))}
           </div>
+          <button
+            type="button"
+            className={`note-editor__source-btn${showSource ? ' note-editor__source-btn--active' : ''}`}
+            onClick={toggleSource}
+            title="Ver/editar source"
+          >
+            {'</>'}
+          </button>
           <button className="note-editor__icon-btn" onClick={onClose} title="Cerrar">
             <CIcon icon={cilX} />
           </button>
         </div>
 
         <div className="note-editor__body">
-          {mode === 'table' ? (
+          {showSource ? (
+            <textarea
+              className="note-editor__source"
+              value={sourceValue}
+              onChange={(e) => setSourceValue(e.target.value)}
+              spellCheck={false}
+            />
+          ) : mode === 'table' ? (
             <TableEditor rows={tableRows} onChange={setTableRows} />
           ) : mode === 'checklist' ? (
             <ChecklistEditor items={checklistItems} onChange={setChecklistItems} />
