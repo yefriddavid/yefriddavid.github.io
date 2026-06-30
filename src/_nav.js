@@ -27,6 +27,7 @@ import {
   cilSwapHorizontal,
   cilTransfer,
   cilUser,
+  cilWallet,
   cilWarning,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
@@ -109,6 +110,12 @@ const getNav = (t, role) => {
           name: t('nav.increaseDecrease'),
           to: '/finance/tools/adjustments',
           icon: <CIcon icon={cilBalanceScale} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Crypto Purchases (v2)',
+          to: '/finance/tools/v2/adjustments',
+          icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,

@@ -13,6 +13,19 @@ export const fmt = (n) =>
   }).format(n ?? 0)
 
 /**
+ * Formats a number as USD currency.
+ * @param {number} n - The number to format.
+ * @returns {string} Formatted currency string.
+ */
+export const fmtUSD = (n) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n ?? 0)
+
+/**
  * Formats a number with specified decimal places.
  * @param {number} n - The number to format.
  * @param {number} decimals - Maximum fraction digits.

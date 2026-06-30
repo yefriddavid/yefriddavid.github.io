@@ -105,6 +105,15 @@ export const SCENES3D_DEFAULT_OBJECT = {
   locked: false,
 }
 
+// Must match the streams subscribed in src/services/websocketService.js (cryptoPricesWebSocket)
+export const CRYPTO_PURCHASE_SYMBOLS = [
+  { value: 'BTCUSDT', label: 'BTC' },
+  { value: 'ETHUSDT', label: 'ETH' },
+  { value: 'SOLUSDT', label: 'SOL' },
+  { value: 'LINKUSDT', label: 'LINK' },
+  { value: 'BNBUSDT', label: 'BNB' },
+]
+
 export const CALC_LIST_CATEGORIES = [
   { value: 'gastos',  label: 'Gastos' },
   { value: 'ahorros', label: 'Ahorros' },
