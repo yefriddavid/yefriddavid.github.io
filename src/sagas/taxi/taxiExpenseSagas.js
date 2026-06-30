@@ -3,6 +3,7 @@ import * as taxiExpenseActions from '../../actions/taxi/taxiExpenseActions'
 import * as expenseService from '../../services/facade/taxi/taxiExpenseFacade'
 import { monthToRange } from '../../utils/dateRange'
 import { push as notify } from '../../reducers/notificationsSlice'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchExpenses(action) {
   try {
@@ -24,6 +25,7 @@ export function* createExpense({ payload }) {
       taxiExpenseActions.successRequestCreate({ id, ...payload, amount: Number(payload.amount) }),
     )
     yield put(notify({ type: 'success', message: 'Gasto creado correctamente.' }))
+    yield put(triggerHook({ tag: 'expense.create', context: { id, category: payload.category } }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestCreate(e.message))
     yield put(notify({ type: 'error', message: `Error al crear el gasto: ${e.message}` }))
@@ -36,6 +38,7 @@ export function* deleteExpense({ payload }) {
     yield call(expenseService.deleteExpense, payload.id)
     yield put(taxiExpenseActions.successRequestDelete(payload))
     yield put(notify({ type: 'success', message: 'Gasto eliminado.' }))
+    yield put(triggerHook({ tag: 'expense.delete', context: { id: payload.id } }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestDelete(e.message))
     yield put(notify({ type: 'error', message: `Error al eliminar: ${e.message}` }))
@@ -48,6 +51,7 @@ export function* updateExpense({ payload }) {
     yield call(expenseService.updateExpense, payload.id, payload)
     yield put(taxiExpenseActions.successRequestUpdate(payload))
     yield put(notify({ type: 'success', message: 'Gasto actualizado correctamente.' }))
+    yield put(triggerHook({ tag: 'expense.update', context: { id: payload.id } }))
   } catch (e) {
     yield put(taxiExpenseActions.errorRequestUpdate(e.message))
     yield put(notify({ type: 'error', message: `Error al actualizar el gasto: ${e.message}` }))

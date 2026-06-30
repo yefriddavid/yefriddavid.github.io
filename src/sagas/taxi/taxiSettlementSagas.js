@@ -2,6 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiSettlementActions'
 import * as service from '../../services/facade/taxi/taxiSettlementFacade'
 import { monthToRange } from '../../utils/dateRange'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchSettlements(action) {
   try {
@@ -29,6 +30,12 @@ export function* createSettlement({ payload }) {
         comment: payload.comment || null,
       }),
     )
+    yield put(
+      triggerHook({
+        tag: 'settlement.create',
+        context: { id, driver: payload.driver, plate: payload.plate },
+      }),
+    )
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
   }
@@ -39,6 +46,7 @@ export function* updateSettlement({ payload }) {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateSettlement, payload.id, payload)
     yield put(actions.successRequestUpdate(payload))
+    yield put(triggerHook({ tag: 'settlement.update', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
   }
@@ -49,6 +57,7 @@ export function* deleteSettlement({ payload }) {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteSettlement, payload.id)
     yield put(actions.successRequestDelete(payload))
+    yield put(triggerHook({ tag: 'settlement.delete', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
   }

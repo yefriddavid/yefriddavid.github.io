@@ -2,6 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/cashflow/transactionActions'
 import * as service from '../../services/facade/cashflow/transactionFacade'
 import { push } from '../../reducers/notificationsSlice'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchTransactions({ payload }) {
   try {
@@ -19,6 +20,7 @@ export function* createTransaction({ payload }) {
     yield put(actions.beginRequestCreate())
     const id = yield call(service.addTransaction, payload)
     yield put(actions.successRequestCreate({ id, ...payload }))
+    yield put(triggerHook({ tag: 'transaction.create', context: { id } }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
     yield put(push({ type: 'error', message: e.message }))
@@ -30,6 +32,7 @@ export function* updateTransaction({ payload }) {
     yield put(actions.beginRequestUpdate())
     yield call(service.updateTransaction, payload.id, payload)
     yield put(actions.successRequestUpdate(payload))
+    yield put(triggerHook({ tag: 'transaction.update', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
     yield put(push({ type: 'error', message: e.message }))
@@ -41,6 +44,7 @@ export function* deleteTransaction({ payload }) {
     yield put(actions.beginRequestDelete())
     yield call(service.deleteTransaction, payload.id)
     yield put(actions.successRequestDelete(payload))
+    yield put(triggerHook({ tag: 'transaction.delete', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
     yield put(push({ type: 'error', message: e.message }))

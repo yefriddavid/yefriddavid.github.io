@@ -78,6 +78,7 @@ function* adminResetPasswordSaga({ payload: { username, password } }) {
   try {
     yield call(service.adminSetPassword, username, password)
     yield put(actions.adminResetPasswordSuccess({ username }))
+    yield put(triggerHook({ tag: 'user.update', context: { username } }))
   } catch (e) {
     yield put(actions.adminResetPasswordError({ username, error: e.message }))
   }

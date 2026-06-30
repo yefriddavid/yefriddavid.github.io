@@ -2,6 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiVehicleActions'
 import * as service from '../../services/facade/taxi/taxiVehicleFacade'
 import { push as notify } from '../../reducers/notificationsSlice'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchVehicles() {
   try {
@@ -26,6 +27,9 @@ export function* createVehicle({ payload }) {
       }),
     )
     yield put(notify({ type: 'success', message: 'Vehículo creado correctamente.' }))
+    yield put(
+      triggerHook({ tag: 'vehicle.create', context: { id, plate: payload.plate?.toUpperCase() } }),
+    )
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
     yield put(notify({ type: 'error', message: `Error al crear el vehículo: ${e.message}` }))
@@ -38,6 +42,12 @@ export function* updateVehicle({ payload }) {
     yield call(service.updateVehicle, payload.id, payload)
     yield put(actions.successRequestUpdate({ ...payload, plate: payload.plate?.toUpperCase() }))
     yield put(notify({ type: 'success', message: 'Vehículo actualizado correctamente.' }))
+    yield put(
+      triggerHook({
+        tag: 'vehicle.update',
+        context: { id: payload.id, plate: payload.plate?.toUpperCase() },
+      }),
+    )
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
     yield put(notify({ type: 'error', message: `Error al actualizar: ${e.message}` }))
@@ -50,6 +60,7 @@ export function* deleteVehicle({ payload }) {
     yield call(service.deleteVehicle, payload.id)
     yield put(actions.successRequestDelete(payload))
     yield put(notify({ type: 'success', message: 'Vehículo eliminado.' }))
+    yield put(triggerHook({ tag: 'vehicle.delete', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
     yield put(notify({ type: 'error', message: `Error al eliminar: ${e.message}` }))

@@ -2,6 +2,7 @@ import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../../actions/taxi/taxiPartnerActions'
 import * as service from '../../services/facade/taxi/taxiPartnerFacade'
 import { push as notify } from '../../reducers/notificationsSlice'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchPartners() {
   try {
@@ -25,6 +26,7 @@ export function* createPartner({ payload }) {
       }),
     )
     yield put(notify({ type: 'success', message: 'Socio creado correctamente.' }))
+    yield put(triggerHook({ tag: 'partner.create', context: { id, name: payload.name } }))
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))
     yield put(notify({ type: 'error', message: `Error al crear el socio: ${e.message}` }))
@@ -37,6 +39,9 @@ export function* updatePartner({ payload }) {
     yield call(service.updatePartner, payload.id, payload)
     yield put(actions.successRequestUpdate(payload))
     yield put(notify({ type: 'success', message: 'Socio actualizado correctamente.' }))
+    yield put(
+      triggerHook({ tag: 'partner.update', context: { id: payload.id, name: payload.name } }),
+    )
   } catch (e) {
     yield put(actions.errorRequestUpdate(e.message))
     yield put(notify({ type: 'error', message: `Error al actualizar: ${e.message}` }))
@@ -49,6 +54,7 @@ export function* deletePartner({ payload }) {
     yield call(service.deletePartner, payload.id)
     yield put(actions.successRequestDelete(payload))
     yield put(notify({ type: 'success', message: 'Socio eliminado.' }))
+    yield put(triggerHook({ tag: 'partner.delete', context: { id: payload.id } }))
   } catch (e) {
     yield put(actions.errorRequestDelete(e.message))
     yield put(notify({ type: 'error', message: `Error al eliminar: ${e.message}` }))

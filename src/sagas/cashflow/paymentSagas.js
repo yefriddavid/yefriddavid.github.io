@@ -1,6 +1,7 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as paymentActions from '../../actions/cashflow/paymentActions'
 import * as apiServices from '../../services/api/payments'
+import { triggerHook } from '../../reducers/system/programHookSlice'
 
 export function* fetchPayments({ payload }) {
   try {
@@ -17,6 +18,7 @@ export function* createPayment({ payload }) {
     yield put(paymentActions.beginRequestCreate())
     const response = yield call(apiServices.createPayment, payload)
     yield put(paymentActions.successRequestCreate({ ...response.data, vaucher: payload.vaucher }))
+    yield put(triggerHook({ tag: 'payment.create', context: { id: response.data?.id } }))
   } catch (e) {
     yield put(paymentActions.errorRequestCreate(e.message))
   }
@@ -27,6 +29,7 @@ export function* deletePayment({ payload }) {
     yield put(paymentActions.beginRequestDelete())
     yield call(apiServices.deletePayment, payload)
     yield put(paymentActions.successRequestDelete(payload))
+    yield put(triggerHook({ tag: 'payment.delete', context: { id: payload?.id } }))
   } catch (e) {
     yield put(paymentActions.errorRequestDelete(e.message))
   }
