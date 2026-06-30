@@ -541,19 +541,27 @@
 
   &__source {
     flex: 1;
-    padding: 14px 18px;
+    padding: 16px 20px;
     border: none;
     outline: none;
     resize: none;
-    font-family: monospace;
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
     font-size: var(--fs-sm);
-    line-height: 1.6;
-    background: var(--cui-body-bg, #fff);
-    color: var(--cui-body-color, #333);
+    line-height: 1.75;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    caret-color: #f5c2e7;
     width: 100%;
     min-height: 280px;
     max-height: 55vh;
     overflow-y: auto;
+    tab-size: 2;
+
+    &::selection { background: rgba(137, 180, 250, 0.25); }
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: #181825; }
+    &::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
   }
 
   &__icon-btn {

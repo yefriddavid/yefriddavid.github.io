@@ -155,6 +155,30 @@ const calcTableTotals = (content) => {
   return results
 }
 
+const VOID_TAGS = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'])
+
+const formatHtml = (html) => {
+  if (!html?.trim()) return html
+  let depth = 0
+  let result = ''
+  const tokens = html.split(/(<[^>]+>)/g).filter(Boolean)
+  tokens.forEach((token) => {
+    const trimmed = token.trim()
+    if (!trimmed) return
+    if (trimmed.startsWith('</')) {
+      depth = Math.max(0, depth - 1)
+      result += '  '.repeat(depth) + trimmed + '\n'
+    } else if (trimmed.startsWith('<') && !trimmed.startsWith('<!--')) {
+      const tagName = (trimmed.match(/^<(\w+)/) || [])[1]?.toLowerCase()
+      result += '  '.repeat(depth) + trimmed + '\n'
+      if (tagName && !VOID_TAGS.has(tagName) && !trimmed.endsWith('/>')) depth++
+    } else {
+      result += '  '.repeat(depth) + trimmed + '\n'
+    }
+  })
+  return result.trim()
+}
+
 const formatDate = (ts) => {
   if (!ts) return ''
   const d = ts.toDate ? ts.toDate() : ts instanceof Date ? ts : new Date(ts)
@@ -578,7 +602,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const getRawSource = () => {
     if (mode === 'table') return JSON.stringify(tableRows, null, 2)
     if (mode === 'checklist') return JSON.stringify(checklistItems, null, 2)
-    return content
+    return formatHtml(content)
   }
 
   const toggleSource = () => {
