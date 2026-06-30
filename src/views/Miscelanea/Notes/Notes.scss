@@ -678,6 +678,7 @@
     transition: border-color 0.12s;
 
     &:focus { border-color: var(--cui-primary, #4f46e5); }
+    &--date { min-width: 140px; }
   }
 
   &__rm-btn {

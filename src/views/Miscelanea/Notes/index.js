@@ -74,6 +74,54 @@ const toTableRows = (content) => {
   try { return JSON.parse(content) } catch { return parseCsv(content) }
 }
 
+const KNOWN_PREFIXES = ['sum', 'string', 'number', 'decimal', 'date']
+
+const isPrefix = (part) => KNOWN_PREFIXES.includes(part) || part.toLowerCase().startsWith('select(')
+
+const stripPrefixes = (header) => {
+  const parts = (header || '').split(':')
+  let i = 0
+  while (i < parts.length && isPrefix(parts[i])) i++
+  return parts.slice(i).join(':') || header
+}
+
+const getColType = (header) => {
+  const parts = (header || '').split(':')
+  for (const part of parts) {
+    const lower = part.toLowerCase()
+    if (['string', 'number', 'decimal', 'date'].includes(lower)) return lower
+    if (lower.startsWith('select(')) return 'select'
+  }
+  return 'string'
+}
+
+const getColOptions = (header) => {
+  const parts = (header || '').split(':')
+  const p = parts.find((s) => s.toLowerCase().startsWith('select(') && s.endsWith(')'))
+  if (!p) return []
+  return p.slice(p.indexOf('(') + 1, -1).split(',').map((o) => o.trim()).filter(Boolean)
+}
+
+const formatCellValue = (value, type) => {
+  if (value === '' || value == null) return value
+  switch (type) {
+    case 'number': {
+      const n = parseInt(value, 10)
+      return isNaN(n) ? value : n.toLocaleString('es-CO')
+    }
+    case 'decimal': {
+      const d = parseFloat(value)
+      return isNaN(d) ? value : d.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    }
+    case 'date': {
+      const d = new Date(value + 'T00:00:00')
+      return isNaN(d.getTime()) ? value : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    }
+    default:
+      return value
+  }
+}
+
 const parseChecklist = (content) => {
   if (!content?.trim()) return [{ text: '', done: false }]
   try { return JSON.parse(content) } catch { return [{ text: '', done: false }] }
@@ -89,7 +137,7 @@ const calcTableTotals = (content) => {
     .map((col, ci) => ({ col: col.trim(), ci }))
     .filter(({ col }) => col.toLowerCase().includes('sum:'))
     .map(({ col, ci }) => ({
-      label: col.slice(col.indexOf(':') + 1).trim(),
+      label: stripPrefixes(col),
       sum: body.reduce((acc, row) => {
         const val = parseFloat(row[ci])
         return acc + (isNaN(val) ? 0 : val)
@@ -116,6 +164,29 @@ const TableEditor = ({ rows, onChange }) => {
 
   const updateCell = (ri, ci, val) =>
     onChange(rows.map((r, i) => (i === ri ? r.map((c, j) => (j === ci ? val : c)) : r)))
+
+  const renderCellInput = (ri, ci, cell) => {
+    const base = {
+      className: 'note-table-editor__cell',
+      value: cell,
+      onChange: (e) => updateCell(ri, ci, e.target.value),
+    }
+    if (ri === 0) return <input {...base} />
+    const type = getColType(rows[0]?.[ci] || '')
+    if (type === 'number') return <input {...base} type="number" step="1" />
+    if (type === 'decimal') return <input {...base} type="number" step="0.01" />
+    if (type === 'date') return <input {...base} type="date" className={`${base.className} note-table-editor__cell--date`} />
+    if (type === 'select') {
+      const options = getColOptions(rows[0]?.[ci] || '')
+      return (
+        <select className="note-table-editor__cell" value={cell} onChange={(e) => updateCell(ri, ci, e.target.value)}>
+          <option value="">—</option>
+          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      )
+    }
+    return <input {...base} />
+  }
 
   const addRow = () => onChange([...rows, new Array(colCount).fill('')])
 
@@ -163,11 +234,7 @@ const TableEditor = ({ rows, onChange }) => {
               <tr key={ri}>
                 {row.map((cell, ci) => (
                   <td key={ci} className="note-table-editor__cell-td">
-                    <input
-                      className="note-table-editor__cell"
-                      value={cell}
-                      onChange={(e) => updateCell(ri, ci, e.target.value)}
-                    />
+                    {renderCellInput(ri, ci, cell)}
                   </td>
                 ))}
                 <td className="note-table-editor__row-actions">
@@ -200,14 +267,15 @@ const NoteTable = ({ content, className }) => {
   const rows = content ? toTableRows(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
+  const types = head.map((h) => getColType(h))
   return (
     <table className={`note-table${className ? ` ${className}` : ''}`}>
       <thead>
-        <tr>{head.map((c, i) => <th key={i}>{c.replace("sum:", "")}</th>)}</tr>
+        <tr>{head.map((c, i) => <th key={i}>{stripPrefixes(c)}</th>)}</tr>
       </thead>
       <tbody>
         {body.map((row, ri) => (
-          <tr key={ri}>{row.map((c, ci) => <td key={ci}>{c}</td>)}</tr>
+          <tr key={ri}>{row.map((c, ci) => <td key={ci}>{formatCellValue(c, types[ci])}</td>)}</tr>
         ))}
       </tbody>
     </table>
