@@ -52,16 +52,14 @@ export const createNote = async ({ title, content, color, mode }) => {
   return { id: ref.id, title, content, color, mode: mode || 'textarea', createdAt: now, updatedAt: now }
 }
 
-export const updateNote = async ({ id, title, content, color, mode }) => {
-  await firestoreCall(() =>
-    updateDoc(doc(db, COL_MISC_NOTES, id), {
-      title,
-      content,
-      color,
-      mode: mode || 'textarea',
-      updatedAt: serverTimestamp(),
-    }),
-  )
+export const updateNote = async ({ id, title, content, color, mode, archived }) => {
+  const patch = { updatedAt: serverTimestamp() }
+  if (title !== undefined) patch.title = title
+  if (content !== undefined) patch.content = content
+  if (color !== undefined) patch.color = color
+  if (mode !== undefined) patch.mode = mode
+  if (archived !== undefined) patch.archived = archived
+  await firestoreCall(() => updateDoc(doc(db, COL_MISC_NOTES, id), patch))
 }
 
 export const deleteNote = async (id) => {

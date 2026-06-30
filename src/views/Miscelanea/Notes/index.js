@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen } from '@coreui/icons'
+import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen, cilCopy, cilStorage, cilActionUndo } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -290,7 +290,7 @@ const NoteChecklist = ({ content, className }) => {
 
 // ── NoteCard ──────────────────────────────────────────────────────────────────
 
-const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners }) => {
+const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHandleRef, dragListeners }) => {
   const dispatch = useDispatch()
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
   const [editingTitle, setEditingTitle] = useState(false)
@@ -344,9 +344,23 @@ const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners
         <button className="note-card__btn" onClick={onView} title="Ver">
           <CIcon icon={cilFullscreen} size="sm" />
         </button>
-        <button className="note-card__btn" onClick={onEdit} title="Editar">
-          <CIcon icon={cilPencil} size="sm" />
+        <button className="note-card__btn" onClick={onClone} title="Clonar">
+          <CIcon icon={cilCopy} size="sm" />
         </button>
+        {note.archived ? (
+          <button className="note-card__btn" onClick={onArchive} title="Restaurar">
+            <CIcon icon={cilActionUndo} size="sm" />
+          </button>
+        ) : (
+          <button className="note-card__btn" onClick={onArchive} title="Archivar">
+            <CIcon icon={cilStorage} size="sm" />
+          </button>
+        )}
+        {!note.archived && (
+          <button className="note-card__btn" onClick={onEdit} title="Editar">
+            <CIcon icon={cilPencil} size="sm" />
+          </button>
+        )}
         <button className="note-card__btn note-card__btn--danger" onClick={onDelete} title="Eliminar">
           <CIcon icon={cilTrash} size="sm" />
         </button>
@@ -384,6 +398,7 @@ const SortableNoteCard = (props) => {
     </div>
   )
 }
+
 
 // ── NoteEditorModal ───────────────────────────────────────────────────────────
 
@@ -573,6 +588,7 @@ const Notes = () => {
   const { data, fetching, saving } = useSelector((s) => s.note)
   const [items, setItems] = useState([])
   const [dragging, setDragging] = useState(false)
+  const [activeTab, setActiveTab] = useState('active')
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
 
@@ -608,39 +624,79 @@ const Notes = () => {
     }
   }
 
+  const handleArchive = (note) => {
+    dispatch(actions.updateRequest({ id: note.id, archived: !note.archived }))
+  }
+
+  const handleClone = (note) => {
+    dispatch(actions.createRequest({
+      title: note.title ? `${note.title} (copia)` : 'Copia',
+      content: note.content,
+      color: note.color,
+      mode: note.mode,
+    }))
+  }
+
   const handleDelete = (note) => {
     if (!window.confirm(`¿Eliminar la nota "${note.title || 'Sin título'}"?`)) return
     dispatch(actions.deleteRequest({ id: note.id }))
   }
 
+  const visibleItems = items.filter((n) =>
+    activeTab === 'active' ? !n.archived : n.archived === true,
+  )
+
   return (
     <div className="notes">
       <div className="notes__header">
-        <h5 className="notes__title">Notas</h5>
-        <button className="notes__new-btn" onClick={() => setEditing('new')}>
-          + Nueva nota
-        </button>
+        <div className="notes__tabs">
+          <button
+            className={`notes__tab${activeTab === 'active' ? ' notes__tab--active' : ''}`}
+            onClick={() => setActiveTab('active')}
+          >
+            Activas
+          </button>
+          <button
+            className={`notes__tab${activeTab === 'archived' ? ' notes__tab--active' : ''}`}
+            onClick={() => setActiveTab('archived')}
+          >
+            Archivadas
+          </button>
+        </div>
+        {activeTab === 'active' && (
+          <button className="notes__new-btn" onClick={() => setEditing('new')}>
+            + Nueva nota
+          </button>
+        )}
       </div>
 
       {fetching ? (
         <Spinner mode="section" />
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <div className="notes__empty">
-          <p>No hay notas todavía.</p>
-          <button className="notes__new-btn" onClick={() => setEditing('new')}>
-            + Crear primera nota
-          </button>
+          {activeTab === 'active' ? (
+            <>
+              <p>No hay notas todavía.</p>
+              <button className="notes__new-btn" onClick={() => setEditing('new')}>
+                + Crear primera nota
+              </button>
+            </>
+          ) : (
+            <p>No hay notas archivadas.</p>
+          )}
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <SortableContext items={items.map((n) => n.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={visibleItems.map((n) => n.id)} strategy={rectSortingStrategy}>
             <div className="notes__grid">
-              {items.map((note) => (
+              {visibleItems.map((note) => (
                 <SortableNoteCard
                   key={note.id}
                   note={note}
                   onView={() => setViewing(note)}
                   onEdit={() => setEditing(note)}
+                  onClone={() => handleClone(note)}
+                  onArchive={() => handleArchive(note)}
                   onDelete={() => handleDelete(note)}
                 />
               ))}
