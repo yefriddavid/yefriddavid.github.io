@@ -6,6 +6,7 @@ const PerfLogsPage = React.lazy(() => import('./views/pages/system/PerfLogs/Perf
 const Programs = React.lazy(() => import('./views/pages/system/Programs'))
 
 const Users = React.lazy(() => import('./views/users/Users'))
+const UserEdit = React.lazy(() => import('./views/users/UserEdit'))
 const AppSettings = React.lazy(() => import('./views/settings/AppSettings'))
 const Tenants = React.lazy(() => import('./views/admin/Tenants'))
 const PushSubscribers = React.lazy(() => import('./views/users/PushSubscribers'))
@@ -18,6 +19,11 @@ const systemRoutes = [
     name: 'Users',
     tKey: 'nav.users',
     element: Users,
+  },
+  {
+    path: '/system/users/:username',
+    name: 'UserEdit',
+    element: UserEdit,
   },
   {
     path: '/system/settings',

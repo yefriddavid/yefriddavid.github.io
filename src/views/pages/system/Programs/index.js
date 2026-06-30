@@ -18,6 +18,7 @@ import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay, cilBan } from 
 import { useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
+import IconClone from 'src/components/shared/IconClone'
 import { PROGRAM_HOOKS, getHookVars } from 'src/constants/programHooks'
 import { logRequest as auditLog } from 'src/actions/system/auditLogActions'
 import './Programs.scss'
@@ -106,6 +107,11 @@ const Programs = () => {
   const toggleDisabled = (id, e) => {
     e.stopPropagation()
     persist(programs.map((p) => (p.id === id ? { ...p, disabled: !p.disabled } : p)))
+  }
+
+  const cloneProgram = (p, e) => {
+    e.stopPropagation()
+    persist([...programs, { ...p, id: Date.now().toString(), name: `${p.name} (copia)` }])
   }
 
   const deleteProgram = (id, e) => {
@@ -247,6 +253,15 @@ const Programs = () => {
                     onClick={() => run(p)}
                   >
                     <CIcon icon={cilMediaPlay} />
+                  </CButton>
+                  <CButton
+                    size="sm"
+                    color="info"
+                    variant="ghost"
+                    title="Clonar"
+                    onClick={(e) => cloneProgram(p, e)}
+                  >
+                    <IconClone />
                   </CButton>
                   <CButton
                     size="sm"

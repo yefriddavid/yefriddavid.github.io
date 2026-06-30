@@ -422,6 +422,22 @@ if (firebaseUser === undefined) return <Spinner mode="page" />
 - ❌ `import { CSpinner } from '@coreui/react'` — never use CSpinner directly
 - ❌ Hand-rolling a centered div + CSpinner — use `mode="section"` or `mode="page"` instead
 
+### IconClone — Clone action icon
+
+#### RULE: Always use `IconClone` from shared for clone actions — never inline the SVG or use a library icon
+
+```js
+import IconClone from 'src/components/shared/IconClone'
+
+<CButton onClick={handleClone}>
+  <IconClone />
+</CButton>
+```
+
+- ✅ `import IconClone from 'src/components/shared/IconClone'`
+- ❌ Defining the SVG inline in a view file
+- ❌ Using `cilCopy` or any CoreUI icon as a substitute
+
 ### Form Layout — StandardForm
 
 #### RULE: All CRUD / panel forms must use `StandardForm`

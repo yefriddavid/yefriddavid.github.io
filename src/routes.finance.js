@@ -4,6 +4,7 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Accounts = React.lazy(() => import('./views/Accounting/Accounts'))
 const AccountsMaster = React.lazy(() => import('./views/Accounting/AccountsMaster'))
 const Users = React.lazy(() => import('./views/users/Users'))
+const UserEdit = React.lazy(() => import('./views/users/UserEdit'))
 const Profile = React.lazy(() => import('./views/profile/Profile'))
 const Payments = React.lazy(() => import('./views/movements/payments/Payments'))
 const Transactions = React.lazy(() => import('./views/Accounting/Transactions'))
@@ -36,6 +37,7 @@ const financeRoutes = [
   { path: '/management/declaracion-renta', element: DeclaracionRenta, landingPage: true },
   { path: '/management/reports', element: Reports, landingPage: true },
   { path: '/management/users', element: Users, roles: ['superAdmin'] },
+  { path: '/management/users/:username', element: UserEdit, roles: ['superAdmin'] },
   { path: '/profile', element: Profile },
   { path: '/eggs', element: Eggs, landingPage: true },
   { path: '/projects', element: MyProjects, landingPage: true },
