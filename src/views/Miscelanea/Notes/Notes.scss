@@ -876,8 +876,11 @@
 
   &__cell--check {
     text-align: center;
+    vertical-align: middle;
 
     input[type='checkbox'] {
+      display: block;
+      margin: 0 auto;
       width: 14px;
       height: 14px;
       cursor: pointer;
