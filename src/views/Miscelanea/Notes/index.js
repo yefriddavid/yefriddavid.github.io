@@ -6,7 +6,7 @@ import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen, cilStorage, cilActionUndo } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
-import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, useSortable, arrayMove, rectSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
@@ -168,11 +168,38 @@ const formatDate = (ts) => {
 
 // ── TableEditor ───────────────────────────────────────────────────────────────
 
+const SortableColHeader = ({ id, colCount, onRemove }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  return (
+    <th
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      className="note-table-editor__col-head"
+    >
+      <div className="note-table-editor__col-head-inner">
+        <span className="note-table-editor__col-drag" {...listeners} {...attributes}>⠿</span>
+        {colCount > 1 && (
+          <button type="button" className="note-table-editor__rm-btn" onClick={onRemove} title="Eliminar columna">×</button>
+        )}
+      </div>
+    </th>
+  )
+}
+
 const TableEditor = ({ rows, onChange }) => {
   const colCount = rows[0]?.length ?? 1
+  const colIds = rows[0]?.map((_, i) => `col-${i}`) ?? []
+  const colSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const updateCell = (ri, ci, val) =>
     onChange(rows.map((r, i) => (i === ri ? r.map((c, j) => (j === ci ? val : c)) : r)))
+
+  const handleColDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return
+    const from = parseInt(active.id.replace('col-', ''))
+    const to = parseInt(over.id.replace('col-', ''))
+    onChange(rows.map((row) => arrayMove(row, from, to)))
+  }
 
   const renderCellInput = (ri, ci, cell) => {
     const base = {
@@ -227,27 +254,20 @@ const TableEditor = ({ rows, onChange }) => {
       <div className="note-table-editor__scroll">
         <table className="note-table-editor__table">
           <thead>
-            <tr>
-              {rows[0]?.map((_, ci) => (
-                <th key={ci} className="note-table-editor__col-head">
-                  {colCount > 1 && (
-                    <button
-                      type="button"
-                      className="note-table-editor__rm-btn"
-                      onClick={() => removeCol(ci)}
-                      title="Eliminar columna"
-                    >
-                      ×
+            <DndContext sensors={colSensors} collisionDetection={closestCenter} onDragEnd={handleColDragEnd}>
+              <SortableContext items={colIds} strategy={horizontalListSortingStrategy}>
+                <tr>
+                  {colIds.map((id, ci) => (
+                    <SortableColHeader key={id} id={id} colCount={colCount} onRemove={() => removeCol(ci)} />
+                  ))}
+                  <th className="note-table-editor__col-head note-table-editor__col-head--add">
+                    <button type="button" className="note-table-editor__add-btn" onClick={addCol}>
+                      + col
                     </button>
-                  )}
-                </th>
-              ))}
-              <th className="note-table-editor__col-head note-table-editor__col-head--add">
-                <button type="button" className="note-table-editor__add-btn" onClick={addCol}>
-                  + col
-                </button>
-              </th>
-            </tr>
+                  </th>
+                </tr>
+              </SortableContext>
+            </DndContext>
           </thead>
           <tbody>
             {rows.map((row, ri) => (

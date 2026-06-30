@@ -751,6 +751,24 @@
     &--add { vertical-align: middle; padding-left: 6px !important; }
   }
 
+  &__col-head-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  &__col-drag {
+    color: var(--cui-secondary-color, #aaa);
+    font-size: 14px;
+    cursor: grab;
+    line-height: 1;
+    user-select: none;
+
+    &:active { cursor: grabbing; }
+    &:hover { color: var(--cui-body-color, #555); }
+  }
+
   &__cell-td { padding: 2px 3px !important; }
 
   &__row-actions { padding-left: 4px !important; vertical-align: middle; }
