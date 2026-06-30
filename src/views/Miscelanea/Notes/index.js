@@ -83,14 +83,14 @@ const calcTableTotals = (content) => {
   const [head, ...body] = rows
   return head
     .map((col, ci) => ({ col: col.trim(), ci }))
-  // .filter(({ col }) => col.toLowerCase() === 'total')
     .filter(({ col }) => col.toLowerCase().includes('sum:'))
-    .map(({ ci }) =>
-      body.reduce((acc, row) => {
+    .map(({ col, ci }) => ({
+      label: col.slice(col.indexOf(':') + 1).trim(),
+      sum: body.reduce((acc, row) => {
         const val = parseFloat(row[ci])
         return acc + (isNaN(val) ? 0 : val)
       }, 0),
-    )
+    }))
 }
 
 const formatDate = (ts) => {
@@ -331,7 +331,7 @@ const NoteCard = ({ note, onEdit, onDelete, onView, dragHandleRef, dragListeners
           </span>
         )}
         {totals.map((t, i) => (
-          <span key={i} className="note-card__total">{t.toLocaleString('es-CO')}</span>
+          <span key={i} className="note-card__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
         ))}
       </h6>
       <div className="note-card__actions">
@@ -534,7 +534,7 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
         <h5 className="note-view__title">
           {note.title || <em>Sin título</em>}
           {totals.map((t, i) => (
-            <span key={i} className="note-view__total">{t.toLocaleString('es-CO')}</span>
+            <span key={i} className="note-view__total">{t.label}: {t.sum.toLocaleString('es-CO')}</span>
           ))}
         </h5>
         <div className="note-view__bar-actions">
