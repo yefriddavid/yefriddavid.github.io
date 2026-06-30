@@ -38,17 +38,44 @@ const QUILL_FORMATS = [
 
 const parseCsv = (str) => {
   if (!str?.trim()) return [['', ''], ['', '']]
-  return str.split('\n').map((r) => r.split(','))
+  return str.split('\n').map((row) => {
+    const cells = []
+    let cell = ''
+    let inQuotes = false
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i]
+      if (ch === '"') {
+        if (inQuotes && row[i + 1] === '"') { cell += '"'; i++ }
+        else inQuotes = !inQuotes
+      } else if (ch === ',' && !inQuotes) {
+        cells.push(cell); cell = ''
+      } else {
+        cell += ch
+      }
+    }
+    cells.push(cell)
+    return cells
+  })
 }
+
+const serializeCsv = (rows) =>
+  rows.map((r) =>
+    r.map((cell) =>
+      cell.includes(',') || cell.includes('"') || cell.includes('\n')
+        ? `"${cell.replace(/"/g, '""')}"`
+        : cell,
+    ).join(','),
+  ).join('\n')
 
 const calcTableTotals = (content) => {
   if (!content?.trim()) return []
-  const rows = content.split('\n').map((r) => r.split(','))
+  const rows = parseCsv(content)
   if (rows.length < 2) return []
   const [head, ...body] = rows
   return head
     .map((col, ci) => ({ col: col.trim(), ci }))
-    .filter(({ col }) => col.toLowerCase() === 'total')
+  // .filter(({ col }) => col.toLowerCase() === 'total')
+    .filter(({ col }) => col.toLowerCase().includes('sum:'))
     .map(({ ci }) =>
       body.reduce((acc, row) => {
         const val = parseFloat(row[ci])
@@ -56,8 +83,6 @@ const calcTableTotals = (content) => {
       }, 0),
     )
 }
-
-const serializeCsv = (rows) => rows.map((r) => r.join(',')).join('\n')
 
 const formatDate = (ts) => {
   if (!ts) return ''
@@ -159,13 +184,13 @@ const TableEditor = ({ rows, onChange }) => {
 // ── NoteTable (read-only) ─────────────────────────────────────────────────────
 
 const NoteTable = ({ content, className }) => {
-  const rows = content?.trim() ? content.split('\n').map((r) => r.split(',')) : []
+  const rows = content?.trim() ? parseCsv(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
   return (
     <table className={`note-table${className ? ` ${className}` : ''}`}>
       <thead>
-        <tr>{head.map((c, i) => <th key={i}>{c}</th>)}</tr>
+        <tr>{head.map((c, i) => <th key={i}>{c.replace("sum:", "")}</th>)}</tr>
       </thead>
       <tbody>
         {body.map((row, ri) => (
