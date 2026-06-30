@@ -4,9 +4,23 @@ import { useForm } from 'react-hook-form'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilX, cilSave, cilFullscreen, cilStorage, cilActionUndo } from '@coreui/icons'
+import {
+  cilPencil,
+  cilTrash,
+  cilX,
+  cilSave,
+  cilFullscreen,
+  cilStorage,
+  cilActionUndo,
+} from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
-import { SortableContext, useSortable, arrayMove, rectSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
 import { NOTE_CATEGORIES, DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
@@ -14,9 +28,25 @@ import Spinner from 'src/components/shared/Spinner'
 import './Notes.scss'
 
 const IconClone = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 14 14"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="0.5" width="10" height="10" rx="2" />
-    <rect x="0.5" y="3" width="10" height="10" rx="2" fill="var(--note-bg, var(--cui-body-bg, #fff))" />
+    <rect
+      x="0.5"
+      y="3"
+      width="10"
+      height="10"
+      rx="2"
+      fill="var(--note-bg, var(--cui-body-bg, #fff))"
+    />
   </svg>
 )
 
@@ -43,12 +73,24 @@ const QUILL_MODULES = {
 }
 
 const QUILL_FORMATS = [
-  'header', 'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet', 'blockquote', 'code-block', 'link',
+  'header',
+  'bold',
+  'italic',
+  'underline',
+  'strike',
+  'list',
+  'bullet',
+  'blockquote',
+  'code-block',
+  'link',
 ]
 
 const parseCsv = (str) => {
-  if (!str?.trim()) return [['', ''], ['', '']]
+  if (!str?.trim())
+    return [
+      ['', ''],
+      ['', ''],
+    ]
   return str.split('\n').map((row) => {
     const cells = []
     let cell = ''
@@ -56,10 +98,13 @@ const parseCsv = (str) => {
     for (let i = 0; i < row.length; i++) {
       const ch = row[i]
       if (ch === '"') {
-        if (inQuotes && row[i + 1] === '"') { cell += '"'; i++ }
-        else inQuotes = !inQuotes
+        if (inQuotes && row[i + 1] === '"') {
+          cell += '"'
+          i++
+        } else inQuotes = !inQuotes
       } else if (ch === ',' && !inQuotes) {
-        cells.push(cell); cell = ''
+        cells.push(cell)
+        cell = ''
       } else {
         cell += ch
       }
@@ -71,13 +116,34 @@ const parseCsv = (str) => {
 
 const toTableRows = (content) => {
   if (Array.isArray(content)) return content
-  if (!content) return [['', ''], ['', '']]
-  try { return JSON.parse(content) } catch { return parseCsv(content) }
+  if (!content)
+    return [
+      ['', ''],
+      ['', ''],
+    ]
+  try {
+    return JSON.parse(content)
+  } catch {
+    return parseCsv(content)
+  }
 }
 
-const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date', 'checkbox']
+const KNOWN_PREFIXES = [
+  'sum',
+  'max',
+  'min',
+  'avg',
+  'string',
+  'number',
+  'decimal',
+  'date',
+  'checkbox',
+]
 
-const isPrefix = (part) => KNOWN_PREFIXES.includes(part) || part.toLowerCase().startsWith('select(')
+const isPrefix = (part) =>
+  KNOWN_PREFIXES.includes(part) ||
+  part.toLowerCase().startsWith('select(') ||
+  part.toLowerCase().startsWith('currency(')
 
 const stripPrefixes = (header) => {
   const parts = (header || '').split(':')
@@ -92,18 +158,49 @@ const getColType = (header) => {
     const lower = part.toLowerCase()
     if (['string', 'number', 'decimal', 'date', 'checkbox'].includes(lower)) return lower
     if (lower.startsWith('select(')) return 'select'
+    if (lower.startsWith('currency(')) return 'currency'
   }
   return 'string'
+}
+
+const getColCurrency = (header) => {
+  const parts = (header || '').split(':')
+  const p = parts.find((s) => s.toLowerCase().startsWith('currency(') && s.endsWith(')'))
+  if (!p) return 'COP'
+  return (
+    p
+      .slice(p.indexOf('(') + 1, -1)
+      .trim()
+      .toUpperCase() || 'COP'
+  )
+}
+
+const CURRENCY_LOCALE = { COP: 'es-CO', USD: 'en-US', EUR: 'de-DE', MXN: 'es-MX' }
+
+const formatCurrency = (value, currency) => {
+  const n = parseFloat(value)
+  if (isNaN(n)) return value
+  const locale = CURRENCY_LOCALE[currency] ?? 'es-CO'
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(n)
 }
 
 const getColOptions = (header) => {
   const parts = (header || '').split(':')
   const p = parts.find((s) => s.toLowerCase().startsWith('select(') && s.endsWith(')'))
   if (!p) return []
-  return p.slice(p.indexOf('(') + 1, -1).split(',').map((o) => o.trim()).filter(Boolean)
+  return p
+    .slice(p.indexOf('(') + 1, -1)
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
 }
 
-const formatCellValue = (value, type) => {
+const formatCellValue = (value, type, header) => {
   if (value === '' || value == null) return value
   switch (type) {
     case 'number': {
@@ -112,14 +209,20 @@ const formatCellValue = (value, type) => {
     }
     case 'decimal': {
       const d = parseFloat(value)
-      return isNaN(d) ? value : d.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      return isNaN(d)
+        ? value
+        : d.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     }
     case 'date': {
       const d = new Date(value + 'T00:00:00')
-      return isNaN(d.getTime()) ? value : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+      return isNaN(d.getTime())
+        ? value
+        : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
     }
     case 'checkbox':
       return value === 'true' ? '✓' : '✗'
+    case 'currency':
+      return formatCurrency(value, getColCurrency(header))
     default:
       return value
   }
@@ -127,7 +230,11 @@ const formatCellValue = (value, type) => {
 
 const parseChecklist = (content) => {
   if (!content?.trim()) return [{ text: '', done: false }]
-  try { return JSON.parse(content) } catch { return [{ text: '', done: false }] }
+  try {
+    return JSON.parse(content)
+  } catch {
+    return [{ text: '', done: false }]
+  }
 }
 const serializeChecklist = (items) => JSON.stringify(items)
 
@@ -155,7 +262,22 @@ const calcTableTotals = (content) => {
   return results
 }
 
-const VOID_TAGS = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'])
+const VOID_TAGS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+])
 
 const formatHtml = (html) => {
   if (!html?.trim()) return html
@@ -194,17 +316,32 @@ const formatDate = (ts) => {
 // ── TableEditor ───────────────────────────────────────────────────────────────
 
 const SortableColHeader = ({ id, colCount, onRemove }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  })
   return (
     <th
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
       className="note-table-editor__col-head"
     >
       <div className="note-table-editor__col-head-inner">
-        <span className="note-table-editor__col-drag" {...listeners} {...attributes}>⠿</span>
+        <span className="note-table-editor__col-drag" {...listeners} {...attributes}>
+          ⠿
+        </span>
         {colCount > 1 && (
-          <button type="button" className="note-table-editor__rm-btn" onClick={onRemove} title="Eliminar columna">×</button>
+          <button
+            type="button"
+            className="note-table-editor__rm-btn"
+            onClick={onRemove}
+            title="Eliminar columna"
+          >
+            ×
+          </button>
         )}
       </div>
     </th>
@@ -236,13 +373,29 @@ const TableEditor = ({ rows, onChange }) => {
     const type = getColType(rows[0]?.[ci] || '')
     if (type === 'number') return <input {...base} type="number" step="1" />
     if (type === 'decimal') return <input {...base} type="number" step="0.01" />
-    if (type === 'date') return <input {...base} type="date" className={`${base.className} note-table-editor__cell--date`} />
+    if (type === 'currency') return <input {...base} type="number" step="0.01" />
+    if (type === 'date')
+      return (
+        <input
+          {...base}
+          type="date"
+          className={`${base.className} note-table-editor__cell--date`}
+        />
+      )
     if (type === 'select') {
       const options = getColOptions(rows[0]?.[ci] || '')
       return (
-        <select className="note-table-editor__cell" value={cell} onChange={(e) => updateCell(ri, ci, e.target.value)}>
+        <select
+          className="note-table-editor__cell"
+          value={cell}
+          onChange={(e) => updateCell(ri, ci, e.target.value)}
+        >
           <option value="">—</option>
-          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+          {options.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
         </select>
       )
     }
@@ -279,11 +432,20 @@ const TableEditor = ({ rows, onChange }) => {
       <div className="note-table-editor__scroll">
         <table className="note-table-editor__table">
           <thead>
-            <DndContext sensors={colSensors} collisionDetection={closestCenter} onDragEnd={handleColDragEnd}>
+            <DndContext
+              sensors={colSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleColDragEnd}
+            >
               <SortableContext items={colIds} strategy={horizontalListSortingStrategy}>
                 <tr>
                   {colIds.map((id, ci) => (
-                    <SortableColHeader key={id} id={id} colCount={colCount} onRemove={() => removeCol(ci)} />
+                    <SortableColHeader
+                      key={id}
+                      id={id}
+                      colCount={colCount}
+                      onRemove={() => removeCol(ci)}
+                    />
                   ))}
                   <th className="note-table-editor__col-head note-table-editor__col-head--add">
                     <button type="button" className="note-table-editor__add-btn" onClick={addCol}>
@@ -336,7 +498,11 @@ const NoteTable = ({ content, className, onToggleCheck }) => {
   return (
     <table className={`note-table${className ? ` ${className}` : ''}`}>
       <thead>
-        <tr>{head.map((c, i) => <th key={i}>{stripPrefixes(c)}</th>)}</tr>
+        <tr>
+          {head.map((c, i) => (
+            <th key={i}>{stripPrefixes(c)}</th>
+          ))}
+        </tr>
       </thead>
       <tbody>
         {body.map((row, ri) => (
@@ -351,8 +517,8 @@ const NoteTable = ({ content, className, onToggleCheck }) => {
                   />
                 </td>
               ) : (
-                <td key={ci}>{formatCellValue(c, types[ci])}</td>
-              )
+                <td key={ci}>{formatCellValue(c, types[ci], head[ci])}</td>
+              ),
             )}
           </tr>
         ))}
@@ -385,8 +551,15 @@ const ChecklistEditor = ({ items, onChange }) => {
     onChange(items.map((item, idx) => (idx === i ? { ...item, done: !item.done } : item)))
 
   const handleKeyDown = (e, i) => {
-    if (e.key === 'Enter') { e.preventDefault(); addItem(i) }
-    if (e.key === 'Backspace' && items[i].text === '') { e.preventDefault(); removeItem(i); setTimeout(() => inputRefs.current[i - 1]?.focus(), 0) }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addItem(i)
+    }
+    if (e.key === 'Backspace' && items[i].text === '') {
+      e.preventDefault()
+      removeItem(i)
+      setTimeout(() => inputRefs.current[i - 1]?.focus(), 0)
+    }
   }
 
   return (
@@ -407,10 +580,16 @@ const ChecklistEditor = ({ items, onChange }) => {
             onChange={(e) => updateText(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, i)}
           />
-          <button type="button" className="note-checklist-editor__rm" onClick={() => removeItem(i)}>×</button>
+          <button type="button" className="note-checklist-editor__rm" onClick={() => removeItem(i)}>
+            ×
+          </button>
         </div>
       ))}
-      <button type="button" className="note-checklist-editor__add" onClick={() => addItem(items.length - 1)}>
+      <button
+        type="button"
+        className="note-checklist-editor__add"
+        onClick={() => addItem(items.length - 1)}
+      >
         + Agregar ítem
       </button>
     </div>
@@ -445,7 +624,16 @@ const NoteChecklist = ({ content, className, onToggle }) => {
 
 // ── NoteCard ──────────────────────────────────────────────────────────────────
 
-const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHandleRef, dragListeners }) => {
+const NoteCard = ({
+  note,
+  onEdit,
+  onDelete,
+  onView,
+  onClone,
+  onArchive,
+  dragHandleRef,
+  dragListeners,
+}) => {
   const dispatch = useDispatch()
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
   const [editingTitle, setEditingTitle] = useState(false)
@@ -453,13 +641,13 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
 
   const handleToggleChecklist = (index) => {
     const items = parseChecklist(note.content)
-    const updated = items.map((item, i) => i === index ? { ...item, done: !item.done } : item)
+    const updated = items.map((item, i) => (i === index ? { ...item, done: !item.done } : item))
     dispatch(actions.updateRequest({ id: note.id, content: serializeChecklist(updated) }))
   }
 
   const handleToggleCheck = (ri, ci, val) => {
     const rows = toTableRows(note.content)
-    const updated = rows.map((r, i) => i === ri + 1 ? r.map((c, j) => j === ci ? val : c) : r)
+    const updated = rows.map((r, i) => (i === ri + 1 ? r.map((c, j) => (j === ci ? val : c)) : r))
     dispatch(actions.updateRequest({ id: note.id, content: JSON.stringify(updated) }))
   }
 
@@ -467,109 +655,145 @@ const NoteCard = ({ note, onEdit, onDelete, onView, onClone, onArchive, dragHand
     setEditingTitle(false)
     const trimmed = titleValue.trim()
     if (trimmed !== (note.title || '')) {
-      dispatch(actions.updateRequest({ id: note.id, title: trimmed, content: note.content, color: note.color, mode: note.mode }))
+      dispatch(
+        actions.updateRequest({
+          id: note.id,
+          title: trimmed,
+          content: note.content,
+          color: note.color,
+          mode: note.mode,
+        }),
+      )
     }
   }
 
   const handleTitleKeyDown = (e) => {
     if (e.key === 'Enter') e.target.blur()
-    if (e.key === 'Escape') { setTitleValue(note.title || ''); setEditingTitle(false) }
+    if (e.key === 'Escape') {
+      setTitleValue(note.title || '')
+      setEditingTitle(false)
+    }
   }
 
   return (
-  <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
-    <div className="note-card__header">
-      <h6 className="note-card__title">
-        {editingTitle ? (
-          <input
-            className="note-card__title-input"
-            value={titleValue}
-            onChange={(e) => setTitleValue(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={handleTitleKeyDown}
-            autoFocus
-          />
-        ) : (
-          <span
-            className="note-card__title-text"
-            onClick={() => { setTitleValue(note.title || ''); setEditingTitle(true) }}
+    <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
+      <div className="note-card__header">
+        <h6 className="note-card__title">
+          {editingTitle ? (
+            <input
+              className="note-card__title-input"
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={handleTitleKeyDown}
+              autoFocus
+            />
+          ) : (
+            <span
+              className="note-card__title-text"
+              onClick={() => {
+                setTitleValue(note.title || '')
+                setEditingTitle(true)
+              }}
+            >
+              {note.title || <em>Sin título</em>}
+            </span>
+          )}
+        </h6>
+        <div className="note-card__actions">
+          <button
+            ref={dragHandleRef}
+            className="note-card__drag-handle"
+            title="Mover"
+            {...dragListeners}
           >
-            {note.title || <em>Sin título</em>}
-          </span>
-        )}
-      </h6>
-      <div className="note-card__actions">
-        <button
-          ref={dragHandleRef}
-          className="note-card__drag-handle"
-          title="Mover"
-          {...dragListeners}
-        >⠿</button>
-        <button className="note-card__btn" onClick={onView} title="Ver">
-          <CIcon icon={cilFullscreen} size="sm" />
-        </button>
-        <button className="note-card__btn" onClick={onClone} title="Clonar">
-          <IconClone />
-        </button>
-        {note.archived ? (
-          <button className="note-card__btn" onClick={onArchive} title="Restaurar">
-            <CIcon icon={cilActionUndo} size="sm" />
+            ⠿
           </button>
-        ) : (
-          <button className="note-card__btn" onClick={onArchive} title="Archivar">
-            <CIcon icon={cilStorage} size="sm" />
+          <button className="note-card__btn" onClick={onView} title="Ver">
+            <CIcon icon={cilFullscreen} size="sm" />
           </button>
-        )}
-        <button className="note-card__btn" onClick={onEdit} title="Editar">
-          <CIcon icon={cilPencil} size="sm" />
-        </button>
-        <button className="note-card__btn note-card__btn--danger" onClick={onDelete} title="Eliminar">
-          <CIcon icon={cilTrash} size="sm" />
-        </button>
-      </div>
-    </div>
-    <div className="note-card__date">{formatDate(note.updatedAt)}</div>
-    {note.mode === 'table' ? (
-      <>
-        <div className="note-card__preview note-card__preview--table">
-          <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
+          <button className="note-card__btn" onClick={onClone} title="Clonar">
+            <IconClone />
+          </button>
+          {note.archived ? (
+            <button className="note-card__btn" onClick={onArchive} title="Restaurar">
+              <CIcon icon={cilActionUndo} size="sm" />
+            </button>
+          ) : (
+            <button className="note-card__btn" onClick={onArchive} title="Archivar">
+              <CIcon icon={cilStorage} size="sm" />
+            </button>
+          )}
+          <button className="note-card__btn" onClick={onEdit} title="Editar">
+            <CIcon icon={cilPencil} size="sm" />
+          </button>
+          <button
+            className="note-card__btn note-card__btn--danger"
+            onClick={onDelete}
+            title="Eliminar"
+          >
+            <CIcon icon={cilTrash} size="sm" />
+          </button>
         </div>
-        {totals.length > 0 && (
-          <div className="note-card__totals">
-            {totals.map((t, i) => (
-              <span key={i} className="note-card__total">{t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
-            ))}
+      </div>
+      <div className="note-card__date">{formatDate(note.updatedAt)}</div>
+      {note.mode === 'table' ? (
+        <>
+          <div className="note-card__preview note-card__preview--table">
+            <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
           </div>
-        )}
-      </>
-    ) : note.mode === 'checklist' ? (
-      <NoteChecklist content={note.content} className="note-card__preview" onToggle={handleToggleChecklist} />
-    ) : (
-      <div
-        className="note-card__preview ql-editor"
-        dangerouslySetInnerHTML={{ __html: note.content }}
-      />
-    )}
-  </div>
+          {totals.length > 0 && (
+            <div className="note-card__totals">
+              {totals.map((t, i) => (
+                <span key={i} className="note-card__total">
+                  {t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      ) : note.mode === 'checklist' ? (
+        <NoteChecklist
+          content={note.content}
+          className="note-card__preview"
+          onToggle={handleToggleChecklist}
+        />
+      ) : (
+        <div
+          className="note-card__preview ql-editor"
+          dangerouslySetInnerHTML={{ __html: note.content }}
+        />
+      )}
+    </div>
   )
 }
 
 // ── SortableNoteCard ──────────────────────────────────────────────────────────
 
 const SortableNoteCard = (props) => {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
-    useSortable({ id: props.note.id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.note.id })
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
       {...attributes}
     >
       <NoteCard {...props} dragHandleRef={setActivatorNodeRef} dragListeners={listeners} />
     </div>
   )
 }
-
 
 // ── NoteEditorModal ───────────────────────────────────────────────────────────
 
@@ -589,7 +813,12 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const mode = watch('mode')
 
   const [tableRows, setTableRows] = useState(() =>
-    note?.mode === 'table' ? toTableRows(note?.content) : [['', ''], ['', '']],
+    note?.mode === 'table'
+      ? toTableRows(note?.content)
+      : [
+          ['', ''],
+          ['', ''],
+        ],
   )
 
   const [checklistItems, setChecklistItems] = useState(() =>
@@ -621,18 +850,23 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const handleModeSwitch = (newMode) => {
     if (newMode === mode) return
     setValue('mode', newMode)
-    if (newMode === 'table') setTableRows([['', ''], ['', '']])
+    if (newMode === 'table')
+      setTableRows([
+        ['', ''],
+        ['', ''],
+      ])
     else if (newMode === 'checklist') setChecklistItems([{ text: '', done: false }])
     else setValue('content', '')
   }
 
   const buildPayload = (data) => ({
     ...data,
-    content: data.mode === 'table'
-      ? JSON.stringify(tableRows)
-      : data.mode === 'checklist'
-      ? serializeChecklist(checklistItems)
-      : data.content,
+    content:
+      data.mode === 'table'
+        ? JSON.stringify(tableRows)
+        : data.mode === 'checklist'
+          ? serializeChecklist(checklistItems)
+          : data.content,
   })
 
   const onSubmit = (data) => onSave(buildPayload(data), false)
@@ -649,7 +883,9 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
           />
           <select className="note-editor__category-select" {...register('category')}>
             {NOTE_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
             ))}
           </select>
           <div className="note-editor__mode-toggle">
@@ -740,7 +976,13 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
             onClick={handleSubmit(onSubmit)}
             disabled={saving}
           >
-            {saving ? <Spinner size="sm" /> : <><CIcon icon={cilSave} className="me-1" /> Guardar y cerrar</>}
+            {saving ? (
+              <Spinner size="sm" />
+            ) : (
+              <>
+                <CIcon icon={cilSave} className="me-1" /> Guardar y cerrar
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -753,47 +995,50 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
 const NoteViewModal = ({ note, onClose, onEdit }) => {
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
   return (
-  <div className="note-view-overlay" onClick={onClose}>
-    <div
-      className="note-view"
-      style={{ '--note-bg': note.color || '#fff' }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="note-view__bar">
-        <h5 className="note-view__title">
-          {note.title || <em>Sin título</em>}
-        </h5>
-        <div className="note-view__bar-actions">
-          <button className="note-editor__icon-btn" onClick={onEdit} title="Editar">
-            <CIcon icon={cilPencil} />
-          </button>
-          <button className="note-editor__icon-btn" onClick={onClose} title="Cerrar">
-            <CIcon icon={cilX} />
-          </button>
+    <div className="note-view-overlay" onClick={onClose}>
+      <div
+        className="note-view"
+        style={{ '--note-bg': note.color || '#fff' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="note-view__bar">
+          <h5 className="note-view__title">{note.title || <em>Sin título</em>}</h5>
+          <div className="note-view__bar-actions">
+            <button className="note-editor__icon-btn" onClick={onEdit} title="Editar">
+              <CIcon icon={cilPencil} />
+            </button>
+            <button className="note-editor__icon-btn" onClick={onClose} title="Cerrar">
+              <CIcon icon={cilX} />
+            </button>
+          </div>
         </div>
+        <div className="note-view__date">{formatDate(note.updatedAt)}</div>
+        {note.mode === 'table' ? (
+          <div className="note-view__content note-view__content--table">
+            <NoteTable content={note.content} />
+            {totals.length > 0 && (
+              <div className="note-view__totals">
+                {totals.map((t, i) => (
+                  <span key={i} className="note-view__total">
+                    {t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : note.mode === 'checklist' ? (
+          <NoteChecklist
+            content={note.content}
+            className="note-view__content note-view__content--checklist"
+          />
+        ) : (
+          <div
+            className="note-view__content ql-editor"
+            dangerouslySetInnerHTML={{ __html: note.content }}
+          />
+        )}
       </div>
-      <div className="note-view__date">{formatDate(note.updatedAt)}</div>
-      {note.mode === 'table' ? (
-        <div className="note-view__content note-view__content--table">
-          <NoteTable content={note.content} />
-          {totals.length > 0 && (
-            <div className="note-view__totals">
-              {totals.map((t, i) => (
-                <span key={i} className="note-view__total">{t.label}: {t.value.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</span>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : note.mode === 'checklist' ? (
-        <NoteChecklist content={note.content} className="note-view__content note-view__content--checklist" />
-      ) : (
-        <div
-          className="note-view__content ql-editor"
-          dangerouslySetInnerHTML={{ __html: note.content }}
-        />
-      )}
     </div>
-  </div>
   )
 }
 
@@ -849,12 +1094,14 @@ const Notes = () => {
   }
 
   const handleClone = (note) => {
-    dispatch(actions.createRequest({
-      title: note.title ? `${note.title} (copia)` : 'Copia',
-      content: note.content,
-      color: note.color,
-      mode: note.mode,
-    }))
+    dispatch(
+      actions.createRequest({
+        title: note.title ? `${note.title} (copia)` : 'Copia',
+        content: note.content,
+        color: note.color,
+        mode: note.mode,
+      }),
+    )
   }
 
   const handleDelete = (note) => {
@@ -920,6 +1167,8 @@ const Notes = () => {
                 ['date:Fecha', 'Selector de fecha'],
                 ['select(A,B,C):Estado', 'Lista desplegable con opciones'],
                 ['checkbox:Activo', 'Casilla de verificación (✓ / ✗)'],
+                ['currency(cop):Precio', 'Moneda COP — ej: $ 1.250.000'],
+                ['currency(usd):Price', 'Moneda USD — ej: $1,250.00'],
               ].map(([op, desc]) => (
                 <div key={op} className="notes__help-row">
                   <code className="notes__help-code">{op}</code>
@@ -950,6 +1199,7 @@ const Notes = () => {
               {[
                 ['sum:number:Total', 'Entero + suma'],
                 ['sum:decimal:Precio', 'Decimal + suma'],
+                ['sum:currency(cop):Total', 'Moneda COP + suma'],
                 ['max:decimal:Precio', 'Decimal + máximo'],
                 ['avg:number:Días', 'Entero + promedio'],
               ].map(([op, desc]) => (
@@ -979,7 +1229,12 @@ const Notes = () => {
           )}
         </div>
       ) : !grouped ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={visibleItems.map((n) => n.id)} strategy={rectSortingStrategy}>
             <div className="notes__grid">
               {visibleItems.map((note) => (
@@ -998,7 +1253,9 @@ const Notes = () => {
         </DndContext>
       ) : (
         NOTE_CATEGORIES.map(({ value, label }) => {
-          const groupItems = visibleItems.filter((n) => (n.category || DEFAULT_NOTE_CATEGORY) === value)
+          const groupItems = visibleItems.filter(
+            (n) => (n.category || DEFAULT_NOTE_CATEGORY) === value,
+          )
           if (!groupItems.length) return null
           const handleGroupDragEnd = ({ active, over }) => {
             setDragging(false)
@@ -1015,7 +1272,12 @@ const Notes = () => {
           return (
             <div key={value} className="notes__group">
               <h6 className="notes__group-title">{label}</h6>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleGroupDragEnd}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleGroupDragEnd}
+              >
                 <SortableContext items={groupItems.map((n) => n.id)} strategy={rectSortingStrategy}>
                   <div className="notes__grid">
                     {groupItems.map((note) => (
