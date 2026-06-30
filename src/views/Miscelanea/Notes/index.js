@@ -68,7 +68,11 @@ const parseCsv = (str) => {
   })
 }
 
-const toTableRows = (content) => Array.isArray(content) ? content : parseCsv(content)
+const toTableRows = (content) => {
+  if (Array.isArray(content)) return content
+  if (!content) return [['', ''], ['', '']]
+  try { return JSON.parse(content) } catch { return parseCsv(content) }
+}
 
 const parseChecklist = (content) => {
   if (!content?.trim()) return [{ text: '', done: false }]
@@ -439,7 +443,7 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
   const buildPayload = (data) => ({
     ...data,
     content: data.mode === 'table'
-      ? tableRows
+      ? JSON.stringify(tableRows)
       : data.mode === 'checklist'
       ? serializeChecklist(checklistItems)
       : data.content,
