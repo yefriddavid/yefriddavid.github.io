@@ -31,7 +31,7 @@ export function* createDriver({ payload }) {
     )
     yield put(notify({ type: 'success', message: 'Conductor creado correctamente.' }))
     yield put(
-      triggerHook({ tag: 'driver.create', context: { id: payload.id, name: payload.name } }),
+      triggerHook({ tag: 'driver.create', context: { id, name: payload.name } }),
     )
   } catch (e) {
     yield put(actions.errorRequestCreate(e.message))

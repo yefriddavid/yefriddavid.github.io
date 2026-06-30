@@ -196,6 +196,30 @@
   }
 }
 
+.lp-vars-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+
+  &__label {
+    font-size: var(--fs-xs);
+    color: var(--cui-secondary-color);
+  }
+
+  &__token {
+    font-size: var(--fs-xs);
+    background: var(--cui-info-bg-subtle);
+    color: var(--cui-info);
+    border: 1px solid var(--cui-info-border-subtle);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: monospace;
+    cursor: default;
+  }
+}
+
 .lp-empty {
   color: var(--cui-secondary-color);
   text-align: center;

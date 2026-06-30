@@ -6,7 +6,7 @@
 //
 // Usage:
 //
-//	go run . [--dry-run] [--sa path/to/service-account.json]
+//	go run . [--dry-run] [--username john] [--sa path/to/service-account.json]
 package main
 
 import (
@@ -92,10 +92,16 @@ func syncUser(ctx context.Context, authClient *auth.Client, username, password s
 	return "updated", nil
 }
 
+type docEntry struct {
+	username string
+	data     map[string]interface{}
+}
+
 func main() {
 	defaultSA := filepath.Join("..", "..", "notifier", "service-account.json")
 	saPath := flag.String("sa", defaultSA, "path to Firebase service account JSON")
 	dryRun := flag.Bool("dry-run", false, "preview without writing to Firebase Auth")
+	onlyUser := flag.String("username", "", "sync only this user (omit to sync all)")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -116,43 +122,53 @@ func main() {
 	}
 	defer fsClient.Close()
 
-	iter := fsClient.Collection("users").Documents(ctx)
-	defer iter.Stop()
-
-	var total, created, updated, skipped, errors int
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
+	// Collect documents — either a single user or the whole collection.
+	var docs []docEntry
+	if *onlyUser != "" {
+		snap, err := fsClient.Collection("users").Doc(*onlyUser).Get(ctx)
 		if err != nil {
-			log.Fatalf("iter.Next: %v", err)
+			log.Fatalf("user %q not found: %v", *onlyUser, err)
 		}
+		docs = []docEntry{{username: snap.Ref.ID, data: snap.Data()}}
+	} else {
+		iter := fsClient.Collection("users").Documents(ctx)
+		defer iter.Stop()
+		for {
+			snap, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatalf("iter.Next: %v", err)
+			}
+			docs = append(docs, docEntry{username: snap.Ref.ID, data: snap.Data()})
+		}
+	}
 
+	var total, created, updated, skipped, errs int
+
+	for _, d := range docs {
 		total++
-		username := doc.Ref.ID
-		data := doc.Data()
 
-		raw, ok := data["salt"]
+		raw, ok := d.data["salt"]
 		salt, _ := raw.(string)
 		if !ok || salt == "" {
-			fmt.Printf("  SKIP  %-20s — no salt field\n", username)
+			fmt.Printf("  SKIP  %-20s — no salt field\n", d.username)
 			skipped++
 			continue
 		}
 
 		password, err := decryptSalt(salt)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "  ERROR %-20s — %v\n", username, err)
-			errors++
+			fmt.Fprintf(os.Stderr, "  ERROR %-20s — %v\n", d.username, err)
+			errs++
 			continue
 		}
 
-		action, err := syncUser(ctx, authClient, username, password, *dryRun)
+		action, err := syncUser(ctx, authClient, d.username, password, *dryRun)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "  ERROR %-20s — %v\n", username, err)
-			errors++
+			fmt.Fprintf(os.Stderr, "  ERROR %-20s — %v\n", d.username, err)
+			errs++
 			continue
 		}
 
@@ -160,7 +176,7 @@ func main() {
 		if *dryRun {
 			tag = "[DRY]"
 		}
-		fmt.Printf("%s %-8s %s\n", tag, strings.ToUpper(action), username)
+		fmt.Printf("%s %-8s %s\n", tag, strings.ToUpper(action), d.username)
 		if action == "created" {
 			created++
 		} else {
@@ -173,5 +189,5 @@ func main() {
 		prefix = "[DRY RUN] "
 	}
 	fmt.Printf("\n%sDone — total=%d created=%d updated=%d skipped=%d errors=%d\n",
-		prefix, total, created, updated, skipped, errors)
+		prefix, total, created, updated, skipped, errs)
 }

@@ -18,7 +18,7 @@ import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay, cilBan } from 
 import { useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
-import { PROGRAM_HOOKS } from 'src/constants/programHooks'
+import { PROGRAM_HOOKS, getHookVars } from 'src/constants/programHooks'
 import { logRequest as auditLog } from 'src/actions/system/auditLogActions'
 import './Programs.scss'
 
@@ -53,8 +53,12 @@ const Programs = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm()
+
+  const selectedHooks = watch('hooks') ?? []
+  const hookVars = getHookVars(Array.isArray(selectedHooks) ? selectedHooks : [selectedHooks])
 
   useEffect(() => {
     const id = sessionStorage.getItem('__localrunner_ext_id__')
@@ -83,9 +87,16 @@ const Programs = () => {
     const args = data.args.trim() ? data.args.trim().split(/\s+/) : []
     const hooks = Array.isArray(data.hooks) ? data.hooks : data.hooks ? [data.hooks] : []
     if (editId) {
-      persist(programs.map((p) => (p.id === editId ? { ...p, name: data.name, binary: data.binary, args, hooks } : p)))
+      persist(
+        programs.map((p) =>
+          p.id === editId ? { ...p, name: data.name, binary: data.binary, args, hooks } : p,
+        ),
+      )
     } else {
-      persist([...programs, { id: Date.now().toString(), name: data.name, binary: data.binary, args, hooks }])
+      persist([
+        ...programs,
+        { id: Date.now().toString(), name: data.name, binary: data.binary, args, hooks },
+      ])
     }
     setFormOpen(false)
   }
@@ -112,26 +123,30 @@ const Programs = () => {
       setOutput(null)
 
       // eslint-disable-next-line no-undef
-      chrome.runtime.sendMessage(extId, { binary: program.binary, args: program.args }, (response) => {
-        setRunning(false)
-        // eslint-disable-next-line no-undef
-        const runtimeErr = chrome.runtime.lastError?.message
-        const result = runtimeErr ? { error: runtimeErr } : response
-        setOutput(result)
+      chrome.runtime.sendMessage(
+        extId,
+        { binary: program.binary, args: program.args },
+        (response) => {
+          setRunning(false)
+          // eslint-disable-next-line no-undef
+          const runtimeErr = chrome.runtime.lastError?.message
+          const result = runtimeErr ? { error: runtimeErr } : response
+          setOutput(result)
 
-        dispatch(
-          auditLog({
-            operation: 'RUN',
-            entity: 'program',
-            program: program.name,
-            binary: program.binary,
-            exitCode: response?.exitCode ?? null,
-            stdout: response?.stdout ?? null,
-            stderr: response?.stderr ?? null,
-            error: runtimeErr ?? response?.error ?? null,
-          }),
-        )
-      })
+          dispatch(
+            auditLog({
+              operation: 'RUN',
+              entity: 'program',
+              program: program.name,
+              binary: program.binary,
+              exitCode: response?.exitCode ?? null,
+              stdout: response?.stdout ?? null,
+              stderr: response?.stderr ?? null,
+              error: runtimeErr ?? response?.error ?? null,
+            }),
+          )
+        },
+      )
     },
     [extId, running, dispatch],
   )
@@ -142,8 +157,8 @@ const Programs = () => {
     <div className="lp-page">
       {!extId && (
         <div className="lp-banner">
-          <strong>Extensión no detectada.</strong> Instala la extensión desde <code>extension/</code> en{' '}
-          <code>chrome://extensions</code> y recarga la página.
+          <strong>Extensión no detectada.</strong> Instala la extensión desde{' '}
+          <code>extension/</code> en <code>chrome://extensions</code> y recarga la página.
         </div>
       )}
 
@@ -159,7 +174,10 @@ const Programs = () => {
           <CCardBody className="lp-list-card__body">
             {programs.length === 0 && <p className="lp-empty">No hay programas configurados.</p>}
             {programs.map((p) => (
-              <div key={p.id} className={`lp-item${selected?.id === p.id ? ' lp-item--active' : ''}`}>
+              <div
+                key={p.id}
+                className={`lp-item${selected?.id === p.id ? ' lp-item--active' : ''}`}
+              >
                 <div className="lp-item__info" onClick={() => run(p)}>
                   <CIcon icon={cilTerminal} className="lp-item__icon" />
                   <div className="lp-item__text">
@@ -168,7 +186,12 @@ const Programs = () => {
                     {p.hooks?.length > 0 && (
                       <div className="lp-item__hooks">
                         {p.hooks.map((h) => (
-                          <span key={h} className={`lp-item__hook${p.disabled ? ' lp-item__hook--off' : ''}`}>{h}</span>
+                          <span
+                            key={h}
+                            className={`lp-item__hook${p.disabled ? ' lp-item__hook--off' : ''}`}
+                          >
+                            {h}
+                          </span>
                         ))}
                       </div>
                     )}
@@ -179,7 +202,11 @@ const Programs = () => {
                     size="sm"
                     color={p.disabled ? 'warning' : 'secondary'}
                     variant="ghost"
-                    title={p.disabled ? 'Hooks deshabilitados (clic para habilitar)' : 'Deshabilitar hooks'}
+                    title={
+                      p.disabled
+                        ? 'Hooks deshabilitados (clic para habilitar)'
+                        : 'Deshabilitar hooks'
+                    }
                     onClick={(e) => toggleDisabled(p.id, e)}
                   >
                     <CIcon icon={cilBan} />
@@ -194,7 +221,13 @@ const Programs = () => {
                   >
                     <CIcon icon={cilMediaPlay} />
                   </CButton>
-                  <CButton size="sm" color="primary" variant="ghost" title="Editar" onClick={(e) => openEdit(p, e)}>
+                  <CButton
+                    size="sm"
+                    color="primary"
+                    variant="ghost"
+                    title="Editar"
+                    onClick={(e) => openEdit(p, e)}
+                  >
                     <CIcon icon={cilPencil} />
                   </CButton>
                   <CButton
@@ -217,7 +250,9 @@ const Programs = () => {
             <span className="lp-output-card__title">
               Output{selected ? ` — ${selected.name}` : ''}
             </span>
-            {output && <CBadge color={exitColor}>Exit {output.error ? 'ERR' : output.exitCode}</CBadge>}
+            {output && (
+              <CBadge color={exitColor}>Exit {output.error ? 'ERR' : output.exitCode}</CBadge>
+            )}
           </CCardHeader>
           <CCardBody className="lp-output-card__body">
             {running && (
@@ -234,7 +269,9 @@ const Programs = () => {
             {!running && output && !output.error && (
               <>
                 {output.stdout && <pre className="lp-output">{output.stdout}</pre>}
-                {output.stderr && <pre className="lp-output lp-output--stderr">{output.stderr}</pre>}
+                {output.stderr && (
+                  <pre className="lp-output lp-output--stderr">{output.stderr}</pre>
+                )}
                 {!output.stdout && !output.stderr && <p className="lp-empty">(sin output)</p>}
               </>
             )}
@@ -268,6 +305,14 @@ const Programs = () => {
           <div className="mb-3">
             <CFormLabel>Argumentos (separados por espacios)</CFormLabel>
             <CFormInput placeholder="--flag valor" {...register('args')} />
+            {hookVars.length > 0 && (
+              <div className="lp-vars-hint">
+                <span className="lp-vars-hint__label">Variables disponibles:</span>
+                {hookVars.map((v) => (
+                  <code key={v} className="lp-vars-hint__token">{`{{${v}}}`}</code>
+                ))}
+              </div>
+            )}
           </div>
           <div className="mb-3">
             <CFormLabel>Hooks (Ctrl+clic para seleccionar varios)</CFormLabel>
