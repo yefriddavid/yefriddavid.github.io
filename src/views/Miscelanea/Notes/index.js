@@ -486,12 +486,17 @@ const NoteTable = ({ content, className, onToggleCheck }) => {
         {body.map((row, ri) => (
           <tr key={ri}>
             {row.map((c, ci) =>
-              types[ci] === 'checkbox' && onToggleCheck ? (
+              types[ci] === 'checkbox' ? (
                 <td key={ci} className="note-table__cell--check">
                   <input
                     type="checkbox"
                     checked={c === 'true'}
-                    onChange={(e) => onToggleCheck(ri, ci, e.target.checked ? 'true' : 'false')}
+                    readOnly={!onToggleCheck}
+                    onChange={
+                      onToggleCheck
+                        ? (e) => onToggleCheck(ri, ci, e.target.checked ? 'true' : 'false')
+                        : undefined
+                    }
                   />
                 </td>
               ) : (
@@ -775,7 +780,7 @@ const SortableNoteCard = (props) => {
 
 // ── NoteEditorModal ───────────────────────────────────────────────────────────
 
-const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
+const NoteEditorModal = ({ note, onSave, onClose, onView, saving }) => {
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
       title: note?.title || '',
@@ -837,15 +842,34 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
     else setValue('content', '')
   }
 
-  const buildPayload = (data) => ({
-    ...data,
-    content:
-      data.mode === 'table'
-        ? JSON.stringify(tableRows)
-        : data.mode === 'checklist'
-          ? serializeChecklist(checklistItems)
-          : data.content,
-  })
+  const buildPayload = (data) => {
+    if (showSource) {
+      try {
+        const parsed =
+          data.mode === 'table' || data.mode === 'checklist' ? JSON.parse(sourceValue) : null
+        return {
+          ...data,
+          content:
+            data.mode === 'table'
+              ? JSON.stringify(parsed)
+              : data.mode === 'checklist'
+                ? JSON.stringify(parsed)
+                : sourceValue,
+        }
+      } catch {
+        // malformed source — fall through to normal path
+      }
+    }
+    return {
+      ...data,
+      content:
+        data.mode === 'table'
+          ? JSON.stringify(tableRows)
+          : data.mode === 'checklist'
+            ? serializeChecklist(checklistItems)
+            : data.content,
+    }
+  }
 
   const onSubmit = (data) => onSave(buildPayload(data), false)
   const onSubmitKeep = (data) => onSave(buildPayload(data), true)
@@ -909,6 +933,11 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
           >
             {'</>'}
           </button>
+          {onView && (
+            <button className="note-editor__icon-btn" onClick={onView} title="Ver nota">
+              <CIcon icon={cilFullscreen} />
+            </button>
+          )}
           <button className="note-editor__icon-btn" onClick={onClose} title="Cerrar">
             <CIcon icon={cilX} />
           </button>
@@ -971,7 +1000,23 @@ const NoteEditorModal = ({ note, onSave, onClose, saving }) => {
 // ── NoteViewModal ─────────────────────────────────────────────────────────────
 
 const NoteViewModal = ({ note, onClose, onEdit }) => {
+  const dispatch = useDispatch()
   const totals = note.mode === 'table' ? calcTableTotals(note.content) : []
+
+  const handleToggleCheck = (ri, ci, val) => {
+    const rows = toTableRows(note.content)
+    const updated = rows.map((row, r) =>
+      r === ri + 1 ? row.map((cell, c) => (c === ci ? val : cell)) : row,
+    )
+    dispatch(actions.updateRequest({ id: note.id, content: JSON.stringify(updated) }))
+  }
+
+  const handleToggleChecklist = (index) => {
+    const items = parseChecklist(note.content)
+    const updated = items.map((item, i) => (i === index ? { ...item, done: !item.done } : item))
+    dispatch(actions.updateRequest({ id: note.id, content: serializeChecklist(updated) }))
+  }
+
   return (
     <div className="note-view-overlay" onClick={onClose}>
       <div
@@ -993,7 +1038,7 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
         <div className="note-view__date">{formatDate(note.updatedAt)}</div>
         {note.mode === 'table' ? (
           <div className="note-view__content note-view__content--table">
-            <NoteTable content={note.content} />
+            <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
             {totals.length > 0 && (
               <div className="note-view__totals">
                 {totals.map((t, i) => (
@@ -1008,6 +1053,7 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
           <NoteChecklist
             content={note.content}
             className="note-view__content note-view__content--checklist"
+            onToggle={handleToggleChecklist}
           />
         ) : (
           <div
@@ -1072,6 +1118,7 @@ const Notes = () => {
   }
 
   const handleClone = (note) => {
+    if (!window.confirm(`¿Clonar "${note.title || 'esta nota'}"?`)) return
     dispatch(
       actions.createRequest({
         title: note.title ? `${note.title} (copia)` : 'Copia',
@@ -1279,7 +1326,7 @@ const Notes = () => {
 
       {viewing && !editing && (
         <NoteViewModal
-          note={viewing}
+          note={data?.find((n) => n.id === viewing.id) ?? viewing}
           onClose={() => setViewing(null)}
           onEdit={() => {
             setEditing(viewing)
@@ -1293,6 +1340,14 @@ const Notes = () => {
           note={editing === 'new' ? null : editing}
           onSave={handleSave}
           onClose={() => setEditing(null)}
+          onView={
+            editing !== 'new'
+              ? () => {
+                  setViewing(editing)
+                  setEditing(null)
+                }
+              : undefined
+          }
           saving={saving}
         />
       )}
