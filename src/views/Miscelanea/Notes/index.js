@@ -74,7 +74,7 @@ const toTableRows = (content) => {
   try { return JSON.parse(content) } catch { return parseCsv(content) }
 }
 
-const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date', 'check']
+const KNOWN_PREFIXES = ['sum', 'max', 'min', 'avg', 'string', 'number', 'decimal', 'date', 'checkbox']
 
 const isPrefix = (part) => KNOWN_PREFIXES.includes(part) || part.toLowerCase().startsWith('select(')
 
@@ -89,7 +89,7 @@ const getColType = (header) => {
   const parts = (header || '').split(':')
   for (const part of parts) {
     const lower = part.toLowerCase()
-    if (['string', 'number', 'decimal', 'date', 'check'].includes(lower)) return lower
+    if (['string', 'number', 'decimal', 'date', 'checkbox'].includes(lower)) return lower
     if (lower.startsWith('select(')) return 'select'
   }
   return 'string'
@@ -117,7 +117,7 @@ const formatCellValue = (value, type) => {
       const d = new Date(value + 'T00:00:00')
       return isNaN(d.getTime()) ? value : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
     }
-    case 'check':
+    case 'checkbox':
       return value === 'true' ? '✓' : '✗'
     default:
       return value
@@ -194,7 +194,7 @@ const TableEditor = ({ rows, onChange }) => {
         </select>
       )
     }
-    if (type === 'check') {
+    if (type === 'checkbox') {
       return (
         <div className="note-table-editor__cell-check">
           <input
@@ -297,7 +297,7 @@ const NoteTable = ({ content, className, onToggleCheck }) => {
         {body.map((row, ri) => (
           <tr key={ri}>
             {row.map((c, ci) =>
-              types[ci] === 'check' && onToggleCheck ? (
+              types[ci] === 'checkbox' && onToggleCheck ? (
                 <td key={ci} className="note-table__cell--check">
                   <input
                     type="checkbox"
@@ -811,7 +811,7 @@ const Notes = () => {
                 ['decimal:Precio', 'Decimal, valida en tiempo real'],
                 ['date:Fecha', 'Selector de fecha'],
                 ['select(A,B,C):Estado', 'Lista desplegable con opciones'],
-                ['check:Activo', 'Casilla de verificación (✓ / ✗)'],
+                ['checkbox:Activo', 'Casilla de verificación (✓ / ✗)'],
               ].map(([op, desc]) => (
                 <div key={op} className="notes__help-row">
                   <code className="notes__help-code">{op}</code>
