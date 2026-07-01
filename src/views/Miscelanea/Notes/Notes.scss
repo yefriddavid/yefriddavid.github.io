@@ -953,6 +953,38 @@
 
     &:focus { border-color: var(--cui-primary, #4f46e5); }
     &--date { min-width: 140px; }
+    &--formula-result {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      color: var(--cui-primary, #4f46e5);
+      font-style: italic;
+      font-weight: 600;
+      background: var(--cui-body-bg, #fff);
+    }
+  }
+
+  &__formula-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__formula-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--cui-secondary-color, #888);
+    cursor: pointer;
+
+    &:hover { background: rgba(0, 0, 0, 0.04); color: var(--cui-body-color, #333); }
   }
 
   &__cell-check {
@@ -1074,6 +1106,34 @@
     }
 
     &--num { text-align: right; }
+    &--formula-result {
+      color: var(--cui-primary, #4f46e5);
+      font-style: italic;
+      font-weight: 600;
+    }
+  }
+
+  &__formula-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  &__formula-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--cui-secondary-color, #888);
+    cursor: pointer;
+
+    &:hover { background: rgba(0, 0, 0, 0.04); color: var(--cui-body-color, #333); }
   }
 }
 

@@ -14,6 +14,7 @@ import {
   cilStorage,
   cilActionUndo,
   cilWindowMaximize,
+  cilFunctions,
 } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import {
@@ -123,6 +124,7 @@ const KNOWN_PREFIXES = [
   'decimal',
   'date',
   'checkbox',
+  'formula',
 ]
 
 const isPrefix = (part) =>
@@ -141,12 +143,69 @@ const getColType = (header) => {
   const parts = (header || '').split(':')
   for (const part of parts) {
     const lower = part.toLowerCase()
-    if (['string', 'number', 'decimal', 'date', 'checkbox'].includes(lower)) return lower
+    if (['string', 'number', 'decimal', 'date', 'checkbox', 'formula'].includes(lower)) return lower
     if (lower.startsWith('select(')) return 'select'
     if (lower.startsWith('currency(')) return 'currency'
   }
   return 'string'
 }
+
+// Evaluates a small arithmetic expression (+ - * / and parens) typed into a
+// formula cell, where lowercase letters reference sibling columns by
+// position (a = col 1, b = col 2, ...).
+const evalFormula = (expr, row) => {
+  if (!expr) return null
+  const s = expr.toLowerCase().replace(/\s+/g, '')
+  let i = 0
+  const peek = () => s[i]
+  const readVar = (ch) => {
+    const v = parseFloat(row?.[ch.charCodeAt(0) - 97])
+    return isNaN(v) ? 0 : v
+  }
+  const parseFactor = () => {
+    if (peek() === '(') {
+      i++
+      const value = parseExpr()
+      if (peek() === ')') i++
+      return value
+    }
+    if (peek() === '-') {
+      i++
+      return -parseFactor()
+    }
+    if (peek() && /[a-z]/.test(peek())) return readVar(s[i++])
+    const start = i
+    while (i < s.length && /[0-9.]/.test(s[i])) i++
+    return start === i ? 0 : parseFloat(s.slice(start, i))
+  }
+  const parseTerm = () => {
+    let value = parseFactor()
+    while (peek() === '*' || peek() === '/') {
+      const op = s[i++]
+      const rhs = parseFactor()
+      value = op === '*' ? value * rhs : value / rhs
+    }
+    return value
+  }
+  const parseExpr = () => {
+    let value = parseTerm()
+    while (peek() === '+' || peek() === '-') {
+      const op = s[i++]
+      const rhs = parseTerm()
+      value = op === '+' ? value + rhs : value - rhs
+    }
+    return value
+  }
+  try {
+    const result = parseExpr()
+    return isNaN(result) ? null : result
+  } catch {
+    return null
+  }
+}
+
+const formatFormulaResult = (value) =>
+  value == null ? '' : value.toLocaleString('es-CO', { maximumFractionDigits: 2 })
 
 const getColCurrency = (header) => {
   const parts = (header || '').split(':')
@@ -337,9 +396,12 @@ const TableEditor = ({ rows, onChange }) => {
   const colCount = rows[0]?.length ?? 1
   const colIds = rows[0]?.map((_, i) => `col-${i}`) ?? []
   const colSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const [formulaEditing, setFormulaEditing] = useState({})
 
   const updateCell = (ri, ci, val) =>
     onChange(rows.map((r, i) => (i === ri ? r.map((c, j) => (j === ci ? val : c)) : r)))
+
+  const toggleFormulaEdit = (key) => setFormulaEditing((prev) => ({ ...prev, [key]: !prev[key] }))
 
   const handleColDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return
@@ -356,6 +418,29 @@ const TableEditor = ({ rows, onChange }) => {
     }
     if (ri === 0) return <input {...base} />
     const type = getColType(rows[0]?.[ci] || '')
+    if (type === 'formula') {
+      const key = `${ri}-${ci}`
+      const isEditing = !!formulaEditing[key]
+      return (
+        <div className="note-table-editor__formula-cell">
+          {isEditing ? (
+            <input {...base} placeholder="a+b" autoFocus style={{ flex: 1, minWidth: 0 }} />
+          ) : (
+            <span className="note-table-editor__cell note-table-editor__cell--formula-result">
+              {formatFormulaResult(evalFormula(cell, rows[ri])) || '—'}
+            </span>
+          )}
+          <button
+            type="button"
+            className="note-table-editor__formula-toggle"
+            title={isEditing ? 'Ver cálculo' : 'Editar fórmula'}
+            onClick={() => toggleFormulaEdit(key)}
+          >
+            <CIcon icon={isEditing ? cilFunctions : cilPencil} size="sm" />
+          </button>
+        </div>
+      )
+    }
     if (type === 'number') return <input {...base} type="number" step="1" />
     if (type === 'decimal') return <input {...base} type="number" step="0.01" />
     if (type === 'currency') return <input {...base} type="number" step="0.01" />
@@ -476,6 +561,7 @@ const TableEditor = ({ rows, onChange }) => {
 // ── NoteTable (read-only) ─────────────────────────────────────────────────────
 
 const NoteTable = ({ content, className, onToggleCheck, onCellChange }) => {
+  const [formulaEditing, setFormulaEditing] = useState({})
   const rows = content ? toTableRows(content) : []
   if (!rows.length) return null
   const [head, ...body] = rows
@@ -484,6 +570,36 @@ const NoteTable = ({ content, className, onToggleCheck, onCellChange }) => {
   const renderEditableCell = (c, ri, ci) => {
     const type = types[ci]
     const header = head[ci]
+    if (type === 'formula') {
+      const key = `${ri}-${ci}`
+      const isEditing = !!formulaEditing[key]
+      return (
+        <div className="note-table__formula-cell">
+          {isEditing ? (
+            <input
+              className="note-table__cell-input"
+              type="text"
+              defaultValue={c}
+              autoFocus
+              style={{ flex: 1, minWidth: 0 }}
+              onBlur={(e) => onCellChange(ri, ci, e.target.value)}
+            />
+          ) : (
+            <span className="note-table__cell-input note-table__cell-input--formula-result">
+              {formatFormulaResult(evalFormula(c, body[ri])) || '—'}
+            </span>
+          )}
+          <button
+            type="button"
+            className="note-table__formula-toggle"
+            title={isEditing ? 'Ver cálculo' : 'Editar fórmula'}
+            onClick={() => setFormulaEditing((prev) => ({ ...prev, [key]: !prev[key] }))}
+          >
+            <CIcon icon={isEditing ? cilFunctions : cilPencil} size="sm" />
+          </button>
+        </div>
+      )
+    }
     if (type === 'select') {
       const options = getColOptions(header)
       return (
@@ -563,7 +679,11 @@ const NoteTable = ({ content, className, onToggleCheck, onCellChange }) => {
                   {renderEditableCell(c, ri, ci)}
                 </td>
               ) : (
-                <td key={ci}>{formatCellValue(c, types[ci], head[ci])}</td>
+                <td key={ci}>
+                  {types[ci] === 'formula'
+                    ? formatFormulaResult(evalFormula(c, row))
+                    : formatCellValue(c, types[ci], head[ci])}
+                </td>
               ),
             )}
           </tr>
@@ -1320,6 +1440,10 @@ const Notes = () => {
                 ['checkbox:Activo', 'Casilla de verificación (✓ / ✗)'],
                 ['currency(cop):Precio', 'Moneda COP — ej: $ 1.250.000'],
                 ['currency(usd):Price', 'Moneda USD — ej: $1,250.00'],
+                [
+                  'formula:Total',
+                  'En cada celda escribí la operación (a+b, a*2, (a+b)/c…) — a=col 1, b=col 2…',
+                ],
               ].map(([op, desc]) => (
                 <div key={op} className="notes__help-row">
                   <code className="notes__help-code">{op}</code>
