@@ -1165,6 +1165,8 @@ const Notes = () => {
   const [grouped, setGrouped] = useState(true)
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
+  const [hiddenCategories, setHiddenCategories] = useState([])
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -1219,9 +1221,17 @@ const Notes = () => {
     dispatch(actions.deleteRequest({ id: note.id }))
   }
 
-  const visibleItems = items.filter((n) =>
-    activeTab === 'active' ? !n.archived : n.archived === true,
-  )
+  const toggleCategoryVisibility = (category) => {
+    setHiddenCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+    )
+  }
+
+  const allCategories = getDistinctCategories(items)
+
+  const visibleItems = items
+    .filter((n) => (activeTab === 'active' ? !n.archived : n.archived === true))
+    .filter((n) => !hiddenCategories.includes(n.category || DEFAULT_NOTE_CATEGORY))
 
   return (
     <div className="notes">
@@ -1257,6 +1267,37 @@ const Notes = () => {
           >
             {grouped ? '⊞ Agrupado' : '⊟ Sin agrupar'}
           </button>
+          <div className="notes__category-filter">
+            <button
+              className={`notes__category-filter-btn${hiddenCategories.length ? ' notes__category-filter-btn--active' : ''}`}
+              onClick={() => setShowCategoryFilter((v) => !v)}
+              title="Mostrar u ocultar categorías"
+            >
+              ☰ Categorías
+              {hiddenCategories.length > 0 &&
+                ` (${allCategories.length - hiddenCategories.length}/${allCategories.length})`}
+            </button>
+            {showCategoryFilter && (
+              <>
+                <div
+                  className="notes__category-filter-overlay"
+                  onClick={() => setShowCategoryFilter(false)}
+                />
+                <div className="notes__category-filter-panel">
+                  {allCategories.map((c) => (
+                    <label key={c} className="notes__category-filter-item">
+                      <input
+                        type="checkbox"
+                        checked={!hiddenCategories.includes(c)}
+                        onChange={() => toggleCategoryVisibility(c)}
+                      />
+                      {capitalize(c)}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           {activeTab === 'active' && (
             <button className="notes__new-btn" onClick={() => setEditing('new')}>
               + Nueva nota
