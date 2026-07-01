@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
+import { DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
 
 const serializeTs = (ts) => ts?.toDate?.()?.toISOString() ?? null
 
@@ -44,13 +45,22 @@ export const createNote = async ({ title, content, color, mode, category }) => {
       content,
       color,
       mode: mode || 'textarea',
-      category: category || 'general',
+      category: category || DEFAULT_NOTE_CATEGORY,
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }),
   )
-  return { id: ref.id, title, content, color, mode: mode || 'textarea', category: category || 'general', createdAt: now, updatedAt: now }
+  return {
+    id: ref.id,
+    title,
+    content,
+    color,
+    mode: mode || 'textarea',
+    category: category || DEFAULT_NOTE_CATEGORY,
+    createdAt: now,
+    updatedAt: now,
+  }
 }
 
 export const updateNote = async ({ id, title, content, color, mode, archived, category }) => {

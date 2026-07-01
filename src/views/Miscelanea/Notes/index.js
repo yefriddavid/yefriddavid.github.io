@@ -25,7 +25,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
-import { NOTE_CATEGORIES, DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
+import { DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import './Notes.scss'
@@ -40,6 +40,11 @@ const NOTE_COLORS = [
   { value: '#ffedd5', label: 'Naranja' },
   { value: '#f1f5f9', label: 'Gris' },
 ]
+
+const getDistinctCategories = (notes) =>
+  Array.from(new Set((notes ?? []).map((n) => n.category || DEFAULT_NOTE_CATEGORY))).sort()
+
+const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
 const QUILL_MODULES = {
   toolbar: [
@@ -842,7 +847,7 @@ const SortableNoteCard = (props) => {
 
 // ── NoteEditorModal ───────────────────────────────────────────────────────────
 
-const NoteEditorModal = ({ note, onSave, onClose, onView, saving }) => {
+const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onView, saving }) => {
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
       title: note?.title || '',
@@ -905,6 +910,7 @@ const NoteEditorModal = ({ note, onSave, onClose, onView, saving }) => {
   }
 
   const buildPayload = (data) => {
+    data = { ...data, category: data.category?.trim() || DEFAULT_NOTE_CATEGORY }
     if (showSource) {
       try {
         const parsed =
@@ -945,13 +951,17 @@ const NoteEditorModal = ({ note, onSave, onClose, onView, saving }) => {
             placeholder="Título de la nota…"
             {...register('title')}
           />
-          <select className="note-editor__category-select" {...register('category')}>
-            {NOTE_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+          <input
+            className="note-editor__category-input"
+            list="note-category-options"
+            placeholder="Categoría…"
+            {...register('category')}
+          />
+          <datalist id="note-category-options">
+            {existingCategories.map((c) => (
+              <option key={c} value={c} />
             ))}
-          </select>
+          </datalist>
           <div className="note-editor__mode-toggle">
             <button
               type="button"
@@ -1353,7 +1363,8 @@ const Notes = () => {
           </SortableContext>
         </DndContext>
       ) : (
-        NOTE_CATEGORIES.map(({ value, label }) => {
+        getDistinctCategories(visibleItems).map((value) => {
+          const label = capitalize(value)
           const groupItems = visibleItems.filter(
             (n) => (n.category || DEFAULT_NOTE_CATEGORY) === value,
           )
@@ -1415,6 +1426,7 @@ const Notes = () => {
       {editing && (
         <NoteEditorModal
           note={editing === 'new' ? null : editing}
+          existingCategories={getDistinctCategories(data)}
           onSave={handleSave}
           onClose={() => setEditing(null)}
           onView={

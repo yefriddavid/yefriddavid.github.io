@@ -617,7 +617,7 @@
     }
   }
 
-  &__category-select {
+  &__category-input {
     border: 1px solid var(--cui-border-color, #dee2e6);
     border-radius: 6px;
     background: var(--cui-body-bg, #fff);
@@ -625,7 +625,7 @@
     font-size: var(--fs-xs);
     padding: 4px 8px;
     outline: none;
-    cursor: pointer;
+    width: 120px;
     flex-shrink: 0;
 
     &:focus { border-color: var(--cui-primary, #4f46e5); }
