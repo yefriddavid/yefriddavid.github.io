@@ -18,8 +18,8 @@ export async function checkPicoYPlaca() {
     const db = await openDB()
 
     const alreadyNotified = await new Promise((resolve) => {
-      const tx = db.transaction(DB_STORES.METADATA, 'readonly')
-      const req = tx.objectStore(DB_STORES.METADATA).get(notifyKey)
+      const tx = db.transaction(DB_STORES.APP_METADATA, 'readonly')
+      const req = tx.objectStore(DB_STORES.APP_METADATA).get(notifyKey)
       req.onsuccess = () => resolve(!!req.result)
       req.onerror = () => resolve(false)
     })
@@ -62,8 +62,8 @@ export async function checkPicoYPlaca() {
       badge: '/icons/icon.svg',
     })
 
-    const tx = db.transaction(DB_STORES.METADATA, 'readwrite')
-    tx.objectStore(DB_STORES.METADATA).put(true, notifyKey)
+    const tx = db.transaction(DB_STORES.APP_METADATA, 'readwrite')
+    tx.objectStore(DB_STORES.APP_METADATA).put(true, notifyKey)
     await new Promise((resolve, reject) => {
       tx.oncomplete = resolve
       tx.onerror = () => reject(tx.error)

@@ -28,8 +28,8 @@ self.addEventListener('fetch', (event) => {
           const buffer = await file.arrayBuffer()
           const db = await openDB()
           await new Promise((resolve, reject) => {
-            const tx = db.transaction(DB_STORES.METADATA, 'readwrite')
-            tx.objectStore(DB_STORES.METADATA).put(
+            const tx = db.transaction(DB_STORES.APP_METADATA, 'readwrite')
+            tx.objectStore(DB_STORES.APP_METADATA).put(
               { buffer, type: file.type, name: file.name },
               'pending-share',
             )
@@ -110,8 +110,8 @@ async function checkActiveAccountsAndNotify() {
 
     // Check if we already notified for this window today
     const alreadyNotified = await new Promise((resolve) => {
-      const tx = db.transaction(DB_STORES.METADATA, 'readonly')
-      const req = tx.objectStore(DB_STORES.METADATA).get(lastNotifyKey)
+      const tx = db.transaction(DB_STORES.APP_METADATA, 'readonly')
+      const req = tx.objectStore(DB_STORES.APP_METADATA).get(lastNotifyKey)
       req.onsuccess = () => resolve(!!req.result)
       req.onerror = () => resolve(false)
     })
@@ -131,8 +131,8 @@ async function checkActiveAccountsAndNotify() {
     })
 
     // Mark as notified
-    const tx = db.transaction(DB_STORES.METADATA, 'readwrite')
-    tx.objectStore(DB_STORES.METADATA).put(true, lastNotifyKey)
+    const tx = db.transaction(DB_STORES.APP_METADATA, 'readwrite')
+    tx.objectStore(DB_STORES.APP_METADATA).put(true, lastNotifyKey)
     await new Promise((resolve, reject) => {
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
