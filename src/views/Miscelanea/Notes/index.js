@@ -26,21 +26,12 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
-import { DEFAULT_NOTE_CATEGORY } from 'src/constants/notes'
+import { DEFAULT_NOTE_CATEGORY, NOTE_COLORS } from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import './Notes.scss'
 
-const NOTE_COLORS = [
-  { value: '#ffffff', label: 'Blanco' },
-  { value: '#fef9c3', label: 'Amarillo' },
-  { value: '#dcfce7', label: 'Verde' },
-  { value: '#dbeafe', label: 'Azul' },
-  { value: '#f3e8ff', label: 'Púrpura' },
-  { value: '#fce7f3', label: 'Rosa' },
-  { value: '#ffedd5', label: 'Naranja' },
-  { value: '#f1f5f9', label: 'Gris' },
-]
+const isHexColor = (v) => /^#[0-9a-fA-F]{6}$/.test(v || '')
 
 const getDistinctCategories = (notes) =>
   Array.from(new Set((notes ?? []).map((n) => n.category || DEFAULT_NOTE_CATEGORY))).sort()
@@ -1116,6 +1107,16 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
                 onClick={() => setValue('color', c.value)}
               />
             ))}
+            <label
+              className={`note-editor__color-picker${!NOTE_COLORS.some((c) => c.value === color) ? ' note-editor__color-picker--active' : ''}`}
+              title="Color personalizado"
+            >
+              <input
+                type="color"
+                value={isHexColor(color) ? color : '#ffffff'}
+                onChange={(e) => setValue('color', e.target.value)}
+              />
+            </label>
           </div>
           <button
             type="button"
