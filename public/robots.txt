@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /
-Allow: /tools/calc
-Allow: /domotica/solar-calculator-local
-
-Sitemap: https://yefriddavid.github.io/yefriddavid.github.io/sitemap.xml

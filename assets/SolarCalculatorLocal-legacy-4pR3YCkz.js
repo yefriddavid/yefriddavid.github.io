@@ -1,0 +1,1 @@
+System.register(["./index-legacy-EhhKirMu.js","./SolarCalculator-legacy-DXu9mAlx.js","./vendor-pdfjs-legacy-DtNXiqXJ.js","./vendor-firebase-legacy-syBJKgDF.js"],function(e,l){"use strict";var t,r;return{setters:[e=>{t=e.j},e=>{r=e.default},null,null],execute:function(){e("default",function(){return t.jsx(r,{local:!0})})}}});

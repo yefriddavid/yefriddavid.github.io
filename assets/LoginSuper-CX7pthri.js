@@ -1,0 +1,1 @@
+import{j as o}from"./index-Cn4G-hvZ.js";import t from"./Login-Cs7G_sUO.js";import"./vendor-pdfjs-B0ZCgLYt.js";import"./vendor-firebase-TeyIuh6V.js";import"./BrandName-BoZK-5wu.js";import"./index.esm-C7FtRj8Y.js";/* empty css              */const f=()=>o.jsx(t,{captcha:!1});export{f as default};

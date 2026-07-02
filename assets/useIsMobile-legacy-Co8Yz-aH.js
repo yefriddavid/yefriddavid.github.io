@@ -1,0 +1,1 @@
+System.register(["./index-legacy-EhhKirMu.js"],function(e,t){"use strict";var n;return{setters:[e=>{n=e.r}],execute:function(){e("u",()=>{const[e,t]=n.useState(()=>window.innerWidth<640);return n.useEffect(()=>{const e=window.matchMedia("(max-width: 639px)"),n=e=>t(e.matches);return e.addEventListener("change",n),()=>e.removeEventListener("change",n)},[]),e})}}});
