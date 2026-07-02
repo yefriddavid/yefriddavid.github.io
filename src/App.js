@@ -28,6 +28,7 @@ const GenerarContrato = React.lazy(
 )
 const GalleryPage = React.lazy(() => import('./views/Public/GalleryPage'))
 const Calc = React.lazy(() => import('./views/Miscelanea/Tools/Calc'))
+const BlackScreen = React.lazy(() => import('./views/Miscelanea/BlackScreen'))
 const SolarCalculatorLocal = React.lazy(() => import('./views/domotica/SolarCalculator/SolarCalculatorLocal'))
 
 // Pages
@@ -167,6 +168,7 @@ const App = () => {
               <Route path="/contratos/generar" element={<GenerarContrato />} />
               <Route path="/gallery/:folder" element={<GalleryPage />} />
               <Route path="/tools/calc" element={<Calc />} />
+              <Route path="/miscelanea/blackscreen" element={<BlackScreen />} />
               <Route path="/domotica/solar-calculator-local" element={<SolarCalculatorLocal />} />
             </Route>
             <Route path="/finance/*" element={<FinanceLayout />} />

@@ -1,0 +1,40 @@
+.black-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 9999;
+  cursor: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  &__hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    color: #333;
+    font-size: var(--fs-sm);
+    opacity: 1;
+    transition: opacity 1.5s ease;
+    cursor: default;
+  }
+
+  &__fullscreen-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: #333;
+    border-radius: 4px;
+    padding: 0.35rem 0.75rem;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+
+    &:hover {
+      color: #555;
+      border-color: #555;
+    }
+  }
+}
