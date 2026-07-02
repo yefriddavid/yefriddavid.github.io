@@ -4,6 +4,7 @@ const ErrorLogsPage = React.lazy(() => import('./views/pages/system/ErrorLogs/Er
 const AuditLogsPage = React.lazy(() => import('./views/pages/system/AuditLogs/AuditLogsPage'))
 const PerfLogsPage = React.lazy(() => import('./views/pages/system/PerfLogs/PerfLogsPage'))
 const Programs = React.lazy(() => import('./views/pages/system/Programs'))
+const ShareDebug = React.lazy(() => import('./views/pages/system/ShareDebug'))
 
 const Users = React.lazy(() => import('./views/users/Users'))
 const UserEdit = React.lazy(() => import('./views/users/UserEdit'))
@@ -78,6 +79,12 @@ const systemRoutes = [
     name: 'Programs',
     tKey: 'nav.programs',
     element: Programs,
+  },
+  {
+    path: '/system/share-debug',
+    name: 'Share Debug',
+    tKey: 'nav.shareDebug',
+    element: ShareDebug,
   },
 ]
 

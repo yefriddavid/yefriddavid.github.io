@@ -1,6 +1,17 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilPeople, cilSettings, cilBell, cilGroup, cilBug, cilList, cilSpeedometer, cilEnvelopeClosed, cilTerminal } from '@coreui/icons'
+import {
+  cilPeople,
+  cilSettings,
+  cilBell,
+  cilGroup,
+  cilBug,
+  cilList,
+  cilSpeedometer,
+  cilEnvelopeClosed,
+  cilTerminal,
+  cilShareBoxed,
+} from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
 const getSystemNav = () => [
@@ -63,6 +74,12 @@ const getSystemNav = () => [
     name: 'Programas',
     to: '/system/programs',
     icon: <CIcon icon={cilTerminal} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Share Debug',
+    to: '/system/share-debug',
+    icon: <CIcon icon={cilShareBoxed} customClassName="nav-icon" />,
   },
 ]
 
