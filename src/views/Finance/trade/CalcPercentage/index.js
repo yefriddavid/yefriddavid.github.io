@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { calcPercentageStorage } from 'src/utils/storage'
 import './CalcPercentage.scss'
 
 const FIELDS = ['initial', 'pct', 'change', 'final']
@@ -17,12 +18,26 @@ const parse = (v) => {
   return isFinite(n) ? n : null
 }
 
-const fmt = (n) =>
-  n === null || n === undefined
-    ? ''
-    : Number.isInteger(n * 1e10)
-    ? n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 10 })
+const round = (n, decimals = 6) => {
+  const f = 10 ** decimals
+  return Math.round((n + Number.EPSILON) * f) / f
+}
+
+// Canonical value fed into <input type="number"> — this input type is locale-independent
+// (always expects '.' as the decimal point, no thousands grouping), so it must NEVER
+// receive a toLocaleString-formatted string (e.g. "510,00" or "6.000") or the browser
+// silently rejects/misreads it, showing a blank or wrong value.
+const fmtValue = (n) => (n === null || n === undefined || !isFinite(n) ? '' : String(round(n)))
+
+// Human-readable, locale-formatted — only safe for plain-text display (summary
+// sentence, reference-value result), never for an <input> value.
+const fmtDisplay = (n) => {
+  if (n === null || n === undefined || !isFinite(n)) return ''
+  const r = round(n, 10)
+  return Number.isInteger(r)
+    ? r.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 10 })
     : n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+}
 
 // Given 2 source fields + their values, compute the other 2.
 // sign: +1 = increase, -1 = decrease
@@ -39,48 +54,50 @@ function computeDerived(srcA, srcB, vals, sign) {
     case 'initial+pct':
       if (i !== null && p !== null) {
         const ch = (i * p) / 100
-        out.change = fmt(ch)
-        out.final = fmt(i + sign * ch)
+        out.change = fmtValue(ch)
+        out.final = fmtValue(i + sign * ch)
       }
       break
 
     case 'change+initial':
-      if (i !== null && c !== null && i !== 0) {
-        out.pct = fmt((c / i) * 100)
-        out.final = fmt(i + sign * c)
+      if (i !== null && c !== null) {
+        out.final = fmtValue(i + sign * c)
+        out.pct = i !== 0 ? fmtValue((c / i) * 100) : ''
       }
       break
 
     case 'final+initial':
-      if (i !== null && f !== null && i !== 0) {
+      if (i !== null && f !== null) {
         const ch = sign * (f - i)
-        out.change = fmt(ch)
-        out.pct = fmt((ch / i) * 100)
+        out.change = fmtValue(ch)
+        out.pct = i !== 0 ? fmtValue((ch / i) * 100) : ''
       }
       break
 
     case 'change+pct':
       if (p !== null && c !== null && p !== 0) {
         const ini = (c / p) * 100
-        out.initial = fmt(ini)
-        out.final = fmt(ini + sign * c)
+        out.initial = fmtValue(ini)
+        out.final = fmtValue(ini + sign * c)
       }
       break
 
-    case 'final+pct':
-      if (p !== null && f !== null) {
-        const ini = f / (1 + (sign * p) / 100)
+    case 'final+pct': {
+      const denom = 1 + (sign * p) / 100
+      if (p !== null && f !== null && denom !== 0) {
+        const ini = f / denom
         const ch = sign > 0 ? f - ini : ini - f
-        out.initial = fmt(ini)
-        out.change = fmt(ch)
+        out.initial = fmtValue(ini)
+        out.change = fmtValue(ch)
       }
       break
+    }
 
     case 'change+final':
       if (c !== null && f !== null) {
         const ini = sign > 0 ? f - c : f + c
-        out.initial = fmt(ini)
-        out.pct = ini !== 0 ? fmt((c / ini) * 100) : ''
+        out.initial = fmtValue(ini)
+        out.pct = ini !== 0 ? fmtValue((c / ini) * 100) : ''
       }
       break
 
@@ -92,12 +109,17 @@ function computeDerived(srcA, srcB, vals, sign) {
 }
 
 const CalcPercentage = () => {
-  const [mode, setMode] = useState('increase')
-  const [vals, setVals] = useState({ initial: '', pct: '', change: '', final: '' })
-  const [sources, setSources] = useState(['initial', 'pct'])
-  const [refVal, setRefVal] = useState('')
+  const [stored] = useState(() => calcPercentageStorage.get() || {})
+  const [mode, setMode] = useState(stored.mode || 'increase')
+  const [vals, setVals] = useState(stored.vals || { initial: '', pct: '', change: '', final: '' })
+  const [sources, setSources] = useState(stored.sources || ['initial', 'pct'])
+  const [refVal, setRefVal] = useState(stored.refVal || '')
 
   const sign = mode === 'increase' ? 1 : -1
+
+  useEffect(() => {
+    calcPercentageStorage.set({ mode, vals, sources, refVal })
+  }, [mode, vals, sources, refVal])
 
   const handleChange = useCallback(
     (field, raw) => {
@@ -115,11 +137,12 @@ const CalcPercentage = () => {
         const [srcA, srcB] = nextSources
         const derived = srcA && srcB ? computeDerived(srcA, srcB, updated, sign) : {}
 
-        // Only update derived fields (not the 2 source fields)
+        // Derived fields always reflect the latest computation — clear them
+        // instead of leaving a stale value when they can no longer be derived
         const result = { ...updated }
         for (const k of FIELDS) {
-          if (k !== srcA && k !== srcB && derived[k] !== undefined) {
-            result[k] = derived[k]
+          if (k !== srcA && k !== srcB) {
+            result[k] = derived[k] !== undefined ? derived[k] : ''
           }
         }
         return result
@@ -137,8 +160,8 @@ const CalcPercentage = () => {
         const derived = srcA && srcB ? computeDerived(srcA, srcB, prev, newSign) : {}
         const result = { ...prev }
         for (const k of FIELDS) {
-          if (k !== srcA && k !== srcB && derived[k] !== undefined) {
-            result[k] = derived[k]
+          if (k !== srcA && k !== srcB) {
+            result[k] = derived[k] !== undefined ? derived[k] : ''
           }
         }
         return result
@@ -218,7 +241,8 @@ const CalcPercentage = () => {
             {mode === 'increase' ? '▲' : '▼'}
           </span>
           <span className="cp-summary__text">
-            {vals.initial} {mode === 'increase' ? '+' : '−'} {vals.pct}% = <strong>{vals.final}</strong>
+            {fmtDisplay(parse(vals.initial))} {mode === 'increase' ? '+' : '−'}{' '}
+            {fmtDisplay(parse(vals.pct))}% = <strong>{fmtDisplay(parse(vals.final))}</strong>
           </span>
         </div>
       )}
@@ -239,8 +263,8 @@ const CalcPercentage = () => {
               <span className={`cp-ref__arrow${mode === 'increase' ? ' cp-ref__arrow--up' : ' cp-ref__arrow--down'}`}>
                 {mode === 'increase' ? '▲' : '▼'}
               </span>
-              <span className="cp-ref__change">{mode === 'increase' ? '+' : '−'}{fmt(refChange)}</span>
-              <span className="cp-ref__final">{fmt(refResult)}</span>
+              <span className="cp-ref__change">{mode === 'increase' ? '+' : '−'}{fmtDisplay(refChange)}</span>
+              <span className="cp-ref__final">{fmtDisplay(refResult)}</span>
             </div>
           )}
         </div>

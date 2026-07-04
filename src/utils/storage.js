@@ -20,6 +20,8 @@ export const STORAGE_KEYS = {
   LANG: 'lang',
   // Editor preferences
   PICTURES_ZOOM: 'pictures-zoom',
+  // Finance tools
+  CALC_PERCENTAGE_STATE: 'calc-percentage-state',
 }
 
 // ── Auth session ───────────────────────────────────────────────────────────────
@@ -85,4 +87,17 @@ export const prefStorage = {
 
   getPicturesZoom: () => parseFloat(localStorage.getItem(STORAGE_KEYS.PICTURES_ZOOM)) || 1,
   setPicturesZoom: (v) => localStorage.setItem(STORAGE_KEYS.PICTURES_ZOOM, String(v)),
+}
+
+// ── Finance tools ───────────────────────────────────────────────────────────────
+
+export const calcPercentageStorage = {
+  get: () => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.CALC_PERCENTAGE_STATE))
+    } catch {
+      return null
+    }
+  },
+  set: (state) => localStorage.setItem(STORAGE_KEYS.CALC_PERCENTAGE_STATE, JSON.stringify(state)),
 }
