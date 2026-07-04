@@ -183,6 +183,30 @@ const contractSlice = createSlice({
         state.saving = false
         state.isError = true
       })
+
+      // Payments
+      .addCase(actions.updatePaymentsRequest, (state) => {
+        state.saving = true
+      })
+      .addCase(actions.successRequestUpdatePayments, (state, { payload }) => {
+        if (state.current?.id === payload.id) {
+          state.current = {
+            ...state.current,
+            rental: { ...(state.current.rental ?? {}), payments: payload.payments },
+          }
+        }
+        if (state.summary) {
+          state.summary = state.summary.map((r) =>
+            r.id === payload.id ? { ...r, payments: payload.payments } : r,
+          )
+        }
+        state.saving = false
+      })
+      .addCase(actions.errorRequestUpdatePayments, (state, { payload }) => {
+        state.error = payload
+        state.saving = false
+        state.isError = true
+      })
   },
 })
 

@@ -105,6 +105,19 @@ function* updateCanonHistory({ payload }) {
   }
 }
 
+function* updatePayments({ payload }) {
+  try {
+    yield call(service.updatePayments, payload.id, payload.payments)
+    yield put(
+      actions.successRequestUpdatePayments({ id: payload.id, payments: payload.payments }),
+    )
+    yield put(push({ type: 'success', message: 'Pago guardado.' }))
+  } catch (e) {
+    yield put(actions.errorRequestUpdatePayments(e.message))
+    yield put(push({ type: 'error', message: e.message }))
+  }
+}
+
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchContracts),
@@ -116,5 +129,6 @@ export default function* rootSagas() {
     takeLatest(actions.archiveRequest, archiveContract),
     takeLatest(actions.fetchSummaryRequest, fetchContractsSummary),
     takeLatest(actions.updateCanonHistoryRequest, updateCanonHistory),
+    takeLatest(actions.updatePaymentsRequest, updatePayments),
   ])
 }

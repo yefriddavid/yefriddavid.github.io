@@ -7,6 +7,7 @@ import * as contractActions from 'src/actions/contratos/contractActions'
 import * as moduleNoteActions from 'src/actions/contratos/contractModuleNoteActions'
 import ModuleNotes from './ModuleNotes'
 import CanonHistoryPanel from '../CanonHistoryPanel'
+import PaymentsPanel from '../PaymentsPanel'
 import './ContractsList.scss'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ export default function ContractsList() {
   const notesSaving = useSelector((s) => s.contratoModuleNote.saving)
   const [showArchived, setShowArchived] = useState(false)
   const [historyModal, setHistoryModal] = useState(null)
+  const [paymentsModal, setPaymentsModal] = useState(null)
 
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
@@ -227,6 +229,17 @@ export default function ContractsList() {
                 baseValue: d.rental_value ?? 0,
               }),
           },
+          {
+            label: '💵',
+            color: 'primary',
+            title: 'Pagos',
+            onClick: () =>
+              setPaymentsModal({
+                id: d.id,
+                name: d.name,
+                payments: d.payments ?? [],
+              }),
+          },
           { label: '✏️', color: 'primary', title: 'Abrir en editor', onClick: () => handleOpen(d.id) },
         ]}
       />
@@ -264,6 +277,36 @@ export default function ContractsList() {
                     contractActions.updateCanonHistoryRequest({ id: historyModal.id, history }),
                   )
                   setHistoryModal((m) => (m ? { ...m, history } : null))
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {paymentsModal && (
+        <div className="cl-history-overlay" onClick={() => setPaymentsModal(null)}>
+          <div className="cl-history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="cl-history-modal__header">
+              <div>
+                <div className="cl-history-modal__title">Pagos del canon</div>
+                <div className="cl-history-modal__subtitle">{paymentsModal.name}</div>
+              </div>
+              <button
+                type="button"
+                className="cl-history-modal__close"
+                onClick={() => setPaymentsModal(null)}
+              >×</button>
+            </div>
+            <div className="cl-history-modal__body">
+              <PaymentsPanel
+                payments={paymentsModal.payments}
+                saving={loading}
+                onSave={(payments) => {
+                  dispatch(
+                    contractActions.updatePaymentsRequest({ id: paymentsModal.id, payments }),
+                  )
+                  setPaymentsModal((m) => (m ? { ...m, payments } : null))
                 }}
               />
             </div>

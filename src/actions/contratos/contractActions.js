@@ -47,3 +47,9 @@ export const successRequestUpdateCanonHistory = createAction(
 export const errorRequestUpdateCanonHistory = createAction(
   'request update contrato canon history error',
 )
+
+export const updatePaymentsRequest = createAction('request update contrato payments')
+export const successRequestUpdatePayments = createAction(
+  'request update contrato payments success',
+)
+export const errorRequestUpdatePayments = createAction('request update contrato payments error')
