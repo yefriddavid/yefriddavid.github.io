@@ -921,11 +921,47 @@
 
 // ── Table editor ──────────────────────────────────────────────────────────────
 
-.note-table-editor {
+.note-editor__table-mode {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+}
+
+.note-editor__table-body {
+  flex: 1 1 40%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+  border-top: 1px solid var(--cui-border-color, #dee2e6);
+
+  .ql-toolbar {
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    flex-shrink: 0;
+    background: var(--cui-body-bg, #fff);
+  }
+
+  .ql-container {
+    flex: 1;
+    overflow-y: auto;
+    border: none;
+    font-size: var(--fs-md);
+  }
+
+  .ql-editor {
+    min-height: 90px;
+    color: var(--cui-body-color, #333);
+  }
+}
+
+.note-table-editor {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
   padding: 14px 18px;
   overflow: hidden;
 
@@ -1181,4 +1217,10 @@
   overflow: auto;
 
   .note-table { font-size: var(--fs-base); }
+}
+
+.note-view__table-body {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cui-border-color, #dee2e6);
 }

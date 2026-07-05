@@ -986,11 +986,13 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
     note?.mode === 'checklist' ? parseChecklist(note?.content) : [{ text: '', done: false }],
   )
 
+  const [tableBody, setTableBody] = useState(() => (note?.mode === 'table' ? note?.body || '' : ''))
+
   const [showSource, setShowSource] = useState(false)
   const [sourceValue, setSourceValue] = useState('')
 
   const getRawSource = () => {
-    if (mode === 'table') return JSON.stringify(tableRows, null, 2)
+    if (mode === 'table') return JSON.stringify({ rows: tableRows, body: tableBody }, null, 2)
     if (mode === 'checklist') return JSON.stringify(checklistItems, null, 2)
     return formatHtml(content)
   }
@@ -1000,8 +1002,11 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
       setSourceValue(getRawSource())
     } else {
       try {
-        if (mode === 'table') setTableRows(JSON.parse(sourceValue))
-        else if (mode === 'checklist') setChecklistItems(JSON.parse(sourceValue))
+        if (mode === 'table') {
+          const parsed = JSON.parse(sourceValue)
+          setTableRows(parsed.rows ?? parsed)
+          setTableBody(parsed.body ?? '')
+        } else if (mode === 'checklist') setChecklistItems(JSON.parse(sourceValue))
         else setValue('content', sourceValue)
       } catch {}
     }
@@ -1011,12 +1016,13 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
   const handleModeSwitch = (newMode) => {
     if (newMode === mode) return
     setValue('mode', newMode)
-    if (newMode === 'table')
+    if (newMode === 'table') {
       setTableRows([
         ['', ''],
         ['', ''],
       ])
-    else if (newMode === 'checklist') setChecklistItems([{ text: '', done: false }])
+      setTableBody('')
+    } else if (newMode === 'checklist') setChecklistItems([{ text: '', done: false }])
     else setValue('content', '')
   }
 
@@ -1024,17 +1030,18 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
     data = { ...data, category: data.category?.trim() || DEFAULT_NOTE_CATEGORY }
     if (showSource) {
       try {
-        const parsed =
-          data.mode === 'table' || data.mode === 'checklist' ? JSON.parse(sourceValue) : null
-        return {
-          ...data,
-          content:
-            data.mode === 'table'
-              ? JSON.stringify(parsed)
-              : data.mode === 'checklist'
-                ? JSON.stringify(parsed)
-                : sourceValue,
+        if (data.mode === 'table') {
+          const parsed = JSON.parse(sourceValue)
+          return {
+            ...data,
+            content: JSON.stringify(parsed.rows ?? parsed),
+            body: parsed.body ?? '',
+          }
         }
+        if (data.mode === 'checklist') {
+          return { ...data, content: JSON.stringify(JSON.parse(sourceValue)) }
+        }
+        return { ...data, content: sourceValue }
       } catch {
         // malformed source — fall through to normal path
       }
@@ -1047,6 +1054,7 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
           : data.mode === 'checklist'
             ? serializeChecklist(checklistItems)
             : data.content,
+      ...(data.mode === 'table' ? { body: tableBody } : {}),
     }
   }
 
@@ -1145,7 +1153,18 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
               spellCheck={false}
             />
           ) : mode === 'table' ? (
-            <TableEditor rows={tableRows} onChange={setTableRows} />
+            <div className="note-editor__table-mode">
+              <TableEditor rows={tableRows} onChange={setTableRows} />
+              <div className="note-editor__table-body">
+                <ReactQuill
+                  theme="snow"
+                  value={tableBody}
+                  onChange={setTableBody}
+                  modules={QUILL_MODULES}
+                  formats={QUILL_FORMATS}
+                />
+              </div>
+            </div>
           ) : mode === 'checklist' ? (
             <ChecklistEditor items={checklistItems} onChange={setChecklistItems} />
           ) : (
@@ -1253,6 +1272,12 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
                 ))}
               </div>
             )}
+            {note.body && (
+              <div
+                className="note-view__table-body ql-editor"
+                dangerouslySetInnerHTML={{ __html: note.body }}
+              />
+            )}
           </div>
         ) : note.mode === 'checklist' ? (
           <NoteChecklist
@@ -1333,6 +1358,7 @@ const Notes = () => {
         content: note.content,
         color: note.color,
         mode: note.mode,
+        ...(note.mode === 'table' ? { body: note.body } : {}),
       }),
     )
   }

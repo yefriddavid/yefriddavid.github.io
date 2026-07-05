@@ -117,13 +117,21 @@ const NoteFullPage = () => {
 
       <div className="nfp__content">
         {note.mode === 'table' ? (
-          <NoteTableFull
-            note={note}
-            onToggleCheck={handleToggleCheck}
-            onCellChange={handleCellChange}
-            onAddRow={handleAddRow}
-            onRemoveRow={handleRemoveRow}
-          />
+          <>
+            <NoteTableFull
+              note={note}
+              onToggleCheck={handleToggleCheck}
+              onCellChange={handleCellChange}
+              onAddRow={handleAddRow}
+              onRemoveRow={handleRemoveRow}
+            />
+            {note.body && (
+              <div
+                className="nfp__table-body ql-editor"
+                dangerouslySetInnerHTML={{ __html: note.body }}
+              />
+            )}
+          </>
         ) : note.mode === 'checklist' ? (
           <NoteChecklistFull
             note={note}

@@ -146,6 +146,15 @@
     }
   }
 
+  &__table-body {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--cui-border-color, #dee2e6);
+    font-size: var(--fs-md);
+    line-height: 1.7;
+    max-width: 800px;
+  }
+
   &__table-add-row {
     display: flex;
     align-items: center;
