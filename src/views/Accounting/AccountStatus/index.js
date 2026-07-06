@@ -247,6 +247,10 @@ export default function AccountStatus() {
     dispatch(pushNotification({ type: 'success', message: 'Transacción actualizada.' }))
   }
 
+  const handleToggleAdHocPaid = (transaction) => {
+    handleUpdate({ id: transaction.id, paid: transaction.paid === false })
+  }
+
   const handleDelete = (transaction) => {
     if (window.confirm(`¿Eliminar este pago de ${fmt(transaction.amount)}?`)) {
       dispatch(transactionActions.deleteRequest({ id: transaction.id }))
@@ -507,6 +511,7 @@ export default function AccountStatus() {
           onEdit={setEditingAdHoc}
           onDelete={handleDelete}
           onViewAttachment={(src, filename) => setViewer({ src, filename })}
+          onTogglePaid={handleToggleAdHocPaid}
         />
       </div>
 

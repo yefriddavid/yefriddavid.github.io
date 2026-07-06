@@ -8,6 +8,7 @@ export default function AdHocSection({
   onEdit,
   onDelete,
   onViewAttachment,
+  onTogglePaid,
 }) {
   const adHocFiltered = adHocTransactions.filter(
     (t) => t.type === (typeTab === 'Incoming' ? 'income' : 'expense'),
@@ -69,9 +70,15 @@ export default function AdHocSection({
       </div>
       {adHocFiltered.map((t) => {
         const isIncome = t.type === 'income'
-        const accentColor = isIncome ? '#2f9e44' : '#e03131'
-        const accentBg = isIncome ? '#ebfbee' : '#fff5f5'
-        const accentBorder = isIncome ? '#8ce99a' : '#ffc9c9'
+        const isPaid = t.paid !== false
+        const accentColor = isPaid ? '#2f9e44' : '#e03131'
+        const accentBg = isPaid ? '#ebfbee' : '#fff5f5'
+        const accentBorder = isPaid ? '#8ce99a' : '#ffc9c9'
+        const attachments = t.attachments?.length
+          ? t.attachments
+          : t.attachment
+            ? [{ data: t.attachment, name: t.attachmentName }]
+            : []
         return (
           <div
             key={t.id}
@@ -147,7 +154,9 @@ export default function AdHocSection({
                   flexShrink: 0,
                 }}
               >
-                <span
+                <button
+                  onClick={() => onTogglePaid?.(t)}
+                  title={isPaid ? 'Marcar como pendiente' : 'Marcar como pagada'}
                   style={{
                     fontSize: 'var(--fs-base)',
                     fontWeight: 700,
@@ -156,14 +165,16 @@ export default function AdHocSection({
                     background: accentBg,
                     color: accentColor,
                     border: `1px solid ${accentBorder}`,
+                    cursor: onTogglePaid ? 'pointer' : 'default',
                   }}
                 >
                   {isIncome ? '+' : '−'} {fmt(t.amount)}
-                </span>
+                </button>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  {t.attachment && (
+                  {attachments.map((a, i) => (
                     <button
-                      onClick={() => onViewAttachment(t.attachment, t.attachmentName)}
+                      key={i}
+                      onClick={() => onViewAttachment(a.data, a.name)}
                       title="Ver adjunto"
                       style={{
                         background: 'none',
@@ -175,7 +186,7 @@ export default function AdHocSection({
                     >
                       📎
                     </button>
-                  )}
+                  ))}
                   <button
                     onClick={() => onEdit(t)}
                     title="Editar"

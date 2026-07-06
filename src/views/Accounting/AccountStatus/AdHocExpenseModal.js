@@ -4,6 +4,7 @@ import { ACCOUNT_CATEGORIES } from 'src/constants/cashFlow'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import { fieldLabel, fieldInput } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
+import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 
 const fieldError = (err) =>
   err ? (
@@ -39,47 +40,65 @@ export default function AdHocExpenseModal({
       category: initialData?.category ?? '',
       note: initialData?.note ?? '',
       type: initialData?.type ?? (defaultType === 'Incoming' ? 'income' : 'expense'),
+      paid: initialData?.paid ?? true,
     },
   })
 
   const type = watch('type')
+  const paid = watch('paid')
   const description = watch('description')
   const amount = watch('amount')
 
-  const [attachment, setAttachment] = useState(initialData?.attachment ?? null)
-  const [attachName, setAttachName] = useState(initialData?.attachmentName ?? '')
+  const initialAttachments = initialData?.attachments?.length
+    ? initialData.attachments
+    : initialData?.attachment
+      ? [{ data: initialData.attachment, name: initialData.attachmentName || 'Adjunto' }]
+      : []
+
+  const [attachments, setAttachments] = useState(initialAttachments)
+  const [previewing, setPreviewing] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [fileError, setFileError] = useState('')
   const fileRef = useRef()
 
   const handleFile = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
     setFileError('')
     setProcessing(true)
     try {
-      const data = await uploadImage(file)
-      setAttachment(data)
-      setAttachName(file.name)
+      const uploaded = []
+      for (const file of files) {
+        const data = await uploadImage(file)
+        uploaded.push({ data, name: file.name })
+      }
+      setAttachments((prev) => [...prev, ...uploaded])
     } catch (err) {
       setFileError(`Error procesando archivo: ${err.message}`)
     } finally {
       setProcessing(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
   }
 
-  const onSubmit = ({ description, amount, date, category, note, type: t }) => {
+  const removeAttachment = (index) => setAttachments((prev) => prev.filter((_, i) => i !== index))
+
+  const onSubmit = ({ description, amount, date, category, note, type: t, paid: p }) => {
     const payload = {
       ...(isEditing && { id: initialData.id }),
       type: t,
+      paid: p,
       category: category || '',
       description: description.trim(),
       amount: Number(String(amount).replace(/\D/g, '')),
       date,
       accountMonth: isEditing ? initialData.accountMonth : monthStr,
       note: note.trim() || null,
-      attachment: attachment || null,
-      attachmentName: attachment ? attachName : null,
+      // legacy single-attachment fields kept in sync (first attachment) so other
+      // views reading account.attachment (e.g. Transactions grid) keep working
+      attachment: attachments[0]?.data || null,
+      attachmentName: attachments[0]?.name || null,
+      attachments: attachments.length ? attachments : null,
     }
     onSave(payload)
   }
@@ -157,6 +176,34 @@ export default function AdHocExpenseModal({
           ))}
         </div>
 
+        {/* Paid toggle */}
+        <label style={fieldLabel}>ESTADO</label>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {[
+            { key: true, label: 'Pagada' },
+            { key: false, label: 'Pendiente' },
+          ].map((opt) => (
+            <button
+              key={String(opt.key)}
+              type="button"
+              onClick={() => setValue('paid', opt.key)}
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                border: 'none',
+                borderRadius: 10,
+                fontSize: 'var(--fs-base)',
+                fontWeight: paid === opt.key ? 700 : 500,
+                cursor: 'pointer',
+                background: paid === opt.key ? (opt.key ? '#2f9e44' : '#e03131') : '#e9ecef',
+                color: paid === opt.key ? '#fff' : '#6c757d',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         {/* Description */}
         <label style={fieldLabel}>DESCRIPCIÓN *</label>
         <input
@@ -226,37 +273,84 @@ export default function AdHocExpenseModal({
           {...register('note')}
         />
 
-        {/* Attachment */}
-        <label style={fieldLabel}>ADJUNTO (opcional)</label>
+        {/* Attachments */}
+        <label style={fieldLabel}>ADJUNTOS (opcional)</label>
         <input
           ref={fileRef}
           type="file"
           accept="image/*,application/pdf"
+          multiple
           style={{ display: 'none' }}
           onChange={handleFile}
         />
-        {!attachment && !processing && (
-          <button
-            onClick={() => fileRef.current?.click()}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: 10,
-              marginBottom: 8,
-              border: '2px dashed #dee2e6',
-              background: '#fafafa',
-              fontSize: 'var(--fs-base)',
-              color: '#6c757d',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 'var(--fs-2xl)' }}>📎</span> Adjuntar imagen o PDF
-          </button>
+
+        {attachments.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+            {attachments.map((a, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  border: '1px solid #dee2e6',
+                  borderRadius: 10,
+                  padding: '8px 10px',
+                }}
+              >
+                <span style={{ fontSize: 'var(--fs-lg)' }}>📎</span>
+                <span
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    fontSize: 'var(--fs-sm)',
+                    color: '#495057',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {a.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPreviewing(a)}
+                  title="Ver adjunto"
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: 6,
+                    border: 'none',
+                    background: '#e9ecef',
+                    color: '#495057',
+                    fontSize: 'var(--fs-xs)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  👁
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(i)}
+                  title="Quitar adjunto"
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: 6,
+                    border: 'none',
+                    background: 'rgba(220,53,69,0.1)',
+                    color: '#e03131',
+                    fontSize: 'var(--fs-xs)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         )}
+
         {processing && (
           <div
             style={{
@@ -274,57 +368,37 @@ export default function AdHocExpenseModal({
         {fileError && (
           <div style={{ fontSize: 'var(--fs-sm)', color: '#e03131', marginBottom: 8 }}>{fileError}</div>
         )}
-        {attachment && (
-          <div style={{ marginBottom: 20, position: 'relative' }}>
-            <img
-              src={attachment}
-              alt="adjunto"
-              style={{
-                width: '100%',
-                borderRadius: 10,
-                border: '1px solid #dee2e6',
-                display: 'block',
-              }}
-            />
-            <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
-              <button
-                onClick={() => fileRef.current?.click()}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(0,0,0,0.55)',
-                  color: '#fff',
-                  fontSize: 'var(--fs-xs)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Cambiar
-              </button>
-              <button
-                onClick={() => {
-                  setAttachment(null)
-                  setAttachName('')
-                }}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'rgba(220,53,69,0.85)',
-                  color: '#fff',
-                  fontSize: 'var(--fs-xs)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Quitar
-              </button>
-            </div>
-            <div style={{ fontSize: 'var(--fs-xs)', color: '#6c757d', marginTop: 4, paddingLeft: 2 }}>
-              {attachName}
-            </div>
-          </div>
+
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={processing}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: 10,
+            marginBottom: 20,
+            border: '2px dashed #dee2e6',
+            background: '#fafafa',
+            fontSize: 'var(--fs-base)',
+            color: '#6c757d',
+            cursor: processing ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 'var(--fs-2xl)' }}>📎</span>
+          {attachments.length ? 'Adjuntar otro' : 'Adjuntar imagen o PDF'}
+        </button>
+
+        {previewing && (
+          <AttachmentViewer
+            src={previewing.data}
+            filename={previewing.name}
+            onClose={() => setPreviewing(null)}
+          />
         )}
 
         {/* Buttons */}

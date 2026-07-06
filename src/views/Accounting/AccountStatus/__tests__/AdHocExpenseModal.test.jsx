@@ -224,4 +224,145 @@ describe('AdHocExpenseModal', () => {
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ accountMonth: '2024-04' }))
     })
   })
+
+  describe('paid state', () => {
+    it('defaults to "Pagada" for a new entry', () => {
+      renderModal()
+      expect(screen.getByText('Pagada').style.fontWeight).toBe('700')
+    })
+
+    it('submits paid:true by default', async () => {
+      const onSave = vi.fn()
+      renderModal({ onSave })
+      fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
+        target: { value: 'Mercado' },
+      })
+      fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '100000' } })
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: true }))
+    })
+
+    it('clicking Pendiente switches state and submits paid:false', async () => {
+      const onSave = vi.fn()
+      renderModal({ onSave })
+      fireEvent.click(screen.getByText('Pendiente'))
+      expect(screen.getByText('Pendiente').style.fontWeight).toBe('700')
+      fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
+        target: { value: 'Mercado' },
+      })
+      fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '100000' } })
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: false }))
+    })
+
+    it('respects initialData.paid = false in edit mode', async () => {
+      const onSave = vi.fn()
+      renderModal({
+        onSave,
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+          paid: false,
+        },
+      })
+      expect(screen.getByText('Pendiente').style.fontWeight).toBe('700')
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: false }))
+    })
+  })
+
+  describe('attachments', () => {
+    it('shows "Adjuntar imagen o PDF" when there are no attachments yet', () => {
+      renderModal()
+      expect(screen.getByText('Adjuntar imagen o PDF')).toBeTruthy()
+    })
+
+    it('normalizes a legacy single attachment into the list', () => {
+      renderModal({
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+          attachment: 'data:img1',
+          attachmentName: 'recibo.png',
+        },
+      })
+      expect(screen.getByText('recibo.png')).toBeTruthy()
+      expect(screen.getByText('Adjuntar otro')).toBeTruthy()
+    })
+
+    it('renders every item from an existing attachments array', () => {
+      renderModal({
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+          attachments: [
+            { data: 'data:img1', name: 'a.png' },
+            { data: 'data:img2', name: 'b.png' },
+          ],
+        },
+      })
+      expect(screen.getByText('a.png')).toBeTruthy()
+      expect(screen.getByText('b.png')).toBeTruthy()
+    })
+
+    it('removing an attachment drops it from the payload and reverts the button label', async () => {
+      const onSave = vi.fn()
+      renderModal({
+        onSave,
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+          attachments: [{ data: 'data:img1', name: 'a.png' }],
+        },
+      })
+      fireEvent.click(screen.getByTitle('Quitar adjunto'))
+      expect(screen.queryByText('a.png')).toBeNull()
+      expect(screen.getByText('Adjuntar imagen o PDF')).toBeTruthy()
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ attachment: null, attachmentName: null, attachments: null }),
+      )
+    })
+
+    it('payload keeps legacy attachment/attachmentName in sync with the first item', async () => {
+      const onSave = vi.fn()
+      renderModal({
+        onSave,
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+          attachments: [
+            { data: 'data:img1', name: 'a.png' },
+            { data: 'data:img2', name: 'b.png' },
+          ],
+        },
+      })
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachment: 'data:img1',
+          attachmentName: 'a.png',
+          attachments: [
+            { data: 'data:img1', name: 'a.png' },
+            { data: 'data:img2', name: 'b.png' },
+          ],
+        }),
+      )
+    })
+  })
 })

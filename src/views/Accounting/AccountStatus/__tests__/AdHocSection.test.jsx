@@ -142,6 +142,23 @@ describe('AdHocSection', () => {
     expect(onDelete).toHaveBeenCalledWith(expense)
   })
 
+  it('amount button shows "Marcar como pendiente" when paid is undefined (defaults to paid)', () => {
+    renderSection({ adHocTransactions: [expense], typeTab: 'Outcoming' })
+    expect(screen.getByTitle('Marcar como pendiente')).toBeTruthy()
+  })
+
+  it('amount button shows "Marcar como pagada" when paid is explicitly false', () => {
+    renderSection({ adHocTransactions: [{ ...expense, paid: false }], typeTab: 'Outcoming' })
+    expect(screen.getByTitle('Marcar como pagada')).toBeTruthy()
+  })
+
+  it('calls onTogglePaid with the transaction when the amount button is clicked', () => {
+    const onTogglePaid = vi.fn()
+    renderSection({ adHocTransactions: [expense], typeTab: 'Outcoming', onTogglePaid })
+    fireEvent.click(screen.getByTitle('Marcar como pendiente'))
+    expect(onTogglePaid).toHaveBeenCalledWith(expense)
+  })
+
   it('shows attachment button when transaction has attachment', () => {
     const withAttach = { ...expense, attachment: 'data:img', attachmentName: 'rec.png' }
     renderSection({ adHocTransactions: [withAttach], typeTab: 'Outcoming' })
@@ -158,6 +175,36 @@ describe('AdHocSection', () => {
     })
     fireEvent.click(screen.getByTitle('Ver adjunto'))
     expect(onViewAttachment).toHaveBeenCalledWith('data:img', 'rec.png')
+  })
+
+  it('shows one attachment button per item when transaction has multiple attachments', () => {
+    const withAttach = {
+      ...expense,
+      attachments: [
+        { data: 'data:img1', name: 'a.png' },
+        { data: 'data:img2', name: 'b.png' },
+      ],
+    }
+    renderSection({ adHocTransactions: [withAttach], typeTab: 'Outcoming' })
+    expect(screen.getAllByTitle('Ver adjunto')).toHaveLength(2)
+  })
+
+  it('calls onViewAttachment with the right item when multiple attachments exist', () => {
+    const onViewAttachment = vi.fn()
+    const withAttach = {
+      ...expense,
+      attachments: [
+        { data: 'data:img1', name: 'a.png' },
+        { data: 'data:img2', name: 'b.png' },
+      ],
+    }
+    renderSection({
+      adHocTransactions: [withAttach],
+      typeTab: 'Outcoming',
+      onViewAttachment,
+    })
+    fireEvent.click(screen.getAllByTitle('Ver adjunto')[1])
+    expect(onViewAttachment).toHaveBeenCalledWith('data:img2', 'b.png')
   })
 
   it('renders multiple transactions', () => {
