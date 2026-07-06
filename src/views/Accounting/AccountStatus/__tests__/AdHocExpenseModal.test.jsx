@@ -226,33 +226,33 @@ describe('AdHocExpenseModal', () => {
   })
 
   describe('paid state', () => {
-    it('defaults to "Pagada" for a new entry', () => {
+    it('defaults to "Pendiente" for a new entry', () => {
       renderModal()
-      expect(screen.getByText('Pagada').style.fontWeight).toBe('700')
-    })
-
-    it('submits paid:true by default', async () => {
-      const onSave = vi.fn()
-      renderModal({ onSave })
-      fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
-        target: { value: 'Mercado' },
-      })
-      fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '100000' } })
-      await act(async () => fireEvent.click(screen.getByText('Guardar')))
-      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: true }))
-    })
-
-    it('clicking Pendiente switches state and submits paid:false', async () => {
-      const onSave = vi.fn()
-      renderModal({ onSave })
-      fireEvent.click(screen.getByText('Pendiente'))
       expect(screen.getByText('Pendiente').style.fontWeight).toBe('700')
+    })
+
+    it('submits paid:false by default', async () => {
+      const onSave = vi.fn()
+      renderModal({ onSave })
       fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
         target: { value: 'Mercado' },
       })
       fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '100000' } })
       await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: false }))
+    })
+
+    it('clicking Pagada switches state and submits paid:true', async () => {
+      const onSave = vi.fn()
+      renderModal({ onSave })
+      fireEvent.click(screen.getByText('Pagada'))
+      expect(screen.getByText('Pagada').style.fontWeight).toBe('700')
+      fireEvent.change(screen.getByPlaceholderText('Ej: Reparación, mercado…'), {
+        target: { value: 'Mercado' },
+      })
+      fireEvent.change(screen.getByPlaceholderText('0'), { target: { value: '100000' } })
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: true }))
     })
 
     it('respects initialData.paid = false in edit mode', async () => {
@@ -271,6 +271,23 @@ describe('AdHocExpenseModal', () => {
       expect(screen.getByText('Pendiente').style.fontWeight).toBe('700')
       await act(async () => fireEvent.click(screen.getByText('Guardar')))
       expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: false }))
+    })
+
+    it('defaults to "Pagada" in edit mode when initialData has no paid field (legacy record)', async () => {
+      const onSave = vi.fn()
+      renderModal({
+        onSave,
+        initialData: {
+          id: 'tx1',
+          description: 'Arriendo',
+          amount: 900000,
+          date: '2024-04-01',
+          accountMonth: '2024-04',
+        },
+      })
+      expect(screen.getByText('Pagada').style.fontWeight).toBe('700')
+      await act(async () => fireEvent.click(screen.getByText('Guardar')))
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ paid: true }))
     })
   })
 

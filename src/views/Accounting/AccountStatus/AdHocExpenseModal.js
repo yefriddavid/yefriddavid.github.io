@@ -40,7 +40,7 @@ export default function AdHocExpenseModal({
       category: initialData?.category ?? '',
       note: initialData?.note ?? '',
       type: initialData?.type ?? (defaultType === 'Incoming' ? 'income' : 'expense'),
-      paid: initialData?.paid ?? true,
+      paid: initialData ? (initialData?.paid ?? true) : false,
     },
   })
 
