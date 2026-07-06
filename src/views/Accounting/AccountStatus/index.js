@@ -537,6 +537,8 @@ export default function AccountStatus() {
       {paying && (
         <PayModal
           account={paying}
+          payments={masterPaymentsMap[paying.id] ?? []}
+          cumulativePaid={cumulativePaymentsMap[paying.id] ?? 0}
           year={year}
           month={month}
           saving={saving}

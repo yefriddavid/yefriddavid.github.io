@@ -75,6 +75,17 @@ describe('PayModal', () => {
     expect(screen.getByDisplayValue('800000')).toBeTruthy()
   })
 
+  it('pre-fills amount with the remaining balance when partial payments already exist', () => {
+    renderModal({ payments: [{ amount: 300000 }, { amount: 200000 }] })
+    expect(screen.getByDisplayValue('300000')).toBeTruthy()
+    expect(screen.queryByDisplayValue('800000')).toBeNull()
+  })
+
+  it('falls back to account.defaultValue when payments fully cover it', () => {
+    renderModal({ payments: [{ amount: 800000 }] })
+    expect(screen.getByDisplayValue('800000')).toBeTruthy()
+  })
+
   it('pre-fills date with computed default (clamped to maxDatePay)', () => {
     renderModal()
     expect(screen.getByDisplayValue('2024-04-05')).toBeTruthy()

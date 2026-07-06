@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { fieldLabel, fieldInput, fmt } from './helpers'
+import { fieldLabel, fieldInput, fmt, getStatus } from './helpers'
 import FileUploadField from 'src/components/shared/FileUploadField'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -11,12 +11,28 @@ const fieldError = (err) =>
     </span>
   ) : null
 
-export default function PayModal({ account, year, month, saving, onSave, onClose }) {
+export default function PayModal({
+  account,
+  payments = [],
+  cumulativePaid = 0,
+  year,
+  month,
+  saving,
+  onSave,
+  onClose,
+}) {
   const defaultDate = (() => {
     const lastDay = new Date(year, month, 0).getDate()
     const day = Math.min(account.maxDatePay || 15, lastDay)
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   })()
+
+  const isDebt = account.targetAmount > 0
+  const monthStr = `${year}-${String(month).padStart(2, '0')}`
+  const status = getStatus(account, payments, monthStr, isDebt ? cumulativePaid : null)
+  const pendingAmount = isDebt
+    ? status.remaining
+    : Math.max((account.defaultValue || 0) - (status.paid || 0), 0)
 
   const {
     register,
@@ -25,7 +41,7 @@ export default function PayModal({ account, year, month, saving, onSave, onClose
     formState: { errors },
   } = useForm({
     defaultValues: {
-      amount: account.defaultValue || '',
+      amount: pendingAmount > 0 ? pendingAmount : account.defaultValue || '',
       date: defaultDate,
       note: '',
     },
