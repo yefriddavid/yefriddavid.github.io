@@ -16,6 +16,17 @@ const SHORTCUTS = [
     shadow: 'rgba(15,118,110,0.18)',
   },
   {
+    key: 'notes',
+    label: 'Notas',
+    description: 'Apuntes y recordatorios',
+    path: '/miscelanea/notes',
+    icon: '📝',
+    color: '#be185d',
+    bg: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)',
+    border: '#f9a8d4',
+    shadow: 'rgba(190,24,93,0.18)',
+  },
+  {
     key: 'account-status',
     label: 'Estado de Cuentas',
     description: 'Saldos y comprobantes',
