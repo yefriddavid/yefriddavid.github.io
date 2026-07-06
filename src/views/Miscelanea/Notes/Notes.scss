@@ -3,6 +3,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 8px;
     margin-bottom: 12px;
   }
 
@@ -10,6 +12,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
   }
 
   &__help-btn {
@@ -90,6 +93,23 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 576px) {
+    &__header-left,
+    &__header-actions {
+      width: 100%;
+    }
+
+    &__header-actions {
+      justify-content: flex-start;
+    }
+
+    &__new-btn {
+      flex: 1;
+      justify-content: center;
+    }
   }
 
   &__group-btn {
@@ -244,15 +264,44 @@
     margin-bottom: 28px;
   }
 
+  &__group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+  }
+
   &__group-title {
     font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--cui-secondary-color, #888);
-    margin: 0 0 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+    margin: 0;
+  }
+
+  &__group-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--cui-secondary-color, #888);
+    font-size: var(--fs-base);
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: var(--cui-tertiary-bg, #f1f3f5);
+      color: var(--cui-primary, #321fdb);
+    }
   }
 }
 

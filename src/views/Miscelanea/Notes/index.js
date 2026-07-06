@@ -1337,7 +1337,7 @@ const Notes = () => {
   }
 
   const handleSave = (form, keepOpen = false) => {
-    if (editing === 'new') {
+    if (editing === 'new' || editing?.isNew) {
       dispatch(actions.createRequest(form))
       setEditing(null)
     } else {
@@ -1575,7 +1575,19 @@ const Notes = () => {
           }
           return (
             <div key={value} className="notes__group">
-              <h6 className="notes__group-title">{label}</h6>
+              <div className="notes__group-header">
+                <h6 className="notes__group-title">{label}</h6>
+                {activeTab === 'active' && (
+                  <button
+                    type="button"
+                    className="notes__group-add-btn"
+                    onClick={() => setEditing({ isNew: true, category: value })}
+                    title={`Nueva nota en ${label}`}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -1617,12 +1629,14 @@ const Notes = () => {
 
       {editing && (
         <NoteEditorModal
-          note={editing === 'new' ? null : editing}
+          note={
+            editing === 'new' ? null : editing?.isNew ? { category: editing.category } : editing
+          }
           existingCategories={getDistinctCategories(data)}
           onSave={handleSave}
           onClose={() => setEditing(null)}
           onView={
-            editing !== 'new'
+            editing !== 'new' && !editing?.isNew
               ? () => {
                   setViewing(editing)
                   setEditing(null)
