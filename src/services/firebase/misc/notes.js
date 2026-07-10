@@ -65,13 +65,24 @@ export const createNote = async ({ title, content, color, mode, category, body }
   }
 }
 
-export const updateNote = async ({ id, title, content, color, mode, archived, category, body }) => {
+export const updateNote = async ({
+  id,
+  title,
+  content,
+  color,
+  mode,
+  archived,
+  starred,
+  category,
+  body,
+}) => {
   const patch = { updatedAt: serverTimestamp() }
   if (title !== undefined) patch.title = title
   if (content !== undefined) patch.content = content
   if (color !== undefined) patch.color = color
   if (mode !== undefined) patch.mode = mode
   if (archived !== undefined) patch.archived = archived
+  if (starred !== undefined) patch.starred = starred
   if (category !== undefined) patch.category = category
   if (body !== undefined) patch.body = body
   await firestoreCall(() => updateDoc(doc(db, COL_MISC_NOTES, id), patch))

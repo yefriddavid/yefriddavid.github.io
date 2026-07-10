@@ -15,6 +15,7 @@ import {
   cilActionUndo,
   cilWindowMaximize,
   cilFunctions,
+  cilStar,
 } from '@coreui/icons'
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import {
@@ -789,6 +790,7 @@ const NoteCard = ({
   onOpen,
   onClone,
   onArchive,
+  onToggleStar,
   dragHandleRef,
   dragListeners,
 }) => {
@@ -866,6 +868,13 @@ const NoteCard = ({
             {...dragListeners}
           >
             ⠿
+          </button>
+          <button
+            className={`note-card__btn${note.starred ? ' note-card__btn--starred' : ''}`}
+            onClick={onToggleStar}
+            title={note.starred ? 'Quitar de destacadas' : 'Destacar'}
+          >
+            <CIcon icon={cilStar} size="sm" />
           </button>
           <button className="note-card__btn" onClick={onView} title="Ver">
             <CIcon icon={cilFullscreen} size="sm" />
@@ -1350,6 +1359,10 @@ const Notes = () => {
     dispatch(actions.updateRequest({ id: note.id, archived: !note.archived }))
   }
 
+  const handleToggleStar = (note) => {
+    dispatch(actions.updateRequest({ id: note.id, starred: !note.starred }))
+  }
+
   const handleClone = (note) => {
     if (!window.confirm(`¿Clonar "${note.title || 'esta nota'}"?`)) return
     dispatch(
@@ -1377,7 +1390,11 @@ const Notes = () => {
   const allCategories = getDistinctCategories(items)
 
   const visibleItems = items
-    .filter((n) => (activeTab === 'active' ? !n.archived : n.archived === true))
+    .filter((n) => {
+      if (activeTab === 'archived') return n.archived === true
+      if (activeTab === 'starred') return n.starred === true && !n.archived
+      return !n.archived
+    })
     .filter((n) => !hiddenCategories.includes(n.category || DEFAULT_NOTE_CATEGORY))
 
   return (
@@ -1390,6 +1407,12 @@ const Notes = () => {
               onClick={() => setActiveTab('active')}
             >
               Activas
+            </button>
+            <button
+              className={`notes__tab${activeTab === 'starred' ? ' notes__tab--active' : ''}`}
+              onClick={() => setActiveTab('starred')}
+            >
+              Destacadas
             </button>
             <button
               className={`notes__tab${activeTab === 'archived' ? ' notes__tab--active' : ''}`}
@@ -1445,7 +1468,7 @@ const Notes = () => {
               </>
             )}
           </div>
-          {activeTab === 'active' && (
+          {activeTab !== 'archived' && (
             <button className="notes__new-btn" onClick={() => setEditing('new')}>
               + Nueva nota
             </button>
@@ -1526,6 +1549,8 @@ const Notes = () => {
                 + Crear primera nota
               </button>
             </>
+          ) : activeTab === 'starred' ? (
+            <p>No hay notas destacadas.</p>
           ) : (
             <p>No hay notas archivadas.</p>
           )}
@@ -1548,6 +1573,7 @@ const Notes = () => {
                   onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
                   onClone={() => handleClone(note)}
                   onArchive={() => handleArchive(note)}
+                  onToggleStar={() => handleToggleStar(note)}
                   onDelete={() => handleDelete(note)}
                 />
               ))}
@@ -1577,7 +1603,7 @@ const Notes = () => {
             <div key={value} className="notes__group">
               <div className="notes__group-header">
                 <h6 className="notes__group-title">{label}</h6>
-                {activeTab === 'active' && (
+                {activeTab !== 'archived' && (
                   <button
                     type="button"
                     className="notes__group-add-btn"
@@ -1605,6 +1631,7 @@ const Notes = () => {
                         onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
                         onClone={() => handleClone(note)}
                         onArchive={() => handleArchive(note)}
+                        onToggleStar={() => handleToggleStar(note)}
                         onDelete={() => handleDelete(note)}
                       />
                     ))}

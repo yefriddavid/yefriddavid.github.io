@@ -404,6 +404,11 @@
 
     &:hover { background: rgba(0, 0, 0, 0.12); }
     &--danger { color: #e03131; &:hover { background: rgba(224, 49, 49, 0.12); } }
+    &--starred {
+      color: #f59f00;
+      background: rgba(245, 159, 0, 0.14);
+      &:hover { background: rgba(245, 159, 0, 0.22); }
+    }
   }
 
   &__date {
