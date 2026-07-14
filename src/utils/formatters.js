@@ -44,6 +44,13 @@ export const fmtNum = (n, decimals = 2) =>
 export const fmtDate = (date) => (date ? moment(date).format('DD/MM/YYYY') : '')
 
 /**
+ * Formats a date as day + month name, no year (e.g. '1 marzo').
+ * @param {Date|string} date - The date to format.
+ * @returns {string} Formatted date string.
+ */
+export const fmtDayMonth = (date) => (date ? moment(date).format('D MMMM') : '')
+
+/**
  * Formats a number as compact COP currency (e.g. $1.2M, $850K).
  * @param {number} n - The number to format.
  * @returns {string} Formatted compact currency string.

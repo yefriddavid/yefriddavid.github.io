@@ -1,11 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { fmt, fmtDate } from 'src/utils/formatters'
+import { fmt, fmtDate, fmtDayMonth } from 'src/utils/formatters'
 import EmptyState from 'src/components/shared/EmptyState'
 
-const Row = ({ t }) => (
+const Row = ({ t, compactDate }) => (
   <tr>
-    <td>{fmtDate(t.date)}</td>
+    <td>{compactDate ? fmtDayMonth(t.date) : fmtDate(t.date)}</td>
     <td>{t.description || '—'}</td>
     <td>{t.category || 'Sin categoría'}</td>
     <td
@@ -70,7 +70,7 @@ const TransactionDetailList = ({ transactions, emptyMessage, groupBy }) => {
                   <td colSpan={4}>{g.label}</td>
                 </tr>
                 {g.items.map((t) => (
-                  <Row key={t.id} t={t} />
+                  <Row key={t.id} t={t} compactDate />
                 ))}
                 <tr className="dashboard__detail-subtotal">
                   <td colSpan={3}>Subtotal</td>
@@ -129,6 +129,7 @@ Row.propTypes = {
     amount: PropTypes.number,
     type: PropTypes.oneOf(['income', 'expense']),
   }).isRequired,
+  compactDate: PropTypes.bool,
 }
 
 TransactionDetailList.propTypes = {
