@@ -8,6 +8,7 @@ const MonthlyFlowChart = ({ labels, income, expense, onMonthClick }) => {
 
   return (
     <CChartBar
+      customTooltips={false}
       style={{ maxHeight: 300, cursor: onMonthClick ? 'pointer' : undefined }}
       data={{
         labels,
@@ -44,9 +45,7 @@ const MonthlyFlowChart = ({ labels, income, expense, onMonthClick }) => {
         responsive: true,
         plugins: {
           legend: { position: 'top', labels: { font: { size: 11 } } },
-          tooltip: {
-            callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmtCompact(ctx.raw)}` },
-          },
+          tooltip: { enabled: false },
         },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 10 } } },

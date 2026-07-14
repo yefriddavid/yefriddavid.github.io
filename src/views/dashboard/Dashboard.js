@@ -386,6 +386,7 @@ const Dashboard = () => {
                     <TransactionDetailList
                       transactions={incomeTransactions}
                       emptyMessage="Sin ingresos este año"
+                      groupBy="description"
                     />
                   )}
                 </CCardBody>

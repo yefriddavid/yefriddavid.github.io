@@ -25,12 +25,27 @@ const Row = ({ t }) => (
 const sumAmount = (rows) => rows.reduce((s, t) => s + (t.amount || 0), 0)
 const byDateDesc = (a, b) => b.date.localeCompare(a.date)
 
-const TransactionDetailList = ({ transactions, emptyMessage }) => {
+const groupByField = (rows, field) => {
+  const map = {}
+  rows.forEach((t) => {
+    const key = t[field] || 'Sin datos'
+    if (!map[key]) map[key] = []
+    map[key].push(t)
+  })
+  return Object.entries(map)
+    .map(([label, items]) => {
+      const sorted = items.sort(byDateDesc)
+      return { label, items: sorted, total: sumAmount(items), latestDate: sorted[0].date }
+    })
+    .sort((a, b) => b.latestDate.localeCompare(a.latestDate))
+}
+
+const TransactionDetailList = ({ transactions, emptyMessage, groupBy }) => {
   if (transactions.length === 0) return <EmptyState message={emptyMessage} size="sm" />
 
   const incomeRows = transactions.filter((t) => t.type === 'income').sort(byDateDesc)
   const expenseRows = transactions.filter((t) => t.type === 'expense').sort(byDateDesc)
-  const isMixed = incomeRows.length > 0 && expenseRows.length > 0
+  const isMixed = groupBy !== 'description' && incomeRows.length > 0 && expenseRows.length > 0
 
   const incomeTotal = sumAmount(incomeRows)
   const expenseTotal = sumAmount(expenseRows)
@@ -48,7 +63,22 @@ const TransactionDetailList = ({ transactions, emptyMessage }) => {
           </tr>
         </thead>
         <tbody>
-          {isMixed ? (
+          {groupBy === 'description' ? (
+            groupByField(transactions, 'description').map((g) => (
+              <React.Fragment key={g.label}>
+                <tr className="dashboard__detail-group-header">
+                  <td colSpan={4}>{g.label}</td>
+                </tr>
+                {g.items.map((t) => (
+                  <Row key={t.id} t={t} />
+                ))}
+                <tr className="dashboard__detail-subtotal">
+                  <td colSpan={3}>Subtotal</td>
+                  <td className="dashboard__detail-table-amount">{fmt(g.total)}</td>
+                </tr>
+              </React.Fragment>
+            ))
+          ) : isMixed ? (
             <>
               <tr className="dashboard__detail-group-header dashboard__detail-group-header--income">
                 <td colSpan={4}>Ingresos</td>
@@ -113,6 +143,7 @@ TransactionDetailList.propTypes = {
     }),
   ).isRequired,
   emptyMessage: PropTypes.string.isRequired,
+  groupBy: PropTypes.oneOf(['description']),
 }
 
 export default TransactionDetailList
