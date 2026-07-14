@@ -19,6 +19,7 @@ import Spinner from 'src/components/shared/Spinner'
 import MonthlyFlowChart from './MonthlyFlowChart'
 import CategoryDoughnut from './CategoryDoughnut'
 import TopRankingChart from './TopRankingChart'
+import TransactionDetailList from './TransactionDetailList'
 import {
   CURRENT_YEAR,
   CURRENT_MONTH,
@@ -43,6 +44,8 @@ const Dashboard = () => {
   const { data, fetching } = useSelector((s) => s.transaction)
   const [year, setYear] = useState(CURRENT_YEAR)
   const [projectRest, setProjectRest] = useState(false)
+  const [incomeView, setIncomeView] = useState('chart')
+  const [expenseView, setExpenseView] = useState('chart')
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
@@ -88,6 +91,14 @@ const Dashboard = () => {
   )
   const incomeByCategory = useMemo(
     () => aggregateByField(transactions, 'income', 'category', 5),
+    [transactions],
+  )
+  const incomeTransactions = useMemo(
+    () => transactions.filter((t) => t.type === 'income'),
+    [transactions],
+  )
+  const expenseTransactions = useMemo(
+    () => transactions.filter((t) => t.type === 'expense'),
     [transactions],
   )
   const topExpenses = useMemo(
@@ -201,9 +212,46 @@ const Dashboard = () => {
             </CCol>
             <CCol lg={4}>
               <CCard className="dashboard__card">
-                {cardHeader('Egresos por categoría', cilChartPie)}
-                <CCardBody className="d-flex flex-column align-items-center justify-content-center">
-                  <CategoryDoughnut data={expenseByCategory} emptyMessage="Sin egresos este año" />
+                <CCardHeader className="home-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span className="d-flex align-items-center gap-2">
+                    <CIcon icon={cilChartPie} className="home-card-header__icon" />
+                    Egresos por categoría
+                  </span>
+                  <div className="dashboard__header-tabs">
+                    <button
+                      type="button"
+                      className={`dashboard__header-tab${expenseView === 'chart' ? ' dashboard__header-tab--active' : ''}`}
+                      onClick={() => setExpenseView('chart')}
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      type="button"
+                      className={`dashboard__header-tab${expenseView === 'detail' ? ' dashboard__header-tab--active' : ''}`}
+                      onClick={() => setExpenseView('detail')}
+                    >
+                      Detalle
+                    </button>
+                  </div>
+                </CCardHeader>
+                <CCardBody
+                  className={
+                    expenseView === 'chart'
+                      ? 'd-flex flex-column align-items-center justify-content-center'
+                      : undefined
+                  }
+                >
+                  {expenseView === 'chart' ? (
+                    <CategoryDoughnut
+                      data={expenseByCategory}
+                      emptyMessage="Sin egresos este año"
+                    />
+                  ) : (
+                    <TransactionDetailList
+                      transactions={expenseTransactions}
+                      emptyMessage="Sin egresos este año"
+                    />
+                  )}
                 </CCardBody>
               </CCard>
             </CCol>
@@ -224,9 +272,46 @@ const Dashboard = () => {
             </CCol>
             <CCol lg={6}>
               <CCard className="dashboard__card">
-                {cardHeader('Ingresos por categoría', cilChartPie)}
-                <CCardBody className="d-flex flex-column align-items-center justify-content-center">
-                  <CategoryDoughnut data={incomeByCategory} emptyMessage="Sin ingresos este año" />
+                <CCardHeader className="home-card-header d-flex align-items-center justify-content-between">
+                  <span className="d-flex align-items-center gap-2">
+                    <CIcon icon={cilChartPie} className="home-card-header__icon" />
+                    Ingresos por categoría
+                  </span>
+                  <div className="dashboard__header-tabs">
+                    <button
+                      type="button"
+                      className={`dashboard__header-tab${incomeView === 'chart' ? ' dashboard__header-tab--active' : ''}`}
+                      onClick={() => setIncomeView('chart')}
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      type="button"
+                      className={`dashboard__header-tab${incomeView === 'detail' ? ' dashboard__header-tab--active' : ''}`}
+                      onClick={() => setIncomeView('detail')}
+                    >
+                      Detalle
+                    </button>
+                  </div>
+                </CCardHeader>
+                <CCardBody
+                  className={
+                    incomeView === 'chart'
+                      ? 'd-flex flex-column align-items-center justify-content-center'
+                      : undefined
+                  }
+                >
+                  {incomeView === 'chart' ? (
+                    <CategoryDoughnut
+                      data={incomeByCategory}
+                      emptyMessage="Sin ingresos este año"
+                    />
+                  ) : (
+                    <TransactionDetailList
+                      transactions={incomeTransactions}
+                      emptyMessage="Sin ingresos este año"
+                    />
+                  )}
                 </CCardBody>
               </CCard>
             </CCol>
