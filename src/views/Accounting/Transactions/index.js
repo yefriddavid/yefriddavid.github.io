@@ -132,13 +132,20 @@ export default function Transactions() {
   }
 
   const handleCreate = (payload) => {
-    dispatch(transactionActions.createRequest(payload))
+    dispatch(
+      transactionActions.createRequest({ ...payload, accountMonth: payload.date.slice(0, 7) }),
+    )
     dispatch(pushNotification({ type: 'success', message: 'Transacción creada correctamente.' }))
     closeForm()
   }
 
   const handleUpdate = (payload) => {
-    dispatch(transactionActions.updateRequest(payload))
+    // Keep accountMonth (the accounting period used by Estado de Cuentas) in sync
+    // whenever the real date changes — but only then, so payments intentionally
+    // assigned to a different period (paid early/late) aren't reset by unrelated edits.
+    const dateChanged = formInitial && payload.date !== formInitial.date
+    const accountMonth = dateChanged ? payload.date.slice(0, 7) : payload.accountMonth
+    dispatch(transactionActions.updateRequest({ ...payload, accountMonth }))
     dispatch(
       pushNotification({ type: 'success', message: 'Transacción actualizada correctamente.' }),
     )
