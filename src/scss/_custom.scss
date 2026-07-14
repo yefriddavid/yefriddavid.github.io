@@ -209,3 +209,50 @@ body[data-app-theme="blue"] {
     color: #334155;
   }
 }
+
+// ─── Shared chart-card helpers (taxis Home, finance Dashboard, …) ─────────
+// Standalone (non-BEM) classes reused across module dashboards — kept global
+// since per-component .scss partials are compiled into separate route chunks.
+.home-card-header {
+  background: #1e3a5f;
+  color: #fff;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &__icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+}
+
+.category-legend {
+  width: 100%;
+  margin-top: 12px;
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--fs-sm);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--cui-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+}

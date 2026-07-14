@@ -42,3 +42,15 @@ export const fmtNum = (n, decimals = 2) =>
  * @returns {string} Formatted date string.
  */
 export const fmtDate = (date) => (date ? moment(date).format('DD/MM/YYYY') : '')
+
+/**
+ * Formats a number as compact COP currency (e.g. $1.2M, $850K).
+ * @param {number} n - The number to format.
+ * @returns {string} Formatted compact currency string.
+ */
+export const fmtCompact = (n) => {
+  if (!n) return '$0'
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
+  return fmt(n)
+}

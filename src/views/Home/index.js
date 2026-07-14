@@ -81,10 +81,75 @@ const SHORTCUTS = [
     border: '#86efac',
     shadow: 'rgba(45,90,78,0.18)',
   },
+  {
+    key: 'accounts',
+    label: 'Cuentas',
+    description: 'Maestro de cuentas contables',
+    path: '/finance/management/accounts-master',
+    icon: '📒',
+    color: '#1e3a5f',
+    bg: 'linear-gradient(135deg, #e8f0fb 0%, #d0e4f7 100%)',
+    border: '#93c5fd',
+    shadow: 'rgba(30,58,95,0.18)',
+  },
+  {
+    key: 'projects',
+    label: 'Proyectos',
+    description: 'Seguimiento de inversiones',
+    path: '/finance/projects',
+    icon: '💡',
+    color: '#b8780a',
+    bg: 'linear-gradient(135deg, #fff9db 0%, #fff3bf 100%)',
+    border: '#ffe066',
+    shadow: 'rgba(184,120,10,0.18)',
+  },
+  {
+    key: 'assets',
+    label: 'Activos',
+    description: 'Control de bienes y capital',
+    path: '/finance/assets',
+    icon: '📈',
+    color: '#2b8a3e',
+    bg: 'linear-gradient(135deg, #ebfbee 0%, #d3f9d8 100%)',
+    border: '#b2f2bb',
+    shadow: 'rgba(43,138,62,0.18)',
+  },
+  {
+    key: 'eggs',
+    label: 'Huevos',
+    description: 'Diversificación de ingresos',
+    path: '/finance/eggs',
+    icon: '🥚',
+    color: '#e67e22',
+    bg: 'linear-gradient(135deg, #fff4e6 0%, #ffe8cc 100%)',
+    border: '#ffd8a8',
+    shadow: 'rgba(230,126,34,0.18)',
+  },
+  {
+    key: 'adjustments',
+    label: 'Ajustes',
+    description: 'Aumento y disminución de capital',
+    path: '/finance/tools/adjustments',
+    icon: '⚖️',
+    color: '#364fc7',
+    bg: 'linear-gradient(135deg, #edf2ff 0%, #dbe4ff 100%)',
+    border: '#bac8ff',
+    shadow: 'rgba(54,79,199,0.18)',
+  },
+  {
+    key: 'visits',
+    label: 'Visitas',
+    description: 'Gestión de relaciones y CRM',
+    path: '/system/visits',
+    icon: '👥',
+    color: '#c92a2a',
+    bg: 'linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%)',
+    border: '#ffc9c9',
+    shadow: 'rgba(201,42,42,0.18)',
+  },
 ]
 
-const fmtTime = () =>
-  new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+const fmtTime = () => new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
 
 const fmtDate = () => {
   const now = new Date()

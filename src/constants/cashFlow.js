@@ -60,3 +60,14 @@ export const ASSET_TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700' }
 export const ASSET_TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1' }
 export const ASSET_HORIZON_COLOR = { largo: '#6741d9', mediano: '#1971c2', corto: '#e03131' }
 export const ASSET_HORIZON_BG = { largo: '#f3f0ff', mediano: '#e7f5ff', corto: '#fff5f5' }
+
+// Fixed-order categorical palette for cash-flow charts (dashboard breakdowns).
+// The last slot is reserved for the "Otros" overflow bucket — never reassigned.
+export const CASHFLOW_CHART_CATEGORY_COLORS = [
+  '#1971c2',
+  '#2f9e44',
+  '#e67700',
+  '#ae3ec9',
+  '#0c8599',
+  '#868e96',
+]

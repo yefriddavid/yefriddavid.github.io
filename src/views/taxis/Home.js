@@ -31,7 +31,7 @@ import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiTrendActions from 'src/actions/taxi/taxiTrendActions'
-import { fmt } from 'src/utils/formatters'
+import { fmt, fmtCompact } from 'src/utils/formatters'
 import useLocaleData from 'src/hooks/useLocaleData'
 import PeriodSelector from 'src/components/shared/PeriodSelector'
 import KPICard from 'src/components/shared/KPICard'
@@ -42,13 +42,6 @@ import {
 } from 'src/constants/taxi'
 import './Home.scss'
 import Spinner from 'src/components/shared/Spinner'
-
-const fmtM = (n) => {
-  if (!n) return '$0'
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
-  return fmt(n)
-}
 
 const pctChange = (curr, prev) => (prev > 0 ? ((curr - prev) / prev) * 100 : null)
 
@@ -317,7 +310,7 @@ const TaxisHome = () => {
             <CCol sm={6} lg={4} xl={2}>
               <KPICard
                 label="Total liquidado"
-                value={fmtM(totalSettled)}
+                value={fmtCompact(totalSettled)}
                 sub={`${monthSettlements.length} liquidaciones`}
                 accent="#1e3a5f"
                 icon={cilCash}
@@ -327,10 +320,10 @@ const TaxisHome = () => {
             <CCol sm={6} lg={4} xl={2}>
               <KPICard
                 label="Total gastos"
-                value={fmtM(totalExp)}
+                value={fmtCompact(totalExp)}
                 sub={
                   totalExpPending > 0
-                    ? `⏳ ${fmtM(totalExpPending)} pendiente`
+                    ? `⏳ ${fmtCompact(totalExpPending)} pendiente`
                     : `${monthExpenses.length} registros`
                 }
                 accent="#e03131"
@@ -342,7 +335,7 @@ const TaxisHome = () => {
             <CCol sm={6} lg={4} xl={2}>
               <KPICard
                 label="Balance neto"
-                value={fmtM(netBalance)}
+                value={fmtCompact(netBalance)}
                 sub={netBalance >= 0 ? 'Positivo ✓' : 'Negativo ✗'}
                 accent={netBalance >= 0 ? '#2f9e44' : '#e03131'}
                 icon={cilChartLine}
@@ -352,7 +345,7 @@ const TaxisHome = () => {
             <CCol sm={6} lg={4} xl={2}>
               <KPICard
                 label="Promedio por día"
-                value={fmtM(avgPerDay)}
+                value={fmtCompact(avgPerDay)}
                 sub={`${activeDays} días con actividad`}
                 accent="#1971c2"
                 icon={cilCalendar}
@@ -432,7 +425,7 @@ const TaxisHome = () => {
                         x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                         y: {
                           grid: { color: 'rgba(0,0,0,0.06)' },
-                          ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                          ticks: { font: { size: 10 }, callback: (v) => fmtCompact(v) },
                         },
                       },
                     }}
@@ -523,7 +516,7 @@ const TaxisHome = () => {
                         scales: {
                           x: {
                             grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                            ticks: { font: { size: 10 }, callback: (v) => fmtCompact(v) },
                           },
                           y: { grid: { display: false }, ticks: { font: { size: 11 } } },
                         },
@@ -563,7 +556,7 @@ const TaxisHome = () => {
                           },
                           y: {
                             grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: { font: { size: 10 }, callback: (v) => fmtM(v) },
+                            ticks: { font: { size: 10 }, callback: (v) => fmtCompact(v) },
                           },
                         },
                       }}
@@ -694,7 +687,7 @@ const TaxisHome = () => {
                           x: { grid: { display: false }, ticks: { font: { size: 12 } } },
                           y: {
                             grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: { font: { size: 11 }, callback: (v) => fmtM(v) },
+                            ticks: { font: { size: 11 }, callback: (v) => fmtCompact(v) },
                           },
                         },
                       }}
