@@ -43,7 +43,14 @@ export const EXPENSE_CATEGORIES = [
   'Otros',
 ]
 
-export const INCOME_CATEGORIES = ['Salario', 'Freelance', 'Inversiones', 'Alquiler', 'Otros']
+export const INCOME_CATEGORIES = [
+  'Salario',
+  'Freelance',
+  'Inversiones',
+  'Alquiler',
+  'Taxis',
+  'Otros',
+]
 
 export const SALARY_TARGET_OPTIONS = ['bcol', 'col-bnc', 'bnc arg', 'bnc arg 2', 'bnc loan', 'ctb']
 
