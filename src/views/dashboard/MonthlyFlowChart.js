@@ -3,12 +3,12 @@ import PropTypes from 'prop-types'
 import { CChartBar } from '@coreui/react-chartjs'
 import { fmtCompact } from 'src/utils/formatters'
 
-const MonthlyFlowChart = ({ labels, income, expense }) => {
+const MonthlyFlowChart = ({ labels, income, expense, onMonthClick }) => {
   const net = income.map((v, i) => v - expense[i])
 
   return (
     <CChartBar
-      style={{ maxHeight: 300 }}
+      style={{ maxHeight: 300, cursor: onMonthClick ? 'pointer' : undefined }}
       data={{
         labels,
         datasets: [
@@ -55,6 +55,16 @@ const MonthlyFlowChart = ({ labels, income, expense }) => {
             ticks: { font: { size: 10 }, callback: (v) => fmtCompact(v) },
           },
         },
+        onClick: onMonthClick
+          ? (_event, elements) => {
+              if (elements.length > 0) onMonthClick(elements[0].index)
+            }
+          : undefined,
+        onHover: onMonthClick
+          ? (event, elements) => {
+              event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default'
+            }
+          : undefined,
       }}
     />
   )
@@ -64,6 +74,7 @@ MonthlyFlowChart.propTypes = {
   labels: PropTypes.arrayOf(PropTypes.string).isRequired,
   income: PropTypes.arrayOf(PropTypes.number).isRequired,
   expense: PropTypes.arrayOf(PropTypes.number).isRequired,
+  onMonthClick: PropTypes.func,
 }
 
 export default MonthlyFlowChart

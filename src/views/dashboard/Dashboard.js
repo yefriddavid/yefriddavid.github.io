@@ -47,10 +47,12 @@ const Dashboard = () => {
   const [incomeView, setIncomeView] = useState('chart')
   const [expenseView, setExpenseView] = useState('chart')
   const [selectedExpense, setSelectedExpense] = useState(null)
+  const [selectedMonth, setSelectedMonth] = useState(null)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
     setSelectedExpense(null)
+    setSelectedMonth(null)
   }, [dispatch, year])
 
   const transactions = useMemo(() => data ?? [], [data])
@@ -114,6 +116,17 @@ const Dashboard = () => {
     () => expenseTransactions.filter((t) => t.description === selectedExpense),
     [expenseTransactions, selectedExpense],
   )
+  const selectedMonthTransactions = useMemo(
+    () =>
+      selectedMonth === null
+        ? []
+        : transactions.filter((t) => Number(t.date?.slice(5, 7)) - 1 === selectedMonth),
+    [transactions, selectedMonth],
+  )
+  const selectedMonthLabel =
+    selectedMonth !== null
+      ? monthLabels[selectedMonth].charAt(0).toUpperCase() + monthLabels[selectedMonth].slice(1)
+      : ''
 
   return (
     <div className="dashboard">
@@ -215,6 +228,7 @@ const Dashboard = () => {
                     labels={monthLabelsShort}
                     income={displayIncome}
                     expense={displayExpense}
+                    onMonthClick={setSelectedMonth}
                   />
                   <div className="dashboard__flow-totals">
                     <div className="dashboard__flow-total dashboard__flow-total--income">
@@ -230,6 +244,26 @@ const Dashboard = () => {
                       <strong>{fmtCompact(displayTotalNet)}</strong>
                     </div>
                   </div>
+                  {selectedMonth !== null && (
+                    <div className="dashboard__inline-detail">
+                      <div className="dashboard__inline-detail-header">
+                        <span>
+                          Detalle — {selectedMonthLabel} {year}
+                        </span>
+                        <button
+                          type="button"
+                          className="dashboard__inline-detail-close"
+                          onClick={() => setSelectedMonth(null)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <TransactionDetailList
+                        transactions={selectedMonthTransactions}
+                        emptyMessage="Sin movimientos este mes"
+                      />
+                    </div>
+                  )}
                 </CCardBody>
               </CCard>
             </CCol>

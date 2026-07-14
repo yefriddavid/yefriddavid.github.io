@@ -83,8 +83,48 @@
     }
   }
 
+  &__detail-group-header {
+    td {
+      padding: 5px 10px;
+      font-size: var(--fs-2xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-top: none;
+    }
+
+    &--income td {
+      background: #f0fdf4;
+      color: #2f9e44;
+    }
+
+    &--expense td {
+      background: #fff5f5;
+      color: #e03131;
+    }
+  }
+
+  &__detail-subtotal {
+    font-weight: 700;
+
+    td {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+  }
+
   &__detail-table-amount {
     text-align: right;
+
+    &--income {
+      color: #2f9e44;
+      font-weight: 600;
+    }
+
+    &--expense {
+      color: #e03131;
+      font-weight: 600;
+    }
   }
 
   &__detail-table-total {
