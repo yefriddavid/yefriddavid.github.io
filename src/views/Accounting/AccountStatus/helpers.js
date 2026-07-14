@@ -56,10 +56,10 @@ export function isApplicableToMonth(account, month) {
 }
 
 export function getStatus(account, payments, monthStr, cumulativePaid = null) {
-  const target = account.targetAmount > 0 ? account.targetAmount : null
+  const target = Number(account.targetAmount) > 0 ? Number(account.targetAmount) : null
 
   if (target !== null) {
-    const totalPaid = cumulativePaid ?? payments.reduce((s, t) => s + (t.amount || 0), 0)
+    const totalPaid = cumulativePaid ?? payments.reduce((s, t) => s + (Number(t.amount) || 0), 0)
     const remaining = target - totalPaid
     if (remaining <= 0)
       return {
@@ -101,8 +101,8 @@ export function getStatus(account, payments, monthStr, cumulativePaid = null) {
     }
   }
 
-  const paid = payments.reduce((s, t) => s + (t.amount || 0), 0)
-  if (paid > 0 && account.defaultValue > 0 && paid < account.defaultValue)
+  const paid = payments.reduce((s, t) => s + (Number(t.amount) || 0), 0)
+  if (paid > 0 && Number(account.defaultValue) > 0 && paid < Number(account.defaultValue))
     return { label: 'Parcial', color: '#0ea5e9', bg: '#f0f9ff', border: '#7dd3fc', paid }
   if (paid > 0) return { label: 'Pagado', color: '#2f9e44', bg: '#f0fdf4', border: '#86efac', paid }
   const today = new Date()

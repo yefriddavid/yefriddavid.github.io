@@ -9,7 +9,7 @@ export const selectCumulativePaymentsMap = createSelector(selectTransactions, (t
   const map = {}
   transactions.forEach((t) => {
     if (!t.accountMasterId) return
-    map[t.accountMasterId] = (map[t.accountMasterId] ?? 0) + (t.amount || 0)
+    map[t.accountMasterId] = (map[t.accountMasterId] ?? 0) + (Number(t.amount) || 0)
   })
   return map
 })

@@ -144,13 +144,13 @@ export default function AccountStatus() {
       if (s.label === 'Pagado') p++
       else if (s.label === 'Vencido') {
         ov++
-        tov += a.defaultValue || 0
+        tov += Number(a.defaultValue) || 0
       } else if (s.label === 'Parcial') {
         pe++
-        tpe += (a.defaultValue || 0) - s.paid
+        tpe += (Number(a.defaultValue) || 0) - s.paid
       } else {
         pe++
-        tpe += a.defaultValue || 0
+        tpe += Number(a.defaultValue) || 0
       }
     })
     return { paid: p, pending: pe, overdue: ov, totalPending: tpe, totalOverdue: tov }
@@ -160,7 +160,7 @@ export default function AccountStatus() {
     () =>
       applicable.reduce((sum, a) => {
         const payments = masterPaymentsMap[a.id] ?? []
-        return sum + payments.reduce((s, t) => s + (t.amount || 0), 0)
+        return sum + payments.reduce((s, t) => s + (Number(t.amount) || 0), 0)
       }, 0),
     [applicable, masterPaymentsMap],
   )
@@ -173,11 +173,11 @@ export default function AccountStatus() {
       .filter((a) => isApplicableToMonth(a, month))
       .forEach((a) => {
         const payments = masterPaymentsMap[a.id] ?? []
-        const paidAmt = payments.reduce((s, t) => s + (t.amount || 0), 0)
+        const paidAmt = payments.reduce((s, t) => s + (Number(t.amount) || 0), 0)
         if (a.type === 'Incoming') {
-          income += Math.max(paidAmt, a.defaultValue || 0)
+          income += Math.max(paidAmt, Number(a.defaultValue) || 0)
         } else {
-          expenses += Math.max(paidAmt, a.defaultValue || 0)
+          expenses += Math.max(paidAmt, Number(a.defaultValue) || 0)
         }
       })
     return { totalIncome: income, totalExpenses: expenses }

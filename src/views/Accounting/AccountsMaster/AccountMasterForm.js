@@ -72,11 +72,20 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
   const isEdit = !!initial?.id
   const codePlaceholder = `${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}xxx (ej. ${ACCOUNT_MASTER_CODE_PREFIX[type] ?? '5'}195)`
 
+  const onSubmit = (data) => {
+    onSave({
+      ...data,
+      defaultValue: data.defaultValue === '' ? 0 : Number(data.defaultValue),
+      targetAmount: data.targetAmount === '' ? 0 : Number(data.targetAmount),
+      maxDatePay: data.maxDatePay === '' ? null : Number(data.maxDatePay),
+    })
+  }
+
   return (
     <StandardForm
       title={isEdit ? 'Editar cuenta maestra' : 'Nueva cuenta maestra'}
       onCancel={onCancel}
-      onSave={handleSubmit(onSave)}
+      onSave={handleSubmit(onSubmit)}
       saving={saving}
       disabled={!isValid}
     >
