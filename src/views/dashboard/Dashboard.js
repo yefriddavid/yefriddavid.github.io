@@ -46,9 +46,11 @@ const Dashboard = () => {
   const [projectRest, setProjectRest] = useState(false)
   const [incomeView, setIncomeView] = useState('chart')
   const [expenseView, setExpenseView] = useState('chart')
+  const [selectedExpense, setSelectedExpense] = useState(null)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
+    setSelectedExpense(null)
   }, [dispatch, year])
 
   const transactions = useMemo(() => data ?? [], [data])
@@ -104,6 +106,10 @@ const Dashboard = () => {
   const topExpenses = useMemo(
     () => topByField(transactions, 'expense', 'description', 6),
     [transactions],
+  )
+  const selectedExpenseTransactions = useMemo(
+    () => expenseTransactions.filter((t) => t.description === selectedExpense),
+    [expenseTransactions, selectedExpense],
   )
 
   return (
@@ -266,7 +272,26 @@ const Dashboard = () => {
                     entries={topExpenses}
                     color="#e03131"
                     emptyMessage="Sin egresos este año"
+                    onBarClick={setSelectedExpense}
                   />
+                  {selectedExpense && (
+                    <div className="dashboard__inline-detail">
+                      <div className="dashboard__inline-detail-header">
+                        <span>Detalle — {selectedExpense}</span>
+                        <button
+                          type="button"
+                          className="dashboard__inline-detail-close"
+                          onClick={() => setSelectedExpense(null)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <TransactionDetailList
+                        transactions={selectedExpenseTransactions}
+                        emptyMessage="Sin movimientos"
+                      />
+                    </div>
+                  )}
                 </CCardBody>
               </CCard>
             </CCol>

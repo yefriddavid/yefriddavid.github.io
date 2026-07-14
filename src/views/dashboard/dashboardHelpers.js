@@ -33,6 +33,13 @@ export const aggregateByField = (transactions, type, field, maxSlices = 5) => {
   if (sorted.length <= maxSlices) return sorted.map(([label, value]) => ({ label, value }))
   const top = sorted.slice(0, maxSlices).map(([label, value]) => ({ label, value }))
   const rest = sorted.slice(maxSlices).reduce((s, [, v]) => s + v, 0)
+  // "Otros" may already be a real category within the top slice — merge into
+  // it instead of appending a second entry with the same label.
+  const otherEntry = top.find((e) => e.label === 'Otros')
+  if (otherEntry) {
+    otherEntry.value += rest
+    return top.sort((a, b) => b.value - a.value)
+  }
   return [...top, { label: 'Otros', value: rest }]
 }
 

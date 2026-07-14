@@ -86,4 +86,47 @@
   &__detail-table-amount {
     text-align: right;
   }
+
+  &__detail-table-total {
+    position: sticky;
+    bottom: 0;
+    font-weight: 700;
+    color: #1e3a5f;
+
+    td {
+      background: #f8fafc;
+      border-top: 2px solid #e2e8f0;
+    }
+  }
+
+  &__inline-detail {
+    margin-top: 14px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__inline-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    padding: 6px 10px;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: #1e3a5f;
+  }
+
+  &__inline-detail-close {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    padding: 0 4px;
+
+    &:hover {
+      color: #e03131;
+    }
+  }
 }

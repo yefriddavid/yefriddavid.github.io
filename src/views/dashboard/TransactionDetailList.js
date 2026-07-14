@@ -7,6 +7,7 @@ const TransactionDetailList = ({ transactions, emptyMessage }) => {
   if (transactions.length === 0) return <EmptyState message={emptyMessage} size="sm" />
 
   const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date))
+  const total = transactions.reduce((s, t) => s + (t.amount || 0), 0)
 
   return (
     <div className="dashboard__detail-list">
@@ -29,6 +30,12 @@ const TransactionDetailList = ({ transactions, emptyMessage }) => {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr className="dashboard__detail-table-total">
+            <td colSpan={3}>Total</td>
+            <td className="dashboard__detail-table-amount">{fmt(total)}</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   )
