@@ -86,6 +86,9 @@ const Dashboard = () => {
     canProject && projectRest
       ? expense.map((v, i) => (i < monthsElapsed ? v : avgExpenseElapsed))
       : expense
+  const displayTotalIncome = displayIncome.reduce((s, v) => s + v, 0)
+  const displayTotalExpense = displayExpense.reduce((s, v) => s + v, 0)
+  const displayTotalNet = displayTotalIncome - displayTotalExpense
 
   const expenseByCategory = useMemo(
     () => aggregateByField(transactions, 'expense', 'category', 5),
@@ -213,6 +216,20 @@ const Dashboard = () => {
                     income={displayIncome}
                     expense={displayExpense}
                   />
+                  <div className="dashboard__flow-totals">
+                    <div className="dashboard__flow-total dashboard__flow-total--income">
+                      <span>Ingresos</span>
+                      <strong>{fmtCompact(displayTotalIncome)}</strong>
+                    </div>
+                    <div className="dashboard__flow-total dashboard__flow-total--expense">
+                      <span>Egresos</span>
+                      <strong>{fmtCompact(displayTotalExpense)}</strong>
+                    </div>
+                    <div className="dashboard__flow-total dashboard__flow-total--net">
+                      <span>Neto</span>
+                      <strong>{fmtCompact(displayTotalNet)}</strong>
+                    </div>
+                  </div>
                 </CCardBody>
               </CCard>
             </CCol>
