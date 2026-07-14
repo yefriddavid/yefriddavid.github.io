@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, BANK_NAMES, BANK_ACCOUNT_TYPES } from 'src/constants/cashFlow'
+import {
+  ACCOUNT_CATEGORIES,
+  INCOME_CATEGORIES,
+  PAYMENT_METHODS,
+  BANK_NAMES,
+  BANK_ACCOUNT_TYPES,
+} from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
 import {
@@ -338,7 +344,7 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                   onChange={set('category')}
                 >
                   <option value="">Sin categoría</option>
-                  {ACCOUNT_CATEGORIES.map((c) => (
+                  {(form.type === 'Incoming' ? INCOME_CATEGORIES : ACCOUNT_CATEGORIES).map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
