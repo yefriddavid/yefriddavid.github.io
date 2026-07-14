@@ -8,7 +8,13 @@ import {
   ACCOUNT_MASTER_NATURE,
   ACCOUNT_MASTER_CODE_PREFIX,
 } from 'src/constants/accounting'
-import { ACCOUNT_CATEGORIES, PAYMENT_METHODS, BANK_NAMES, BANK_ACCOUNT_TYPES } from 'src/constants/cashFlow'
+import {
+  ACCOUNT_CATEGORIES,
+  INCOME_CATEGORIES,
+  PAYMENT_METHODS,
+  BANK_NAMES,
+  BANK_ACCOUNT_TYPES,
+} from 'src/constants/cashFlow'
 import { MONTH_NAMES } from 'src/constants/commons'
 import useLocaleData from 'src/hooks/useLocaleData'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
@@ -60,6 +66,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
 
   const type = watch('type')
   const period = watch('period')
+  const categoryOptions = type === 'Incoming' ? INCOME_CATEGORIES : ACCOUNT_CATEGORIES
   const active = watch('active') ?? true
   const important = watch('important') ?? false
   const isEdit = !!initial?.id
@@ -183,7 +190,7 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
         <StandardField label="Categoría">
           <select className={SF.select} {...register('category')}>
             <option value="">Sin categoría</option>
-            {ACCOUNT_CATEGORIES.map((c) => (
+            {categoryOptions.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>

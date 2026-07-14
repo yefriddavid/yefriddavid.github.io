@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { ACCOUNT_CATEGORIES } from 'src/constants/cashFlow'
+import { ACCOUNT_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import { fieldLabel, fieldInput } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
@@ -46,6 +46,7 @@ export default function AdHocExpenseModal({
 
   const type = watch('type')
   const paid = watch('paid')
+  const categoryOptions = type === 'income' ? INCOME_CATEGORIES : ACCOUNT_CATEGORIES
   const description = watch('description')
   const amount = watch('amount')
 
@@ -251,7 +252,7 @@ export default function AdHocExpenseModal({
           {...register('category')}
         >
           <option value="">Sin categoría</option>
-          {ACCOUNT_CATEGORIES.map((c) => (
+          {categoryOptions.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
