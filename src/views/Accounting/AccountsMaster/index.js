@@ -6,6 +6,7 @@ import StandardList, { SL } from 'src/components/shared/StandardList/Index'
 import { CButton, CCard, CCardBody, CCardHeader, CCollapse } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilPencil, cilTrash, cilCopy } from '@coreui/icons'
+import IconClone from 'src/components/shared/IconClone'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import {
   ACCOUNT_MASTER_TYPES,
@@ -76,6 +77,14 @@ export default function AccountsMaster() {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {
       dispatch(accountsMasterActions.deleteRequest({ id: row.id }))
     }
+  }
+
+  const handleClone = (row) => {
+    const newName = window.prompt('Nombre para la cuenta clonada:', `${row.name} (Copia)`)
+    if (!newName || !newName.trim()) return
+    const { id: _id, ...fields } = row
+    dispatch(accountsMasterActions.createRequest({ ...fields, name: newName.trim() }))
+    dispatch(pushNotification({ type: 'success', message: 'Cuenta clonada correctamente.' }))
   }
 
   const handleSeed = () => {
@@ -327,6 +336,12 @@ export default function AccountsMaster() {
                 },
               },
               {
+                label: <IconClone />,
+                color: 'info',
+                title: 'Clonar',
+                onClick: () => handleClone(r),
+              },
+              {
                 icon: cilTrash,
                 color: 'danger',
                 title: 'Eliminar',
@@ -511,7 +526,7 @@ export default function AccountsMaster() {
             />
             <Column
               caption=""
-              width={80}
+              width={104}
               alignment="center"
               allowSorting={false}
               cellRender={({ data: row }) => (
@@ -529,6 +544,21 @@ export default function AccountsMaster() {
                     }}
                   >
                     ✎
+                  </button>
+                  <button
+                    title="Clonar"
+                    onClick={() => handleClone(row)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#0ea5e9',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '2px 4px',
+                    }}
+                  >
+                    <IconClone />
                   </button>
                   <button
                     title="Eliminar"
