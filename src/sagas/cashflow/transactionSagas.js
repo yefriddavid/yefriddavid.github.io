@@ -7,7 +7,7 @@ import { triggerHook } from '../../reducers/system/programHookSlice'
 export function* fetchTransactions({ payload }) {
   try {
     yield put(actions.beginRequestFetch())
-    const data = yield call(service.getTransactions, payload?.year ?? new Date().getFullYear())
+    const data = yield call(service.getTransactions, payload?.year)
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))

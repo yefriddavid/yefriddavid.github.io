@@ -12,6 +12,7 @@ import {
   cilCalendarCheck,
   cilCarAlt,
   cilCash,
+  cilChartLine,
   cilCheck,
   cilDollar,
   cilFile,
@@ -94,6 +95,28 @@ const getNav = (t, role) => {
           name: 'Declaración de Renta',
           to: '/finance/management/declaracion-renta',
           icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+        },
+      ],
+    })
+  }
+
+  if (isManager) {
+    items.push({
+      component: CNavGroup,
+      name: 'Reportes',
+      icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+      items: [
+        {
+          component: CNavItem,
+          name: 'Estado de Resultados',
+          to: '/finance/management/reports',
+          icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Análisis',
+          to: '/finance/management/analysis',
+          icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
         },
       ],
     })
@@ -194,7 +217,6 @@ const getNav = (t, role) => {
     })
   }
 
-
   items.push({
     component: CNavGroup,
     name: 'Inmobiliaria',
@@ -232,7 +254,6 @@ const getNav = (t, role) => {
       },
     ],
   })
-
 
   return items
 }

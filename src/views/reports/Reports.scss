@@ -1,0 +1,149 @@
+.statement {
+  padding: 8px 4px 32px;
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  &__print-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--cui-primary, #1e3a5f);
+    color: #fff;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+
+    &:hover {
+      opacity: 0.88;
+    }
+  }
+
+  &__sheet {
+    background: var(--cui-body-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+
+  &__title {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+    color: var(--cui-body-color, #1a1a2e);
+    margin: 0;
+    text-align: center;
+  }
+
+  &__subtitle {
+    text-align: center;
+    font-size: var(--fs-base);
+    color: var(--cui-secondary-color, #6c757d);
+    margin-bottom: 20px;
+  }
+
+  &__scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-xs);
+    white-space: nowrap;
+
+    th,
+    td {
+      padding: 5px 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--cui-border-color, #f1f3f5);
+    }
+
+    th {
+      color: var(--cui-secondary-color, #888);
+      font-weight: 600;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+  }
+}
+
+.statement__section-row {
+  td {
+    text-align: left !important;
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    padding-top: 14px !important;
+    border-bottom: 2px solid var(--cui-border-color, #dee2e6) !important;
+  }
+
+  &--income td {
+    color: #2f9e44;
+  }
+
+  &--expense td {
+    color: #e03131;
+  }
+}
+
+.statement__row-label {
+  padding-left: 18px !important;
+  color: var(--cui-body-color, #333);
+}
+
+.statement__total-cell {
+  font-weight: 700;
+  color: var(--cui-primary, #1e3a5f);
+}
+
+.statement__subtotal-row {
+  font-weight: 700;
+  border-top: 1px solid var(--cui-border-color, #dee2e6);
+}
+
+.statement__net-row {
+  font-weight: 700;
+  font-size: var(--fs-sm);
+
+  td {
+    border-top: 2px solid var(--cui-body-color, #1a1a2e) !important;
+    border-bottom: none !important;
+  }
+}
+
+.statement__net-positive {
+  color: #2f9e44;
+}
+
+.statement__net-negative {
+  color: #e03131;
+}
+
+@media print {
+  .statement__toolbar {
+    display: none;
+  }
+
+  .statement__sheet {
+    border: none;
+    padding: 0;
+  }
+
+  .statement__scroll {
+    overflow: visible;
+  }
+
+  .statement__table {
+    font-size: 10pt;
+  }
+}
