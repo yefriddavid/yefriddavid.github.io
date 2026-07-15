@@ -118,7 +118,9 @@ const NoteFullPage = () => {
       </div>
 
       <div className="nfp__content">
-        {note.mode === 'table' ? (
+        {note.private ? (
+          <div className="nfp__hidden">🔒 Contenido oculto — edita la nota para verlo</div>
+        ) : note.mode === 'table' ? (
           <>
             <NoteTableFull
               note={note}

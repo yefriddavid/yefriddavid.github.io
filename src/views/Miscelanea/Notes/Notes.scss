@@ -505,6 +505,12 @@
       margin: 4px 0;
     }
     pre { font-size: var(--fs-xs); background: rgba(0,0,0,0.05); padding: 6px; border-radius: 4px; }
+
+    &--hidden {
+      max-height: none;
+      color: var(--cui-secondary-color, #888);
+      font-style: italic;
+    }
   }
 }
 
@@ -605,6 +611,11 @@
       margin: 6px 0;
     }
     pre { font-size: var(--fs-sm); background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; }
+
+    &--hidden {
+      color: var(--cui-secondary-color, #888);
+      font-style: italic;
+    }
   }
 }
 

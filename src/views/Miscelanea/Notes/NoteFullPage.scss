@@ -65,6 +65,14 @@
     font-size: var(--fs-lg);
   }
 
+  &__hidden {
+    padding: 3rem;
+    text-align: center;
+    color: var(--cui-secondary-color, #888);
+    font-size: var(--fs-lg);
+    font-style: italic;
+  }
+
   &__table {
     border-collapse: collapse;
     width: 100%;

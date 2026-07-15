@@ -908,7 +908,11 @@ const NoteCard = ({
         </div>
       </div>
       <div className="note-card__date">{formatDate(note.updatedAt)}</div>
-      {note.mode === 'table' ? (
+      {note.private ? (
+        <div className="note-card__preview note-card__preview--hidden">
+          🔒 Contenido oculto — edita la nota para verlo
+        </div>
+      ) : note.mode === 'table' ? (
         <>
           <div className="note-card__preview note-card__preview--table">
             <NoteTable content={note.content} onToggleCheck={handleToggleCheck} />
@@ -1270,7 +1274,11 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
           </div>
         </div>
         <div className="note-view__date">{formatDate(note.updatedAt)}</div>
-        {note.mode === 'table' ? (
+        {note.private ? (
+          <div className="note-view__content note-view__content--hidden">
+            🔒 Contenido oculto — edita la nota para verlo
+          </div>
+        ) : note.mode === 'table' ? (
           <div className="note-view__content note-view__content--table">
             <NoteTable
               content={note.content}
