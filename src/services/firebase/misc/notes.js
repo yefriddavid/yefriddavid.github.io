@@ -37,7 +37,15 @@ export const getNotes = async () => {
   })
 }
 
-export const createNote = async ({ title, content, color, mode, category, body }) => {
+export const createNote = async ({
+  title,
+  content,
+  color,
+  mode,
+  category,
+  body,
+  private: isPrivate,
+}) => {
   const now = new Date().toISOString()
   const ref = await firestoreCall(() =>
     addDoc(collection(db, COL_MISC_NOTES), {
@@ -47,6 +55,7 @@ export const createNote = async ({ title, content, color, mode, category, body }
       mode: mode || 'textarea',
       category: category || DEFAULT_NOTE_CATEGORY,
       body: body || '',
+      private: !!isPrivate,
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -60,6 +69,7 @@ export const createNote = async ({ title, content, color, mode, category, body }
     mode: mode || 'textarea',
     category: category || DEFAULT_NOTE_CATEGORY,
     body: body || '',
+    private: !!isPrivate,
     createdAt: now,
     updatedAt: now,
   }
@@ -75,6 +85,7 @@ export const updateNote = async ({
   starred,
   category,
   body,
+  private: isPrivate,
 }) => {
   const patch = { updatedAt: serverTimestamp() }
   if (title !== undefined) patch.title = title
@@ -85,6 +96,7 @@ export const updateNote = async ({
   if (starred !== undefined) patch.starred = starred
   if (category !== undefined) patch.category = category
   if (body !== undefined) patch.body = body
+  if (isPrivate !== undefined) patch.private = isPrivate
   await firestoreCall(() => updateDoc(doc(db, COL_MISC_NOTES, id), patch))
 }
 

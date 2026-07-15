@@ -27,7 +27,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
-import { DEFAULT_NOTE_CATEGORY, NOTE_COLORS } from 'src/constants/notes'
+import { DEFAULT_NOTE_CATEGORY, NOTE_COLORS, PRIVATE_NOTES_PASSWORD } from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import './Notes.scss'
@@ -1036,7 +1036,11 @@ const NoteEditorModal = ({ note, existingCategories = [], onSave, onClose, onVie
   }
 
   const buildPayload = (data) => {
-    data = { ...data, category: data.category?.trim() || DEFAULT_NOTE_CATEGORY }
+    data = {
+      ...data,
+      category: data.category?.trim() || DEFAULT_NOTE_CATEGORY,
+      private: !!note?.private,
+    }
     if (showSource) {
       try {
         if (data.mode === 'table') {
@@ -1322,6 +1326,10 @@ const Notes = () => {
   const [viewing, setViewing] = useState(null)
   const [hiddenCategories, setHiddenCategories] = useState([])
   const [showCategoryFilter, setShowCategoryFilter] = useState(false)
+  const [privateUnlocked, setPrivateUnlocked] = useState(false)
+  const [showPrivatePasswordInput, setShowPrivatePasswordInput] = useState(false)
+  const [privatePassword, setPrivatePassword] = useState('')
+  const [privatePasswordError, setPrivatePasswordError] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -1371,9 +1379,21 @@ const Notes = () => {
         content: note.content,
         color: note.color,
         mode: note.mode,
+        private: note.private,
         ...(note.mode === 'table' ? { body: note.body } : {}),
       }),
     )
+  }
+
+  const handleUnlockPrivate = () => {
+    if (privatePassword === PRIVATE_NOTES_PASSWORD) {
+      setPrivateUnlocked(true)
+      setShowPrivatePasswordInput(false)
+      setPrivatePassword('')
+      setPrivatePasswordError(false)
+    } else {
+      setPrivatePasswordError(true)
+    }
   }
 
   const handleDelete = (note) => {
@@ -1387,10 +1407,15 @@ const Notes = () => {
     )
   }
 
-  const allCategories = getDistinctCategories(items)
+  const tabScopedItems = items.filter((n) =>
+    activeTab === 'private' ? n.private === true : !n.private,
+  )
+  const allCategories = getDistinctCategories(tabScopedItems)
 
   const visibleItems = items
     .filter((n) => {
+      if (activeTab === 'private') return n.private === true
+      if (n.private) return false
       if (activeTab === 'archived') return n.archived === true
       if (activeTab === 'starred') return n.starred === true && !n.archived
       return !n.archived
@@ -1419,6 +1444,12 @@ const Notes = () => {
               onClick={() => setActiveTab('archived')}
             >
               Archivadas
+            </button>
+            <button
+              className={`notes__tab${activeTab === 'private' ? ' notes__tab--active' : ''}`}
+              onClick={() => setActiveTab('private')}
+            >
+              Privadas
             </button>
           </div>
           <button
@@ -1468,8 +1499,13 @@ const Notes = () => {
               </>
             )}
           </div>
-          {activeTab !== 'archived' && (
-            <button className="notes__new-btn" onClick={() => setEditing('new')}>
+          {activeTab !== 'archived' && (activeTab !== 'private' || privateUnlocked) && (
+            <button
+              className="notes__new-btn"
+              onClick={() =>
+                setEditing(activeTab === 'private' ? { isNew: true, private: true } : 'new')
+              }
+            >
               + Nueva nota
             </button>
           )}
@@ -1538,7 +1574,44 @@ const Notes = () => {
         </div>
       )}
 
-      {fetching ? (
+      {activeTab === 'private' && !privateUnlocked ? (
+        <div className="notes__private-lock">
+          {!showPrivatePasswordInput ? (
+            <button
+              type="button"
+              className="notes__private-lock-btn"
+              onClick={() => setShowPrivatePasswordInput(true)}
+            >
+              Abrir
+            </button>
+          ) : (
+            <div className="notes__private-lock-form">
+              <input
+                type="password"
+                className="notes__private-lock-input"
+                placeholder="Contraseña"
+                autoFocus
+                value={privatePassword}
+                onChange={(e) => {
+                  setPrivatePassword(e.target.value)
+                  setPrivatePasswordError(false)
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleUnlockPrivate()}
+              />
+              <button
+                type="button"
+                className="notes__private-lock-btn"
+                onClick={handleUnlockPrivate}
+              >
+                Entrar
+              </button>
+              {privatePasswordError && (
+                <span className="notes__private-lock-error">Contraseña incorrecta</span>
+              )}
+            </div>
+          )}
+        </div>
+      ) : fetching ? (
         <Spinner mode="section" />
       ) : visibleItems.length === 0 ? (
         <div className="notes__empty">
@@ -1551,6 +1624,16 @@ const Notes = () => {
             </>
           ) : activeTab === 'starred' ? (
             <p>No hay notas destacadas.</p>
+          ) : activeTab === 'private' ? (
+            <>
+              <p>No hay notas privadas todavía.</p>
+              <button
+                className="notes__new-btn"
+                onClick={() => setEditing({ isNew: true, private: true })}
+              >
+                + Crear primera nota privada
+              </button>
+            </>
           ) : (
             <p>No hay notas archivadas.</p>
           )}
@@ -1607,7 +1690,13 @@ const Notes = () => {
                   <button
                     type="button"
                     className="notes__group-add-btn"
-                    onClick={() => setEditing({ isNew: true, category: value })}
+                    onClick={() =>
+                      setEditing({
+                        isNew: true,
+                        category: value,
+                        ...(activeTab === 'private' ? { private: true } : {}),
+                      })
+                    }
                     title={`Nueva nota en ${label}`}
                   >
                     +
@@ -1657,9 +1746,13 @@ const Notes = () => {
       {editing && (
         <NoteEditorModal
           note={
-            editing === 'new' ? null : editing?.isNew ? { category: editing.category } : editing
+            editing === 'new'
+              ? null
+              : editing?.isNew
+                ? { category: editing.category, private: editing.private }
+                : editing
           }
-          existingCategories={getDistinctCategories(data)}
+          existingCategories={allCategories}
           onSave={handleSave}
           onClose={() => setEditing(null)}
           onView={

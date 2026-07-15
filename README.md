@@ -451,6 +451,16 @@ Los valores de dominio están separados por módulo — nunca hardcodear en comp
 
 ---
 
+## Notas privadas (Miscelánea)
+
+El tab **"Privadas"** en `Miscelanea/Notes` (`src/views/Miscelanea/Notes/index.js`) está protegido por una contraseña quemada en el código, exportada como `PRIVATE_NOTES_PASSWORD` en `src/constants/notes.js`:
+
+```
+dave123*
+```
+
+---
+
 ## Sistema de temas
 
 El tema se aplica mediante `data-app-theme` en `<body>` y se persiste en Redux (`uiReducer`). Estilos en `src/scss/_custom.scss`:

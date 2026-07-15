@@ -1,5 +1,7 @@
 export const DEFAULT_NOTE_CATEGORY = 'general'
 
+export const PRIVATE_NOTES_PASSWORD = 'dave123*'
+
 export const NOTE_COLORS = [
   { value: '#ffffff', label: 'Blanco' },
   { value: '#fef9c3', label: 'Amarillo' },
