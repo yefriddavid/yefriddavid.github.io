@@ -151,6 +151,11 @@ const Login = ({ captcha: requireCaptcha = true }) => {
     }
   }, [])
 
+  // Already authenticated — skip login and go straight to the app
+  useEffect(() => {
+    if (authStorage.getToken()) navigate('/selectApp', { replace: true })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const {
     register,
     handleSubmit,
