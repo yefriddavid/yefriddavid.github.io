@@ -9,6 +9,7 @@ import {
   cilCarAlt,
   cilCash,
   cilBarChart,
+  cilChartLine,
   cilPeople,
   cilTransfer,
 } from '@coreui/icons'
@@ -79,6 +80,12 @@ const getTaxisNav = (t) => [
     name: t('nav.taxiResumen'),
     to: '/taxis/summary',
     icon: <CIcon icon={cilBarChart} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: t('nav.taxiAnnualSummary'),
+    to: '/taxis/annual-summary',
+    icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,

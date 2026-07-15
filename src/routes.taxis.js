@@ -6,6 +6,7 @@ const DriverEditor = React.lazy(() => import('./views/taxis/DriverEditor'))
 const Vehicles = React.lazy(() => import('./views/taxis/Vehicles'))
 const Expenses = React.lazy(() => import('./views/taxis/Expenses'))
 const Summary = React.lazy(() => import('./views/taxis/Summary'))
+const AnnualSummary = React.lazy(() => import('./views/taxis/AnnualSummary'))
 const TaxisHome = React.lazy(() => import('./views/taxis/Home'))
 const Partners = React.lazy(() => import('./views/taxis/Partners'))
 const Distributions = React.lazy(() => import('./views/taxis/Distributions'))
@@ -62,6 +63,12 @@ const taxisRoutes = [
     name: 'Summary',
     tKey: 'nav.summary',
     element: Summary,
+  },
+  {
+    path: '/taxis/annual-summary',
+    name: 'Annual Summary',
+    tKey: 'nav.taxiAnnualSummary',
+    element: AnnualSummary,
   },
   {
     path: '/taxis/operations',

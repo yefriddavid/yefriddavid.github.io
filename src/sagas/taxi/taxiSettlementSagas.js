@@ -9,7 +9,8 @@ export function* fetchSettlements(action) {
     yield put(actions.beginRequestFetch())
     const now = new Date()
     const period = action?.payload ?? { month: now.getMonth() + 1, year: now.getFullYear() }
-    const data = yield call(service.getSettlements, monthToRange(period))
+    const filter = period?.month && period?.year ? monthToRange(period) : period
+    const data = yield call(service.getSettlements, filter)
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))

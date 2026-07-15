@@ -5,7 +5,7 @@ import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'
 import { fmt } from 'src/utils/formatters'
 import EmptyState from 'src/components/shared/EmptyState'
-import { buildPivotAoa } from './analysisHelpers'
+import { buildPivotAoa } from 'src/utils/categoryMonthStats'
 
 const PivotTable = ({ months, categories, matrix, year, type, emptyMessage }) => {
   if (categories.length === 0) return <EmptyState message={emptyMessage} size="sm" />

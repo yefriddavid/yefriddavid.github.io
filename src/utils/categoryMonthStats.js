@@ -1,44 +1,50 @@
-export const groupByYear = (transactions) => {
+// Generic aggregation over records shaped { date: 'YYYY-MM-DD', type, category, amount }.
+// Domain-agnostic on purpose — used by Finance (income/expense) and Taxis
+// (settlement/expense) alike; callers normalize their own records into this shape.
+
+export const groupByYear = (records) => {
   const map = {}
-  transactions.forEach((t) => {
-    const y = t.date?.slice(0, 4)
+  records.forEach((r) => {
+    const y = r.date?.slice(0, 4)
     if (!y) return
     if (!map[y]) map[y] = []
-    map[y].push(t)
+    map[y].push(r)
   })
   return map
 }
 
-export const yearlyTotals = (transactions) => {
-  const grouped = groupByYear(transactions)
+// Returns { year, income, expense, net }[] sorted asc — "income"/"expense" here
+// just mean "positiveType total" / "negativeType total", kept as generic key
+// names so chart components (e.g. YearComparisonChart) work unchanged for any
+// pair of types.
+export const yearlyTotals = (records, positiveType, negativeType) => {
+  const grouped = groupByYear(records)
   return Object.keys(grouped)
     .sort()
     .map((year) => {
       const income = grouped[year]
-        .filter((t) => t.type === 'income')
-        .reduce((s, t) => s + (t.amount || 0), 0)
+        .filter((r) => r.type === positiveType)
+        .reduce((s, r) => s + (r.amount || 0), 0)
       const expense = grouped[year]
-        .filter((t) => t.type === 'expense')
-        .reduce((s, t) => s + (t.amount || 0), 0)
+        .filter((r) => r.type === negativeType)
+        .reduce((s, r) => s + (r.amount || 0), 0)
       return { year: Number(year), income, expense, net: income - expense }
     })
 }
 
 /**
  * Category × month breakdown for a single year and type, keeping the top
- * `maxCategories` (by yearly total) and folding the rest into "Otros" —
- * mirrors dashboardHelpers.aggregateByField's fold rule, kept per-month here.
- * Feeds both CategoryTrendChart and PivotTable.
+ * `maxCategories` (by yearly total) and folding the rest into "Otros".
  */
-export const categoryMonthMatrix = (transactions, type, year, maxCategories = 5) => {
-  const scoped = transactions.filter((t) => t.type === type && t.date?.slice(0, 4) === String(year))
+export const categoryMonthMatrix = (records, type, year, maxCategories = 5) => {
+  const scoped = records.filter((r) => r.type === type && r.date?.slice(0, 4) === String(year))
   const byCategory = {}
-  scoped.forEach((t) => {
-    const cat = t.category || 'Otros'
-    const m = Number(t.date.slice(5, 7)) - 1
+  scoped.forEach((r) => {
+    const cat = r.category || 'Otros'
+    const m = Number(r.date.slice(5, 7)) - 1
     if (m < 0 || m > 11) return
     if (!byCategory[cat]) byCategory[cat] = Array(12).fill(0)
-    byCategory[cat][m] += t.amount || 0
+    byCategory[cat][m] += r.amount || 0
   })
   const total = (row) => row.reduce((s, v) => s + v, 0)
   const sorted = Object.keys(byCategory).sort((a, b) => total(byCategory[b]) - total(byCategory[a]))
@@ -59,7 +65,7 @@ export const categoryMonthMatrix = (transactions, type, year, maxCategories = 5)
 
   // categoryGroups maps each displayed category (incl. the "Otros" fold) back to
   // every raw category value it represents, so callers can filter the original
-  // transactions for a drill-down without re-deriving the fold logic.
+  // records for a drill-down without re-deriving the fold logic.
   const categoryGroups = {}
   top.forEach((c) => {
     categoryGroups[c] = c === 'Otros' ? [c, ...rest] : [c]

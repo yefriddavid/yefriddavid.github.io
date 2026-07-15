@@ -11,7 +11,7 @@ import EmptyState from 'src/components/shared/EmptyState'
 import YearComparisonChart from './YearComparisonChart'
 import CategoryTrendChart from './CategoryTrendChart'
 import PivotTable from './PivotTable'
-import { yearlyTotals, categoryMonthMatrix } from './analysisHelpers'
+import { yearlyTotals, categoryMonthMatrix } from 'src/utils/categoryMonthStats'
 import './Analysis.scss'
 
 const cardHeader = (title, icon) => (
@@ -36,7 +36,7 @@ const Analysis = () => {
   const transactions = useMemo(() => data ?? [], [data])
   const monthLabelsShort = useMemo(() => monthLabels.map((m) => m.slice(0, 3)), [monthLabels])
 
-  const totals = useMemo(() => yearlyTotals(transactions), [transactions])
+  const totals = useMemo(() => yearlyTotals(transactions, 'income', 'expense'), [transactions])
   const years = totals.map((t) => t.year)
   const selectedYear = year ?? years[years.length - 1] ?? new Date().getFullYear()
 
