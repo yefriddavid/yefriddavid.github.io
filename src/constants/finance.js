@@ -1,3 +1,20 @@
+// Assets tracked on /finance/trade/prices — symbol/ticker must match a Binance
+// USDT ticker stream (see cryptoPricesWebSocket in src/services/websocketService.js)
+export const TRADE_PRICE_ASSETS = [
+  { label: 'Bitcoin', symbol: 'BTCUSDT', ticker: 'BTC' },
+  { label: 'Ethereum', symbol: 'ETHUSDT', ticker: 'ETH' },
+  { label: 'Solana', symbol: 'SOLUSDT', ticker: 'SOL' },
+  { label: 'Chainlink', symbol: 'LINKUSDT', ticker: 'LINK' },
+  { label: 'BNB', symbol: 'BNBUSDT', ticker: 'BNB' },
+  { label: 'PAX Gold', symbol: 'PAXGUSDT', ticker: 'PAXG' },
+  { label: 'Bitcoin Cash', symbol: 'BCHUSDT', ticker: 'BCH' },
+  { label: 'Avalanche', symbol: 'AVAXUSDT', ticker: 'AVAX' },
+  { label: 'XRP', symbol: 'XRPUSDT', ticker: 'XRP', decimals: 4 },
+  { label: 'Cardano', symbol: 'ADAUSDT', ticker: 'ADA', decimals: 4 },
+  { label: 'Pepe', symbol: 'PEPEUSDT', ticker: 'PEPE', decimals: 8 },
+  { label: 'Cosmos', symbol: 'ATOMUSDT', ticker: 'ATOM' },
+]
+
 export const PICTURES_UNITS = [
   { key: 'px', label: 'Píxeles', pxPerUnit: 1 },
   { key: 'mm', label: 'Milímetros', pxPerUnit: 3.7795275591 },
@@ -52,7 +69,7 @@ export const PICTURES_DEFAULT_NODE = {
   locked: false,
   sides: 6,
   points: 5,
-  rx: 12,       // corner radius — used by roundRect and elbowRound
+  rx: 12, // corner radius — used by roundRect and elbowRound
   armWidth: 24, // arm thickness (px) — used by elbow90 and elbowRound
   text: 'Texto',
   fontSize: 16,
@@ -62,28 +79,28 @@ export const PICTURES_DEFAULT_NODE = {
 export const PICTURES_FILL_PATTERNS = [
   { key: 'acrylic-green', label: 'Acrílico verde' },
   { key: 'acrylic-black', label: 'Acrílico negro' },
-  { key: 'wood-v-light',  label: 'Madera vertical clara' },
-  { key: 'wood-v-dark',   label: 'Madera vertical oscura' },
+  { key: 'wood-v-light', label: 'Madera vertical clara' },
+  { key: 'wood-v-dark', label: 'Madera vertical oscura' },
   { key: 'wood-v-walnut', label: 'Nogal vertical' },
-  { key: 'wood-h-light',  label: 'Madera horizontal clara' },
-  { key: 'wood-h-dark',   label: 'Madera horizontal oscura' },
+  { key: 'wood-h-light', label: 'Madera horizontal clara' },
+  { key: 'wood-h-dark', label: 'Madera horizontal oscura' },
 ]
 
 // ── 3D Scenes ─────────────────────────────────────────────────────────────────
 
 export const SCENES3D_OBJECT_TYPES = [
-  { key: 'box',      label: 'Caja',      icon: '⬛' },
-  { key: 'sphere',   label: 'Esfera',    icon: '⚫' },
-  { key: 'cylinder', label: 'Cilindro',  icon: '⬤' },
-  { key: 'cone',     label: 'Cono',      icon: '△' },
-  { key: 'torus',    label: 'Torus',     icon: '○' },
-  { key: 'plane',    label: 'Plano',     icon: '▬' },
+  { key: 'box', label: 'Caja', icon: '⬛' },
+  { key: 'sphere', label: 'Esfera', icon: '⚫' },
+  { key: 'cylinder', label: 'Cilindro', icon: '⬤' },
+  { key: 'cone', label: 'Cono', icon: '△' },
+  { key: 'torus', label: 'Torus', icon: '○' },
+  { key: 'plane', label: 'Plano', icon: '▬' },
 ]
 
 export const SCENES3D_TRANSFORM_MODES = [
-  { key: 'translate', label: 'Mover',   shortcut: 'W' },
-  { key: 'rotate',    label: 'Rotar',   shortcut: 'E' },
-  { key: 'scale',     label: 'Escalar', shortcut: 'R' },
+  { key: 'translate', label: 'Mover', shortcut: 'W' },
+  { key: 'rotate', label: 'Rotar', shortcut: 'E' },
+  { key: 'scale', label: 'Escalar', shortcut: 'R' },
 ]
 
 export const SCENES3D_DEFAULT_SCENE = {
@@ -115,17 +132,16 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
 ]
 
 export const CALC_LIST_CATEGORIES = [
-  { value: 'gastos',  label: 'Gastos' },
+  { value: 'gastos', label: 'Gastos' },
   { value: 'ahorros', label: 'Ahorros' },
-  { value: 'otros',   label: 'Otros' },
+  { value: 'otros', label: 'Otros' },
 ]
 
 export const CALC_LIST_CLASSIFICATIONS = [
-  { value: 'comida',    label: 'Comida' },
-  { value: 'ocio',      label: 'Ocio' },
+  { value: 'comida', label: 'Comida' },
+  { value: 'ocio', label: 'Ocio' },
   { value: 'servicios', label: 'Servicios' },
   { value: 'alquileres', label: 'Alquileres' },
-  { value: 'salarios',  label: 'Salarios' },
-  { value: 'otros',     label: 'Otros' },
+  { value: 'salarios', label: 'Salarios' },
+  { value: 'otros', label: 'Otros' },
 ]
-
