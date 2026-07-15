@@ -14,6 +14,7 @@ import {
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import { fmtCompact } from 'src/utils/formatters'
 import useLocaleData from 'src/hooks/useLocaleData'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import KPICard from 'src/components/shared/KPICard'
 import Spinner from 'src/components/shared/Spinner'
 import MonthlyFlowChart from './MonthlyFlowChart'
@@ -40,6 +41,7 @@ const cardHeader = (title, icon) => (
 
 const Dashboard = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { monthLabels } = useLocaleData()
   const { data, fetching } = useSelector((s) => s.transaction)
   const [year, setYear] = useState(CURRENT_YEAR)
@@ -53,7 +55,7 @@ const Dashboard = () => {
     dispatch(transactionActions.fetchRequest({ year }))
     setSelectedExpense(null)
     setSelectedMonth(null)
-  }, [dispatch, year])
+  }, [dispatch, year, activeTenantId])
 
   const transactions = useMemo(() => data ?? [], [data])
 

@@ -8,6 +8,7 @@ import { CCard, CCardBody, CCardHeader, CBadge, CRow, CCol } from '@coreui/react
 import * as taxiSettlementActions from 'src/actions/taxi/taxiSettlementActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import PeriodSelector from 'src/components/shared/PeriodSelector'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -25,6 +26,7 @@ const SummaryCard = ({ label, value, color }) => (
 const Resumen = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const now = new Date()
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
 
@@ -35,7 +37,7 @@ const Resumen = () => {
   useEffect(() => {
     dispatch(taxiSettlementActions.fetchRequest(period))
     dispatch(taxiExpenseActions.fetchRequest(period))
-  }, [dispatch, period])
+  }, [dispatch, period, activeTenantId])
 
   const rows = useMemo(() => {
     const s = settlements ?? []
