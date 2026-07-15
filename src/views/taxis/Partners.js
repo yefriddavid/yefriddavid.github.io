@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import * as taxiPartnerActions from 'src/actions/taxi/taxiPartnerActions'
 import useIsMobile from 'src/hooks/useIsMobile'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -68,6 +69,7 @@ const Partners = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+  const activeTenantId = useActiveTenantId()
   const { data, fetching } = useSelector((s) => s.taxiPartner)
 
   const [showForm, setShowForm] = useState(false)
@@ -78,7 +80,7 @@ const Partners = () => {
 
   useEffect(() => {
     dispatch(taxiPartnerActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const openCreate = () => {
     setEditingPartner(null)

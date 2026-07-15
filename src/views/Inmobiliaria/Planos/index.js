@@ -8,16 +8,18 @@ import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { Column, Paging, FilterRow } from 'devextreme-react/data-grid'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/inmobiliaria/planosActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './Planos.scss'
 
 const Planos = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const activeTenantId = useActiveTenantId()
   const { list, fetching } = useSelector((s) => s.inmobiliariaPlanos)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleClone = (row) => {
     dispatch(actions.cloneRequest({ id: row.id }))

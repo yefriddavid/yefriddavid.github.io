@@ -9,12 +9,14 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import Spinner from 'src/components/shared/Spinner'
 import DriverForm, { EMPTY } from './DriverForm'
 import DriverGenDocsPanel from './DriverGenDocsPanel'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './masters.scss'
 
 const DriverEditor = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const isNew = !id
   const [tab, setTab] = useState('datos')
 
@@ -24,7 +26,7 @@ const DriverEditor = () => {
   useEffect(() => {
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const driver = isNew ? null : (records ?? []).find((d) => d.id === id)
 

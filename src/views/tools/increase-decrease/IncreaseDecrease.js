@@ -18,6 +18,7 @@ import Spinner from 'src/components/shared/Spinner'
 import CryptoPriceBadge from 'src/components/shared/CryptoPriceBadge'
 import { cryptoPricesWebSocket } from 'src/services/websocketService'
 import * as actions from 'src/actions/finance/increaseDecreaseActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const formatToCOP = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '—'
@@ -67,6 +68,7 @@ const computeFields = ({ initialValue, finalValue, inversionValue }) => {
 
 const IncreaseDecrease = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { entries, loading, saving } = useSelector((s) => s.increaseDecrease)
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -80,7 +82,7 @@ const IncreaseDecrease = () => {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   // Restore edit state from URL on load or when entries arrive
   useEffect(() => {

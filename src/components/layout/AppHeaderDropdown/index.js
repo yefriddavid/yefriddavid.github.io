@@ -9,7 +9,7 @@ import {
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react'
-import { cilLockLocked, cilUser, cilCode, cilSettings } from '@coreui/icons'
+import { cilLockLocked, cilUser, cilCode, cilSettings, cilSwapHorizontal } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { clearProfile } from '../../../actions/authActions'
 import { deleteSession } from '../../../services/firebase/security/sessions'
@@ -17,6 +17,7 @@ import { signOut } from '../../../services/firebase/auth'
 import { authStorage, uiStorage } from 'src/utils/storage'
 import avatar8 from '../../../assets/images/avatars/8.jpg'
 import VersionModal from '../VersionModal'
+import TenantPicker from '../../shared/TenantPicker'
 import { USER_ROLE_LABELS as ROLE_LABELS } from 'src/constants/admin'
 import './AppHeaderDropdown.scss'
 
@@ -28,6 +29,8 @@ const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const profile = useSelector((s) => s.profile.data)
   const [versionOpen, setVersionOpen] = useState(false)
+  const [tenantPickerOpen, setTenantPickerOpen] = useState(false)
+  const tenantIds = profile?.tenantIds ?? []
 
   const [cachedAvatar, setCachedAvatar] = useState(() => uiStorage.getAvatar())
 
@@ -53,6 +56,7 @@ const AppHeaderDropdown = () => {
   return (
     <>
       <VersionModal visible={versionOpen} onClose={() => setVersionOpen(false)} />
+      <TenantPicker visible={tenantPickerOpen} onClose={() => setTenantPickerOpen(false)} />
       <CDropdown variant="nav-item">
         <CDropdownToggle placement="bottom-end" className="py-0 pe-0 header-dropdown__toggle" caret={false}>
           <CAvatar src={avatarSrc} size="md" className="header-dropdown__avatar" />
@@ -81,6 +85,15 @@ const AppHeaderDropdown = () => {
             <CIcon icon={cilCode} className="me-2" />
             Versión
           </CDropdownItem>
+          {tenantIds.length > 1 && (
+            <CDropdownItem
+              className="header-dropdown__item"
+              onClick={() => setTenantPickerOpen(true)}
+            >
+              <CIcon icon={cilSwapHorizontal} className="me-2" />
+              Cambiar tenant
+            </CDropdownItem>
+          )}
           {profile?.role === 'superAdmin' && (
             <CDropdownItem
               className="header-dropdown__item"

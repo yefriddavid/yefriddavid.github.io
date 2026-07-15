@@ -4,17 +4,19 @@ import * as actions from 'src/actions/taskActions'
 import Spinner from 'src/components/shared/Spinner'
 import TaskBoard from './TaskBoard'
 import { hasPendingSync } from './taskUtils'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './Tasks.scss'
 
 const TasksPage = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const tasks    = useSelector((s) => s.task.data)
   const fetching = useSelector((s) => s.task.fetching)
   const hasPending = hasPendingSync(tasks)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleSave   = useCallback((task) => dispatch(actions.saveRequest(task)),   [dispatch])
   const handleDelete = useCallback((id)   => dispatch(actions.deleteRequest(id)),   [dispatch])

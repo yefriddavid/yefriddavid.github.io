@@ -5,6 +5,7 @@ import CIcon from '@coreui/icons-react'
 import { cilArrowLeft, cilPencil, cilPlus, cilTrash } from '@coreui/icons'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './NoteFullPage.scss'
 
 const toTableRows = (content) => {
@@ -32,11 +33,12 @@ const NoteFullPage = () => {
   const { noteId } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data, fetching } = useSelector((s) => s.note)
 
   useEffect(() => {
-    if (!data) dispatch(actions.fetchRequest())
-  }, [dispatch, data])
+    dispatch(actions.fetchRequest())
+  }, [dispatch, activeTenantId])
 
   const note = (data ?? []).find((n) => n.id === noteId)
 

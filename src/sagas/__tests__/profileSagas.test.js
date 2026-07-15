@@ -1,19 +1,44 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { call, put } from 'redux-saga/effects'
 import * as actions from '../../actions/authActions'
 import { getUser, updateOwnProfile, updateUserAvatar } from '../../services/firebase/security/users'
 import { fetchProfile, updateProfile, updateAvatar } from '../profileSagas'
+import { clearTenantId } from '../../services/tenantContext'
 import { makeUser } from '../../__tests__/factories'
 
 describe('profileSagas', () => {
   describe('fetchProfile (post-login)', () => {
-    it('getUser(username) → fetchProfileSuccess', () => {
+    beforeEach(() => clearTenantId())
+
+    it('getUser(username) → fetchProfileSuccess, resolving activeTenantId', () => {
       const profile = makeUser()
       const gen = fetchProfile({ payload: 'jperez' })
 
       expect(gen.next().value).toEqual(call(getUser, 'jperez'))
-      expect(gen.next(profile).value).toEqual(put(actions.fetchProfileSuccess(profile)))
+      expect(gen.next(profile).value).toEqual(
+        put(actions.fetchProfileSuccess({ ...profile, activeTenantId: null })),
+      )
       expect(gen.next().done).toBe(true)
+    })
+
+    it('a single tenantId auto-resolves as the active tenant', () => {
+      const profile = makeUser({ tenantIds: ['tenant-a'] })
+      const gen = fetchProfile({ payload: 'jperez' })
+
+      gen.next() // call getUser
+      expect(gen.next(profile).value).toEqual(
+        put(actions.fetchProfileSuccess({ ...profile, activeTenantId: 'tenant-a' })),
+      )
+    })
+
+    it('more than one tenantId with no valid stored pick forces the picker (activeTenantId: null)', () => {
+      const profile = makeUser({ tenantIds: ['tenant-a', 'tenant-b'] })
+      const gen = fetchProfile({ payload: 'jperez' })
+
+      gen.next() // call getUser
+      expect(gen.next(profile).value).toEqual(
+        put(actions.fetchProfileSuccess({ ...profile, activeTenantId: null })),
+      )
     })
 
     it('dispatches fetchProfileError on service failure', () => {

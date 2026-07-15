@@ -9,6 +9,7 @@ import * as accountStatusNoteActions from 'src/actions/cashflow/accountStatusNot
 import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { selectCumulativePaymentsMap } from 'src/selectors/cashflowSelectors'
 import useLocaleData from 'src/hooks/useLocaleData'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import OcrReceiptImporter from '../OcrReceiptImporter/OcrReceiptImporter'
@@ -78,22 +79,21 @@ export default function AccountStatus() {
     })
   }, [shareToken])
 
+  const activeTenantId = useActiveTenantId()
+
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
-  }, [dispatch, year])
+  }, [dispatch, year, activeTenantId])
 
-  const tenantId = useSelector((s) => s.profile.data?.tenantId)
   useEffect(() => {
-    if (!masters || masters.length === 0) {
-      dispatch(accountsMasterActions.fetchRequest())
-    }
-  }, [dispatch, tenantId, masters])
+    dispatch(accountsMasterActions.fetchRequest())
+  }, [dispatch, activeTenantId])
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
 
   useEffect(() => {
     dispatch(accountStatusNoteActions.fetchRequest({ period: monthStr }))
-  }, [dispatch, monthStr])
+  }, [dispatch, monthStr, activeTenantId])
 
   const cumulativePaymentsMap = useSelector(selectCumulativePaymentsMap)
 

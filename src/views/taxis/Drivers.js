@@ -13,6 +13,7 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import { fmt } from 'src/utils/formatters'
 import StatusBadge from 'src/components/shared/StatusBadge'
 import useIsMobile from 'src/hooks/useIsMobile'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -21,13 +22,14 @@ const Conductores = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const activeTenantId = useActiveTenantId()
   const { data: records, fetching } = useSelector((s) => s.taxiDriver)
   const { data: vehicles } = useSelector((s) => s.taxiVehicle)
 
   useEffect(() => {
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const vehicleOptions = [
     { plate: '', label: '— Ninguno —' },

@@ -269,10 +269,12 @@ describe('AccountStatus (index)', () => {
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'ACC_FETCH' }))
     })
 
-    it('does not re-fetch masters when data is already loaded', () => {
+    // Always re-fetches on mount (even with data already loaded) so switching the active
+    // tenant refreshes this view instead of leaving stale data from the previous tenant.
+    it('re-fetches masters even when data is already loaded', () => {
       renderComponent()
       const accFetchCalls = mockDispatch.mock.calls.filter((c) => c[0]?.type === 'ACC_FETCH')
-      expect(accFetchCalls.length).toBe(0)
+      expect(accFetchCalls.length).toBe(1)
     })
 
     it('dispatches accountStatusNoteActions.fetchRequest with monthStr', () => {

@@ -129,13 +129,18 @@ const MembersPanel = React.memo(({ tenant }) => {
     if (!allUsers.length) dispatch(usersActions.fetchRequest())
   }, [dispatch, allUsers.length])
 
-  const members = allUsers.filter((u) => u.tenantId === tenant.id)
-  const available = allUsers.filter((u) => !u.tenantId || u.tenantId === tenant.id)
+  const members = allUsers.filter((u) => (u.tenantIds ?? []).includes(tenant.id))
 
-  const assign = (username) =>
-    dispatch(tenantsActions.assignUserRequest({ username, tenantId: tenant.id }))
-  const unassign = (username) =>
-    dispatch(tenantsActions.assignUserRequest({ username, tenantId: null }))
+  const assign = (username) => {
+    const user = allUsers.find((u) => u.username === username)
+    const tenantIds = Array.from(new Set([...(user?.tenantIds ?? []), tenant.id]))
+    dispatch(tenantsActions.assignUserRequest({ username, tenantIds }))
+  }
+  const unassign = (username) => {
+    const user = allUsers.find((u) => u.username === username)
+    const tenantIds = (user?.tenantIds ?? []).filter((id) => id !== tenant.id)
+    dispatch(tenantsActions.assignUserRequest({ username, tenantIds }))
+  }
 
   return (
     <div>
@@ -177,18 +182,16 @@ const MembersPanel = React.memo(({ tenant }) => {
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {allUsers
-          .filter((u) => u.tenantId !== tenant.id)
+          .filter((u) => !(u.tenantIds ?? []).includes(tenant.id))
           .map((u) => (
             <CButton
               key={u.username}
               size="sm"
-              color={u.tenantId ? 'warning' : 'primary'}
+              color="primary"
               variant="outline"
-              title={u.tenantId ? `Actualmente en tenant: ${u.tenantId}` : undefined}
               onClick={() => assign(u.username)}
             >
               {u.username}
-              {u.tenantId && ' ⚠'}
             </CButton>
           ))}
       </div>

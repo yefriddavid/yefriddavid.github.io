@@ -46,6 +46,10 @@ const profileSlice = createSlice({
         state.error = null
       })
 
+      .addCase(actions.selectTenantSuccess, (state, { payload }) => {
+        if (state.data) state.data.activeTenantId = payload
+      })
+
       .addCase(actions.changePasswordRequest, (state) => {
         state.pwChanging = true
         state.pwSuccess = false

@@ -26,6 +26,7 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import useIsMobile from 'src/hooks/useIsMobile'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { uploadImages } from 'src/services/facade/imageFacade'
 import StatusBadge from 'src/components/shared/StatusBadge'
 import './masters.scss'
@@ -170,6 +171,7 @@ const Vehiculos = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+  const activeTenantId = useActiveTenantId()
   const { data: records, fetching } = useSelector((s) => s.taxiVehicle)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
   const gridRef = useRef()
@@ -184,7 +186,7 @@ const Vehiculos = () => {
   useEffect(() => {
     dispatch(taxiVehicleActions.fetchRequest())
     dispatch(taxiDriverActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleCreate = (form) => {
     dispatch(taxiVehicleActions.createRequest(form))

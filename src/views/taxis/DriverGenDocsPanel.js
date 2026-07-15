@@ -21,6 +21,7 @@ import { DRIVER_DOC_PLACEHOLDERS } from 'src/constants/taxi'
 import { applyPlaceholders, buildDocHtml } from 'src/utils/driverDocUtils'
 import { generateHtmlToPdf } from '../Contratos/contratos/contractPdf'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './masters.scss'
 
 const fieldError = (err) =>
@@ -181,6 +182,7 @@ const EditDocModal = ({ doc, onSave, onClose, saving }) => {
 
 const DriverGenDocsPanel = ({ driver, isMobile }) => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data: genDocs, fetching } = useSelector((s) => s.taxiDriverGenDoc)
   const { data: templates, fetching: loadingTemplates } = useSelector((s) => s.taxiDriverDocument)
 
@@ -189,8 +191,8 @@ const DriverGenDocsPanel = ({ driver, isMobile }) => {
 
   useEffect(() => {
     dispatch(genDocActions.fetchRequest(driver.id))
-    if (!templates) dispatch(templateActions.fetchRequest())
-  }, [driver.id, dispatch])
+    dispatch(templateActions.fetchRequest())
+  }, [driver.id, dispatch, activeTenantId])
 
   const docs = genDocs ?? []
   const tplList = templates ?? []

@@ -20,9 +20,11 @@ import AnnualView from './AnnualView'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 export default function Transactions() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data, fetching, saving } = useSelector((s) => s.transaction)
   const { data: masters, fetching: fetchingMasters } = useSelector((s) => s.accountsMaster)
 
@@ -41,11 +43,11 @@ export default function Transactions() {
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({ year }))
-  }, [dispatch, year])
+  }, [dispatch, year, activeTenantId])
 
   useEffect(() => {
-    if (!masters) dispatch(accountsMasterActions.fetchRequest())
-  }, [dispatch, masters])
+    dispatch(accountsMasterActions.fetchRequest())
+  }, [dispatch, activeTenantId])
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
 

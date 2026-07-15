@@ -12,6 +12,7 @@ import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import CryptoPurchaseForm, { EMPTY_PURCHASE } from './CryptoPurchaseForm'
 import { fmtUSD, symbolLabel, computePurchaseMetrics } from './cryptoPurchaseHelpers'
 import { SEED_PURCHASES } from './cryptoPurchaseSeed'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './CryptoPurchases.scss'
 
 const amountClass = (value) =>
@@ -19,6 +20,7 @@ const amountClass = (value) =>
 
 const CryptoPurchases = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { purchases, loading, saving } = useSelector((s) => s.cryptoPurchase)
   const { prices, connected } = useCryptoPrices()
 
@@ -27,7 +29,7 @@ const CryptoPurchases = () => {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const filtered = useMemo(
     () =>

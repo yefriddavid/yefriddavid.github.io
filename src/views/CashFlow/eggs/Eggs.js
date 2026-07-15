@@ -12,6 +12,7 @@ import {
 import { Column } from 'devextreme-react/data-grid'
 import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as eggActions from 'src/actions/cashflow/eggActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import Spinner from 'src/components/shared/Spinner'
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -309,6 +310,7 @@ function GlobalNotes() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Eggs() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data: eggs, fetching, saving } = useSelector((s) => s.egg)
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -345,7 +347,7 @@ export default function Eggs() {
 
   useEffect(() => {
     dispatch(eggActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const years = useMemo(() => {
     if (!eggs) return []

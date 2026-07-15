@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/cashflow/salaryDistributionActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { computeDistribution, useIsMobile, bumpId } from './salaryUtils'
 import DistributionTabs from './DistributionTabs'
 import DistributionEditor from './DistributionEditor'
@@ -9,6 +10,7 @@ import EggPriceChart from './EggPriceChart'
 
 export default function SalaryDistribution() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const {
     data: distributions,
     fetching,
@@ -25,7 +27,7 @@ export default function SalaryDistribution() {
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   useEffect(() => {
     if (distributions?.length && !activeId) setActiveId(distributions[0].id)

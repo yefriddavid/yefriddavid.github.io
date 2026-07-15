@@ -8,15 +8,17 @@ import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import { Column, Paging, FilterRow } from 'devextreme-react/data-grid'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/scenes3dActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const Scenes3D = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const activeTenantId = useActiveTenantId()
   const { list, fetching, saving } = useSelector((s) => s.financeScenes3d)
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleDelete = (row) => {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {

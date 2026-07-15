@@ -5,19 +5,35 @@ import {
   updateOwnProfile,
   updateUserAvatar,
 } from '../services/facade/security/usersFacade'
-import { setTenantId } from '../services/tenantContext'
+import { getTenantId, setTenantId } from '../services/tenantContext'
 import { changePassword } from '../services/firebase/auth'
 import { authStorage } from '../utils/storage'
+
+// Resolves which tenant should be active for a user that can belong to several:
+// - 0 or 1 tenant → automatic, no prompt (today's behavior)
+// - >1 tenant → keep the previously active one if still valid, otherwise null (forces the picker)
+const resolveActiveTenantId = (tenantIds) => {
+  if (tenantIds.length <= 1) return tenantIds[0] ?? null
+  const stored = getTenantId()
+  return tenantIds.includes(stored) ? stored : null
+}
 
 export function* fetchProfile({ payload: username }) {
   try {
     const data = yield call(getUser, username)
-    setTenantId(data?.tenantId ?? null)
+    const tenantIds = data?.tenantIds ?? []
+    const activeTenantId = resolveActiveTenantId(tenantIds)
+    setTenantId(activeTenantId)
     authStorage.setRole(data?.role ?? null)
-    yield put(actions.fetchProfileSuccess(data))
+    yield put(actions.fetchProfileSuccess(data ? { ...data, activeTenantId } : data))
   } catch (e) {
     yield put(actions.fetchProfileError(e.message))
   }
+}
+
+export function* selectTenant({ payload: tenantId }) {
+  setTenantId(tenantId)
+  yield put(actions.selectTenantSuccess(tenantId))
 }
 
 export function* updateProfile({ payload }) {
@@ -50,6 +66,7 @@ export function* handleChangePassword({ payload: { username, current, next } }) 
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchProfile, fetchProfile),
+    takeLatest(actions.selectTenant, selectTenant),
     takeLatest(actions.updateProfile, updateProfile),
     takeLatest(actions.updateAvatar, updateAvatar),
     takeLatest(actions.changePasswordRequest, handleChangePassword),

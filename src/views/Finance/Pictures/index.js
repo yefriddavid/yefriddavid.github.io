@@ -9,6 +9,7 @@ import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/finance/picturesActions'
 import { PICTURES_UNITS_MAP } from 'src/constants/finance'
 import { onPictureUpdated } from 'src/utils/broadcastChannel'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const Thumbnail = ({ src, canvas, onClick }) => {
   const u = PICTURES_UNITS_MAP[canvas?.unit] ?? PICTURES_UNITS_MAP.cm
@@ -31,6 +32,7 @@ const Thumbnail = ({ src, canvas, onClick }) => {
 
 const Pictures = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const navigate = useNavigate()
   const { list, fetching, saving } = useSelector((s) => s.financePictures)
   const [preview, setPreview] = useState(null) // { id, src }
@@ -40,7 +42,7 @@ const Pictures = () => {
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   useEffect(() => {
     return onPictureUpdated((picture) => {

@@ -24,6 +24,7 @@ import {
   TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
 } from 'src/constants/taxi'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 // Derive day/month names from a locale string using Intl
 const getDayNames = (locale) =>
@@ -129,6 +130,7 @@ const ExpenseModal = ({ item, onClose }) => {
 
 const Operations = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { i18n } = useTranslation()
   const locale = i18n.language
 
@@ -148,7 +150,7 @@ const Operations = () => {
     dispatch(taxiVehicleActions.fetchRequest())
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiExpenseActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const vehicles = vehiclesData ?? []
   const drivers = driversData ?? []

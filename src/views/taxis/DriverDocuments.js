@@ -11,6 +11,7 @@ import StandardForm, { StandardField, SF } from 'src/components/shared/StandardF
 import * as actions from 'src/actions/taxi/taxiDriverDocumentActions'
 import useIsMobile from 'src/hooks/useIsMobile'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './masters.scss'
 
 const EMPTY = { name: '', template: '', comment: '' }
@@ -68,6 +69,7 @@ const DocumentForm = ({ initial, editingId, onSave, onCancel, saving }) => {
 const DriverDocuments = () => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+  const activeTenantId = useActiveTenantId()
   const { data, fetching } = useSelector((s) => s.taxiDriverDocument)
 
   const [showForm, setShowForm] = useState(false)
@@ -78,7 +80,7 @@ const DriverDocuments = () => {
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const openCreate = () => {
     setEditing(null)

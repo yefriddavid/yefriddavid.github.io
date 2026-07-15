@@ -111,8 +111,8 @@ export const deleteUser = async (username) => {
   await firestoreCall(() => deleteDoc(doc(db, COL, username)))
 }
 
-export const setUserTenant = async (username, tenantId) => {
-  await firestoreCall(() => updateDoc(doc(db, COL, username), { tenantId: tenantId ?? null }))
+export const setUserTenants = async (username, tenantIds) => {
+  await firestoreCall(() => updateDoc(doc(db, COL, username), { tenantIds: tenantIds ?? [] }))
 }
 
 // Admin: sets a new password for a user.

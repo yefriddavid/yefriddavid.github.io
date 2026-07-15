@@ -46,12 +46,14 @@ import * as taskActions from './actions/taskActions'
 import { reportError } from './services/errorReporter'
 import { authStorage } from './utils/storage'
 import { onAuthSignedIn } from './utils/broadcastChannel'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const storedTheme = useSelector((state) => state.theme)
   const appTheme = useSelector((state) => state.ui.appTheme)
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
 
   const { needRefresh: needRefreshState, updateServiceWorker } = useRegisterSW()
 
@@ -82,7 +84,7 @@ const App = () => {
     if (!token) return
     dispatch(accountsMasterActions.fetchRequest())
     dispatch(taskActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   // Restore profile on page refresh when already authenticated
   useEffect(() => {

@@ -16,9 +16,11 @@ import {
 import AssetCard from './AssetCard'
 import AssetSheet from './AssetSheet'
 import SummaryCard from './SummaryCard'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 export default function Assets() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { assets, loading, saving, syncing, syncingAll, importing } = useSelector((s) => s.asset)
 
   const [sheet, setSheet] = useState(null)
@@ -31,7 +33,7 @@ export default function Assets() {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const filtered = useMemo(() => {
     return assets.filter((a) => {

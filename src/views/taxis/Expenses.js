@@ -32,6 +32,7 @@ import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import useLocaleData from 'src/hooks/useLocaleData'
 import useIsMobile from 'src/hooks/useIsMobile'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import {
   TAXI_EXPENSE_CATEGORIES as CATEGORIES,
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATS,
@@ -442,6 +443,7 @@ const Gastos = () => {
   const { monthLabels: MONTHS } = useLocaleData()
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data: expenses, fetching, isError, error } = useSelector((s) => s.taxiExpense)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
   const { data: vehicleData } = useSelector((s) => s.taxiVehicle)
@@ -463,7 +465,7 @@ const Gastos = () => {
     dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
-  }, [dispatch, period.month, period.year])
+  }, [dispatch, period.month, period.year, activeTenantId])
 
   useEffect(() => {
     if (editingRow) {

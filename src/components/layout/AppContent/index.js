@@ -14,11 +14,14 @@ import routes from '../../../routes'
 import financeRoutes from '../../../routes.finance'
 import useNotifications from '../../../hooks/useNotifications'
 import useProgramHooks from '../../../hooks/useProgramHooks'
+import TenantPicker from '../../shared/TenantPicker'
 
 const AppContent = () => {
   // undefined = Firebase still resolving, null = signed out, object = signed in
   const [firebaseUser, setFirebaseUser] = useState(undefined)
   const role = useSelector((s) => s.profile.data?.role ?? null)
+  const tenantIds = useSelector((s) => s.profile.data?.tenantIds ?? [])
+  const activeTenantId = useSelector((s) => s.profile.data?.activeTenantId ?? null)
   const landingPage =
     useSelector((s) => s.profile.data?.landingPage) ||
     authStorage.getLandingPage() ||
@@ -87,6 +90,15 @@ const AppContent = () => {
     if (!route.roles) return true
     if (!role) return true
     return route.roles.includes(role)
+  }
+
+  // ── Belongs to more than one tenant and hasn't picked one yet ────────────────
+  if (tenantIds.length > 1 && !activeTenantId) {
+    return (
+      <CContainer className="px-2" fluid>
+        <TenantPicker visible forced />
+      </CContainer>
+    )
   }
 
   return (

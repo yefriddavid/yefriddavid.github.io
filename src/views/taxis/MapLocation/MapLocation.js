@@ -24,6 +24,7 @@ import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as vehicleLocationHistoryActions from 'src/actions/taxi/vehicleLocationHistoryActions'
 import * as currentPositionsActions from 'src/actions/taxi/currentPositionsActions'
 import { useVehicleLocationSnapshot } from 'src/hooks/useVehicleLocationSnapshot'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { shouldPersist } from 'src/utils/locationThrottle'
 import { reverseGeocode, geoKey } from 'src/utils/reverseGeocode'
 import { haversineKmh } from 'src/utils/geoUtils'
@@ -38,6 +39,7 @@ import Spinner from 'src/components/shared/Spinner'
 
 const MapLocation = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data: vehicles, fetching: fetchingVehicles } = useSelector((s) => s.taxiVehicle)
   const { data: drivers, fetching: fetchingDrivers } = useSelector((s) => s.taxiDriver)
   const currentPositions = useSelector((s) => s.currentPositions)
@@ -67,9 +69,9 @@ const MapLocation = () => {
   }, [recentHistories])
 
   useEffect(() => {
-    if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
-    if (!drivers) dispatch(taxiDriverActions.fetchRequest())
-  }, [dispatch, vehicles, drivers])
+    dispatch(taxiVehicleActions.fetchRequest())
+    dispatch(taxiDriverActions.fetchRequest())
+  }, [dispatch, activeTenantId])
 
   useEffect(() => {
     if (!vehicles) return

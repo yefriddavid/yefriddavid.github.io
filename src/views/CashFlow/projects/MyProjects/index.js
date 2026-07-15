@@ -5,9 +5,11 @@ import { fmt, uid, now, totalOf } from './helpers'
 import ProjectSheet from './ProjectSheet'
 import ProjectCard from './ProjectCard'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 export default function MyProjects() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { projects, loading, saving, syncing, syncingAll, importing } = useSelector(
     (s) => s.myProject,
   )
@@ -16,7 +18,7 @@ export default function MyProjects() {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleSave = (project) => {
     const withOrder =

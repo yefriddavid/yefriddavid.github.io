@@ -21,6 +21,9 @@ export const updateAvatarError = createAction('update user avatar error')
 
 export const clearProfile = createAction('clear user profile')
 
+export const selectTenant = createAction('profile/selectTenant')
+export const selectTenantSuccess = createAction('profile/selectTenantSuccess')
+
 export const changePasswordRequest = createAction('profile/changePasswordRequest')
 export const changePasswordSuccess = createAction('profile/changePasswordSuccess')
 export const changePasswordError = createAction('profile/changePasswordError')

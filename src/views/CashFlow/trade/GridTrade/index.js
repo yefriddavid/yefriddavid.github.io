@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/cashflow/gridTradeActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { useIsDesktop, fmtUSD } from './utils'
 import TradeCard from './TradeCard'
 import TradeDetail from './TradeDetail'
@@ -9,6 +10,7 @@ import GridInfoModal from './GridInfoModal'
 
 export default function GridTrade() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const isDesktop = useIsDesktop()
   const { trades, loading, saving } = useSelector((s) => s.gridTrade)
   const [sheet, setSheet] = useState(null)
@@ -19,7 +21,7 @@ export default function GridTrade() {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   // Auto-select first trade on desktop when data loads
   useEffect(() => {

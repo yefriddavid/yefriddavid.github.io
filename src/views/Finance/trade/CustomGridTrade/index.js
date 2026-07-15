@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import { CNav, CNavItem, CNavLink, CTabContent, CTabPane, CFormCheck } from '@coreui/react'
 import * as actions from 'src/actions/finance/customGridTradeActions'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import TradeVisualGrid from './TradeVisualGrid'
 import TradesTab from './TradesTab'
 
@@ -12,6 +13,7 @@ const TAB_KEYS = { 1: 'grids', 2: 'trades' }
 
 export default function CustomGridTrade() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { trades, loading, saving, useIndexedDB } = useSelector((s) => s.customGridTrade)
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = TABS[searchParams.get(TAB_PARAM)] ?? 1
@@ -32,7 +34,7 @@ export default function CustomGridTrade() {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 28px' }}>

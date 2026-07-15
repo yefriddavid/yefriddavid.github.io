@@ -27,10 +27,12 @@ import {
   fillFormFromDoc,
 } from './helpers'
 import { uploadImage, MAX_IMAGE_BYTES } from 'src/services/facade/imageFacade'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 export function useGenerarContrato() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
 
   const properties = useSelector((s) => s.contratoProperty.data)
   const bankAccounts = useSelector((s) => s.contratoBankAccount.data)
@@ -60,7 +62,7 @@ export function useGenerarContrato() {
     dispatch(bankAccountActions.fetchRequest())
     dispatch(ownerActions.fetchRequest())
     dispatch(contractActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const [searchParams, setSearchParams] = useSearchParams()
   const [form, setForm] = useState(emptyForm)

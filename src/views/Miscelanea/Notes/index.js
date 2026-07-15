@@ -30,6 +30,7 @@ import * as actions from 'src/actions/misc/noteActions'
 import { DEFAULT_NOTE_CATEGORY, NOTE_COLORS, PRIVATE_NOTES_PASSWORD } from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './Notes.scss'
 
 const isHexColor = (v) => /^#[0-9a-fA-F]{6}$/.test(v || '')
@@ -1315,6 +1316,7 @@ const sortByOrder = (arr) => [...arr].sort((a, b) => (a.order ?? 9999) - (b.orde
 
 const Notes = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const navigate = useNavigate()
   const { data, fetching, saving } = useSelector((s) => s.note)
   const [items, setItems] = useState([])
@@ -1335,7 +1337,7 @@ const Notes = () => {
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   useEffect(() => {
     if (!dragging) setItems(sortByOrder(data ?? []))

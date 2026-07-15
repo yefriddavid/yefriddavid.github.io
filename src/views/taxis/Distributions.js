@@ -31,6 +31,7 @@ import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import '../movements/payments/Payments.scss'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -52,6 +53,7 @@ const MONTHS = [
 const Distributions = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const now = new Date()
 
   const { data: distributionsData, fetching: loadingDist } = useSelector((s) => s.taxiDistribution)
@@ -71,7 +73,7 @@ const Distributions = () => {
     dispatch(taxiPartnerActions.fetchRequest())
     dispatch(taxiSettlementActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
-  }, [dispatch, period.month, period.year])
+  }, [dispatch, period.month, period.year, activeTenantId])
 
   const periodStr = `${period.year}-${String(period.month).padStart(2, '0')}`
 

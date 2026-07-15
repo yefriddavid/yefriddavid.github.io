@@ -10,17 +10,19 @@ import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import Spinner from 'src/components/shared/Spinner'
 import * as actions from 'src/actions/inmobiliaria/designActions'
 import { DESIGN_TEMPLATE_MAP } from 'src/constants/inmobiliaria'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './Designs.scss'
 
 const Designs = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const activeTenantId = useActiveTenantId()
   const { list, fetching } = useSelector((s) => s.inmobiliariaDesign)
   const [viewMode, setViewMode] = useState('grid')
 
   useEffect(() => {
     dispatch(actions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const handleDelete = (row) => {
     if (window.confirm(`¿Eliminar "${row.name}"?`)) {

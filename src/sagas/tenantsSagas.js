@@ -1,13 +1,23 @@
 import { put, call, all, takeLatest } from 'redux-saga/effects'
 import * as actions from '../actions/tenantsActions'
 import * as service from '../services/facade/admin/tenantsFacade'
-import { setUserTenant } from '../services/facade/security/usersFacade'
+import { setUserTenants } from '../services/facade/security/usersFacade'
 import { fetchRequest as fetchUsersRequest } from '../actions/usersActions'
 
 function* fetchTenants() {
   try {
     yield put(actions.beginRequestFetch())
     const data = yield call(service.getTenants)
+    yield put(actions.successRequestFetch(data))
+  } catch (e) {
+    yield put(actions.errorRequestFetch(e.message))
+  }
+}
+
+function* fetchTenantsByIds({ payload: ids }) {
+  try {
+    yield put(actions.beginRequestFetch())
+    const data = yield call(service.getTenantsByIds, ids)
     yield put(actions.successRequestFetch(data))
   } catch (e) {
     yield put(actions.errorRequestFetch(e.message))
@@ -44,10 +54,10 @@ function* deleteTenant({ payload }) {
   }
 }
 
-function* assignUser({ payload: { username, tenantId } }) {
+function* assignUser({ payload: { username, tenantIds } }) {
   try {
-    yield call(setUserTenant, username, tenantId)
-    yield put(actions.assignUserSuccess({ username, tenantId }))
+    yield call(setUserTenants, username, tenantIds)
+    yield put(actions.assignUserSuccess({ username, tenantIds }))
     yield put(fetchUsersRequest())
   } catch (e) {
     yield put(actions.assignUserError(e.message))
@@ -57,6 +67,7 @@ function* assignUser({ payload: { username, tenantId } }) {
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.fetchRequest, fetchTenants),
+    takeLatest(actions.fetchByIdsRequest, fetchTenantsByIds),
     takeLatest(actions.createRequest, createTenant),
     takeLatest(actions.updateRequest, updateTenant),
     takeLatest(actions.deleteRequest, deleteTenant),

@@ -36,6 +36,7 @@ import PeriodNotes from '../Components/PeriodNotes'
 import PeriodAttachments from '../Components/PeriodAttachments'
 import SettlementsAuditChat from '../Components/SettlementsAuditChat'
 import useLocaleData from 'src/hooks/useLocaleData'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { buildAuditExporters } from './auditExport'
 
 import PeriodSelector from 'src/components/shared/PeriodSelector'
@@ -47,6 +48,7 @@ const Taxis = () => {
   const { t, i18n } = useTranslation()
   const { dayNames, dayNamesFull } = useLocaleData()
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const {
     settlementsData,
     loadingSettlements,
@@ -141,7 +143,7 @@ const Taxis = () => {
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
     dispatch(taxiAuditNoteActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   useEffect(() => {
     const periodStr = `${period.year}-${String(period.month).padStart(2, '0')}`
@@ -149,7 +151,7 @@ const Taxis = () => {
     dispatch(taxiExpenseActions.fetchRequest({ month: period.month, year: period.year }))
     dispatch(taxiPeriodNoteActions.fetchRequest({ period: periodStr }))
     dispatch(taxiPeriodAttachmentActions.fetchRequest({ period: periodStr }))
-  }, [dispatch, period.year, period.month])
+  }, [dispatch, period.year, period.month, activeTenantId])
 
   useEffect(() => {
     localStorage.setItem('settlements_period', JSON.stringify(period))

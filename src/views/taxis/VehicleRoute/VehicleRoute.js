@@ -11,6 +11,7 @@ import RouteSummary from './RouteSummary'
 import 'leaflet/dist/leaflet.css'
 import './VehicleRoute.scss'
 import Spinner from 'src/components/shared/Spinner'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const DEFAULT_CENTER = [-1.6635, -78.6536]
 
@@ -54,6 +55,7 @@ const LS_KEY = 'taxis_route_history_filters'
 
 const VehicleRoute = () => {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const { data: vehicles } = useSelector((s) => s.taxiVehicle)
   const { data: routePoints, fetching, error } = useSelector((s) => s.vehicleRoute)
 
@@ -75,8 +77,8 @@ const VehicleRoute = () => {
   }, [vehicleId, startDate, endDate])
 
   useEffect(() => {
-    if (!vehicles) dispatch(taxiVehicleActions.fetchRequest())
-  }, [dispatch, vehicles])
+    dispatch(taxiVehicleActions.fetchRequest())
+  }, [dispatch, activeTenantId])
 
   const handleSearch = () => {
     if (!vehicleId) return

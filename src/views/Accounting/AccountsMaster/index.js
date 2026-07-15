@@ -19,6 +19,7 @@ import { SEED_ACCOUNTS, PATCH_ACCOUNTING } from 'src/constants/accountsMasterSee
 import AccountMasterForm from './AccountMasterForm'
 import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import useIsMobile from 'src/hooks/useIsMobile'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import '../../movements/payments/Payments.scss'
 import '../../movements/payments/ItemDetail.scss'
 import Spinner from 'src/components/shared/Spinner'
@@ -31,6 +32,7 @@ export default function AccountsMaster() {
   )
   const gridRef = useRef(null)
   const isMobile = useIsMobile()
+  const activeTenantId = useActiveTenantId()
   const [showForm, setShowForm] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [typeFilter, setTypeFilter] = useState('all')
@@ -39,7 +41,7 @@ export default function AccountsMaster() {
 
   useEffect(() => {
     dispatch(accountsMasterActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   const filtered = (data ?? []).filter((r) => {
     if (typeFilter !== 'all' && r.type !== typeFilter) return false

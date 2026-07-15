@@ -201,12 +201,12 @@ describe('Transactions', () => {
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'MASTER_FETCH' }))
     })
 
-    it('does not dispatch accountsMaster fetchRequest when masters already loaded', () => {
+    // Always re-fetches on mount (even with data already loaded) so switching the active
+    // tenant refreshes this view instead of leaving stale data from the previous tenant.
+    it('dispatches accountsMaster fetchRequest even when masters already loaded', () => {
       setupStore({ accountsMaster: { data: [masterA], fetching: false } })
       render(<Transactions />)
-      expect(mockDispatch).not.toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'MASTER_FETCH' }),
-      )
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'MASTER_FETCH' }))
     })
 
     it('shows spinner in maestro tab when fetching masters with no data', () => {

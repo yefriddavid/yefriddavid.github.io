@@ -8,6 +8,7 @@ import * as moduleNoteActions from 'src/actions/contratos/contractModuleNoteActi
 import ModuleNotes from './ModuleNotes'
 import CanonHistoryPanel from '../CanonHistoryPanel'
 import PaymentsPanel from '../PaymentsPanel'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './ContractsList.scss'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ function fmtDate(iso) {
 
 export default function ContractsList() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
   const navigate = useNavigate()
 
   const records = useSelector((s) => s.contrato.summary)
@@ -60,7 +62,7 @@ export default function ContractsList() {
   useEffect(() => {
     dispatch(contractActions.fetchSummaryRequest())
     dispatch(moduleNoteActions.fetchRequest())
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 
   // Re-fetch when the tab/window regains focus so data stays fresh after
   // editing a contract in GenerarContrato and navigating back here

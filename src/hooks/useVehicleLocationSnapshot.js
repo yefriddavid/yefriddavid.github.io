@@ -3,22 +3,22 @@ import { useDispatch } from 'react-redux'
 import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
 import { db, auth } from 'src/services/firebase/settings'
-import { getTenantId } from 'src/services/tenantContext'
 import * as currentPositionsActions from 'src/actions/taxi/currentPositionsActions'
 import { authStorage } from 'src/utils/storage'
+import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
 const COL = 'Taxi_vehicle_location_history'
 
 export function useVehicleLocationSnapshot() {
   const dispatch = useDispatch()
+  const activeTenantId = useActiveTenantId()
 
   useEffect(() => {
-    const tenantId = getTenantId()
-    if (!tenantId) return
+    if (!activeTenantId) return
 
     const q = query(
       collection(db, COL),
-      where('tenantId', '==', tenantId),
+      where('tenantId', '==', activeTenantId),
       orderBy('timestamp', 'desc'),
       limit(20),
     )
@@ -60,5 +60,5 @@ export function useVehicleLocationSnapshot() {
     )
 
     return () => unsubscribe()
-  }, [dispatch])
+  }, [dispatch, activeTenantId])
 }

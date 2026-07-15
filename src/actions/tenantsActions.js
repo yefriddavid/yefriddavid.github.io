@@ -20,6 +20,9 @@ export const {
   errorRequestDelete,
 } = createCRUDActions('tenants')
 
+// payload: string[] tenant ids — narrow fetch used by the tenant picker
+export const fetchByIdsRequest = createAction('tenants/fetchByIdsRequest')
+
 export const assignUserRequest = createAction('tenants/assignUserRequest')
 export const assignUserSuccess = createAction('tenants/assignUserSuccess')
 export const assignUserError = createAction('tenants/assignUserError')
