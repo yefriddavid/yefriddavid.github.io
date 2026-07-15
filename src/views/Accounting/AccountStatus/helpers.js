@@ -37,6 +37,17 @@ export const fieldInput = {
 
 import { MONTH_NAMES } from 'src/constants/commons'
 
+export function lastDayOfMonth(monthStr) {
+  const [y, m] = monthStr.split('-').map(Number)
+  return new Date(y, m, 0).getDate()
+}
+
+// maxDatePay === -1 means "last calendar day of the month being viewed" instead of a fixed day
+export function resolveMaxDatePay(maxDatePay, monthStr) {
+  if (maxDatePay === -1) return lastDayOfMonth(monthStr)
+  return maxDatePay || 31
+}
+
 export function isApplicableToMonth(account, month) {
   if (!account.active) return false
   if (account.period === 'Mensuales') return true
@@ -81,7 +92,7 @@ export function getStatus(account, payments, monthStr, cumulativePaid = null) {
       }
     const today = new Date()
     const [y, m] = monthStr.split('-').map(Number)
-    const due = new Date(y, m - 1, account.maxDatePay || 31)
+    const due = new Date(y, m - 1, resolveMaxDatePay(account.maxDatePay, monthStr))
     if (today > due)
       return {
         label: 'Vencido',

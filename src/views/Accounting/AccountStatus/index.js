@@ -14,7 +14,15 @@ import AttachmentViewer from 'src/components/shared/AttachmentViewer'
 import { uploadImage } from 'src/services/facade/imageFacade'
 import OcrReceiptImporter from '../OcrReceiptImporter/OcrReceiptImporter'
 import { getPendingShare, clearPendingShare } from 'src/services/idb/pendingShare'
-import { fmt, isApplicableToMonth, getStatus, CURRENT_YEAR, CURRENT_MONTH, now } from './helpers'
+import {
+  fmt,
+  isApplicableToMonth,
+  getStatus,
+  resolveMaxDatePay,
+  CURRENT_YEAR,
+  CURRENT_MONTH,
+  now,
+} from './helpers'
 import DetailModal from './DetailModal'
 import PayModal from './PayModal'
 import AccountCard from './AccountCard'
@@ -73,7 +81,13 @@ export default function AccountStatus() {
     getPendingShare().then((entry) => {
       if (!entry) return
       clearPendingShare()
-      setSearchParams((prev) => { prev.delete('share'); return prev }, { replace: true })
+      setSearchParams(
+        (prev) => {
+          prev.delete('share')
+          return prev
+        },
+        { replace: true },
+      )
       const file = new File([entry.buffer], entry.name, { type: entry.type })
       setSharedFile(file)
     })
@@ -198,7 +212,10 @@ export default function AccountStatus() {
           return s.label === 'Pendiente' || s.label === 'Vencido' || s.label === 'Parcial'
         return true
       })
-      .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
+      .sort(
+        (a, b) =>
+          resolveMaxDatePay(a.maxDatePay, monthStr) - resolveMaxDatePay(b.maxDatePay, monthStr),
+      )
   }, [applicable, masterPaymentsMap, monthStr, filter])
 
   const prevMonth = () => {
@@ -398,7 +415,13 @@ export default function AccountStatus() {
         )}
         {/* OCR importer  */}
         <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
-          <OcrReceiptImporter masters={masters} monthStr={monthStr} transactions={transactions} onConfirm={handleSavePayment} initialFile={sharedFile} />
+          <OcrReceiptImporter
+            masters={masters}
+            monthStr={monthStr}
+            transactions={transactions}
+            onConfirm={handleSavePayment}
+            initialFile={sharedFile}
+          />
         </div>
       </div>
 
@@ -483,7 +506,11 @@ export default function AccountStatus() {
         ) : (
           filtered
             .slice()
-            .sort((a, b) => (a.maxDatePay || 31) - (b.maxDatePay || 31))
+            .sort(
+              (a, b) =>
+                resolveMaxDatePay(a.maxDatePay, monthStr) -
+                resolveMaxDatePay(b.maxDatePay, monthStr),
+            )
             .map((account) => (
               <AccountCard
                 key={account.id}

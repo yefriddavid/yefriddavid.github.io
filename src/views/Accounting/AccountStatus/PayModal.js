@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { fieldLabel, fieldInput, fmt, getStatus } from './helpers'
+import { fieldLabel, fieldInput, fmt, getStatus, resolveMaxDatePay } from './helpers'
 import FileUploadField from 'src/components/shared/FileUploadField'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -21,14 +21,15 @@ export default function PayModal({
   onSave,
   onClose,
 }) {
+  const monthStr = `${year}-${String(month).padStart(2, '0')}`
+
   const defaultDate = (() => {
     const lastDay = new Date(year, month, 0).getDate()
-    const day = Math.min(account.maxDatePay || 15, lastDay)
+    const day = Math.min(resolveMaxDatePay(account.maxDatePay, monthStr), lastDay)
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   })()
 
   const isDebt = account.targetAmount > 0
-  const monthStr = `${year}-${String(month).padStart(2, '0')}`
   const status = getStatus(account, payments, monthStr, isDebt ? cumulativePaid : null)
   const pendingAmount = isDebt
     ? status.remaining
@@ -107,7 +108,9 @@ export default function PayModal({
           }}
         />
 
-        <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+        <div
+          style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}
+        >
           Registrar pago
         </div>
         <div
@@ -120,7 +123,9 @@ export default function PayModal({
             gap: 4,
           }}
         >
-          {account.important && <span style={{ color: '#e03131', fontSize: 'var(--fs-base)' }}>★</span>}
+          {account.important && (
+            <span style={{ color: '#e03131', fontSize: 'var(--fs-base)' }}>★</span>
+          )}
           {account.name}
           {account.defaultValue > 0 && (
             <span style={{ color: '#1e3a5f', fontWeight: 700, marginLeft: 4 }}>
@@ -224,10 +229,7 @@ export default function PayModal({
             }}
           >
             {saving ? (
-              <Spinner
-                size="sm"
-                style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
-              />
+              <Spinner size="sm" style={{ borderColor: '#fff', borderRightColor: 'transparent' }} />
             ) : (
               'Guardar pago'
             )}

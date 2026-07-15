@@ -56,12 +56,21 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
     { label: 'Valor por defecto', value: account.defaultValue ? fmt(account.defaultValue) : '—' },
     {
       label: 'Fecha límite de pago',
-      value: account.maxDatePay ? `Día ${account.maxDatePay}` : '—',
+      value:
+        account.maxDatePay === -1
+          ? 'Último día del mes'
+          : account.maxDatePay
+            ? `Día ${account.maxDatePay}`
+            : '—',
     },
     { label: 'Método de pago', value: account.paymentMethod || '—' },
     { label: 'Banco', value: account.bankName || '—' },
     { label: 'Tipo de cuenta', value: account.bankAccountType || '—' },
-    { label: 'Número de cuenta', value: account.bankAccountNumber || '—', copyable: !!account.bankAccountNumber },
+    {
+      label: 'Número de cuenta',
+      value: account.bankAccountNumber || '—',
+      copyable: !!account.bankAccountNumber,
+    },
     { label: 'Titular', value: account.bankAccountHolder || '—' },
     { label: 'Estado', value: account.active ? 'Activa' : 'Inactiva' },
   ]
@@ -118,8 +127,12 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
 
         {/* Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          {account.important && <span style={{ color: '#e03131', fontSize: 'var(--fs-xl)' }}>★</span>}
-          <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e' }}>{account.name}</div>
+          {account.important && (
+            <span style={{ color: '#e03131', fontSize: 'var(--fs-xl)' }}>★</span>
+          )}
+          <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e' }}>
+            {account.name}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -147,7 +160,9 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                     borderBottom: '1px solid #f1f5f9',
                   }}
                 >
-                  <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d', fontWeight: 500 }}>{label}</span>
+                  <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d', fontWeight: 500 }}>
+                    {label}
+                  </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span
                       style={{
@@ -260,7 +275,12 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 onChange={set('notes')}
                 rows={2}
                 placeholder="Observaciones adicionales…"
-                style={{ ...fieldInput, resize: 'none', fontFamily: 'inherit', fontSize: 'var(--fs-md)' }}
+                style={{
+                  ...fieldInput,
+                  resize: 'none',
+                  fontFamily: 'inherit',
+                  fontSize: 'var(--fs-md)',
+                }}
               />
             </div>
 
@@ -362,11 +382,14 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 <input
                   style={fieldInput}
                   type="number"
-                  min={1}
+                  min={-1}
                   max={31}
                   value={form.maxDatePay ?? 15}
                   onChange={set('maxDatePay')}
                 />
+                <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>
+                  -1 = último día del mes
+                </span>
               </div>
               <div>
                 <label style={fieldLabel}>MÉTODO DE PAGO</label>

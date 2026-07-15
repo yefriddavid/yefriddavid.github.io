@@ -11,7 +11,15 @@ import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import { push as pushNotification } from 'src/reducers/notificationsSlice'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
-import { fmt, CURRENT_YEAR, CURRENT_MONTH, YEARS, MONTHS, isApplicableToMonth } from './helpers'
+import {
+  fmt,
+  CURRENT_YEAR,
+  CURRENT_MONTH,
+  YEARS,
+  MONTHS,
+  isApplicableToMonth,
+  resolveMaxDatePay,
+} from './helpers'
 import SummaryCard from './SummaryCard'
 import MigrationModal from './MigrationModal'
 import TransactionForm from './TransactionForm'
@@ -162,7 +170,8 @@ export default function Transactions() {
 
   const handlePayMaster = (account) => {
     const defaultDate = (() => {
-      const d = new Date(year, month - 1, account.maxDatePay || 15)
+      const ms = `${year}-${String(month).padStart(2, '0')}`
+      const d = new Date(year, month - 1, resolveMaxDatePay(account.maxDatePay, ms))
       return d.toISOString().slice(0, 10)
     })()
     openForm({

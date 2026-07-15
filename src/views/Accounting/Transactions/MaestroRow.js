@@ -1,6 +1,6 @@
 import React from 'react'
 import InlinePaymentMethod from '../InlinePaymentMethod'
-import { fmt } from './helpers'
+import { fmt, resolveMaxDatePay } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
 
 export default function MaestroRow({
@@ -23,7 +23,7 @@ export default function MaestroRow({
     (() => {
       const today = new Date()
       const [y, m] = monthStr.split('-').map(Number)
-      const dueDate = new Date(y, m - 1, account.maxDatePay || 31)
+      const dueDate = new Date(y, m - 1, resolveMaxDatePay(account.maxDatePay, monthStr))
       return today > dueDate
     })()
 
@@ -57,7 +57,7 @@ export default function MaestroRow({
         {account.classification}
       </td>
       <td style={{ padding: '8px 12px', fontSize: 12, textAlign: 'center' }}>
-        {account.maxDatePay || '—'}
+        {account.maxDatePay === -1 ? 'Últ. día' : account.maxDatePay || '—'}
       </td>
       <td style={{ padding: '8px 12px', fontSize: 12, color: '#6c757d' }}>
         <InlinePaymentMethod account={account} />

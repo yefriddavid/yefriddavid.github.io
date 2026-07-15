@@ -209,8 +209,8 @@ export default function AccountMasterForm({ initial, saving, onSave, onCancel })
       </div>
 
       <div className="payment-form__row">
-        <StandardField label="Día máximo de pago">
-          <input className={SF.input} type="number" min={1} max={31} {...register('maxDatePay')} />
+        <StandardField label="Día máximo de pago (-1 = último día del mes)">
+          <input className={SF.input} type="number" min={-1} max={31} {...register('maxDatePay')} />
         </StandardField>
         <StandardField label="Método de pago">
           <select className={SF.select} {...register('paymentMethod')}>

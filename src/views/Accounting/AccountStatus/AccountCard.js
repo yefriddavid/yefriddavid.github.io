@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import InlinePaymentMethod from '../InlinePaymentMethod'
-import { fmt, getStatus } from './helpers'
+import { fmt, getStatus, resolveMaxDatePay } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
 
 export default function AccountCard({
@@ -93,7 +93,9 @@ export default function AccountCard({
             }}
           >
             {account.important && (
-              <span style={{ color: '#e03131', fontSize: 'var(--fs-sm)', lineHeight: 1, flexShrink: 0 }}>
+              <span
+                style={{ color: '#e03131', fontSize: 'var(--fs-sm)', lineHeight: 1, flexShrink: 0 }}
+              >
                 ★{' '}
               </span>
             )}
@@ -127,7 +129,9 @@ export default function AccountCard({
               </span>
             )}
             {account.maxDatePay && (
-              <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>día {account.maxDatePay}</span>
+              <span style={{ fontSize: 'var(--fs-2xs)', color: '#6c757d' }}>
+                día {resolveMaxDatePay(account.maxDatePay, monthStr)}
+              </span>
             )}
             <InlinePaymentMethod account={account} />
           </div>
@@ -218,7 +222,14 @@ export default function AccountCard({
               }}
             />
           </div>
-          <div style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', textAlign: 'right', marginTop: 3 }}>
+          <div
+            style={{
+              fontSize: 'var(--fs-2xs)',
+              color: '#adb5bd',
+              textAlign: 'right',
+              marginTop: 3,
+            }}
+          >
             {Math.round((cumulativePaid / account.targetAmount) * 100)}% completado
           </div>
         </div>
@@ -262,7 +273,9 @@ export default function AccountCard({
                     {fmt(p.amount)}
                   </span>
                   {p.date && (
-                    <span style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', whiteSpace: 'nowrap' }}>
+                    <span
+                      style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', whiteSpace: 'nowrap' }}
+                    >
                       {p.date}
                     </span>
                   )}
@@ -314,11 +327,7 @@ export default function AccountCard({
                         alignItems: 'center',
                       }}
                     >
-                      {isAttaching ? (
-                        <Spinner size="sm" style={{ width: 10, height: 10 }} />
-                      ) : (
-                        '📎'
-                      )}
+                      {isAttaching ? <Spinner size="sm" style={{ width: 10, height: 10 }} /> : '📎'}
                     </button>
                   )}
                   {!isEditing && (

@@ -43,7 +43,6 @@ export const MONTHS_SHORT = [
   'Dic',
 ]
 
-
 export const EMPTY_FORM = {
   type: 'expense',
   category: '',
@@ -52,6 +51,17 @@ export const EMPTY_FORM = {
   date: now.toISOString().slice(0, 10),
   accountMasterId: null,
   paymentMethod: '',
+}
+
+export function lastDayOfMonth(monthStr) {
+  const [y, m] = monthStr.split('-').map(Number)
+  return new Date(y, m, 0).getDate()
+}
+
+// maxDatePay === -1 means "last calendar day of the month being viewed" instead of a fixed day
+export function resolveMaxDatePay(maxDatePay, monthStr) {
+  if (maxDatePay === -1) return lastDayOfMonth(monthStr)
+  return maxDatePay || 31
 }
 
 export function isApplicableToMonth(account, month) {
