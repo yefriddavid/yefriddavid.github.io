@@ -1,4 +1,45 @@
 .notes {
+  &__search-bar {
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: 9px 32px 9px 14px;
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 10px;
+    background: var(--cui-body-bg, #fff);
+    color: var(--cui-body-color, #333);
+    font-size: var(--fs-base);
+
+    &:focus {
+      outline: none;
+      border-color: var(--cui-primary, #4f46e5);
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--cui-secondary-color, #888);
+    font-size: var(--fs-lg);
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--cui-tertiary-bg, #f1f3f5);
+      color: var(--cui-body-color, #333);
+    }
+  }
+
   &__header {
     display: flex;
     align-items: center;

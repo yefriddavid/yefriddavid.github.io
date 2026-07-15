@@ -1340,6 +1340,7 @@ const Notes = () => {
   const [showPrivatePasswordInput, setShowPrivatePasswordInput] = useState(false)
   const [privatePassword, setPrivatePassword] = useState('')
   const [privatePasswordError, setPrivatePasswordError] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -1431,9 +1432,34 @@ const Notes = () => {
       return !n.archived
     })
     .filter((n) => !hiddenCategories.includes(n.category || DEFAULT_NOTE_CATEGORY))
+    .filter(
+      (n) =>
+        !searchQuery.trim() ||
+        (n.title || '').toLowerCase().includes(searchQuery.trim().toLowerCase()),
+    )
 
   return (
     <div className="notes">
+      <div className="notes__search-bar">
+        <input
+          type="text"
+          className="notes__search-input"
+          placeholder="Buscar nota por nombre…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="notes__search-clear"
+            onClick={() => setSearchQuery('')}
+            title="Limpiar búsqueda"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
       <div className="notes__header">
         <div className="notes__header-left">
           <div className="notes__tabs">
@@ -1625,7 +1651,9 @@ const Notes = () => {
         <Spinner mode="section" />
       ) : visibleItems.length === 0 ? (
         <div className="notes__empty">
-          {activeTab === 'active' ? (
+          {searchQuery.trim() ? (
+            <p>Sin resultados para «{searchQuery.trim()}».</p>
+          ) : activeTab === 'active' ? (
             <>
               <p>No hay notas todavía.</p>
               <button className="notes__new-btn" onClick={() => setEditing('new')}>
