@@ -17,7 +17,54 @@ const CURRENT_YEAR = new Date().getFullYear()
 const sumMonth = (matrix, m) => matrix.reduce((s, row) => s + row[m], 0)
 const sumAll = (matrix) => matrix.reduce((s, row) => s + row.reduce((a, v) => a + v, 0), 0)
 
-const StatementSection = ({ title, months, categories, matrix, modifier }) => {
+const CategoryDetailRow = ({ months, transactions, type, category, categoryGroups, year }) => {
+  const members = categoryGroups[category] || [category]
+
+  return (
+    <tr className="statement__detail-row">
+      <td />
+      {months.map((_, m) => {
+        const items = transactions.filter(
+          (t) =>
+            t.type === type &&
+            members.includes(t.category || 'Otros') &&
+            t.date?.slice(0, 4) === String(year) &&
+            Number(t.date.slice(5, 7)) - 1 === m,
+        )
+        return (
+          <td key={m} className="statement__detail-cell">
+            {items.length > 0 && (
+              <ul className="statement__detail-list">
+                {items.map((t) => (
+                  <li key={t.id}>
+                    <span className="statement__detail-date">{t.date.slice(8, 10)}</span>{' '}
+                    <span className="statement__detail-desc">{t.description || '—'}</span>{' '}
+                    <span className="statement__detail-amount">{fmt(t.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </td>
+        )
+      })}
+      <td />
+    </tr>
+  )
+}
+
+const StatementSection = ({
+  title,
+  months,
+  categories,
+  matrix,
+  modifier,
+  categoryGroups,
+  transactions,
+  type,
+  year,
+  expanded,
+  onToggle,
+}) => {
   const monthTotals = months.map((_, m) => sumMonth(matrix, m))
   const rowTotals = matrix.map((row) => row.reduce((s, v) => s + v, 0))
   const sectionTotal = rowTotals.reduce((s, v) => s + v, 0)
@@ -27,15 +74,33 @@ const StatementSection = ({ title, months, categories, matrix, modifier }) => {
       <tr className={`statement__section-row statement__section-row--${modifier}`}>
         <td colSpan={months.length + 2}>{title}</td>
       </tr>
-      {categories.map((cat, i) => (
-        <tr key={cat}>
-          <td className="statement__row-label">{cat}</td>
-          {matrix[i].map((v, m) => (
-            <td key={m}>{v ? fmt(v) : '—'}</td>
-          ))}
-          <td className="statement__total-cell">{fmt(rowTotals[i])}</td>
-        </tr>
-      ))}
+      {categories.map((cat, i) => {
+        const key = `${type}:${cat}`
+        const isOpen = expanded.has(key)
+        return (
+          <React.Fragment key={cat}>
+            <tr className="statement__row statement__row--clickable" onClick={() => onToggle(key)}>
+              <td className="statement__row-label">
+                <span className="statement__row-toggle">{isOpen ? '▾' : '▸'}</span> {cat}
+              </td>
+              {matrix[i].map((v, m) => (
+                <td key={m}>{v ? fmt(v) : '—'}</td>
+              ))}
+              <td className="statement__total-cell">{fmt(rowTotals[i])}</td>
+            </tr>
+            {isOpen && (
+              <CategoryDetailRow
+                months={months}
+                transactions={transactions}
+                type={type}
+                category={cat}
+                categoryGroups={categoryGroups}
+                year={year}
+              />
+            )}
+          </React.Fragment>
+        )
+      })}
       <tr className="statement__subtotal-row">
         <td>Total {title}</td>
         {monthTotals.map((v, m) => (
@@ -53,10 +118,19 @@ const Reports = () => {
   const { monthLabels } = useLocaleData()
   const { data, fetching } = useSelector((s) => s.transaction)
   const [year, setYear] = useState(CURRENT_YEAR)
+  const [expanded, setExpanded] = useState(() => new Set())
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
   }, [dispatch, activeTenantId])
+
+  const toggleExpanded = (key) =>
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
 
   const transactions = useMemo(() => data ?? [], [data])
   const monthLabelsShort = useMemo(() => monthLabels.map((m) => m.slice(0, 3)), [monthLabels])
@@ -120,14 +194,26 @@ const Reports = () => {
                 months={monthLabelsShort}
                 categories={income.categories}
                 matrix={income.matrix}
+                categoryGroups={income.categoryGroups}
                 modifier="income"
+                transactions={transactions}
+                type="income"
+                year={year}
+                expanded={expanded}
+                onToggle={toggleExpanded}
               />
               <StatementSection
                 title="Egresos"
                 months={monthLabelsShort}
                 categories={expense.categories}
                 matrix={expense.matrix}
+                categoryGroups={expense.categoryGroups}
                 modifier="expense"
+                transactions={transactions}
+                type="expense"
+                year={year}
+                expanded={expanded}
+                onToggle={toggleExpanded}
               />
             </tbody>
             <tfoot>

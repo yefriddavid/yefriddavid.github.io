@@ -43,7 +43,8 @@ export const categoryMonthMatrix = (transactions, type, year, maxCategories = 5)
   const total = (row) => row.reduce((s, v) => s + v, 0)
   const sorted = Object.keys(byCategory).sort((a, b) => total(byCategory[b]) - total(byCategory[a]))
   if (sorted.length <= maxCategories) {
-    return { categories: sorted, matrix: sorted.map((c) => byCategory[c]) }
+    const categoryGroups = Object.fromEntries(sorted.map((c) => [c, [c]]))
+    return { categories: sorted, matrix: sorted.map((c) => byCategory[c]), categoryGroups }
   }
   const top = sorted.slice(0, maxCategories)
   const rest = sorted.slice(maxCategories)
@@ -55,7 +56,17 @@ export const categoryMonthMatrix = (transactions, type, year, maxCategories = 5)
     c === 'Otros' ? byCategory[c].map((v, m) => v + otherRow[m]) : byCategory[c],
   )
   if (!top.includes('Otros')) matrix.push(otherRow)
-  return { categories, matrix }
+
+  // categoryGroups maps each displayed category (incl. the "Otros" fold) back to
+  // every raw category value it represents, so callers can filter the original
+  // transactions for a drill-down without re-deriving the fold logic.
+  const categoryGroups = {}
+  top.forEach((c) => {
+    categoryGroups[c] = c === 'Otros' ? [c, ...rest] : [c]
+  })
+  if (!top.includes('Otros')) categoryGroups.Otros = rest
+
+  return { categories, matrix, categoryGroups }
 }
 
 export const buildPivotAoa = (categories, matrix, monthLabels) => {
