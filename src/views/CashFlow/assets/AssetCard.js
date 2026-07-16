@@ -43,6 +43,13 @@ export default function AssetCard({ asset, onEdit, onDelete, onSync, syncing }) 
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
             <Pill label={asset.type} color={TYPE_COLOR[asset.type]} bg={TYPE_BG[asset.type]} />
+            {asset.liveSymbol && (
+              <Pill
+                label={`● ${asset.liveSymbol.replace(/USDT$/, '')}`}
+                color="#6741d9"
+                bg="#f3f0ff"
+              />
+            )}
             {asset.liquid && <Pill label="liquid" color="#2f9e44" bg="#f0fdf4" />}
             {asset.projection && <Pill label="proyección" color="#6c757d" bg="#f8f9fa" />}
             {asset.horizon && (

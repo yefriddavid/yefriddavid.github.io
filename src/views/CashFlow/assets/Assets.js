@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Column, Summary, TotalItem } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/shared/StandardGrid/Index'
 import * as actions from 'src/actions/cashflow/assetActions'
-import { uid, now, fmt } from './assetHelpers'
+import { uid, now, fmt, applyLivePricing } from './assetHelpers'
 import {
   TYPES,
   HORIZONS,
@@ -15,13 +13,22 @@ import {
 } from './assetConstants'
 import AssetCard from './AssetCard'
 import AssetSheet from './AssetSheet'
+import AssetsTable from './AssetsTable'
 import SummaryCard from './SummaryCard'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
+import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
+import { useUsdCopRate } from 'src/hooks/useUsdCopRate'
 
 export default function Assets() {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
   const { assets, loading, saving, syncing, syncingAll, importing } = useSelector((s) => s.asset)
+  const { prices } = useCryptoPrices()
+  const { rate: usdCopRate } = useUsdCopRate()
+  const pricedAssets = useMemo(
+    () => applyLivePricing(assets, prices, usdCopRate),
+    [assets, prices, usdCopRate],
+  )
 
   const [sheet, setSheet] = useState(null)
   const [filterType, setFilterType] = useState('all')
@@ -36,7 +43,7 @@ export default function Assets() {
   }, [dispatch, activeTenantId])
 
   const filtered = useMemo(() => {
-    return assets.filter((a) => {
+    return pricedAssets.filter((a) => {
       if (!showArchived && a.archived) return false
       if (filterType !== 'all' && a.type !== filterType) return false
       if (filterHorizon !== 'all' && a.horizon !== filterHorizon) return false
@@ -45,25 +52,27 @@ export default function Assets() {
       if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
-  }, [assets, filterType, filterHorizon, filterLiquid, search, showArchived])
+  }, [pricedAssets, filterType, filterHorizon, filterLiquid, search, showArchived])
 
   const totals = useMemo(() => {
     let total = 0,
       financial = 0,
       fixed = 0,
+      crypto = 0,
       liquid = 0,
       monthly = 0
-    assets.forEach((a) => {
+    pricedAssets.forEach((a) => {
       if (a.archived) return
       const v = (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0)
       total += v
       if (a.type === 'financial') financial += v
       if (a.type === 'fixed') fixed += v
+      if (a.type === 'crypto') crypto += v
       if (a.liquid) liquid += v
       monthly += Number(a.monthlyGain) || 0
     })
-    return { total, financial, fixed, liquid, monthly }
-  }, [assets])
+    return { total, financial, fixed, crypto, liquid, monthly }
+  }, [pricedAssets])
 
   const gridData = useMemo(
     () =>
@@ -77,6 +86,10 @@ export default function Assets() {
   const handleSave = (asset) => {
     dispatch(actions.saveRequest(asset))
     setSheet(null)
+  }
+
+  const handleQuickUpdate = (asset, patch) => {
+    dispatch(actions.saveRequest({ ...asset, ...patch, updatedAt: now() }))
   }
 
   const handleDelete = (asset) => {
@@ -121,10 +134,11 @@ export default function Assets() {
   return (
     <div
       style={{
-        maxWidth: 680,
+        maxWidth: viewMode === 'grid' ? '100%' : 680,
         margin: '0 auto',
         padding: '0 12px 60px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
+        transition: 'max-width 0.2s',
       }}
     >
       {/* Header */}
@@ -254,6 +268,16 @@ export default function Assets() {
               bg={TYPE_BG.fixed}
               border="#ffe69c"
             />
+            {totals.crypto > 0 && (
+              <SummaryCard
+                label="CRIPTO (en vivo)"
+                value={fmt(totals.crypto)}
+                sub={`${assets.filter((a) => !a.archived && a.type === 'crypto').length} activos`}
+                color={TYPE_COLOR.crypto}
+                bg={TYPE_BG.crypto}
+                border="#d0bfff"
+              />
+            )}
             {totals.liquid > 0 && (
               <SummaryCard
                 label="LÍQUIDO"
@@ -434,107 +458,14 @@ export default function Assets() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <StandardGrid dataSource={gridData}>
-          <Column dataField="name" caption="Nombre" width={80} />
-          <Column
-            dataField="type"
-            caption="Tipo"
-            width={80}
-            cellRender={({ value }) => (
-              <span style={{ color: TYPE_COLOR[value], fontWeight: 700, fontSize: 12 }}>
-                {value}
-              </span>
-            )}
+        <div style={{ overflowX: 'auto' }}>
+          <AssetsTable
+            data={gridData}
+            onEdit={setSheet}
+            onDelete={handleDelete}
+            onQuickUpdate={handleQuickUpdate}
           />
-          <Column
-            dataField="quantity"
-            caption="Cantidad"
-            dataType="number"
-            width={110}
-            format={{ type: 'fixedPoint', precision: 1 }}
-          />
-          <Column
-            dataField="unitPrice"
-            caption="Precio unit."
-            dataType="number"
-            width={130}
-            format={{ type: 'currency', currency: 'COP', precision: 0 }}
-          />
-          <Column
-            dataField="valueCOP"
-            caption="Valor COP"
-            dataType="number"
-            width={140}
-            format={{ type: 'currency', currency: 'COP', precision: 0 }}
-          />
-          <Column dataField="liquid" caption="Liquid" dataType="boolean" width={70} />
-          <Column
-            dataField="horizon"
-            caption="Horizonte"
-            width={90}
-            cellRender={({ value }) =>
-              value ? (
-                <span style={{ color: HORIZON_COLOR[value], fontWeight: 700, fontSize: 12 }}>
-                  {value}
-                </span>
-              ) : null
-            }
-          />
-          <Column
-            dataField="monthlyGain"
-            caption="Ganancia/mes"
-            dataType="number"
-            width={130}
-            format={{ type: 'currency', currency: 'COP', precision: 0 }}
-          />
-          <Column dataField="projection" caption="Proyección" dataType="boolean" width={90} />
-          <Column
-            caption=""
-            width={80}
-            cellRender={({ data }) => (
-              <div style={{ display: 'flex', gap: 4 }}>
-                <button
-                  onClick={() => setSheet(data)}
-                  style={{
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    color: '#1e3a5f',
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => handleDelete(data)}
-                  style={{
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    color: '#e03131',
-                  }}
-                >
-                  🗑
-                </button>
-              </div>
-            )}
-          />
-          <Summary>
-            <TotalItem
-              column="valueCOP"
-              summaryType="sum"
-              displayFormat="Total: {0}"
-              valueFormat={{ type: 'currency', currency: 'COP', precision: 0 }}
-            />
-            <TotalItem
-              column="monthlyGain"
-              summaryType="sum"
-              displayFormat="{0}/mes"
-              valueFormat={{ type: 'currency', currency: 'COP', precision: 0 }}
-            />
-          </Summary>
-        </StandardGrid>
+        </div>
       ) : (
         filtered.map((a) => (
           <AssetCard

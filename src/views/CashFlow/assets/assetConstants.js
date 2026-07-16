@@ -7,6 +7,15 @@ export {
   ASSET_HORIZON_BG as HORIZON_BG,
 } from 'src/constants/cashFlow'
 
+import { TRADE_PRICE_ASSETS } from 'src/constants/finance'
+
+// Options for the "live price symbol" selector on crypto assets — reuses the
+// same Binance-backed symbol list as Trade > Crypto Prices (PAXG == gold).
+export const LIVE_PRICE_SYMBOLS = TRADE_PRICE_ASSETS.map(({ symbol, ticker }) => ({
+  value: symbol,
+  label: ticker,
+}))
+
 export const EMPTY_ASSET = {
   name: '',
   quantity: '',
@@ -18,6 +27,7 @@ export const EMPTY_ASSET = {
   monthlyGain: '',
   archived: false,
   notes: '',
+  liveSymbol: '',
 }
 
 // unitPrice stored as effective COP/unit so valueCOP = quantity × unitPrice matches Excel

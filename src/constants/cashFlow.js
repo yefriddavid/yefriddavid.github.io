@@ -60,11 +60,11 @@ export const SALARY_DISTRIBUTION_TYPE_LABELS = {
   remainder: 'Restante',
 }
 
-export const ASSET_TYPES = ['financial', 'fixed']
+export const ASSET_TYPES = ['financial', 'fixed', 'crypto']
 export const ASSET_HORIZONS = ['largo', 'mediano', 'corto']
 
-export const ASSET_TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700' }
-export const ASSET_TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1' }
+export const ASSET_TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700', crypto: '#6741d9' }
+export const ASSET_TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1', crypto: '#f3f0ff' }
 export const ASSET_HORIZON_COLOR = { largo: '#6741d9', mediano: '#1971c2', corto: '#e03131' }
 export const ASSET_HORIZON_BG = { largo: '#f3f0ff', mediano: '#e7f5ff', corto: '#fff5f5' }
 

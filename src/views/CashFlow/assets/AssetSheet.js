@@ -1,6 +1,17 @@
-import React, { useState } from 'react'
-import { uid, now, fmt } from './assetHelpers'
-import { TYPES, HORIZONS, TYPE_COLOR, TYPE_BG, HORIZON_COLOR, HORIZON_BG, EMPTY_ASSET } from './assetConstants'
+import React, { useEffect, useState } from 'react'
+import { uid, now, fmt, getLiveUnitPrice } from './assetHelpers'
+import {
+  TYPES,
+  HORIZONS,
+  TYPE_COLOR,
+  TYPE_BG,
+  HORIZON_COLOR,
+  HORIZON_BG,
+  LIVE_PRICE_SYMBOLS,
+  EMPTY_ASSET,
+} from './assetConstants'
+import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
+import { useUsdCopRate } from 'src/hooks/useUsdCopRate'
 
 export default function AssetSheet({ initial, saving, onSave, onClose }) {
   const isEdit = !!initial?.id
@@ -17,9 +28,20 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
           monthlyGain: initial.monthlyGain ?? '',
           archived: initial.archived ?? false,
           notes: initial.notes ?? '',
+          liveSymbol: initial.liveSymbol ?? '',
         }
       : { ...EMPTY_ASSET },
   )
+
+  const { prices } = useCryptoPrices()
+  const { rate: usdCopRate } = useUsdCopRate()
+  const isLivePriced = form.type === 'crypto' && !!form.liveSymbol
+  const liveUnitPrice = getLiveUnitPrice(form, prices, usdCopRate)
+
+  // Keep the (read-only) unit price field in sync with the live feed while the sheet is open
+  useEffect(() => {
+    if (liveUnitPrice != null) setForm((p) => ({ ...p, unitPrice: liveUnitPrice }))
+  }, [liveUnitPrice])
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
   const toggle = (field) => () => setForm((p) => ({ ...p, [field]: !p[field] }))
@@ -39,6 +61,7 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
       monthlyGain: Number(form.monthlyGain) || 0,
       archived: form.archived,
       notes: form.notes.trim(),
+      liveSymbol: form.liveSymbol,
       createdAt: initial?.createdAt ?? now(),
       updatedAt: now(),
     })
@@ -87,14 +110,48 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
           </div>
         </div>
 
+        {form.type === 'crypto' && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>SÍMBOLO CON PRECIO EN VIVO</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                style={toggleStyle(!form.liveSymbol)}
+                onClick={() => setForm((p) => ({ ...p, liveSymbol: '' }))}
+              >
+                manual
+              </button>
+              {LIVE_PRICE_SYMBOLS.map((s) => (
+                <button
+                  key={s.value}
+                  style={toggleStyle(form.liveSymbol === s.value)}
+                  onClick={() => setForm((p) => ({ ...p, liveSymbol: s.value }))}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div>
             <label style={labelStyle}>CANTIDAD</label>
             <input style={inputStyle} type="number" min="0" step="any" value={form.quantity} onChange={set('quantity')} placeholder="0" />
           </div>
           <div>
-            <label style={labelStyle}>PRECIO UNITARIO (COP)</label>
-            <input style={inputStyle} type="number" min="0" step="any" value={form.unitPrice} onChange={set('unitPrice')} placeholder="0" />
+            <label style={labelStyle}>
+              PRECIO UNITARIO (COP){isLivePriced && liveUnitPrice == null ? ' — cargando…' : ''}
+            </label>
+            <input
+              style={{ ...inputStyle, color: isLivePriced ? '#6c757d' : inputStyle.color }}
+              type="number"
+              min="0"
+              step="any"
+              value={form.unitPrice}
+              onChange={set('unitPrice')}
+              placeholder="0"
+              readOnly={isLivePriced}
+            />
           </div>
         </div>
 
