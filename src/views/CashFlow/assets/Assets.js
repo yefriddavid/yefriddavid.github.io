@@ -10,6 +10,7 @@ import {
   HORIZON_COLOR,
   HORIZON_BG,
   SEED_ASSETS,
+  LIVE_PRICE_SYMBOLS,
 } from './assetConstants'
 import AssetCard from './AssetCard'
 import AssetSheet from './AssetSheet'
@@ -35,6 +36,7 @@ export default function Assets() {
   const [filterType, setFilterType] = useState('all')
   const [filterHorizon, setFilterHorizon] = useState('all')
   const [filterLiquid, setFilterLiquid] = useState('all')
+  const [filterSymbol, setFilterSymbol] = useState('all')
   const [search, setSearch] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('assets_viewMode') ?? 'cards')
@@ -59,10 +61,18 @@ export default function Assets() {
       if (filterHorizon !== 'all' && a.horizon !== filterHorizon) return false
       if (filterLiquid === 'yes' && !a.liquid) return false
       if (filterLiquid === 'no' && a.liquid) return false
+      if (filterSymbol === 'manual' && a.liveSymbol) return false
+      if (filterSymbol !== 'all' && filterSymbol !== 'manual' && a.liveSymbol !== filterSymbol)
+        return false
       if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
-  }, [pricedAssets, filterType, filterHorizon, filterLiquid, search, showArchived])
+  }, [pricedAssets, filterType, filterHorizon, filterLiquid, filterSymbol, search, showArchived])
+
+  const presentSymbols = useMemo(
+    () => [...new Set(pricedAssets.map((a) => a.liveSymbol).filter(Boolean))].sort(),
+    [pricedAssets],
+  )
 
   const totals = useMemo(() => {
     let total = 0,
@@ -145,7 +155,11 @@ export default function Assets() {
 
   const unsyncedCount = assets.filter((a) => !a.syncedAt).length
   const activeFilters =
-    filterType !== 'all' || filterHorizon !== 'all' || filterLiquid !== 'all' || !!search
+    filterType !== 'all' ||
+    filterHorizon !== 'all' ||
+    filterLiquid !== 'all' ||
+    filterSymbol !== 'all' ||
+    !!search
 
   const toggleView = () => {
     const next = viewMode === 'cards' ? 'grid' : 'cards'
@@ -501,6 +515,27 @@ export default function Assets() {
                 {h}
               </button>
             ))}
+            {presentSymbols.length > 0 && (
+              <>
+                <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
+                <button
+                  onClick={() => setFilterSymbol(filterSymbol === 'manual' ? 'all' : 'manual')}
+                  style={btnStyle(filterSymbol === 'manual', '#f3f0ff', '#6741d9')}
+                >
+                  manual
+                </button>
+                {presentSymbols.map((sym) => (
+                  <button
+                    key={sym}
+                    onClick={() => setFilterSymbol(filterSymbol === sym ? 'all' : sym)}
+                    style={btnStyle(filterSymbol === sym, '#f3f0ff', '#6741d9')}
+                  >
+                    {LIVE_PRICE_SYMBOLS.find((s) => s.value === sym)?.label ??
+                      sym.replace(/USDT$/, '')}
+                  </button>
+                ))}
+              </>
+            )}
             <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
             <button
               onClick={() => setFilterLiquid(filterLiquid === 'yes' ? 'all' : 'yes')}

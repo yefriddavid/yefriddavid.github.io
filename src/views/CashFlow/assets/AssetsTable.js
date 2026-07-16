@@ -16,6 +16,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
 
   const totalValue = data.reduce((s, a) => s + a.valueCOP, 0)
   const totalMonthlyGain = data.reduce((s, a) => s + (Number(a.monthlyGain) || 0), 0)
+  const totalQuantity = data.reduce((s, a) => s + (Number(a.quantity) || 0), 0)
 
   const groupCounts = {}
   const groupTotals = {}
@@ -309,7 +310,9 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
       <tfoot>
         <tr className="assets-table__total-row">
           <td />
-          <td colSpan={5}>Total</td>
+          <td colSpan={3}>Total</td>
+          <td>{fmtNum(totalQuantity)}</td>
+          <td />
           <td className="assets-table__value">{fmt(totalValue)}</td>
           <td colSpan={3} />
           <td>{totalMonthlyGain ? fmt(totalMonthlyGain) : '—'}</td>
