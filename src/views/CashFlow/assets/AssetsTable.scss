@@ -58,7 +58,8 @@
     }
   }
 
-  &__cell-select {
+  &__cell-select,
+  &__cell-input {
     font-size: var(--fs-2xs);
     font-family: inherit;
     border: 1px solid var(--cui-border-color, #dee2e6);
@@ -66,6 +67,16 @@
     padding: 2px 4px;
     background: var(--cui-body-bg, #fff);
     color: inherit;
+  }
+
+  &__cell-input {
+    width: 90px;
+    text-align: right;
+
+    &--text {
+      width: 160px;
+      text-align: left;
+    }
   }
 
   &__actions {

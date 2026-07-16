@@ -41,7 +41,32 @@ const AssetsTable = ({ data, onEdit, onDelete, onQuickUpdate }) => {
                 🗑
               </button>
             </td>
-            <td className="assets-table__name">{a.name}</td>
+            <td
+              className={`assets-table__name ${isEditing(a.id, 'name') ? '' : 'assets-table__editable-cell'}`}
+              title="Doble clic para editar"
+              onDoubleClick={() => startEdit(a.id, 'name')}
+            >
+              {isEditing(a.id, 'name') ? (
+                <input
+                  className="assets-table__cell-input assets-table__cell-input--text"
+                  type="text"
+                  autoFocus
+                  defaultValue={a.name}
+                  onFocus={(e) => e.target.select()}
+                  onBlur={(e) => {
+                    const value = e.target.value.trim()
+                    if (value && value !== a.name) onQuickUpdate(a, { name: value })
+                    stopEdit()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.target.blur()
+                    if (e.key === 'Escape') stopEdit()
+                  }}
+                />
+              ) : (
+                a.name
+              )}
+            </td>
             <td
               className={isEditing(a.id, 'type') ? '' : 'assets-table__editable-cell'}
               title="Doble clic para editar"
@@ -105,7 +130,34 @@ const AssetsTable = ({ data, onEdit, onDelete, onQuickUpdate }) => {
                 '—'
               )}
             </td>
-            <td>{fmtNum(a.quantity, 1)}</td>
+            <td
+              className={isEditing(a.id, 'quantity') ? '' : 'assets-table__editable-cell'}
+              title="Doble clic para editar"
+              onDoubleClick={() => startEdit(a.id, 'quantity')}
+            >
+              {isEditing(a.id, 'quantity') ? (
+                <input
+                  className="assets-table__cell-input"
+                  type="number"
+                  step="any"
+                  autoFocus
+                  defaultValue={a.quantity}
+                  onFocus={(e) => e.target.select()}
+                  onBlur={(e) => {
+                    const value = Number(e.target.value)
+                    if (!Number.isNaN(value) && value !== a.quantity)
+                      onQuickUpdate(a, { quantity: value })
+                    stopEdit()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.target.blur()
+                    if (e.key === 'Escape') stopEdit()
+                  }}
+                />
+              ) : (
+                fmtNum(a.quantity)
+              )}
+            </td>
             <td>{fmt(a.unitPrice)}</td>
             <td className="assets-table__value">{fmt(a.valueCOP)}</td>
             <td>{a.liquid ? '✓' : '—'}</td>
