@@ -1,6 +1,13 @@
 import React, { useState } from 'react'
 import { fmt, fmtNum } from './assetHelpers'
-import { TYPES, LOCATIONS, TYPE_COLOR, HORIZON_COLOR, LIVE_PRICE_SYMBOLS } from './assetConstants'
+import {
+  TYPES,
+  LOCATIONS,
+  HORIZONS,
+  TYPE_COLOR,
+  HORIZON_COLOR,
+  LIVE_PRICE_SYMBOLS,
+} from './assetConstants'
 import IconClone from 'src/components/shared/IconClone'
 import './AssetsTable.scss'
 
@@ -192,7 +199,40 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                     fmtNum(a.quantity)
                   )}
                 </td>
-                <td>{fmt(a.unitPrice)}</td>
+                <td
+                  className={
+                    a.liveSymbol
+                      ? ''
+                      : isEditing(a.id, 'unitPrice')
+                        ? ''
+                        : 'assets-table__editable-cell'
+                  }
+                  title={a.liveSymbol ? 'Precio en vivo — no editable' : 'Doble clic para editar'}
+                  onDoubleClick={() => !a.liveSymbol && startEdit(a.id, 'unitPrice')}
+                >
+                  {isEditing(a.id, 'unitPrice') ? (
+                    <input
+                      className="assets-table__cell-input"
+                      type="number"
+                      step="any"
+                      autoFocus
+                      defaultValue={a.unitPrice}
+                      onFocus={(e) => e.target.select()}
+                      onBlur={(e) => {
+                        const value = Number(e.target.value)
+                        if (!Number.isNaN(value) && value !== a.unitPrice)
+                          onQuickUpdate(a, { unitPrice: value })
+                        stopEdit()
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') e.target.blur()
+                        if (e.key === 'Escape') stopEdit()
+                      }}
+                    />
+                  ) : (
+                    fmt(a.unitPrice)
+                  )}
+                </td>
                 <td className="assets-table__value">{fmt(a.valueCOP)}</td>
                 <td
                   className="assets-table__editable-cell"
@@ -201,11 +241,35 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                 >
                   {a.liquid ? '✓' : '—'}
                 </td>
-                <td>
-                  {a.horizon && (
+                <td
+                  className={isEditing(a.id, 'horizon') ? '' : 'assets-table__editable-cell'}
+                  title="Doble clic para editar"
+                  onDoubleClick={() => startEdit(a.id, 'horizon')}
+                >
+                  {isEditing(a.id, 'horizon') ? (
+                    <select
+                      className="assets-table__cell-select"
+                      autoFocus
+                      defaultValue={a.horizon ?? ''}
+                      onChange={(e) => {
+                        onQuickUpdate(a, { horizon: e.target.value })
+                        stopEdit()
+                      }}
+                      onBlur={stopEdit}
+                    >
+                      <option value="">—</option>
+                      {HORIZONS.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  ) : a.horizon ? (
                     <span style={{ color: HORIZON_COLOR[a.horizon] }} className="assets-table__tag">
                       {a.horizon}
                     </span>
+                  ) : (
+                    '—'
                   )}
                 </td>
                 <td

@@ -2,7 +2,7 @@ import * as idb from '../../idb/cashflow/assets'
 import * as fb from '../../firebase/cashflow/assets'
 
 export const fetchAll = fb.fetchAll
-export const createAsset = fb.createAsset
+export const saveAssetToFirebase = fb.saveAsset
 export const syncAssetToFirebase = fb.syncAssetToFirebase
 
 export const deleteAsset = async (id) => {

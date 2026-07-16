@@ -15,7 +15,7 @@ function* loadAssets() {
 
 function* saveAsset({ payload }) {
   try {
-    yield call(facade.createAsset, payload)
+    yield call(facade.saveAssetToFirebase, payload)
     yield put(actions.saveSuccess(payload))
   } catch (e) {
     yield put(actions.saveError(e.message))

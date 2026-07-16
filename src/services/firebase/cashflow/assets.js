@@ -1,6 +1,5 @@
 import { db, COL_CASHFLOW_ASSETS as COL } from '../settings'
 import {
-  addDoc,
   collection,
   doc,
   setDoc,
@@ -12,7 +11,6 @@ import {
 } from 'firebase/firestore'
 import { firestoreCall } from '../firebaseClient'
 import { getTenantId } from 'src/services/tenantContext'
-
 
 export const syncAssetToFirebase = async (asset) => {
   const { id, ...data } = asset
@@ -40,6 +38,7 @@ export const fetchAll = async () => {
       liquid: data.liquid ?? false,
       projection: data.projection ?? false,
       horizon: data.horizon ?? '',
+      location: data.location ?? '',
       monthlyGain: data.monthlyGain ?? 0,
       archived: data.archived ?? false,
       notes: data.notes ?? '',
@@ -54,28 +53,32 @@ export const deleteAssetFromFirebase = async (id) => {
   await firestoreCall(() => deleteDoc(doc(collection(db, COL), id)))
 }
 
-export const createAsset = async ({
+export const saveAsset = async ({
+  id,
   archived,
   horizon,
   liquid,
   liveSymbol,
+  location,
   monthlyGain,
   notes,
   projection,
   quantity,
   type,
   unitPrice,
-  createdAt: _createdAt,
+  createdAt,
+  updatedAt,
   name,
   date,
   price,
 }) => {
-  const ref = await firestoreCall(() =>
-    addDoc(collection(db, COL), {
+  await firestoreCall(() =>
+    setDoc(doc(collection(db, COL), id), {
       archived,
       horizon,
       liquid,
       liveSymbol: liveSymbol ?? '',
+      location: location ?? '',
       monthlyGain,
       name,
       notes,
@@ -86,8 +89,9 @@ export const createAsset = async ({
       date: date ? date : null,
       price: price ? Number(price) : null,
       tenantId: getTenantId(),
-      createdAt: serverTimestamp(),
+      createdAt: createdAt ?? serverTimestamp(),
+      updatedAt: updatedAt ?? serverTimestamp(),
     }),
   )
-  return ref.id
+  return id
 }

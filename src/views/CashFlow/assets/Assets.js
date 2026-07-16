@@ -14,6 +14,7 @@ import {
 import AssetCard from './AssetCard'
 import AssetSheet from './AssetSheet'
 import AssetsTable from './AssetsTable'
+import AssetsAnalytics from './AssetsAnalytics'
 import SummaryCard from './SummaryCard'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
@@ -40,6 +41,12 @@ export default function Assets() {
   const [groupByType, setGroupByType] = useState(
     () => localStorage.getItem('assets_groupByType') !== 'false',
   )
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('assets_tab') ?? 'grid')
+
+  const switchTab = (tab) => {
+    setActiveTab(tab)
+    localStorage.setItem('assets_tab', tab)
+  }
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -275,6 +282,58 @@ export default function Assets() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          background: '#f1f3f5',
+          borderRadius: 12,
+          padding: 4,
+          marginBottom: 16,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 4,
+            bottom: 4,
+            left: 4,
+            width: 'calc(50% - 4px)',
+            borderRadius: 8,
+            background: '#fff',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+            transform: activeTab === 'chart' ? 'translateX(100%)' : 'translateX(0)',
+            transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+          }}
+        />
+        {[
+          { key: 'grid', label: '📋 Datos' },
+          { key: 'chart', label: '📊 Análisis' },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => switchTab(t.key)}
+            style={{
+              flex: 1,
+              position: 'relative',
+              zIndex: 1,
+              border: 'none',
+              background: 'transparent',
+              padding: '8px 0',
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              color: activeTab === t.key ? '#1a1a2e' : '#868e96',
+              transition: 'color 0.2s',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Portfolio summary */}
       {!loading && assets.length > 0 && (
         <>
@@ -306,236 +365,252 @@ export default function Assets() {
               </div>
             )}
           </div>
-          <div
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}
-          >
-            <SummaryCard
-              label="FINANCIERO"
-              value={fmt(totals.financial)}
-              sub={`${assets.filter((a) => !a.archived && a.type === 'financial').length} activos`}
-              color={TYPE_COLOR.financial}
-              bg={TYPE_BG.financial}
-              border="#c5d8ff"
-            />
-            <SummaryCard
-              label="FIJO"
-              value={fmt(totals.fixed)}
-              sub={`${assets.filter((a) => !a.archived && a.type === 'fixed').length} activos`}
-              color={TYPE_COLOR.fixed}
-              bg={TYPE_BG.fixed}
-              border="#ffe69c"
-            />
-            {totals.crypto > 0 && (
+          {activeTab === 'grid' && (
+            <div
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}
+            >
               <SummaryCard
-                label="CRIPTO (en vivo)"
-                value={fmt(totals.crypto)}
-                sub={`${assets.filter((a) => !a.archived && a.type === 'crypto').length} activos`}
-                color={TYPE_COLOR.crypto}
-                bg={TYPE_BG.crypto}
-                border="#d0bfff"
+                label="FINANCIERO"
+                value={fmt(totals.financial)}
+                sub={`${assets.filter((a) => !a.archived && a.type === 'financial').length} activos`}
+                color={TYPE_COLOR.financial}
+                bg={TYPE_BG.financial}
+                border="#c5d8ff"
               />
-            )}
-            {totals.liquid > 0 && (
               <SummaryCard
-                label="LÍQUIDO"
-                value={fmt(totals.liquid)}
-                sub={`${assets.filter((a) => !a.archived && a.liquid).length} activos`}
-                color="#2f9e44"
-                bg="#f0fdf4"
-                border="#86efac"
+                label="FIJO"
+                value={fmt(totals.fixed)}
+                sub={`${assets.filter((a) => !a.archived && a.type === 'fixed').length} activos`}
+                color={TYPE_COLOR.fixed}
+                bg={TYPE_BG.fixed}
+                border="#ffe69c"
               />
-            )}
-            {totals.monthly > 0 && (
-              <SummaryCard
-                label="GANANCIA MENSUAL"
-                value={fmt(totals.monthly)}
-                color="#2f9e44"
-                bg="#f0fdf4"
-                border="#86efac"
-              />
-            )}
-          </div>
+              {totals.crypto > 0 && (
+                <SummaryCard
+                  label="CRIPTO (en vivo)"
+                  value={fmt(totals.crypto)}
+                  sub={`${assets.filter((a) => !a.archived && a.type === 'crypto').length} activos`}
+                  color={TYPE_COLOR.crypto}
+                  bg={TYPE_BG.crypto}
+                  border="#d0bfff"
+                />
+              )}
+              {totals.liquid > 0 && (
+                <SummaryCard
+                  label="LÍQUIDO"
+                  value={fmt(totals.liquid)}
+                  sub={`${assets.filter((a) => !a.archived && a.liquid).length} activos`}
+                  color="#2f9e44"
+                  bg="#f0fdf4"
+                  border="#86efac"
+                />
+              )}
+              {totals.monthly > 0 && (
+                <SummaryCard
+                  label="GANANCIA MENSUAL"
+                  value={fmt(totals.monthly)}
+                  color="#2f9e44"
+                  bg="#f0fdf4"
+                  border="#86efac"
+                />
+              )}
+            </div>
+          )}
         </>
       )}
 
+      {activeTab === 'chart' && <AssetsAnalytics assets={pricedAssets} />}
+
       {/* Search */}
-      <div style={{ position: 'relative', marginBottom: 10 }}>
-        <span
-          style={{
-            position: 'absolute',
-            left: 10,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#adb5bd',
-            fontSize: 15,
-          }}
-        >
-          🔍
-        </span>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar activo…"
-          style={{
-            width: '100%',
-            padding: '9px 10px 9px 34px',
-            borderRadius: 10,
-            border: '1px solid #dee2e6',
-            background: '#fff',
-            fontSize: 14,
-            outline: 'none',
-          }}
-        />
-        {search && (
-          <button
-            onClick={() => setSearch('')}
-            style={{
-              position: 'absolute',
-              right: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              color: '#adb5bd',
-              cursor: 'pointer',
-              fontSize: 16,
-            }}
-          >
-            ×
-          </button>
-        )}
-      </div>
-
-      {/* Filters */}
-      <div
-        style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 12 }}
-      >
-        {['all', ...TYPES].map((t) => (
-          <button
-            key={t}
-            onClick={() => setFilterType(t)}
-            style={btnStyle(filterType === t, TYPE_BG[t] ?? '#1a1a2e', TYPE_COLOR[t] ?? '#fff')}
-          >
-            {t === 'all' ? 'Todos' : t}
-          </button>
-        ))}
-        <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
-        {HORIZONS.map((h) => (
-          <button
-            key={h}
-            onClick={() => setFilterHorizon(filterHorizon === h ? 'all' : h)}
-            style={btnStyle(filterHorizon === h, HORIZON_BG[h], HORIZON_COLOR[h])}
-          >
-            {h}
-          </button>
-        ))}
-        <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
-        <button
-          onClick={() => setFilterLiquid(filterLiquid === 'yes' ? 'all' : 'yes')}
-          style={btnStyle(filterLiquid === 'yes', '#f0fdf4', '#2f9e44')}
-        >
-          liquid
-        </button>
-        <button
-          onClick={() => setShowArchived((v) => !v)}
-          style={btnStyle(showArchived, '#fff5f5', '#e03131')}
-        >
-          archivados
-        </button>
-      </div>
-
-      {/* Sync all */}
-      {unsyncedCount > 0 && (
-        <button
-          onClick={handleSyncAll}
-          disabled={syncingAll}
-          style={{
-            width: '100%',
-            padding: '11px',
-            borderRadius: 12,
-            marginBottom: 12,
-            border: syncingAll ? '1px solid #dee2e6' : '1px solid #86efac',
-            background: syncingAll ? '#e9ecef' : '#f0fdf4',
-            color: syncingAll ? '#adb5bd' : '#2f9e44',
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: syncingAll ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-          }}
-        >
-          {syncingAll
-            ? '… Sincronizando'
-            : `☁️ Sincronizar todo (${unsyncedCount} pendiente${unsyncedCount !== 1 ? 's' : ''})`}
-        </button>
-      )}
-
-      {/* List / Grid / Empty */}
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              border: '3px solid #dee2e6',
-              borderTopColor: '#1e3a5f',
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
-            }}
-          />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Sin activos</div>
-          {assets.length === 0 ? (
-            <div>
-              <div style={{ marginBottom: 16 }}>Presiona + para agregar tu primer activo</div>
+      {activeTab === 'grid' && (
+        <>
+          <div style={{ position: 'relative', marginBottom: 10 }}>
+            <span
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#adb5bd',
+                fontSize: 15,
+              }}
+            >
+              🔍
+            </span>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar activo…"
+              style={{
+                width: '100%',
+                padding: '9px 10px 9px 34px',
+                borderRadius: 10,
+                border: '1px solid #dee2e6',
+                background: '#fff',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+            {search && (
               <button
-                onClick={handleSeedImport}
+                onClick={() => setSearch('')}
                 style={{
-                  padding: '12px 24px',
-                  borderRadius: 12,
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
                   border: 'none',
-                  background: '#1e3a5f',
-                  color: '#fff',
-                  fontSize: 14,
-                  fontWeight: 700,
+                  color: '#adb5bd',
                   cursor: 'pointer',
+                  fontSize: 16,
                 }}
               >
-                📥 Importar datos del Excel
+                ×
               </button>
+            )}
+          </div>
+
+          {/* Filters */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              overflowX: 'auto',
+              paddingBottom: 4,
+              marginBottom: 12,
+            }}
+          >
+            {['all', ...TYPES].map((t) => (
+              <button
+                key={t}
+                onClick={() => setFilterType(t)}
+                style={btnStyle(filterType === t, TYPE_BG[t] ?? '#1a1a2e', TYPE_COLOR[t] ?? '#fff')}
+              >
+                {t === 'all' ? 'Todos' : t}
+              </button>
+            ))}
+            <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
+            {HORIZONS.map((h) => (
+              <button
+                key={h}
+                onClick={() => setFilterHorizon(filterHorizon === h ? 'all' : h)}
+                style={btnStyle(filterHorizon === h, HORIZON_BG[h], HORIZON_COLOR[h])}
+              >
+                {h}
+              </button>
+            ))}
+            <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
+            <button
+              onClick={() => setFilterLiquid(filterLiquid === 'yes' ? 'all' : 'yes')}
+              style={btnStyle(filterLiquid === 'yes', '#f0fdf4', '#2f9e44')}
+            >
+              liquid
+            </button>
+            <button
+              onClick={() => setShowArchived((v) => !v)}
+              style={btnStyle(showArchived, '#fff5f5', '#e03131')}
+            >
+              archivados
+            </button>
+          </div>
+
+          {/* Sync all */}
+          {unsyncedCount > 0 && (
+            <button
+              onClick={handleSyncAll}
+              disabled={syncingAll}
+              style={{
+                width: '100%',
+                padding: '11px',
+                borderRadius: 12,
+                marginBottom: 12,
+                border: syncingAll ? '1px solid #dee2e6' : '1px solid #86efac',
+                background: syncingAll ? '#e9ecef' : '#f0fdf4',
+                color: syncingAll ? '#adb5bd' : '#2f9e44',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: syncingAll ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+            >
+              {syncingAll
+                ? '… Sincronizando'
+                : `☁️ Sincronizar todo (${unsyncedCount} pendiente${unsyncedCount !== 1 ? 's' : ''})`}
+            </button>
+          )}
+
+          {/* List / Grid / Empty */}
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  border: '3px solid #dee2e6',
+                  borderTopColor: '#1e3a5f',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                }}
+              />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div
+              style={{ textAlign: 'center', padding: '48px 24px', color: '#adb5bd', fontSize: 14 }}
+            >
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Sin activos</div>
+              {assets.length === 0 ? (
+                <div>
+                  <div style={{ marginBottom: 16 }}>Presiona + para agregar tu primer activo</div>
+                  <button
+                    onClick={handleSeedImport}
+                    style={{
+                      padding: '12px 24px',
+                      borderRadius: 12,
+                      border: 'none',
+                      background: '#1e3a5f',
+                      color: '#fff',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    📥 Importar datos del Excel
+                  </button>
+                </div>
+              ) : (
+                <div>Ajusta los filtros</div>
+              )}
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '70vh' }}>
+              <AssetsTable
+                data={gridData}
+                groupByType={groupByType}
+                onEdit={setSheet}
+                onDelete={handleDelete}
+                onClone={handleClone}
+                onQuickUpdate={handleQuickUpdate}
+              />
             </div>
           ) : (
-            <div>Ajusta los filtros</div>
+            filtered.map((a) => (
+              <AssetCard
+                key={a.id}
+                asset={a}
+                onEdit={setSheet}
+                onDelete={handleDelete}
+                onSync={handleSync}
+                syncing={syncing}
+              />
+            ))
           )}
-        </div>
-      ) : viewMode === 'grid' ? (
-        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '70vh' }}>
-          <AssetsTable
-            data={gridData}
-            groupByType={groupByType}
-            onEdit={setSheet}
-            onDelete={handleDelete}
-            onClone={handleClone}
-            onQuickUpdate={handleQuickUpdate}
-          />
-        </div>
-      ) : (
-        filtered.map((a) => (
-          <AssetCard
-            key={a.id}
-            asset={a}
-            onEdit={setSheet}
-            onDelete={handleDelete}
-            onSync={handleSync}
-            syncing={syncing}
-          />
-        ))
+        </>
       )}
 
       {sheet && (
