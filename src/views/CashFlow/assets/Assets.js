@@ -37,6 +37,9 @@ export default function Assets() {
   const [search, setSearch] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('assets_viewMode') ?? 'cards')
+  const [groupByType, setGroupByType] = useState(
+    () => localStorage.getItem('assets_groupByType') !== 'false',
+  )
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -44,7 +47,7 @@ export default function Assets() {
 
   const filtered = useMemo(() => {
     return pricedAssets.filter((a) => {
-      if (!showArchived && a.archived) return false
+      if (a.archived !== showArchived) return false
       if (filterType !== 'all' && a.type !== filterType) return false
       if (filterHorizon !== 'all' && a.horizon !== filterHorizon) return false
       if (filterLiquid === 'yes' && !a.liquid) return false
@@ -76,10 +79,14 @@ export default function Assets() {
 
   const gridData = useMemo(
     () =>
-      filtered.map((a) => ({
-        ...a,
-        valueCOP: (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0),
-      })),
+      filtered
+        .map((a) => ({
+          ...a,
+          valueCOP: (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0),
+        }))
+        .sort(
+          (a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type) || a.name.localeCompare(b.name),
+        ),
     [filtered],
   )
 
@@ -95,6 +102,27 @@ export default function Assets() {
   const handleDelete = (asset) => {
     if (window.confirm(`¿Eliminar "${asset.name}"?`))
       dispatch(actions.deleteRequest({ id: asset.id }))
+  }
+
+  const handleClone = (asset) => {
+    const {
+      id: _id,
+      syncedAt: _syncedAt,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      valueCOP: _valueCOP,
+      ...fields
+    } = asset
+    const ts = now()
+    dispatch(
+      actions.saveRequest({
+        ...fields,
+        id: uid(),
+        name: `${asset.name} (copia)`,
+        createdAt: ts,
+        updatedAt: ts,
+      }),
+    )
   }
 
   const handleSeedImport = () => {
@@ -116,6 +144,14 @@ export default function Assets() {
     const next = viewMode === 'cards' ? 'grid' : 'cards'
     setViewMode(next)
     localStorage.setItem('assets_viewMode', next)
+  }
+
+  const toggleGroupByType = () => {
+    setGroupByType((v) => {
+      const next = !v
+      localStorage.setItem('assets_groupByType', String(next))
+      return next
+    })
   }
 
   const btnStyle = (active, activeBg, activeColor) => ({
@@ -178,6 +214,27 @@ export default function Assets() {
           >
             {importing ? '…' : '☁️'}
           </button>
+          {viewMode === 'grid' && (
+            <button
+              onClick={toggleGroupByType}
+              title={groupByType ? 'Desagrupar' : 'Agrupar por tipo'}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                border: groupByType ? '2px solid #1e3a5f' : '2px solid #dee2e6',
+                background: groupByType ? '#eef4ff' : '#fff',
+                color: groupByType ? '#1e3a5f' : '#6c757d',
+                fontSize: 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              🗂
+            </button>
+          )}
           <button
             onClick={toggleView}
             title={viewMode === 'cards' ? 'Ver tabla' : 'Ver tarjetas'}
@@ -458,11 +515,13 @@ export default function Assets() {
           )}
         </div>
       ) : viewMode === 'grid' ? (
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '70vh' }}>
           <AssetsTable
             data={gridData}
+            groupByType={groupByType}
             onEdit={setSheet}
             onDelete={handleDelete}
+            onClone={handleClone}
             onQuickUpdate={handleQuickUpdate}
           />
         </div>

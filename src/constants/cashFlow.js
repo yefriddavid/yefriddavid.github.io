@@ -62,6 +62,7 @@ export const SALARY_DISTRIBUTION_TYPE_LABELS = {
 
 export const ASSET_TYPES = ['financial', 'fixed', 'crypto']
 export const ASSET_HORIZONS = ['largo', 'mediano', 'corto']
+export const ASSET_LOCATIONS = ['ldg', 'box', 'trz', 'dave', 'bnc col', 'bnc arg']
 
 export const ASSET_TYPE_COLOR = { financial: '#1e3a5f', fixed: '#e67700', crypto: '#6741d9' }
 export const ASSET_TYPE_BG = { financial: '#eef4ff', fixed: '#fff8e1', crypto: '#f3f0ff' }
