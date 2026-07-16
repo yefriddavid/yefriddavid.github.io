@@ -370,6 +370,20 @@
     letter-spacing: 0.06em;
     color: var(--cui-secondary-color, #888);
     margin: 0;
+
+    &--clickable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover { color: var(--cui-primary, #4f46e5); }
+    }
+  }
+
+  &__group-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
   }
 
   &__group-add-btn {

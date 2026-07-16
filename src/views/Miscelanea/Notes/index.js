@@ -1335,6 +1335,7 @@ const Notes = () => {
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
   const [hiddenCategories, setHiddenCategories] = useState([])
+  const [collapsedCategories, setCollapsedCategories] = useState([])
   const [showCategoryFilter, setShowCategoryFilter] = useState(false)
   const [privateUnlocked, setPrivateUnlocked] = useState(false)
   const [showPrivatePasswordInput, setShowPrivatePasswordInput] = useState(false)
@@ -1418,6 +1419,12 @@ const Notes = () => {
     )
   }
 
+  const toggleGroupCollapse = (category) => {
+    setCollapsedCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+    )
+  }
+
   const tabScopedItems = items.filter((n) =>
     activeTab === 'private' ? n.private === true : !n.private,
   )
@@ -1437,6 +1444,14 @@ const Notes = () => {
         !searchQuery.trim() ||
         (n.title || '').toLowerCase().includes(searchQuery.trim().toLowerCase()),
     )
+
+  const groupCategories = grouped ? getDistinctCategories(visibleItems) : []
+  const allGroupsCollapsed =
+    groupCategories.length > 0 && groupCategories.every((c) => collapsedCategories.includes(c))
+
+  const toggleCollapseAll = () => {
+    setCollapsedCategories(allGroupsCollapsed ? [] : groupCategories)
+  }
 
   return (
     <div className="notes">
@@ -1504,6 +1519,17 @@ const Notes = () => {
           >
             {grouped ? '⊞ Agrupado' : '⊟ Sin agrupar'}
           </button>
+          {grouped && groupCategories.length > 0 && (
+            <button
+              className="notes__group-btn"
+              onClick={toggleCollapseAll}
+              title={
+                allGroupsCollapsed ? 'Expandir todos los grupos' : 'Minimizar todos los grupos'
+              }
+            >
+              {allGroupsCollapsed ? '⊞ Expandir todos' : '_ Minimizar todos'}
+            </button>
+          )}
           <div className="notes__category-filter">
             <button
               className={`notes__category-filter-btn${hiddenCategories.length ? ' notes__category-filter-btn--active' : ''}`}
@@ -1702,12 +1728,13 @@ const Notes = () => {
           </SortableContext>
         </DndContext>
       ) : (
-        getDistinctCategories(visibleItems).map((value) => {
+        groupCategories.map((value) => {
           const label = capitalize(value)
           const groupItems = visibleItems.filter(
             (n) => (n.category || DEFAULT_NOTE_CATEGORY) === value,
           )
           if (!groupItems.length) return null
+          const isCollapsed = collapsedCategories.includes(value)
           const handleGroupDragEnd = ({ active, over }) => {
             setDragging(false)
             if (!over || active.id === over.id) return
@@ -1723,48 +1750,69 @@ const Notes = () => {
           return (
             <div key={value} className="notes__group">
               <div className="notes__group-header">
-                <h6 className="notes__group-title">{label}</h6>
-                {activeTab !== 'archived' && (
+                <h6
+                  className="notes__group-title notes__group-title--clickable"
+                  onClick={() => toggleGroupCollapse(value)}
+                  title={isCollapsed ? `Expandir ${label}` : `Minimizar ${label}`}
+                >
+                  {label}
+                </h6>
+                <div className="notes__group-header-actions">
+                  {activeTab !== 'archived' && (
+                    <button
+                      type="button"
+                      className="notes__group-add-btn"
+                      onClick={() =>
+                        setEditing({
+                          isNew: true,
+                          category: value,
+                          ...(activeTab === 'private' ? { private: true } : {}),
+                        })
+                      }
+                      title={`Nueva nota en ${label}`}
+                    >
+                      +
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="notes__group-add-btn"
-                    onClick={() =>
-                      setEditing({
-                        isNew: true,
-                        category: value,
-                        ...(activeTab === 'private' ? { private: true } : {}),
-                      })
-                    }
-                    title={`Nueva nota en ${label}`}
+                    onClick={() => toggleGroupCollapse(value)}
+                    title={isCollapsed ? `Expandir ${label}` : `Minimizar ${label}`}
                   >
-                    +
+                    {isCollapsed ? '▢' : '_'}
                   </button>
-                )}
+                </div>
               </div>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleGroupDragEnd}
-              >
-                <SortableContext items={groupItems.map((n) => n.id)} strategy={rectSortingStrategy}>
-                  <div className="notes__grid">
-                    {groupItems.map((note) => (
-                      <SortableNoteCard
-                        key={note.id}
-                        note={note}
-                        onView={() => setViewing(note)}
-                        onEdit={() => setEditing(note)}
-                        onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
-                        onClone={() => handleClone(note)}
-                        onArchive={() => handleArchive(note)}
-                        onToggleStar={() => handleToggleStar(note)}
-                        onDelete={() => handleDelete(note)}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
+              {!isCollapsed && (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleGroupDragEnd}
+                >
+                  <SortableContext
+                    items={groupItems.map((n) => n.id)}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="notes__grid">
+                      {groupItems.map((note) => (
+                        <SortableNoteCard
+                          key={note.id}
+                          note={note}
+                          onView={() => setViewing(note)}
+                          onEdit={() => setEditing(note)}
+                          onOpen={() => navigate(`/miscelanea/notes/${note.id}`)}
+                          onClone={() => handleClone(note)}
+                          onArchive={() => handleArchive(note)}
+                          onToggleStar={() => handleToggleStar(note)}
+                          onDelete={() => handleDelete(note)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              )}
             </div>
           )
         })
