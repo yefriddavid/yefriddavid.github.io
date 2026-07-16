@@ -17,6 +17,8 @@ export const LIVE_PRICE_SYMBOLS = TRADE_PRICE_ASSETS.map(({ symbol, ticker }) =>
   label: ticker,
 }))
 
+export const BTC_LIVE_SYMBOL = TRADE_PRICE_ASSETS.find((a) => a.ticker === 'BTC')?.symbol
+
 export const EMPTY_ASSET = {
   name: '',
   quantity: '',

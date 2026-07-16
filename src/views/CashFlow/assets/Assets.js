@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/cashflow/assetActions'
-import { uid, now, fmt, applyLivePricing } from './assetHelpers'
+import { uid, now, fmt, fmtNum, applyLivePricing } from './assetHelpers'
+import { fmtUSD } from 'src/utils/formatters'
 import {
   TYPES,
   HORIZONS,
@@ -11,6 +12,7 @@ import {
   HORIZON_BG,
   SEED_ASSETS,
   LIVE_PRICE_SYMBOLS,
+  BTC_LIVE_SYMBOL,
 } from './assetConstants'
 import AssetCard from './AssetCard'
 import AssetSheet from './AssetSheet'
@@ -83,7 +85,9 @@ export default function Assets() {
       fixed = 0,
       crypto = 0,
       liquid = 0,
-      monthly = 0
+      monthly = 0,
+      btcQuantity = 0,
+      hasBtc = false
     pricedAssets.forEach((a) => {
       if (a.archived) return
       const v = (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0)
@@ -93,9 +97,16 @@ export default function Assets() {
       if (a.type === 'crypto') crypto += v
       if (a.liquid) liquid += v
       monthly += Number(a.monthlyGain) || 0
+      if (a.liveSymbol === BTC_LIVE_SYMBOL) {
+        hasBtc = true
+        btcQuantity += Number(a.quantity) || 0
+      }
     })
-    return { total, financial, fixed, crypto, liquid, monthly }
+    return { total, financial, fixed, crypto, liquid, monthly, btcQuantity, hasBtc }
   }, [pricedAssets])
+
+  const btcMissing = Math.max(0, 1 - totals.btcQuantity)
+  const btcPriceUSD = prices[BTC_LIVE_SYMBOL]?.price
 
   const gridData = useMemo(
     () =>
@@ -429,6 +440,16 @@ export default function Assets() {
                   color="#2f9e44"
                   bg="#f0fdf4"
                   border="#86efac"
+                />
+              )}
+              {totals.hasBtc && btcPriceUSD != null && (
+                <SummaryCard
+                  label="FALTA PARA 1 BTC"
+                  value={btcMissing > 0 ? `${fmtNum(btcMissing, 8)} BTC` : '🎉 Completo'}
+                  sub={btcMissing > 0 ? `≈ ${fmtUSD(btcMissing * btcPriceUSD)}` : undefined}
+                  color={TYPE_COLOR.crypto}
+                  bg={TYPE_BG.crypto}
+                  border="#d0bfff"
                 />
               )}
             </div>
