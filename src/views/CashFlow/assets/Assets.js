@@ -446,7 +446,7 @@ export default function Assets() {
                 <SummaryCard
                   label="FALTA PARA 1 BTC"
                   value={btcMissing > 0 ? `${fmtNum(btcMissing, 8)} BTC` : '🎉 Completo'}
-                  sub={btcMissing > 0 ? `≈ ${fmtUSD(btcMissing * btcPriceUSD)}` : undefined}
+                  sub={btcMissing > 0 ? `≈ ${fmtUSD(btcMissing * btcPriceUSD)} USD` : undefined}
                   color={TYPE_COLOR.crypto}
                   bg={TYPE_BG.crypto}
                   border="#d0bfff"
