@@ -36,7 +36,11 @@ export default function Assets() {
   const [filterType, setFilterType] = useState('all')
   const [filterHorizon, setFilterHorizon] = useState('all')
   const [filterLiquid, setFilterLiquid] = useState('all')
-  const [filterSymbol, setFilterSymbol] = useState('all')
+  const [filterSymbols, setFilterSymbols] = useState([])
+  const toggleSymbolFilter = (val) =>
+    setFilterSymbols((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val],
+    )
   const [search, setSearch] = useState('')
   const [showArchived, setShowArchived] = useState(false)
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('assets_viewMode') ?? 'cards')
@@ -61,13 +65,12 @@ export default function Assets() {
       if (filterHorizon !== 'all' && a.horizon !== filterHorizon) return false
       if (filterLiquid === 'yes' && !a.liquid) return false
       if (filterLiquid === 'no' && a.liquid) return false
-      if (filterSymbol === 'manual' && a.liveSymbol) return false
-      if (filterSymbol !== 'all' && filterSymbol !== 'manual' && a.liveSymbol !== filterSymbol)
+      if (filterSymbols.length > 0 && !filterSymbols.includes(a.liveSymbol || 'manual'))
         return false
       if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
-  }, [pricedAssets, filterType, filterHorizon, filterLiquid, filterSymbol, search, showArchived])
+  }, [pricedAssets, filterType, filterHorizon, filterLiquid, filterSymbols, search, showArchived])
 
   const presentSymbols = useMemo(
     () => [...new Set(pricedAssets.map((a) => a.liveSymbol).filter(Boolean))].sort(),
@@ -158,7 +161,7 @@ export default function Assets() {
     filterType !== 'all' ||
     filterHorizon !== 'all' ||
     filterLiquid !== 'all' ||
-    filterSymbol !== 'all' ||
+    filterSymbols.length > 0 ||
     !!search
 
   const toggleView = () => {
@@ -519,16 +522,16 @@ export default function Assets() {
               <>
                 <div style={{ width: 1, background: '#dee2e6', flexShrink: 0 }} />
                 <button
-                  onClick={() => setFilterSymbol(filterSymbol === 'manual' ? 'all' : 'manual')}
-                  style={btnStyle(filterSymbol === 'manual', '#f3f0ff', '#6741d9')}
+                  onClick={() => toggleSymbolFilter('manual')}
+                  style={btnStyle(filterSymbols.includes('manual'), '#f3f0ff', '#6741d9')}
                 >
                   manual
                 </button>
                 {presentSymbols.map((sym) => (
                   <button
                     key={sym}
-                    onClick={() => setFilterSymbol(filterSymbol === sym ? 'all' : sym)}
-                    style={btnStyle(filterSymbol === sym, '#f3f0ff', '#6741d9')}
+                    onClick={() => toggleSymbolFilter(sym)}
+                    style={btnStyle(filterSymbols.includes(sym), '#f3f0ff', '#6741d9')}
                   >
                     {LIVE_PRICE_SYMBOLS.find((s) => s.value === sym)?.label ??
                       sym.replace(/USDT$/, '')}
