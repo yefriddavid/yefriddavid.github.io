@@ -131,6 +131,14 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
   { value: 'BNBUSDT', label: 'BNB' },
 ]
 
+export const CRYPTO_PURCHASE_PLATFORMS = [
+  { value: 'binance_arg', label: 'Binance ARG' },
+  { value: 'binance_col', label: 'Binance COL' },
+  { value: 'neverless', label: 'Neverless' },
+  { value: 'lnp2p_long', label: 'LNP2P Long' },
+  { value: 'lnp2p_short', label: 'LNP2P Short' },
+]
+
 export const CALC_LIST_CATEGORIES = [
   { value: 'gastos', label: 'Gastos' },
   { value: 'ahorros', label: 'Ahorros' },

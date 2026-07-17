@@ -10,7 +10,7 @@ import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import CryptoPurchaseForm, { EMPTY_PURCHASE } from './CryptoPurchaseForm'
-import { fmtUSD, symbolLabel, computePurchaseMetrics } from './cryptoPurchaseHelpers'
+import { fmtUSD, symbolLabel, platformLabel, computePurchaseMetrics } from './cryptoPurchaseHelpers'
 import { SEED_PURCHASES } from './cryptoPurchaseSeed'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import './CryptoPurchases.scss'
@@ -218,6 +218,12 @@ const CryptoPurchases = () => {
                 <>
                   <span className={SC.label}>Precio actual </span>
                   {currentPrice != null ? fmtUSD(currentPrice) : '—'}
+                </>,
+              ],
+              [
+                <>
+                  <span className={SC.label}>Plataforma </span>
+                  {platformLabel(p.platform)}
                 </>,
               ],
               [

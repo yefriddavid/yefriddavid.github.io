@@ -1,10 +1,14 @@
 import { fmtUSD } from 'src/utils/formatters'
+import { CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 
 export { fmtUSD }
 
 export const today = () => new Date().toISOString().split('T')[0]
 
 export const symbolLabel = (symbol) => symbol.replace(/USDT$/i, '')
+
+export const platformLabel = (platform) =>
+  CRYPTO_PURCHASE_PLATFORMS.find((p) => p.value === platform)?.label ?? platform
 
 // purchase: { quantity, purchasePrice }, currentPrice: live price from useCryptoPrices (USD) or null
 export const computePurchaseMetrics = (purchase, currentPrice) => {

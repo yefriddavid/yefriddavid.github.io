@@ -1,7 +1,7 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
-import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
+import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 import { fmtUSD, today } from './cryptoPurchaseHelpers'
 
 const fieldError = (err) =>
@@ -13,6 +13,7 @@ const fieldError = (err) =>
 
 export const EMPTY_PURCHASE = {
   symbol: CRYPTO_PURCHASE_SYMBOLS[0].value,
+  platform: CRYPTO_PURCHASE_PLATFORMS[0].value,
   quantity: '',
   purchasePrice: '',
   purchaseDate: today(),
@@ -36,6 +37,7 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving }) => {
     onSave({
       ...(initial ?? {}),
       symbol: form.symbol,
+      platform: form.platform,
       quantity: Number(form.quantity),
       purchasePrice: Number(form.purchasePrice),
       purchaseDate: form.purchaseDate,
@@ -50,15 +52,27 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving }) => {
       saving={saving}
       saveLabel={isEdit ? 'Guardar cambios' : 'Registrar compra'}
     >
-      <StandardField label="Moneda *">
-        <select className={SF.select} {...register('symbol', { required: true })}>
-          {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </StandardField>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+        <StandardField label="Moneda *">
+          <select className={SF.select} {...register('symbol', { required: true })}>
+            {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+
+        <StandardField label="Plataforma *">
+          <select className={SF.select} {...register('platform', { required: true })}>
+            {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </StandardField>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
         <StandardField label="Cantidad *">
