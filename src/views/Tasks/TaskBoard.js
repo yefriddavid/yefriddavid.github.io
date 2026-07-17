@@ -150,7 +150,6 @@ const TaskBoard = ({ tasks, syncing, hasPending, onSave, onDelete, onAdd, onSync
             <Section title="Vencidas"  accent="#ef4444" tasks={groups.overdue}  onSave={onSave} onDelete={onDelete} />
             <Section title="Hoy"       accent="#f97316" tasks={groups.today}    onSave={onSave} onDelete={onDelete} />
             <Section title="Próximas"  accent="#3b82f6" tasks={groups.upcoming} onSave={onSave} onDelete={onDelete} />
-            <Section title="Más adelante" accent="#8b5cf6" tasks={groups.later}   onSave={onSave} onDelete={onDelete} />
             <Section title="Sin fecha"    accent="#94a3b8" tasks={groups.undated}  onSave={onSave} onDelete={onDelete} />
             <DoneSection tasks={done} onSave={onSave} onDelete={onDelete} />
           </>
