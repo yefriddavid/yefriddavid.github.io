@@ -70,6 +70,7 @@ export default function AccountStatus() {
   const [viewer, setViewer] = useState(null)
   const [attachingTx, setAttachingTx] = useState(null)
   const [attachProcessing, setAttachProcessing] = useState(false)
+  const [attachedDoneId, setAttachedDoneId] = useState(null)
   const [addingAdHoc, setAddingAdHoc] = useState(false)
   const [editingAdHoc, setEditingAdHoc] = useState(null)
   const [sharedFile, setSharedFile] = useState(null)
@@ -322,9 +323,9 @@ export default function AccountStatus() {
       )
     } catch (err) {
       alert(err.message)
+      setAttachingTx(null)
     } finally {
       setAttachProcessing(false)
-      setAttachingTx(null)
     }
   }
 
@@ -333,9 +334,15 @@ export default function AccountStatus() {
     if (prevSaving.current && !saving) {
       setPaying(null)
       setAddingAdHoc(false)
+      if (attachingTx) {
+        const doneId = attachingTx.id
+        setAttachingTx(null)
+        setAttachedDoneId(doneId)
+        setTimeout(() => setAttachedDoneId((cur) => (cur === doneId ? null : cur)), 2000)
+      }
     }
     prevSaving.current = saving
-  }, [saving])
+  }, [saving, attachingTx])
 
   const loading = (fetching && !transactions) || (fetchingMasters && !masters)
 
@@ -524,7 +531,8 @@ export default function AccountStatus() {
                 onUpdate={handleUpdate}
                 onViewAttachment={(src, filename) => setViewer({ src, filename })}
                 onAttach={handleAttach}
-                attachingId={attachProcessing ? attachingTx?.id : null}
+                attachingId={attachingTx && (attachProcessing || saving) ? attachingTx.id : null}
+                attachedId={attachedDoneId}
                 savingId={saving ? paying?.id : null}
               />
             ))

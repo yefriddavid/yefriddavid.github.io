@@ -105,17 +105,15 @@ export default function AttachmentViewer({ src, filename, onClose }) {
         </div>
       </div>
 
-      <div
-        className={`attachment-viewer__area${zoom ? ' attachment-viewer__area--zoomed' : ''}`}
-        onClick={(e) => {
-          e.stopPropagation()
-          setZoom((z) => !z)
-        }}
-      >
+      <div className={`attachment-viewer__area${zoom ? ' attachment-viewer__area--zoomed' : ''}`}>
         <img
           src={src}
           alt={filename || 'adjunto'}
           className={`attachment-viewer__image${zoom ? ' attachment-viewer__image--zoomed' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            setZoom((z) => !z)
+          }}
         />
       </div>
 

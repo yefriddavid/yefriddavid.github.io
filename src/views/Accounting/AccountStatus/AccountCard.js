@@ -15,6 +15,7 @@ export default function AccountCard({
   onViewAttachment,
   onAttach,
   attachingId,
+  attachedId,
   savingId,
 }) {
   const isDebt = account.targetAmount > 0
@@ -298,19 +299,56 @@ export default function AccountCard({
                     </span>
                   )}
                   {p.attachment ? (
-                    <button
-                      onClick={() => onViewAttachment(p.attachment, p.attachmentName)}
-                      title="Ver adjunto"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: 'var(--fs-base)',
-                        padding: '2px 4px',
-                      }}
-                    >
-                      📎
-                    </button>
+                    <>
+                      <button
+                        onClick={() => onViewAttachment(p.attachment, p.attachmentName)}
+                        title="Ver adjunto"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: 'var(--fs-base)',
+                          padding: '2px 4px',
+                        }}
+                      >
+                        📷
+                      </button>
+                      {attachedId === p.id ? (
+                        <span
+                          title="Adjunto actualizado"
+                          style={{
+                            fontSize: 'var(--fs-sm)',
+                            color: '#2f9e44',
+                            padding: '2px 4px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          ✓
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => onAttach(p)}
+                          disabled={isAttaching}
+                          title="Cambiar adjunto"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '2px 4px',
+                            cursor: isAttaching ? 'not-allowed' : 'pointer',
+                            fontSize: 'var(--fs-sm)',
+                            color: '#adb5bd',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {isAttaching ? (
+                            <Spinner size="sm" style={{ width: 10, height: 10 }} />
+                          ) : (
+                            '✏️'
+                          )}
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <button
                       onClick={() => onAttach(p)}
