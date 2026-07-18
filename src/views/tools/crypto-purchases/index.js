@@ -231,8 +231,9 @@ const CryptoPurchases = () => {
                   <>
                     <span className={SC.label}>Rendimiento </span>
                     <span className={amountClass(gainLossUSD)}>
-                      {gainLossPct >= 0 ? '+' : ''}
-                      {gainLossPct.toFixed(2)}%
+                      {gainLossUSD >= 0 ? '+' : ''}
+                      {fmtUSD(gainLossUSD)} ({gainLossPct >= 0 ? '+' : ''}
+                      {gainLossPct.toFixed(2)}%)
                     </span>
                   </>
                 ),
