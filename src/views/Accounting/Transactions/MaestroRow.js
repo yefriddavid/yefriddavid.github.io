@@ -114,7 +114,7 @@ export default function MaestroRow({
                       padding: '2px 4px',
                     }}
                   >
-                    📎
+                    📷
                   </button>
                 ) : (
                   <button

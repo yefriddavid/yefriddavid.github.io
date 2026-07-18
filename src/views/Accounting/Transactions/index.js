@@ -675,7 +675,7 @@ export default function Transactions() {
                             padding: '2px 4px',
                           }}
                         >
-                          📎
+                          📷
                         </button>
                       ) : (
                         <button

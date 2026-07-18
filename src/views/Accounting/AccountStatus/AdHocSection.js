@@ -184,7 +184,7 @@ export default function AdHocSection({
                         padding: '2px 4px',
                       }}
                     >
-                      📎
+                      📷
                     </button>
                   ))}
                   <button

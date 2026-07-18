@@ -799,7 +799,7 @@ const Gastos = () => {
               renderActions={(row) =>
                 [
                   row.receipt && {
-                    label: '📎',
+                    label: '📷',
                     color: 'info',
                     title: 'Ver comprobante',
                     onClick: () => setReceiptViewer({ src: row.receipt, name: row.receiptName }),
@@ -949,7 +949,7 @@ const Gastos = () => {
                         }}
                         title="Ver comprobante"
                       >
-                        📎
+                        📷
                       </button>
                     )}
                     <button
