@@ -29,9 +29,15 @@ export default function Assets() {
   const { assets, loading, saving, syncing, syncingAll, importing } = useSelector((s) => s.asset)
   const { prices } = useCryptoPrices()
   const { rate: usdCopRate } = useUsdCopRate()
+  const [manualUsdRate, setManualUsdRate] = useState(
+    () => localStorage.getItem('assets_manualUsdRate') ?? '',
+  )
+  const [manualGoldRate, setManualGoldRate] = useState(
+    () => localStorage.getItem('assets_manualGoldRate') ?? '',
+  )
   const pricedAssets = useMemo(
-    () => applyLivePricing(assets, prices, usdCopRate),
-    [assets, prices, usdCopRate],
+    () => applyLivePricing(assets, prices, usdCopRate, manualUsdRate, manualGoldRate),
+    [assets, prices, usdCopRate, manualUsdRate, manualGoldRate],
   )
 
   const [sheet, setSheet] = useState(null)
@@ -54,6 +60,22 @@ export default function Assets() {
   const switchTab = (tab) => {
     setActiveTab(tab)
     localStorage.setItem('assets_tab', tab)
+  }
+
+  const [summaryTab, setSummaryTab] = useState(
+    () => localStorage.getItem('assets_summaryTab') ?? 'resumen',
+  )
+  const switchSummaryTab = (tab) => {
+    setSummaryTab(tab)
+    localStorage.setItem('assets_summaryTab', tab)
+  }
+  const handleManualUsdRateChange = (e) => {
+    setManualUsdRate(e.target.value)
+    localStorage.setItem('assets_manualUsdRate', e.target.value)
+  }
+  const handleManualGoldRateChange = (e) => {
+    setManualGoldRate(e.target.value)
+    localStorage.setItem('assets_manualGoldRate', e.target.value)
   }
 
   useEffect(() => {
@@ -399,75 +421,223 @@ export default function Assets() {
             )}
           </div>
           {activeTab === 'grid' && (
-            <div
-              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}
-            >
-              <SummaryCard
-                label="FINANCIERO"
-                value={fmt(totals.financial)}
-                sub={`${assets.filter((a) => !a.archived && a.type === 'financial').length} activos`}
-                color={TYPE_COLOR.financial}
-                bg={TYPE_BG.financial}
-                border="#c5d8ff"
-              />
-              <SummaryCard
-                label="FIJO"
-                value={fmt(totals.fixed)}
-                sub={`${assets.filter((a) => !a.archived && a.type === 'fixed').length} activos`}
-                color={TYPE_COLOR.fixed}
-                bg={TYPE_BG.fixed}
-                border="#ffe69c"
-              />
-              {totals.crypto > 0 && (
-                <SummaryCard
-                  label="CRIPTO (en vivo)"
-                  value={fmt(totals.crypto)}
-                  sub={`${assets.filter((a) => !a.archived && a.type === 'crypto').length} activos`}
-                  color={TYPE_COLOR.crypto}
-                  bg={TYPE_BG.crypto}
-                  border="#d0bfff"
+            <>
+              <div
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  background: '#f1f3f5',
+                  borderRadius: 10,
+                  padding: 3,
+                  marginBottom: 10,
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 3,
+                    bottom: 3,
+                    left: 3,
+                    width: 'calc(50% - 3px)',
+                    borderRadius: 7,
+                    background: '#fff',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                    transform: summaryTab === 'settings' ? 'translateX(100%)' : 'translateX(0)',
+                    transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+                  }}
                 />
+                {[
+                  { key: 'resumen', label: '💰 Resumen' },
+                  { key: 'settings', label: '⚙️ Settings' },
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => switchSummaryTab(t.key)}
+                    style={{
+                      flex: 1,
+                      position: 'relative',
+                      zIndex: 1,
+                      border: 'none',
+                      background: 'transparent',
+                      padding: '7px 0',
+                      borderRadius: 7,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      color: summaryTab === t.key ? '#1a1a2e' : '#868e96',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {summaryTab === 'resumen' && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 8,
+                    marginBottom: 14,
+                  }}
+                >
+                  <SummaryCard
+                    label="FINANCIERO"
+                    value={fmt(totals.financial)}
+                    sub={`${assets.filter((a) => !a.archived && a.type === 'financial').length} activos`}
+                    color={TYPE_COLOR.financial}
+                    bg={TYPE_BG.financial}
+                    border="#c5d8ff"
+                  />
+                  <SummaryCard
+                    label="FIJO"
+                    value={fmt(totals.fixed)}
+                    sub={`${assets.filter((a) => !a.archived && a.type === 'fixed').length} activos`}
+                    color={TYPE_COLOR.fixed}
+                    bg={TYPE_BG.fixed}
+                    border="#ffe69c"
+                  />
+                  {totals.crypto > 0 && (
+                    <SummaryCard
+                      label="CRIPTO (en vivo)"
+                      value={fmt(totals.crypto)}
+                      sub={`${assets.filter((a) => !a.archived && a.type === 'crypto').length} activos`}
+                      color={TYPE_COLOR.crypto}
+                      bg={TYPE_BG.crypto}
+                      border="#d0bfff"
+                    />
+                  )}
+                  {totals.projection > 0 && (
+                    <SummaryCard
+                      label="PROYECCIÓN"
+                      value={fmt(totals.projection)}
+                      sub={`${assets.filter((a) => !a.archived && a.projection).length} activos`}
+                      color="#6c757d"
+                      bg="#f8f9fa"
+                      border="#dee2e6"
+                    />
+                  )}
+                  {totals.liquid > 0 && (
+                    <SummaryCard
+                      label="LÍQUIDO"
+                      value={fmt(totals.liquid)}
+                      sub={`${assets.filter((a) => !a.archived && a.liquid).length} activos`}
+                      color="#2f9e44"
+                      bg="#f0fdf4"
+                      border="#86efac"
+                    />
+                  )}
+                  {totals.monthly > 0 && (
+                    <SummaryCard
+                      label="GANANCIA MENSUAL"
+                      value={fmt(totals.monthly)}
+                      color="#2f9e44"
+                      bg="#f0fdf4"
+                      border="#86efac"
+                    />
+                  )}
+                  {totals.hasBtc && btcPriceUSD != null && (
+                    <SummaryCard
+                      label="FALTA PARA 1 BTC"
+                      value={btcMissing > 0 ? `${fmtNum(btcMissing, 8)} BTC` : '🎉 Completo'}
+                      sub={btcMissing > 0 ? `≈ ${fmtUSD(btcMissing * btcPriceUSD)} USD` : undefined}
+                      color={TYPE_COLOR.crypto}
+                      bg={TYPE_BG.crypto}
+                      border="#d0bfff"
+                    />
+                  )}
+                </div>
               )}
-              {totals.projection > 0 && (
-                <SummaryCard
-                  label="PROYECCIÓN"
-                  value={fmt(totals.projection)}
-                  sub={`${assets.filter((a) => !a.archived && a.projection).length} activos`}
-                  color="#6c757d"
-                  bg="#f8f9fa"
-                  border="#dee2e6"
-                />
+
+              {summaryTab === 'settings' && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 8,
+                    marginBottom: 14,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: '#f8f9fa',
+                      border: '1px solid #e9ecef',
+                      borderRadius: 12,
+                      padding: '10px 14px',
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#adb5bd',
+                        letterSpacing: '0.05em',
+                        display: 'block',
+                        marginBottom: 4,
+                      }}
+                    >
+                      VALOR USD (COP)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={manualUsdRate}
+                      onChange={handleManualUsdRateChange}
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        outline: 'none',
+                        background: 'transparent',
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color: '#1a1a2e',
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      background: '#f8f9fa',
+                      border: '1px solid #e9ecef',
+                      borderRadius: 12,
+                      padding: '10px 14px',
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#adb5bd',
+                        letterSpacing: '0.05em',
+                        display: 'block',
+                        marginBottom: 4,
+                      }}
+                    >
+                      VALOR ORO (COP/gramo)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={manualGoldRate}
+                      onChange={handleManualGoldRateChange}
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        outline: 'none',
+                        background: 'transparent',
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color: '#1a1a2e',
+                      }}
+                    />
+                  </div>
+                </div>
               )}
-              {totals.liquid > 0 && (
-                <SummaryCard
-                  label="LÍQUIDO"
-                  value={fmt(totals.liquid)}
-                  sub={`${assets.filter((a) => !a.archived && a.liquid).length} activos`}
-                  color="#2f9e44"
-                  bg="#f0fdf4"
-                  border="#86efac"
-                />
-              )}
-              {totals.monthly > 0 && (
-                <SummaryCard
-                  label="GANANCIA MENSUAL"
-                  value={fmt(totals.monthly)}
-                  color="#2f9e44"
-                  bg="#f0fdf4"
-                  border="#86efac"
-                />
-              )}
-              {totals.hasBtc && btcPriceUSD != null && (
-                <SummaryCard
-                  label="FALTA PARA 1 BTC"
-                  value={btcMissing > 0 ? `${fmtNum(btcMissing, 8)} BTC` : '🎉 Completo'}
-                  sub={btcMissing > 0 ? `≈ ${fmtUSD(btcMissing * btcPriceUSD)} USD` : undefined}
-                  color={TYPE_COLOR.crypto}
-                  bg={TYPE_BG.crypto}
-                  border="#d0bfff"
-                />
-              )}
-            </div>
+            </>
           )}
         </>
       )}
