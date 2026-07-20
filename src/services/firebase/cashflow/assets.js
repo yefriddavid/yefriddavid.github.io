@@ -31,6 +31,7 @@ export const fetchAll = async () => {
     return {
       id: d.id,
       name: data.name ?? '',
+      description: data.description ?? '',
       quantity: data.quantity ?? 0,
       unitPrice: data.unitPrice ?? 0,
       type: data.type ?? 'financial',
@@ -69,6 +70,7 @@ export const saveAsset = async ({
   createdAt,
   updatedAt,
   name,
+  description,
   date,
   price,
 }) => {
@@ -81,6 +83,7 @@ export const saveAsset = async ({
       location: location ?? '',
       monthlyGain,
       name,
+      description: description ?? '',
       notes,
       projection,
       quantity: Number(quantity),

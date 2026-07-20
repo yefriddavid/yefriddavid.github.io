@@ -9,6 +9,7 @@ import {
   HORIZON_COLOR,
   HORIZON_BG,
   LIVE_PRICE_SYMBOLS,
+  FIXED_SYMBOLS,
   EMPTY_ASSET,
 } from './assetConstants'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
@@ -20,6 +21,7 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
     initial
       ? {
           name: initial.name ?? '',
+          description: initial.description ?? '',
           quantity: initial.quantity ?? '',
           unitPrice: initial.unitPrice ?? '',
           type: initial.type ?? 'financial',
@@ -54,6 +56,7 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
     onSave({
       id: initial?.id ?? uid(),
       name: form.name.trim(),
+      description: form.description.trim(),
       quantity: Number(form.quantity) || 0,
       unitPrice: Number(form.unitPrice) || 0,
       type: form.type,
@@ -165,9 +168,11 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
           </div>
         </div>
 
-        {form.type === 'crypto' && (
+        {(form.type === 'crypto' || form.type === 'fixed') && (
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>SÍMBOLO CON PRECIO EN VIVO</label>
+            <label style={labelStyle}>
+              {form.type === 'crypto' ? 'SÍMBOLO CON PRECIO EN VIVO' : 'SÍMBOLO'}
+            </label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
                 style={toggleStyle(!form.liveSymbol)}
@@ -175,7 +180,7 @@ export default function AssetSheet({ initial, saving, onSave, onClose }) {
               >
                 manual
               </button>
-              {LIVE_PRICE_SYMBOLS.map((s) => (
+              {(form.type === 'crypto' ? LIVE_PRICE_SYMBOLS : FIXED_SYMBOLS).map((s) => (
                 <button
                   key={s.value}
                   style={toggleStyle(form.liveSymbol === s.value)}

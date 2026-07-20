@@ -43,11 +43,18 @@ export default function AssetCard({ asset, onEdit, onDelete, onSync, syncing }) 
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
             <Pill label={asset.type} color={TYPE_COLOR[asset.type]} bg={TYPE_BG[asset.type]} />
-            {asset.liveSymbol && (
+            {asset.liveSymbol && asset.type === 'crypto' && (
               <Pill
                 label={`● ${asset.liveSymbol.replace(/USDT$/, '')}`}
                 color="#6741d9"
                 bg="#f3f0ff"
+              />
+            )}
+            {asset.liveSymbol && asset.type === 'fixed' && (
+              <Pill
+                label={asset.liveSymbol.toUpperCase()}
+                color={TYPE_COLOR.fixed}
+                bg={TYPE_BG.fixed}
               />
             )}
             {asset.liquid && <Pill label="liquid" color="#2f9e44" bg="#f0fdf4" />}

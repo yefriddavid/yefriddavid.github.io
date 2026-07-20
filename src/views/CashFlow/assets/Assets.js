@@ -87,11 +87,16 @@ export default function Assets() {
       liquid = 0,
       monthly = 0,
       btcQuantity = 0,
-      hasBtc = false
+      hasBtc = false,
+      projection = 0
     pricedAssets.forEach((a) => {
       if (a.archived) return
       const v = (Number(a.quantity) || 0) * (Number(a.unitPrice) || 0)
-      total += v
+      if (a.projection) {
+        projection += v
+      } else {
+        total += v
+      }
       if (a.type === 'financial') financial += v
       if (a.type === 'fixed') fixed += v
       if (a.type === 'crypto') crypto += v
@@ -102,7 +107,7 @@ export default function Assets() {
         btcQuantity += Number(a.quantity) || 0
       }
     })
-    return { total, financial, fixed, crypto, liquid, monthly, btcQuantity, hasBtc }
+    return { total, financial, fixed, crypto, liquid, monthly, btcQuantity, hasBtc, projection }
   }, [pricedAssets])
 
   const btcMissing = Math.max(0, 1 - totals.btcQuantity)
@@ -421,6 +426,16 @@ export default function Assets() {
                   color={TYPE_COLOR.crypto}
                   bg={TYPE_BG.crypto}
                   border="#d0bfff"
+                />
+              )}
+              {totals.projection > 0 && (
+                <SummaryCard
+                  label="PROYECCIÓN"
+                  value={fmt(totals.projection)}
+                  sub={`${assets.filter((a) => !a.archived && a.projection).length} activos`}
+                  color="#6c757d"
+                  bg="#f8f9fa"
+                  border="#dee2e6"
                 />
               )}
               {totals.liquid > 0 && (

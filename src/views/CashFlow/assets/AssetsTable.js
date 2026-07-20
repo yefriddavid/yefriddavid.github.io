@@ -7,6 +7,7 @@ import {
   TYPE_COLOR,
   HORIZON_COLOR,
   LIVE_PRICE_SYMBOLS,
+  FIXED_SYMBOLS,
 } from './assetConstants'
 import IconClone from 'src/components/shared/IconClone'
 import './AssetsTable.scss'
@@ -37,6 +38,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
         <tr>
           <th />
           <th>Nombre</th>
+          <th>Descripción</th>
           <th>Tipo</th>
           <th>Símbolo</th>
           <th>Cantidad</th>
@@ -57,7 +59,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
             <React.Fragment key={a.id}>
               {isNewGroup && (
                 <tr className="assets-table__group-row">
-                  <td colSpan={12}>
+                  <td colSpan={13}>
                     <span style={{ color: TYPE_COLOR[a.type] }}>{a.type}</span>
                     <span className="assets-table__group-meta">
                       {groupCounts[a.type]} · {fmt(groupTotals[a.type])}
@@ -110,6 +112,33 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                   )}
                 </td>
                 <td
+                  className={isEditing(a.id, 'description') ? '' : 'assets-table__editable-cell'}
+                  title="Doble clic para editar"
+                  onDoubleClick={() => startEdit(a.id, 'description')}
+                >
+                  {isEditing(a.id, 'description') ? (
+                    <input
+                      className="assets-table__cell-input assets-table__cell-input--text"
+                      type="text"
+                      autoFocus
+                      defaultValue={a.description ?? ''}
+                      onFocus={(e) => e.target.select()}
+                      onBlur={(e) => {
+                        const value = e.target.value.trim()
+                        if (value !== (a.description ?? ''))
+                          onQuickUpdate(a, { description: value })
+                        stopEdit()
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') e.target.blur()
+                        if (e.key === 'Escape') stopEdit()
+                      }}
+                    />
+                  ) : (
+                    a.description || '—'
+                  )}
+                </td>
+                <td
                   className={isEditing(a.id, 'type') ? '' : 'assets-table__editable-cell'}
                   title="Doble clic para editar"
                   onDoubleClick={() => startEdit(a.id, 'type')}
@@ -149,16 +178,20 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                       defaultValue={a.liveSymbol ?? ''}
                       onChange={(e) => {
                         const value = e.target.value
-                        onQuickUpdate(
-                          a,
-                          value ? { liveSymbol: value, type: 'crypto' } : { liveSymbol: '' },
-                        )
+                        if (a.type === 'fixed') {
+                          onQuickUpdate(a, { liveSymbol: value })
+                        } else {
+                          onQuickUpdate(
+                            a,
+                            value ? { liveSymbol: value, type: 'crypto' } : { liveSymbol: '' },
+                          )
+                        }
                         stopEdit()
                       }}
                       onBlur={stopEdit}
                     >
                       <option value="">manual</option>
-                      {LIVE_PRICE_SYMBOLS.map((s) => (
+                      {(a.type === 'fixed' ? FIXED_SYMBOLS : LIVE_PRICE_SYMBOLS).map((s) => (
                         <option key={s.value} value={s.value}>
                           {s.label}
                         </option>
@@ -166,7 +199,9 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                     </select>
                   ) : a.liveSymbol ? (
                     <span className="assets-table__tag assets-table__live-dot">
-                      ● {a.liveSymbol.replace(/USDT$/, '')}
+                      {a.type === 'crypto'
+                        ? `● ${a.liveSymbol.replace(/USDT$/, '')}`
+                        : a.liveSymbol.toUpperCase()}
                     </span>
                   ) : (
                     '—'
@@ -202,14 +237,20 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                 </td>
                 <td
                   className={
-                    a.liveSymbol
+                    a.type === 'crypto' && a.liveSymbol
                       ? ''
                       : isEditing(a.id, 'unitPrice')
                         ? ''
                         : 'assets-table__editable-cell'
                   }
-                  title={a.liveSymbol ? 'Precio en vivo — no editable' : 'Doble clic para editar'}
-                  onDoubleClick={() => !a.liveSymbol && startEdit(a.id, 'unitPrice')}
+                  title={
+                    a.type === 'crypto' && a.liveSymbol
+                      ? 'Precio en vivo — no editable'
+                      : 'Doble clic para editar'
+                  }
+                  onDoubleClick={() =>
+                    !(a.type === 'crypto' && a.liveSymbol) && startEdit(a.id, 'unitPrice')
+                  }
                 >
                   {isEditing(a.id, 'unitPrice') ? (
                     <input
@@ -301,7 +342,13 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                   )}
                 </td>
                 <td>{a.monthlyGain ? fmt(a.monthlyGain) : '—'}</td>
-                <td>{a.projection ? '✓' : '—'}</td>
+                <td
+                  className="assets-table__editable-cell"
+                  title="Clic para cambiar"
+                  onClick={() => onQuickUpdate(a, { projection: !a.projection })}
+                >
+                  {a.projection ? '✓' : '—'}
+                </td>
               </tr>
             </React.Fragment>
           )
@@ -310,7 +357,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
       <tfoot>
         <tr className="assets-table__total-row">
           <td />
-          <td colSpan={3}>Total</td>
+          <td colSpan={4}>Total</td>
           <td>{fmtNum(totalQuantity)}</td>
           <td />
           <td className="assets-table__value">{fmt(totalValue)}</td>

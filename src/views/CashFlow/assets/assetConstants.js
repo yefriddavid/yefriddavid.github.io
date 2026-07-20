@@ -9,6 +9,7 @@ export {
 } from 'src/constants/cashFlow'
 
 import { TRADE_PRICE_ASSETS } from 'src/constants/finance'
+import { ASSET_FIXED_SYMBOLS } from 'src/constants/cashFlow'
 
 // Options for the "live price symbol" selector on crypto assets — reuses the
 // same Binance-backed symbol list as Trade > Crypto Prices (PAXG == gold).
@@ -17,10 +18,15 @@ export const LIVE_PRICE_SYMBOLS = TRADE_PRICE_ASSETS.map(({ symbol, ticker }) =>
   label: ticker,
 }))
 
+// Options for the "symbol" selector on fixed assets — manual entry, no live pricing.
+// Gold is valued per gram (unitPrice = COP per gram, quantity = grams held).
+export const FIXED_SYMBOLS = ASSET_FIXED_SYMBOLS.map((v) => ({ value: v, label: v.toUpperCase() }))
+
 export const BTC_LIVE_SYMBOL = TRADE_PRICE_ASSETS.find((a) => a.ticker === 'BTC')?.symbol
 
 export const EMPTY_ASSET = {
   name: '',
+  description: '',
   quantity: '',
   unitPrice: '',
   type: 'financial',
