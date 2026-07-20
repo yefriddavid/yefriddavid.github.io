@@ -62,7 +62,16 @@ export const SALARY_DISTRIBUTION_TYPE_LABELS = {
 
 export const ASSET_TYPES = ['financial', 'fixed', 'crypto']
 export const ASSET_HORIZONS = ['largo', 'mediano', 'corto']
-export const ASSET_LOCATIONS = ['ldg', 'box', 'trz', 'dave', 'bnc col', 'bnc arg', 'neverless']
+export const ASSET_LOCATIONS = [
+  'ldg',
+  'box',
+  'trz',
+  'dave',
+  'bnc col',
+  'bnc arg',
+  'neverless',
+  'biblia',
+]
 // Symbol options for 'fixed' assets — manual entry, unitPrice typed by hand (COP per unit;
 // COP per gram for gold).
 export const ASSET_FIXED_SYMBOLS = ['usd', 'cop', 'eur', 'gold']
