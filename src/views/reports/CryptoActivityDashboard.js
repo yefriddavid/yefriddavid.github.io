@@ -5,6 +5,7 @@ import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
+import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_SYMBOL_COLORS } from 'src/constants/finance'
 import {
@@ -26,6 +27,7 @@ const CryptoActivityDashboard = () => {
   const activeTenantId = useActiveTenantId()
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
   const { monthLabels } = useLocaleData()
+  const { prices } = useCryptoPrices()
   const [year, setYear] = useState(CURRENT_YEAR)
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
@@ -140,20 +142,32 @@ const CryptoActivityDashboard = () => {
     return barFilter || symbolFilter !== 'all' ? sorted : sorted.slice(0, 10)
   }, [activity, barFilter, symbolFilter])
 
+  // Unrealized gain/loss per purchase vs the live price — only meaningful for
+  // buys (a sell already realized its own price, no FIFO cost basis to compare against).
+  const gainLossFor = (p) => {
+    if (isSale(p)) return null
+    const livePrice = prices[p.symbol]?.price
+    if (livePrice == null) return null
+    return (livePrice - (Number(p.purchasePrice) || 0)) * (Number(p.quantity) || 0)
+  }
+
   const recentTotals = useMemo(
     () =>
       recent.reduce(
         (acc, p) => {
           const qty = Number(p.quantity) || 0
           const price = Number(p.purchasePrice) || 0
+          const gainLoss = gainLossFor(p)
           acc.count += 1
           acc.quantity += qty
           acc.value += qty * price
+          if (gainLoss != null) acc.gainLoss += gainLoss
           return acc
         },
-        { count: 0, quantity: 0, value: 0 },
+        { count: 0, quantity: 0, value: 0, gainLoss: 0 },
       ),
-    [recent],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [recent, prices],
   )
 
   if (loading) return <Spinner mode="section" />
@@ -325,11 +339,13 @@ const CryptoActivityDashboard = () => {
                 <th className="num">Cantidad</th>
                 <th className="num">Precio</th>
                 <th className="num">Total</th>
+                <th className="num">Ganancia / Pérdida</th>
               </tr>
             </thead>
             <tbody>
               {recent.map((p) => {
                 const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+                const gainLoss = gainLossFor(p)
                 return (
                   <tr key={p.id}>
                     <td>{p.purchaseDate}</td>
@@ -355,6 +371,18 @@ const CryptoActivityDashboard = () => {
                     <td className="num">{p.quantity}</td>
                     <td className="num">{fmtUSD(p.purchasePrice)}</td>
                     <td className="num">{fmtUSD(total)}</td>
+                    <td className="num">
+                      {gainLoss == null ? (
+                        <span className="cad__muted">—</span>
+                      ) : (
+                        <span
+                          className={`cad__amount${gainLoss >= 0 ? ' cad__amount--positive' : ' cad__amount--negative'}`}
+                        >
+                          {gainLoss >= 0 ? '+' : ''}
+                          {fmtUSD(gainLoss)}
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
@@ -365,6 +393,14 @@ const CryptoActivityDashboard = () => {
                 <td className="num">{recentTotals.quantity.toFixed(8)}</td>
                 <td className="num">—</td>
                 <td className="num">{fmtUSD(recentTotals.value)}</td>
+                <td className="num">
+                  <span
+                    className={`cad__amount${recentTotals.gainLoss >= 0 ? ' cad__amount--positive' : ' cad__amount--negative'}`}
+                  >
+                    {recentTotals.gainLoss >= 0 ? '+' : ''}
+                    {fmtUSD(recentTotals.gainLoss)}
+                  </span>
+                </td>
               </tr>
             </tfoot>
           </table>

@@ -363,6 +363,22 @@
       display: inline-block;
     }
   }
+
+  &__amount {
+    font-weight: 700;
+
+    &--positive {
+      color: var(--cad-buy);
+    }
+
+    &--negative {
+      color: var(--cad-sell);
+    }
+  }
+
+  &__muted {
+    color: var(--cui-secondary-color);
+  }
 }
 
 @media (max-width: 900px) {
