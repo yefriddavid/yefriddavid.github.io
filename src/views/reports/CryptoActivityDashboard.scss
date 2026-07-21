@@ -231,6 +231,14 @@
     color: var(--cui-body-color);
   }
 
+  &__coin-link {
+    cursor: pointer;
+
+    &:hover .cad__sym {
+      text-decoration: underline;
+    }
+  }
+
   &__coin-track {
     height: 8px;
     border-radius: 5px;
@@ -351,6 +359,19 @@
   &__month-cell {
     vertical-align: top;
     border-right: 1px solid var(--cui-border-color);
+    // border-bottom on a rowSpan cell isn't reliable under border-collapse:
+    // collapse (the browser's border-conflict resolution can drop it at the
+    // shared edge), so the separator is painted with an inset box-shadow
+    // instead, which isn't subject to that model.
+    box-shadow: inset 0 -2px 0 0 var(--cui-body-color);
+
+    &--middle {
+      vertical-align: middle;
+    }
+  }
+
+  &__row--month-end td {
+    border-bottom: 2px solid var(--cui-body-color);
   }
 
   &__total-row {

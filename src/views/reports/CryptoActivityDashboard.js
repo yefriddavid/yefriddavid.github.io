@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
+import AppModal from 'src/components/shared/AppModal'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
@@ -31,6 +32,7 @@ const CryptoActivityDashboard = () => {
   const [year, setYear] = useState(CURRENT_YEAR)
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
+  const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -155,6 +157,7 @@ const CryptoActivityDashboard = () => {
       monthRowSpan:
         sorted[i - 1]?.month === g.month ? 0 : sorted.filter((r) => r.month === g.month).length,
       monthTotalInvested: monthTotals[g.month],
+      isLastOfMonth: sorted[i + 1]?.month !== g.month,
     }))
   }, [activity])
 
@@ -215,6 +218,16 @@ const CryptoActivityDashboard = () => {
       ),
     [monthlyByCoin],
   )
+
+  const coinMonthRecords = useMemo(() => {
+    if (!coinMonthModal) return []
+    return [...activity]
+      .filter(
+        (p) =>
+          monthKey(p.purchaseDate) === coinMonthModal.month && p.symbol === coinMonthModal.symbol,
+      )
+      .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+  }, [activity, coinMonthModal])
 
   if (loading) return <Spinner mode="section" />
   if (activity.length === 0)
@@ -469,18 +482,32 @@ const CryptoActivityDashboard = () => {
             </thead>
             <tbody>
               {monthlyByCoin.map((g) => (
-                <tr key={`${g.month}-${g.symbol}`}>
+                <tr
+                  key={`${g.month}-${g.symbol}`}
+                  className={g.isLastOfMonth ? 'cad__row--month-end' : undefined}
+                >
                   {g.monthRowSpan > 0 && (
                     <>
-                      <td rowSpan={g.monthRowSpan} className="cad__month-cell">
+                      <td
+                        rowSpan={g.monthRowSpan}
+                        className="cad__month-cell cad__month-cell--middle"
+                      >
                         {monthLabels[Number(g.month.slice(5, 7)) - 1]} {g.month.slice(0, 4)}
                       </td>
-                      <td rowSpan={g.monthRowSpan} className="cad__month-cell num">
+                      <td
+                        rowSpan={g.monthRowSpan}
+                        className="cad__month-cell cad__month-cell--middle num"
+                      >
                         {fmtUSD(g.monthTotalInvested)}
                       </td>
                     </>
                   )}
-                  <td>
+                  <td
+                    className="cad__coin-link"
+                    onClick={() =>
+                      setCoinMonthModal({ month: g.month, symbol: g.symbol, label: g.label })
+                    }
+                  >
                     <span className="cad__sym">
                       <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[g.symbol] }} />
                       {g.label}
@@ -505,6 +532,56 @@ const CryptoActivityDashboard = () => {
           </table>
         </div>
       </div>
+
+      {coinMonthModal && (
+        <AppModal
+          visible
+          onClose={() => setCoinMonthModal(null)}
+          variant="center"
+          size="md"
+          title={`${coinMonthModal.label} — ${monthLabels[Number(coinMonthModal.month.slice(5, 7)) - 1]} ${coinMonthModal.month.slice(0, 4)}`}
+        >
+          <div className="cad__scroll">
+            <table className="cad__table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th className="num">Cantidad</th>
+                  <th className="num">Precio</th>
+                  <th className="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coinMonthRecords.map((p) => {
+                  const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+                  return (
+                    <tr key={p.id}>
+                      <td>{p.purchaseDate}</td>
+                      <td>
+                        {isSale(p) ? (
+                          <span className="cad__pill cad__pill--sell">
+                            <span className="cad__dot" />
+                            Venta
+                          </span>
+                        ) : (
+                          <span className="cad__pill cad__pill--buy">
+                            <span className="cad__dot" />
+                            Compra
+                          </span>
+                        )}
+                      </td>
+                      <td className="num">{p.quantity}</td>
+                      <td className="num">{fmtUSD(p.purchasePrice)}</td>
+                      <td className="num">{fmtUSD(total)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </AppModal>
+      )}
     </div>
   )
 }
