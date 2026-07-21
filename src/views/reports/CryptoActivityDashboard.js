@@ -125,6 +125,39 @@ const CryptoActivityDashboard = () => {
     return { rows: rows.sort((a, b) => b.invested - a.invested), max }
   }, [buys])
 
+  // Total compras/ventas por mes y por moneda — independiente de los filtros
+  // del ledger (barra/chip), siempre sobre el año seleccionado.
+  const monthlyByCoin = useMemo(() => {
+    const groups = {}
+    activity.forEach((p) => {
+      const month = monthKey(p.purchaseDate)
+      if (!month) return
+      const key = `${month}|${p.symbol}`
+      if (!groups[key]) groups[key] = { month, symbol: p.symbol, buys: 0, sells: 0 }
+      const value = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+      if (isSale(p)) groups[key].sells += value
+      else groups[key].buys += value
+    })
+    const sorted = Object.values(groups)
+      .map((g) => ({ ...g, label: symbolLabel(g.symbol) }))
+      .sort((a, b) => b.month.localeCompare(a.month) || a.label.localeCompare(b.label))
+
+    // Total invertido de TODAS las monedas ese mes (no solo la fila/moneda actual).
+    const monthTotals = {}
+    sorted.forEach((g) => {
+      monthTotals[g.month] = (monthTotals[g.month] ?? 0) + g.buys
+    })
+
+    // Mark the first row of each month group with how many rows it spans, so
+    // the table can merge the "Mes" cell instead of repeating it per coin.
+    return sorted.map((g, i) => ({
+      ...g,
+      monthRowSpan:
+        sorted[i - 1]?.month === g.month ? 0 : sorted.filter((r) => r.month === g.month).length,
+      monthTotalInvested: monthTotals[g.month],
+    }))
+  }, [activity])
+
   const recent = useMemo(() => {
     let base = activity
     if (barFilter) {
@@ -168,6 +201,19 @@ const CryptoActivityDashboard = () => {
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [recent, prices],
+  )
+
+  const monthlyByCoinTotals = useMemo(
+    () =>
+      monthlyByCoin.reduce(
+        (acc, g) => {
+          acc.buys += g.buys
+          acc.sells += g.sells
+          return acc
+        },
+        { buys: 0, sells: 0 },
+      ),
+    [monthlyByCoin],
   )
 
   if (loading) return <Spinner mode="section" />
@@ -401,6 +447,59 @@ const CryptoActivityDashboard = () => {
                     {fmtUSD(recentTotals.gainLoss)}
                   </span>
                 </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div className="cad__ledger">
+        <p className="cad__panel-title">Total por mes y moneda</p>
+        <p className="cad__panel-hint">Valor de compras y ventas, {year}</p>
+        <div className="cad__scroll">
+          <table className="cad__table">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th className="num">Invertido total</th>
+                <th>Moneda</th>
+                <th className="num">Compras (USD)</th>
+                <th className="num">Ventas (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {monthlyByCoin.map((g) => (
+                <tr key={`${g.month}-${g.symbol}`}>
+                  {g.monthRowSpan > 0 && (
+                    <>
+                      <td rowSpan={g.monthRowSpan} className="cad__month-cell">
+                        {monthLabels[Number(g.month.slice(5, 7)) - 1]} {g.month.slice(0, 4)}
+                      </td>
+                      <td rowSpan={g.monthRowSpan} className="cad__month-cell num">
+                        {fmtUSD(g.monthTotalInvested)}
+                      </td>
+                    </>
+                  )}
+                  <td>
+                    <span className="cad__sym">
+                      <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[g.symbol] }} />
+                      {g.label}
+                    </span>
+                  </td>
+                  <td className="num">
+                    {g.buys > 0 ? fmtUSD(g.buys) : <span className="cad__muted">—</span>}
+                  </td>
+                  <td className="num">
+                    {g.sells > 0 ? fmtUSD(g.sells) : <span className="cad__muted">—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="cad__total-row">
+                <td colSpan={3}>Total ({year})</td>
+                <td className="num">{fmtUSD(monthlyByCoinTotals.buys)}</td>
+                <td className="num">{fmtUSD(monthlyByCoinTotals.sells)}</td>
               </tr>
             </tfoot>
           </table>

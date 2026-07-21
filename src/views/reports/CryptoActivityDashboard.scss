@@ -338,6 +338,19 @@
     td:nth-child(3) {
       text-align: left;
     }
+
+    // Numeric columns always right-align regardless of position — overrides the
+    // first-3-columns rule above, which was written for the ledger's Fecha/
+    // Moneda/Tipo columns and would otherwise bleed into shorter tables.
+    th.num,
+    td.num {
+      text-align: right;
+    }
+  }
+
+  &__month-cell {
+    vertical-align: top;
+    border-right: 1px solid var(--cui-border-color);
   }
 
   &__total-row {
