@@ -24,6 +24,7 @@ export const EMPTY_PURCHASE = {
   purchaseDate: today(),
   usdCopRate: '',
   isAdjustment: false,
+  active: true,
   notes: '',
 }
 

@@ -28,6 +28,7 @@ export const fetchAll = async () => {
       purchaseDate: data.purchaseDate ?? '',
       usdCopRate: data.usdCopRate ?? null,
       isAdjustment: data.isAdjustment ?? false,
+      active: data.active ?? true,
       notes: data.notes ?? '',
       createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
     }
