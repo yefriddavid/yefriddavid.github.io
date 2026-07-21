@@ -21,10 +21,14 @@ import {
   cilEnvelopeClosed,
   cilFullscreen,
   cilFullscreenExit,
+  cilHome,
   cilMenu,
   cilMoon,
+  cilNotes,
   cilPaint,
   cilSun,
+  cilTaxi,
+  cilWallet,
 } from '@coreui/icons'
 
 
@@ -195,6 +199,53 @@ const AppHeader = () => {
           </CNavItem>
     */}
         </CHeaderNav>
+        <div className="header__quick-access d-none d-md-flex">
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--account"
+            onClick={() => navigate('/finance/management/account-status')}
+            title="Estado de cuentas"
+          >
+            <CIcon icon={cilWallet} size="lg" />
+            <span>Cuentas</span>
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--tasks"
+            onClick={() => navigate('/miscelanea/tasks')}
+            title="Tareas"
+          >
+            <CIcon icon={cilCalendar} size="lg" />
+            <span>Tareas</span>
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--notes"
+            onClick={() => navigate('/miscelanea/notes')}
+            title="Notas"
+          >
+            <CIcon icon={cilNotes} size="lg" />
+            <span>Notas</span>
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--taxis"
+            onClick={() => navigate('/taxis/settlements')}
+            title="Liquidaciones"
+          >
+            <CIcon icon={cilTaxi} size="lg" />
+            <span>Taxis</span>
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--finance"
+            onClick={() => navigate('/finance/dashboard')}
+            title="Finanzas"
+          >
+            <CIcon icon={cilHome} size="lg" />
+            <span>Finanzas</span>
+          </button>
+        </div>
         <CHeaderNav className="ms-auto">
           <div className="d-none d-md-flex align-items-center">
             <CNavItem>
