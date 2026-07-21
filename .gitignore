@@ -19,6 +19,7 @@ cypress/videos/
 
 # go binaries
 /scripts/sync-firebase-auth/sync-firebase-auth
+/scripts/sync-crypto-purchases/sync-crypto-purchases
 /extension/native-host/localrunner-host
 
 # misc

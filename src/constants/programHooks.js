@@ -23,6 +23,7 @@ export const PROGRAM_HOOKS = [
   { key: 'transaction.create', label: 'Transacción — crear', vars: ['id'] },
   { key: 'transaction.update', label: 'Transacción — actualizar', vars: ['id'] },
   { key: 'transaction.delete', label: 'Transacción — eliminar', vars: ['id'] },
+  { key: 'cryptoPurchase.sync', label: 'Crypto Purchases — sincronizar', vars: [] },
 ]
 
 export const getHookVars = (selectedKeys = []) => {

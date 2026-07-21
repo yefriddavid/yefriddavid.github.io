@@ -131,6 +131,11 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
   { value: 'BNBUSDT', label: 'BNB' },
 ]
 
+export const CRYPTO_PURCHASE_TYPES = [
+  { value: 'buy', label: 'Compra' },
+  { value: 'sell', label: 'Venta' },
+]
+
 export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'binance_arg', label: 'Binance ARG' },
   { value: 'binance_col', label: 'Binance COL' },

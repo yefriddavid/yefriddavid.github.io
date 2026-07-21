@@ -20,11 +20,14 @@ export const fetchAll = async () => {
     const data = d.data()
     return {
       id: d.id,
+      type: data.type ?? 'buy',
       symbol: data.symbol ?? '',
       platform: data.platform ?? '',
       quantity: data.quantity ?? 0,
       purchasePrice: data.purchasePrice ?? 0,
       purchaseDate: data.purchaseDate ?? '',
+      usdCopRate: data.usdCopRate ?? null,
+      isAdjustment: data.isAdjustment ?? false,
       notes: data.notes ?? '',
       createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
     }
