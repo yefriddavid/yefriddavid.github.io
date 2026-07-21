@@ -131,6 +131,16 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
   { value: 'BNBUSDT', label: 'BNB' },
 ]
 
+// Fixed categorical order (validated CVD-safe palette) — used for per-coin
+// chart identity across the crypto activity dashboard. Never reassign by rank.
+export const CRYPTO_PURCHASE_SYMBOL_COLORS = {
+  BTCUSDT: '#2a78d6',
+  ETHUSDT: '#eb6834',
+  SOLUSDT: '#1baf7a',
+  LINKUSDT: '#eda100',
+  BNBUSDT: '#e87ba4',
+}
+
 export const CRYPTO_PURCHASE_TYPES = [
   { value: 'buy', label: 'Compra' },
   { value: 'sell', label: 'Venta' },
