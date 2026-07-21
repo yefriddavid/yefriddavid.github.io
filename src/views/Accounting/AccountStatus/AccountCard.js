@@ -24,21 +24,25 @@ export default function AccountCard({
   const isSaving = savingId === account.id
   const [editing, setEditing] = useState(null)
 
-  const startEdit = (p) => setEditing({ id: p.id, amount: p.amount, note: p.note ?? '' })
+  const startEdit = (p) =>
+    setEditing({ id: p.id, amount: p.amount, date: p.date ?? '', note: p.note ?? '' })
   const cancelEdit = () => setEditing(null)
 
   const saveEdit = (p) => {
     const newAmount = Number(String(editing.amount).replace(/\D/g, ''))
+    const newDate = editing.date
     const newNote = editing.note.trim()
     if (!newAmount) return
-    const hasChanges = newAmount !== p.amount || newNote !== (p.note ?? '')
-    if (hasChanges) onUpdate({ ...p, amount: newAmount, note: newNote })
+    const hasChanges =
+      newAmount !== p.amount || newDate !== (p.date ?? '') || newNote !== (p.note ?? '')
+    if (hasChanges) onUpdate({ ...p, amount: newAmount, date: newDate, note: newNote })
     setEditing(null)
   }
 
   const isDirty = (p) =>
     editing?.id === p.id &&
     (Number(String(editing.amount).replace(/\D/g, '')) !== p.amount ||
+      editing.date !== (p.date ?? '') ||
       editing.note.trim() !== (p.note ?? ''))
 
   return (
@@ -275,7 +279,17 @@ export default function AccountCard({
                   </span>
                   {p.date && (
                     <span
-                      style={{ fontSize: 'var(--fs-2xs)', color: '#adb5bd', whiteSpace: 'nowrap' }}
+                      onClick={() => !isEditing && startEdit(p)}
+                      title="Editar fecha"
+                      style={{
+                        fontSize: 'var(--fs-2xs)',
+                        color: '#adb5bd',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        textDecorationStyle: 'dotted',
+                        textDecorationColor: '#adb5bd',
+                      }}
                     >
                       {p.date}
                     </span>
@@ -401,6 +415,21 @@ export default function AccountCard({
                         color: '#1e3a5f',
                         border: 'none',
                         borderBottom: '2px solid #1e3a5f',
+                        background: 'transparent',
+                        outline: 'none',
+                        padding: '2px 0',
+                      }}
+                    />
+                    <input
+                      type="date"
+                      value={editing.date}
+                      onChange={(e) => setEditing((prev) => ({ ...prev, date: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        fontSize: 'var(--fs-xs)',
+                        color: '#6c757d',
+                        border: 'none',
+                        borderBottom: '1px solid #dee2e6',
                         background: 'transparent',
                         outline: 'none',
                         padding: '2px 0',
