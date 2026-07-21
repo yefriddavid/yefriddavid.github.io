@@ -480,55 +480,69 @@ const CryptoActivityDashboard = () => {
                 <th>Moneda</th>
                 <th className="num">Compras (USD)</th>
                 <th className="num">Ventas (USD)</th>
+                <th className="num">Neto (Ventas − Compras)</th>
               </tr>
             </thead>
             <tbody>
-              {monthlyByCoin.map((g) => (
-                <tr
-                  key={`${g.month}-${g.symbol}`}
-                  className={g.isLastOfMonth ? 'cad__row--month-end' : undefined}
-                >
-                  {g.monthRowSpan > 0 && (
-                    <>
-                      <td
-                        rowSpan={g.monthRowSpan}
-                        className="cad__month-cell cad__month-cell--middle"
-                      >
-                        {monthLabels[Number(g.month.slice(5, 7)) - 1]} {g.month.slice(0, 4)}
-                      </td>
-                      <td
-                        rowSpan={g.monthRowSpan}
-                        className="cad__month-cell cad__month-cell--middle num"
-                      >
-                        {fmtUSD(g.monthTotalInvested)}
-                      </td>
-                    </>
-                  )}
-                  <td
-                    className="cad__coin-link"
-                    onClick={() =>
-                      setCoinMonthModal({ month: g.month, symbol: g.symbol, label: g.label })
-                    }
+              {monthlyByCoin.map((g) => {
+                const net = g.sells - g.buys
+                return (
+                  <tr
+                    key={`${g.month}-${g.symbol}`}
+                    className={g.isLastOfMonth ? 'cad__row--month-end' : undefined}
                   >
-                    <span className="cad__sym">
-                      <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[g.symbol] }} />
-                      {g.label}
-                    </span>
-                  </td>
-                  <td className="num">
-                    {g.buys > 0 ? fmtUSD(g.buys) : <span className="cad__muted">—</span>}
-                  </td>
-                  <td className="num">
-                    {g.sells > 0 ? fmtUSD(g.sells) : <span className="cad__muted">—</span>}
-                  </td>
-                </tr>
-              ))}
+                    {g.monthRowSpan > 0 && (
+                      <>
+                        <td
+                          rowSpan={g.monthRowSpan}
+                          className="cad__month-cell cad__month-cell--middle"
+                        >
+                          {monthLabels[Number(g.month.slice(5, 7)) - 1]} {g.month.slice(0, 4)}
+                        </td>
+                        <td
+                          rowSpan={g.monthRowSpan}
+                          className="cad__month-cell cad__month-cell--middle num"
+                        >
+                          {fmtUSD(g.monthTotalInvested)}
+                        </td>
+                      </>
+                    )}
+                    <td
+                      className="cad__coin-link"
+                      onClick={() =>
+                        setCoinMonthModal({ month: g.month, symbol: g.symbol, label: g.label })
+                      }
+                    >
+                      <span className="cad__sym">
+                        <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[g.symbol] }} />
+                        {g.label}
+                      </span>
+                    </td>
+                    <td className="num">
+                      {g.buys > 0 ? fmtUSD(g.buys) : <span className="cad__muted">—</span>}
+                    </td>
+                    <td className="num">
+                      {g.sells > 0 ? fmtUSD(g.sells) : <span className="cad__muted">—</span>}
+                    </td>
+                    <td className="num">
+                      <span className="cad__amount cad__amount--neutral">
+                        {fmtUSD(Math.abs(net))}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
             <tfoot>
               <tr className="cad__total-row">
                 <td colSpan={3}>Total ({year})</td>
                 <td className="num">{fmtUSD(monthlyByCoinTotals.buys)}</td>
                 <td className="num">{fmtUSD(monthlyByCoinTotals.sells)}</td>
+                <td className="num">
+                  <span className="cad__amount cad__amount--neutral">
+                    {fmtUSD(Math.abs(monthlyByCoinTotals.sells - monthlyByCoinTotals.buys))}
+                  </span>
+                </td>
               </tr>
             </tfoot>
           </table>
