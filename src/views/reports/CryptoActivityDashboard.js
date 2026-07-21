@@ -297,26 +297,28 @@ const CryptoActivityDashboard = () => {
         <div className="cad__panel">
           <p className="cad__panel-title">Actividad mensual</p>
           <p className="cad__panel-hint">Número de operaciones por mes, {year}</p>
-          <div className="cad__months">
-            {monthly.rows.map((r) => (
-              <div className="cad__month" key={r.month}>
-                <div className="cad__month-bars">
-                  <div
-                    className={`cad__bar cad__bar--buy${barFilter?.month === r.month && barFilter?.type === 'buy' ? ' cad__bar--active' : ''}`}
-                    style={{ height: `${(r.buys / monthly.max) * BAR_MAX_PX}px` }}
-                    title={`Compras ${r.month}: ${r.buys}`}
-                    onClick={() => r.buys > 0 && setBarFilter({ month: r.month, type: 'buy' })}
-                  />
-                  <div
-                    className={`cad__bar cad__bar--sell${barFilter?.month === r.month && barFilter?.type === 'sell' ? ' cad__bar--active' : ''}`}
-                    style={{ height: `${(r.sells / monthly.max) * BAR_MAX_PX}px` }}
-                    title={`Ventas ${r.month}: ${r.sells}`}
-                    onClick={() => r.sells > 0 && setBarFilter({ month: r.month, type: 'sell' })}
-                  />
+          <div className="cad__scroll">
+            <div className="cad__months">
+              {monthly.rows.map((r) => (
+                <div className="cad__month" key={r.month}>
+                  <div className="cad__month-bars">
+                    <div
+                      className={`cad__bar cad__bar--buy${barFilter?.month === r.month && barFilter?.type === 'buy' ? ' cad__bar--active' : ''}`}
+                      style={{ height: `${(r.buys / monthly.max) * BAR_MAX_PX}px` }}
+                      title={`Compras ${r.month}: ${r.buys}`}
+                      onClick={() => r.buys > 0 && setBarFilter({ month: r.month, type: 'buy' })}
+                    />
+                    <div
+                      className={`cad__bar cad__bar--sell${barFilter?.month === r.month && barFilter?.type === 'sell' ? ' cad__bar--active' : ''}`}
+                      style={{ height: `${(r.sells / monthly.max) * BAR_MAX_PX}px` }}
+                      title={`Ventas ${r.month}: ${r.sells}`}
+                      onClick={() => r.sells > 0 && setBarFilter({ month: r.month, type: 'sell' })}
+                    />
+                  </div>
+                  <div className="cad__month-label">{r.label}</div>
                 </div>
-                <div className="cad__month-label">{r.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <div className="cad__legend">
             <span>

@@ -117,6 +117,10 @@
     border: 1px solid var(--cui-border-color);
     border-radius: 16px;
     padding: 18px 20px 16px;
+    // A grid item defaults to min-width: auto, which lets its content (the
+    // chart) force the track wider instead of respecting .cad__scroll's
+    // overflow-x. This lets it shrink so the inner scroll actually clips.
+    min-width: 0;
   }
 
   &__panel-title {
@@ -138,10 +142,15 @@
     gap: 10px;
     height: 168px;
     padding-top: 4px;
+    // Keeps its natural width so it scrolls inside .cad__scroll on narrow
+    // screens instead of squeezing the bars down to nothing.
+    width: max-content;
+    min-width: 100%;
   }
 
   &__month {
     flex: 1;
+    min-width: 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
