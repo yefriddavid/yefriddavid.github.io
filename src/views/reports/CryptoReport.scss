@@ -93,6 +93,38 @@
     font-weight: 600;
   }
 
+  &__row {
+    &--clickable {
+      cursor: pointer;
+      transition: background 0.1s;
+
+      &:hover {
+        background: var(--cui-tertiary-bg, #f8f9fa);
+      }
+    }
+  }
+
+  &__chart-legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  &__legend-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--fs-xs);
+    color: var(--cui-secondary-color);
+  }
+
+  &__legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
   &__total-row {
     font-weight: 700;
 

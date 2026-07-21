@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
@@ -13,6 +13,7 @@ import {
   fmtUSD,
   fmt as fmtCOP,
 } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
+import CryptoLotModal from './CryptoLotModal'
 import './CryptoReport.scss'
 
 const amountClass = (value) =>
@@ -24,6 +25,17 @@ const CryptoReport = () => {
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
   const { prices } = useCryptoPrices()
   const { rate: liveUsdCopRate } = useUsdCopRate()
+  const [selectedSymbol, setSelectedSymbol] = useState(null)
+  const [modalPrice, setModalPrice] = useState(null)
+
+  // Freeze the price at the moment the modal opens — the modal reads a live
+  // websocket feed via `prices`, and re-deriving it on every tick made the
+  // chart flicker/redraw every few seconds while the user was reading it.
+  const openLotModal = (symbol) => {
+    setSelectedSymbol(symbol)
+    setModalPrice(prices[symbol]?.price ?? null)
+  }
+  const closeLotModal = useCallback(() => setSelectedSymbol(null), [])
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -94,6 +106,11 @@ const CryptoReport = () => {
   )
   const totalLossCOP = lossesCOP.reduce((s, r) => s + r.gainLossCOP, 0)
 
+  const modalPurchases = useMemo(
+    () => purchases.filter((p) => p.symbol === selectedSymbol),
+    [purchases, selectedSymbol],
+  )
+
   if (loading) return <Spinner mode="section" />
   if (bySymbol.length === 0) return <EmptyState message="Sin compras registradas para analizar." />
 
@@ -146,7 +163,11 @@ const CryptoReport = () => {
             </thead>
             <tbody>
               {bySymbol.map((r) => (
-                <tr key={r.symbol}>
+                <tr
+                  key={r.symbol}
+                  className="crypto-report__row--clickable"
+                  onClick={() => openLotModal(r.symbol)}
+                >
                   <td className="crypto-report__row-label">{r.label}</td>
                   <td>{r.qty.toFixed(8)}</td>
                   <td>{fmtUSD(r.investedUSD)}</td>
@@ -199,7 +220,11 @@ const CryptoReport = () => {
               </thead>
               <tbody>
                 {lossesCOP.map((r) => (
-                  <tr key={r.symbol}>
+                  <tr
+                    key={r.symbol}
+                    className="crypto-report__row--clickable"
+                    onClick={() => openLotModal(r.symbol)}
+                  >
                     <td className="crypto-report__row-label">{r.label}</td>
                     <td>
                       <span className={amountClass(-1)}>{fmtCOP(r.gainLossCOP)}</span>
@@ -217,6 +242,16 @@ const CryptoReport = () => {
           </div>
         )}
       </div>
+
+      {selectedSymbol && (
+        <CryptoLotModal
+          symbol={selectedSymbol}
+          label={symbolLabel(selectedSymbol)}
+          livePrice={modalPrice}
+          purchases={modalPurchases}
+          onClose={closeLotModal}
+        />
+      )}
     </div>
   )
 }

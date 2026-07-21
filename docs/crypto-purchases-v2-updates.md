@@ -1,6 +1,6 @@
-# Crypto Purchases v2 — TRM, ventas, sync con Binance y reconciliación de saldos
+# Crypto Purchases v2 — TRM, ventas, sync con Binance, reconciliación y reporte de análisis
 
-Documenta el trabajo hecho sobre `src/views/tools/crypto-purchases/` (ruta `/finance/tools/v2/adjustments`) en una sesión de mejoras. Cubre 4 piezas: captura de TRM histórica, soporte de ventas, sincronización automática con Binance, y reconciliación manual de saldos reales.
+Documenta el trabajo hecho sobre `src/views/tools/crypto-purchases/` (ruta `/finance/tools/v2/adjustments`) y el nuevo reporte `/finance/management/crypto-report` en una sesión de mejoras. Cubre: captura de TRM histórica, soporte de ventas, sincronización automática con Binance, reconciliación manual de saldos reales, un reporte de análisis por moneda con modal de detalle/gráfico, y un bug de costo promedio encontrado y corregido a partir de una pregunta hipotética del usuario.
 
 ## 1. TRM (USD/COP) por registro
 
@@ -129,6 +129,73 @@ El proyecto ya tiene un sistema de hooks/automatizaciones locales (`src/reducers
 
 Las credenciales de Binance se toman de las variables de entorno `BINANCE_API_KEY`/`BINANCE_SECRET_KEY` del proceso que lanza el binario (confirmado que el entorno local del usuario ya las expone) — no están incrustadas en el binario ni en el repo.
 
+## 7. Reporte "Análisis de Cripto" (`/finance/management/crypto-report`)
+
+Nueva página bajo el grupo de nav **Reportes** (junto a "Estado de Resultados" y "Análisis"), a pedido del usuario: quería un desglose por moneda para analizar su cripto, en la misma sección de reportes existente.
+
+### Archivos
+- `src/views/reports/CryptoReport.js` + `.scss` — página nueva.
+- `src/routes.finance.js`: ruta `/management/crypto-report` → `CryptoReport`.
+- `src/_nav.js`: ítem "Cripto" (ícono `cibBitcoin`) dentro del `CNavGroup` "Reportes".
+
+### Contenido
+- 4 cards de resumen (Invertido, Valor actual, Ganancia/Pérdida, Rendimiento) agregando **todos** los symbols.
+- Tabla principal por symbol: Cantidad neta, Invertido (USD y COP), Valor actual (USD y COP), Ganancia/Pérdida, Rendimiento.
+  - **Invertido (COP)** usa la **TRM promedio ponderada** de las compras de ese symbol (ponderada por `quantity × purchasePrice` de cada compra con `usdCopRate` capturado).
+  - **Valor actual (COP)** usa la TRM en vivo de hoy (`useUsdCopRate`).
+- Segunda tabla, **"Pérdidas en COP"** (pedido explícito del usuario): solo las monedas con `gainLossCOP < 0`, ordenadas de mayor a menor pérdida, con fila de total.
+- Reutiliza `cryptoPurchaseHelpers.js` (del módulo Crypto Purchases) para `isSale`, `symbolLabel`, `fmtUSD`, `fmt` — no se duplicó la lógica de posición neta.
+
+### Decisión de estilo: tabla plana, no StandardGrid
+Primer intento: `StandardGrid` (DevExtreme), como manda la regla general de tablas del proyecto. El usuario pidió explícitamente cambiarlo por el estilo de `/finance/management/reports` (`views/reports/Reports.js` + `CategoryMonthStatement`), que usa una **tabla HTML plana** (`<table>` con BEM `cms__table`) en vez de DevExtreme — es una excepción ya establecida en el código para páginas de "reporte imprimible". Se replicó esa misma hoja de estilos (bordes finos, headers en gris, alineación derecha) bajo el bloque BEM `.crypto-report`, sin usar el componente compartido `CategoryMonthStatement` en sí (su forma es categoría×mes con expand/collapse; no encaja con datos symbol×métricas).
+
+## 8. Modal de detalle por moneda + gráfico (`CryptoLotModal`)
+
+A pedido del usuario ("si le doy click a algún activo, ¿por qué no me muestras un modal con un gráfico...?"). Se usó la skill `dataviz` para elegir la forma del gráfico y los colores.
+
+### Archivo
+`src/views/reports/CryptoLotModal.js` — modal (`AppModal` variant `center`), se abre al hacer click en cualquier fila de las dos tablas del reporte (`setSelectedSymbol`).
+
+### Iteración de diseño del gráfico
+1. **Primer intento**: barra por cada compra individual (`CChartBar`), % de esa compra vs precio actual. Para BTC (293 compras) el resultado fue una pared de barras ilegible — el "job" real no era "comparar N transacciones", era "tendencia en el tiempo".
+2. **Fix**: se cambió a `CChartLine` con **un punto por mes** (precio promedio ponderado de compra ese mes) más una **línea de referencia punteada** con el precio actual — coincide con el patrón de la skill dataviz "Above/below a baseline; Δ to target → line vs baseline". Cada punto se colorea con la paleta de estado **fija** de la skill (`good #0ca30c` si el promedio de ese mes está por debajo del precio actual, `critical #d03b3b` si está por encima), nunca color solo — siempre acompañado de una leyenda manual con ícono + texto ("Compraste por debajo/encima del precio actual").
+3. Debajo del gráfico, tabla plana (mismo estilo `.crypto-report__table`) con el detalle crudo de cada transacción (fecha, tipo, cantidad, precio, notas) — así no se pierde el detalle por lote aunque el gráfico esté agregado por mes.
+
+### Bug de re-render (flicker) y fix
+El modal recibía `livePrice={prices[selectedSymbol]?.price}` directo del hook de precios en vivo (websocket) — cada tick de precio (cada pocos segundos) recreaba el gráfico. Fix en `CryptoReport.js`:
+- El precio se **congela al abrir el modal** (`modalPrice`, capturado en `openLotModal` junto con `selectedSymbol`), no se deriva reactivamente.
+- `modalPurchases` memoizado (`useMemo` sobre `[purchases, selectedSymbol]`) en vez de un `.filter()` inline que creaba un array nuevo en cada render.
+- `closeLotModal` estabilizado con `useCallback` (antes era un arrow function nuevo en cada render, rompía cualquier memoización de props).
+- `CryptoLotModal` envuelto en `React.memo`.
+
+## 9. Bug de costo promedio en los ajustes de saldo (encontrado por el usuario)
+
+El usuario preguntó: *"si BTC llegara a $116,000, ¿estaría ganando o perdiendo?"*. La respuesta inicial (con los datos de ese momento) daba **pérdida de -16.88%**, lo cual el usuario cuestionó correctamente: $116,000 está cerca del precio más alto que pagó alguna vez por BTC, así que a ese precio debería estar en verde.
+
+### Causa raíz
+Los 4 ajustes de saldo (sección 4) se crearon con `purchasePrice: 0` para no alterar "Invertido". Eso funciona para la cantidad, pero **rompe el costo promedio implícito**: seguía dividiendo el mismo dinero invertido entre una cantidad neta mucho menor (la que quedó después de "retirar" la diferencia), inflando el costo promedio muy por encima de cualquier precio real de compra. Para BTC: costo promedio implícito **$139,560** — un número que nunca existió en el historial real (el máximo pagado fue ~$122,000).
+
+### Fix
+`scripts/fix-adjustment-cost-basis.mjs` (dry-run/`--apply`, mismo patrón): para cada ajuste, calcula el **costo promedio de la posición justo antes del ajuste** (invertido neto ÷ cantidad neta, usando compras y ventas reales, **excluyendo** el propio ajuste) y actualiza el `purchasePrice` del ajuste a ese valor en vez de `$0`. Esto "retira" las monedas a su costo real en vez de gratis, preservando el costo promedio correcto de lo que queda.
+
+Valores calculados (dry-run confirmado, **pendiente de aplicar** — ver nota de cuota abajo):
+
+| Symbol | `purchasePrice` anterior | `purchasePrice` corregido |
+|---|---|---|
+| BTC | $0 | $79,225.96 |
+| ETH | $0 | $2,355.08 |
+| BNB | $0 | $748.93 |
+| LINK | $0 | $4.96 |
+
+Con el costo corregido, a $116,000/BTC el resultado pasa de -$6,809 (-16.88%) a **+$10,635 aprox. (+46%)** — coincide con la intuición del usuario.
+
+### Nota — cuota de Firestore agotada
+Al intentar aplicar el fix (`--apply`), y también en un segundo intento con un script más liviano que solo actualizaba los 4 documentos por id directo, Firestore devolvió `RESOURCE_EXHAUSTED: Quota exceeded` incluso para una simple lectura de un documento — probablemente por la cantidad de escaneos completos de la colección hechos en la misma sesión (decenas de dry-runs/verificaciones sobre ~941 documentos). **El fix quedó listo pero sin aplicar.** Para aplicarlo cuando la cuota se libere (normalmente se resetea diario en el plan gratuito de Firebase):
+```bash
+node scripts/fix-adjustment-cost-basis.mjs             # dry run — confirmar valores
+node scripts/fix-adjustment-cost-basis.mjs --apply     # aplicar
+```
+
 ## Archivos nuevos
 
 ```
@@ -137,9 +204,13 @@ scripts/add-crypto-balance-adjustments.mjs
 scripts/backfill-crypto-purchase-platform.mjs
 scripts/backfill-crypto-purchase-usd-cop-rate.mjs
 scripts/delete-crypto-purchases.mjs
+scripts/fix-adjustment-cost-basis.mjs
 scripts/sync-crypto-purchases/main.go
 scripts/sync-crypto-purchases/go.mod
 scripts/sync-crypto-purchases/go.sum
+src/views/reports/CryptoReport.js
+src/views/reports/CryptoReport.scss
+src/views/reports/CryptoLotModal.js
 ```
 
 ## Archivos modificados
@@ -153,6 +224,8 @@ src/views/tools/crypto-purchases/CryptoPurchaseForm.js   (tipo, TRM, checkbox de
 src/views/tools/crypto-purchases/CryptoPurchases.scss    (toggle de tipo, checkbox, cpu-text-btn)
 src/views/tools/crypto-purchases/cryptoPurchaseHelpers.js (isSale, isAdjustment, fmtQty, typeLabel)
 src/views/tools/crypto-purchases/index.js                (filtros, totales netos, card dinámica, botón Sync)
+src/routes.finance.js                                    (ruta /management/crypto-report)
+src/_nav.js                                              (ítem "Cripto" bajo Reportes)
 ```
 
-Commit: `b1e9bcc` — `feat(crypto-purchases): track sales, sync Binance trade history, reconcile balances`.
+Commits: `b1e9bcc` (TRM/ventas/sync/ajustes) y `fe2b266` (reporte de análisis) — el modal de detalle, el fix de costo promedio y el fix de flicker todavía no se han commiteado al momento de escribir esto.
