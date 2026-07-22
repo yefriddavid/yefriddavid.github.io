@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import CIcon from '@coreui/icons-react'
 import './StandardList.scss'
 
@@ -68,10 +68,14 @@ const StandardList = ({
   renderActions,
 }) => {
   const [page, setPage] = useState(0)
+  const totalPages = Math.ceil(data.length / pageSize)
+
+  useEffect(() => {
+    if (page > totalPages - 1) setPage(Math.max(totalPages - 1, 0))
+  }, [totalPages, page])
 
   if (data.length === 0) return <div className="sl__empty">{emptyText}</div>
 
-  const totalPages = Math.ceil(data.length / pageSize)
   const paged = data.slice(page * pageSize, (page + 1) * pageSize)
 
   return (
