@@ -51,6 +51,11 @@ Pendiente:
 - Si se implementa, reemplazaría (o complementaría) los registros `isAdjustment` actuales con retiros reales por fecha.
 - Limitación conocida: ese endpoint no cubre Binance Convert (`/sapi/v1/convert/tradeFlow` es otro endpoint aparte) — puede seguir quedando un residuo que solo el ajuste manual explique.
 
-## 5. Otras ideas mencionadas, no iniciadas
+## 5. Lista de deseos (no iniciadas)
 
 - Separar la ganancia/pérdida en "efecto cripto" vs "efecto TRM/FX" (usando el `usdCopRate` ya capturado por compra) — se mencionó como posible mejora futura del reporte "Análisis de Cripto", no se construyó.
+- **Withdraws** — crear un módulo/registro propio para retiros de cripto (relacionado con la idea de la sección 4: usar el endpoint `/sapi/v1/capital/withdraw/history` de Binance para traer retiros reales en vez de los ajustes manuales `isAdjustment`).
+- **Loans** — crear un módulo/registro propio para préstamos. Falta definir alcance: ¿préstamos de cripto tipo Binance Crypto Loans (con colateral), préstamos personales dados/recibidos, o algo más? Aclarar antes de empezar a construir.
+- Precio de equilibrio ("break-even") por moneda, formalizando el cálculo ad-hoc que se hizo para BTC con la pregunta hipotética de precio.
+- Tracking de comisiones de Binance — no se registran en ningún lado hoy, y con cientos de trades podrían estar erosionando el rendimiento real de forma invisible.
+- Análisis de patrón de trading (round-trips compra→venta, tiempo promedio de holding) — requeriría emparejamiento tipo FIFO, que se decidió no hacer para no complicar el modelo actual.
