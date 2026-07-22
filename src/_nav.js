@@ -32,6 +32,7 @@ import {
   cilWarning,
   cibBitcoin,
   cilSwapVertical,
+  cilExitToApp,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -153,6 +154,12 @@ const getNav = (t, role) => {
           name: 'Crypto Purchases (v2)',
           to: '/finance/tools/v2/adjustments',
           icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Crypto Withdrawals',
+          to: '/finance/tools/crypto-withdrawals',
+          icon: <CIcon icon={cilExitToApp} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,

@@ -154,6 +154,24 @@ export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'lnp2p_short', label: 'LNP2P Short' },
 ]
 
+// Binance withdraw status codes — GET /sapi/v1/capital/withdraw/history
+// (0: Email Sent, 2: Awaiting Approval, 3: Rejected, 4: Processing, 6: Completed)
+export const CRYPTO_WITHDRAWAL_STATUS_LABELS = {
+  0: 'Email enviado',
+  2: 'Esperando aprobación',
+  3: 'Rechazado',
+  4: 'Procesando',
+  6: 'Completado',
+}
+
+export const CRYPTO_WITHDRAWAL_STATUS_VARIANTS = {
+  0: 'default',
+  2: 'warning',
+  3: 'inactive',
+  4: 'info',
+  6: 'active',
+}
+
 export const CALC_LIST_CATEGORIES = [
   { value: 'gastos', label: 'Gastos' },
   { value: 'ahorros', label: 'Ahorros' },

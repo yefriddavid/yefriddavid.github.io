@@ -2,9 +2,9 @@
 
 Lista de lo que quedó sin terminar en la sesión del 2026-07-21 sobre Crypto Purchases v2 / reportes de cripto. Ver también `docs/crypto-purchases-v2-updates.md` para el detalle completo de lo ya hecho.
 
-## 1. Correr los 2 scripts pendientes (Firestore agotó cuota)
+## 1. ✅ Correr los 2 scripts pendientes (Firestore agotó cuota) — HECHO 2026-07-22
 
-Ambos ya están escritos, probados en dry-run (o listos para probarlo) y esperando que se libere la cuota de Firestore (normalmente resetea a medianoche hora del Pacífico en el plan gratuito de Firebase).
+Ambos corrieron con `--apply` exitosamente: los 4 ajustes (BTC/ETH/BNB/LINK) quedaron con el costo promedio correcto, y los 945 documentos de `Finance_Crypto_Purchases` quedaron con `active: true`.
 
 ```bash
 # 1. Corrige el costo promedio de los 4 ajustes de saldo (estaban en $0, inflaban
@@ -42,19 +42,19 @@ En la sesión de reconciliación de saldos (BTC, BNB, ETH, LINK) quedó pendient
 2. Calcular el ajuste (neto sincronizado − saldo real) igual que se hizo para las otras 4.
 3. Crear el registro de ajuste (`isAdjustment: true`, mismo patrón que `scripts/add-crypto-balance-adjustments.mjs`).
 
-## 4. Explorar el endpoint de retiros de Binance (idea sin implementar)
+## 4. ✅ Endpoint de retiros de Binance — HECHO 2026-07-22
 
-Se discutió (sin ejecutar nada) reemplazar los 4-5 ajustes manuales por datos reales del endpoint `/sapi/v1/capital/withdraw/history` (`GetWithdrawHistoryService` en `go-binance`), que daría cantidad y fecha **exactas** de cada retiro real en vez de una cifra por diferencia de saldo con fecha aproximada.
+Implementado: `scripts/sync-crypto-withdrawals/` (Go) llama `ListWithdrawsService` y escribe en la nueva colección `Finance_Crypto_Withdrawals`, y hay una pantalla de solo lectura "Crypto Withdrawals" junto a Crypto Purchases (v2) en `/finance/tools/crypto-withdrawals`.
 
-Pendiente:
-- Confirmar que la API key tiene permiso de lectura sobre historial de retiros.
-- Si se implementa, reemplazaría (o complementaría) los registros `isAdjustment` actuales con retiros reales por fecha.
-- Limitación conocida: ese endpoint no cubre Binance Convert (`/sapi/v1/convert/tradeFlow` es otro endpoint aparte) — puede seguir quedando un residuo que solo el ajuste manual explique.
+- Confirmado: la API key sí tiene permiso de lectura sobre historial de retiros.
+- Primera corrida (`--since 2023-01-01 --apply`): **38 retiros** insertados (BTC, ETH, SOL, USDT, USDC — redes BTC/LIGHTNING/ARBITRUM/ETH/SOL/MATIC).
+- Limitación confirmada: **no reemplaza los ajustes manuales de BNB ni LINK** — ninguno de los dos aparece en el endpoint desde 2023, probablemente salieron por Binance Convert (`/sapi/v1/convert/tradeFlow`, endpoint aparte, no implementado) o transferencia interna. Los registros `isAdjustment` de BNB/LINK siguen siendo la única fuente para esos dos.
+- Correr de nuevo cuando haga falta actualizar: `cd scripts/sync-crypto-withdrawals && go run . --apply` (dedupe automático por `binanceWithdrawId`, seguro de re-correr).
 
 ## 5. Lista de deseos (no iniciadas)
 
 - Separar la ganancia/pérdida en "efecto cripto" vs "efecto TRM/FX" (usando el `usdCopRate` ya capturado por compra) — se mencionó como posible mejora futura del reporte "Análisis de Cripto", no se construyó.
-- **Withdraws** — crear un módulo/registro propio para retiros de cripto (relacionado con la idea de la sección 4: usar el endpoint `/sapi/v1/capital/withdraw/history` de Binance para traer retiros reales en vez de los ajustes manuales `isAdjustment`).
+- ~~**Withdraws**~~ — ✅ HECHO 2026-07-22, ver sección 4.
 - **Loans** — crear un módulo/registro propio para préstamos. Falta definir alcance: ¿préstamos de cripto tipo Binance Crypto Loans (con colateral), préstamos personales dados/recibidos, o algo más? Aclarar antes de empezar a construir.
 - Precio de equilibrio ("break-even") por moneda, formalizando el cálculo ad-hoc que se hizo para BTC con la pregunta hipotética de precio.
 - Tracking de comisiones de Binance — no se registran en ningún lado hoy, y con cientos de trades podrían estar erosionando el rendimiento real de forma invisible.

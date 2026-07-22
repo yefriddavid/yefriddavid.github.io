@@ -28,6 +28,7 @@ const IncreaseDecrease = React.lazy(
   () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
 const CryptoPurchasesV2 = React.lazy(() => import('./views/tools/crypto-purchases'))
+const CryptoWithdrawals = React.lazy(() => import('./views/tools/crypto-withdrawals'))
 const SalaryDistribution = React.lazy(() => import('./views/CashFlow/tools/SalaryDistribution'))
 
 // Paths are relative to the /finance/* parent route (no /finance prefix)
@@ -58,6 +59,7 @@ const financeRoutes = [
   { path: '/tools/calc-percentage', element: CalcPercentage, landingPage: true },
   { path: '/tools/adjustments', element: IncreaseDecrease, landingPage: true },
   { path: '/tools/v2/adjustments', element: CryptoPurchasesV2, landingPage: true },
+  { path: '/tools/crypto-withdrawals', element: CryptoWithdrawals, landingPage: true },
   { path: '/tools/salary-distribution', element: SalaryDistribution, landingPage: true },
 ]
 
