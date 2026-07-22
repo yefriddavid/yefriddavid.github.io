@@ -21,6 +21,7 @@ cypress/videos/
 /scripts/sync-firebase-auth/sync-firebase-auth
 /scripts/sync-crypto-purchases/sync-crypto-purchases
 /scripts/sync-crypto-withdrawals/sync-crypto-withdrawals
+/scripts/list-binance-loans/list-binance-loans
 /extension/native-host/localrunner-host
 
 # misc
