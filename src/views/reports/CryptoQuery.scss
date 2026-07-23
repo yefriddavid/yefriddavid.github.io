@@ -3,6 +3,7 @@
   --cq-sell: #e55353;
   --cq-buy-soft: rgba(46, 184, 92, 0.12);
   --cq-sell-soft: rgba(229, 83, 83, 0.12);
+  --cq-neutral: #2a78d6;
 
   padding: 8px 4px 32px;
 
@@ -17,6 +18,28 @@
     color: var(--cui-secondary-color);
     font-size: var(--fs-sm);
     margin: 4px 0 20px;
+  }
+
+  &__mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__mode-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: none;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--cui-tertiary-bg);
+    color: var(--cui-secondary-color);
+
+    &--active {
+      background: var(--cui-primary);
+      color: #fff;
+    }
   }
 
   &__filters {
@@ -88,12 +111,8 @@
     font-weight: 800;
     color: var(--cui-body-color);
 
-    &--positive {
-      color: var(--cq-buy);
-    }
-
-    &--negative {
-      color: var(--cq-sell);
+    &--neutral {
+      color: var(--cq-neutral);
     }
   }
 
@@ -211,12 +230,8 @@
   &__amount {
     font-weight: 700;
 
-    &--positive {
-      color: var(--cq-buy);
-    }
-
-    &--negative {
-      color: var(--cq-sell);
+    &--neutral {
+      color: var(--cq-neutral);
     }
   }
 }

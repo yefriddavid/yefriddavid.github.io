@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
+import useLocaleData from 'src/hooks/useLocaleData'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
 import {
@@ -14,20 +15,44 @@ import {
 } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
 import './CryptoQuery.scss'
 
+const CURRENT_YEAR = new Date().getFullYear()
+const pad2 = (n) => String(n).padStart(2, '0')
+const lastDayOfMonth = (year, month) => new Date(year, month, 0).getDate()
+
 const CryptoQuery = () => {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
+  const { monthLabels } = useLocaleData()
 
   const [symbol, setSymbol] = useState(CRYPTO_PURCHASE_SYMBOLS[0].value)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [dateMode, setDateMode] = useState('range') // 'range' | 'month'
+  const [rangeFrom, setRangeFrom] = useState('')
+  const [rangeTo, setRangeTo] = useState('')
+  const [year, setYear] = useState(CURRENT_YEAR)
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
 
   useEffect(() => {
     dispatch(actions.loadRequest())
   }, [dispatch, activeTenantId])
+
+  const years = useMemo(() => {
+    const set = new Set(
+      purchases.map((p) => Number((p.purchaseDate || '').slice(0, 4))).filter(Boolean),
+    )
+    set.add(CURRENT_YEAR)
+    return [...set].sort((a, b) => b - a)
+  }, [purchases])
+
+  const { dateFrom, dateTo } =
+    dateMode === 'month'
+      ? {
+          dateFrom: `${year}-${pad2(month)}-01`,
+          dateTo: `${year}-${pad2(month)}-${pad2(lastDayOfMonth(year, month))}`,
+        }
+      : { dateFrom: rangeFrom, dateTo: rangeTo }
 
   const filtered = useMemo(() => {
     const min = priceMin !== '' ? Number(priceMin) : null
@@ -72,6 +97,23 @@ const CryptoQuery = () => {
         Filtra un activo por rango de fechas y de precio para revisar sus operaciones.
       </p>
 
+      <div className="cq__mode-toggle">
+        <button
+          type="button"
+          className={`cq__mode-btn${dateMode === 'range' ? ' cq__mode-btn--active' : ''}`}
+          onClick={() => setDateMode('range')}
+        >
+          Rango de fechas
+        </button>
+        <button
+          type="button"
+          className={`cq__mode-btn${dateMode === 'month' ? ' cq__mode-btn--active' : ''}`}
+          onClick={() => setDateMode('month')}
+        >
+          Año y mes
+        </button>
+      </div>
+
       <div className="cq__filters">
         <div className="cq__field">
           <label>Activo</label>
@@ -83,24 +125,55 @@ const CryptoQuery = () => {
             ))}
           </CFormSelect>
         </div>
-        <div className="cq__field">
-          <label>Fecha desde</label>
-          <input
-            type="date"
-            className="cq__input"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-          />
-        </div>
-        <div className="cq__field">
-          <label>Fecha hasta</label>
-          <input
-            type="date"
-            className="cq__input"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-          />
-        </div>
+        {dateMode === 'range' ? (
+          <>
+            <div className="cq__field">
+              <label>Fecha desde</label>
+              <input
+                type="date"
+                className="cq__input"
+                value={rangeFrom}
+                onChange={(e) => setRangeFrom(e.target.value)}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Fecha hasta</label>
+              <input
+                type="date"
+                className="cq__input"
+                value={rangeTo}
+                onChange={(e) => setRangeTo(e.target.value)}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="cq__field">
+              <label>Año</label>
+              <CFormSelect size="sm" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </CFormSelect>
+            </div>
+            <div className="cq__field">
+              <label>Mes</label>
+              <CFormSelect
+                size="sm"
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+              >
+                {monthLabels.map((label, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {label}
+                  </option>
+                ))}
+              </CFormSelect>
+            </div>
+          </>
+        )}
         <div className="cq__field">
           <label>Precio mínimo</label>
           <input
@@ -142,11 +215,8 @@ const CryptoQuery = () => {
             </div>
             <div className="cq__kpi">
               <div className="cq__kpi-label">Neto (Ventas − Compras)</div>
-              <div
-                className={`cq__kpi-value${totals.net >= 0 ? ' cq__kpi-value--positive' : ' cq__kpi-value--negative'}`}
-              >
-                {totals.net >= 0 ? '+' : ''}
-                {fmtUSD(totals.net)}
+              <div className="cq__kpi-value cq__kpi-value--neutral">
+                {fmtUSD(Math.abs(totals.net))}
               </div>
             </div>
           </div>
@@ -219,11 +289,8 @@ const CryptoQuery = () => {
                   <tr className="cq__total-row cq__total-row--net">
                     <td colSpan={4}>Neto (Ventas − Compras)</td>
                     <td className="num" colSpan={2}>
-                      <span
-                        className={`cq__amount${totals.net >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
-                      >
-                        {totals.net >= 0 ? '+' : ''}
-                        {fmtUSD(totals.net)}
+                      <span className="cq__amount cq__amount--neutral">
+                        {fmtUSD(Math.abs(totals.net))}
                       </span>
                     </td>
                   </tr>
