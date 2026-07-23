@@ -134,6 +134,12 @@ const getNav = (t, role) => {
           to: '/finance/management/crypto-activity',
           icon: <CIcon icon={cilSwapVertical} customClassName="nav-icon" />,
         },
+        {
+          component: CNavItem,
+          name: 'Consulta de Compras/Ventas',
+          to: '/finance/management/crypto-query',
+          icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+        },
       ],
     })
   }
