@@ -58,6 +58,7 @@ import financeScenes3d from './finance/scenes3dReducer'
 import increaseDecrease from './finance/increaseDecreaseReducer'
 import cryptoPurchase from './finance/cryptoPurchaseReducer'
 import cryptoWithdrawal from './finance/cryptoWithdrawalReducer'
+import savings from './finance/savingsReducer'
 import loan from './finance/loanReducer'
 import task from './misc/taskReducer'
 import note from './misc/noteReducer'
@@ -128,6 +129,7 @@ const combinedReducers = combineReducers({
   increaseDecrease,
   cryptoPurchase,
   cryptoWithdrawal,
+  savings,
   loan,
   task,
   taxiTrend,

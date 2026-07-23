@@ -84,6 +84,7 @@ export const COL_FINANCE_CUSTOM_GRID_TRADES = 'Finance_Custom_Grid_Trades'
 export const COL_FINANCE_INCREASE_DECREASE = 'Finance_Increase_Decrease'
 export const COL_FINANCE_CRYPTO_PURCHASES = 'Finance_Crypto_Purchases'
 export const COL_FINANCE_CRYPTO_WITHDRAWALS = 'Finance_Crypto_Withdrawals'
+export const COL_FINANCE_SAVINGS = 'Finance_Savings'
 
 // Contratos
 export const COL_CONTRATOS = 'Contratos_Contratos'

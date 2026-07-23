@@ -56,6 +56,7 @@ import sagaFinanceScenes3d from './finance/scenes3dSagas'
 import sagaIncreaseDecrease from './finance/increaseDecreaseSagas'
 import sagaCryptoPurchases from './finance/cryptoPurchaseSagas'
 import sagaCryptoWithdrawals from './finance/cryptoWithdrawalSagas'
+import sagaSavings from './finance/savingsSagas'
 import sagaLoans from './finance/loanSagas'
 import sagaTasks from './misc/taskSagas'
 import sagaNotes from './misc/noteSagas'
@@ -124,6 +125,7 @@ export default function* rootSagas() {
     sagaIncreaseDecrease(),
     sagaCryptoPurchases(),
     sagaCryptoWithdrawals(),
+    sagaSavings(),
     sagaLoans(),
     sagaTasks(),
     sagaNotes(),
