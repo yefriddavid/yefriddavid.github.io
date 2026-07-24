@@ -16,6 +16,7 @@ import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
 import * as taxiExpenseActions from 'src/actions/taxi/taxiExpenseActions'
 import { getColombianHolidays } from './auditHelpers'
+import { restrictedDaysFor } from './picoPlacaHelpers'
 import NextMonthPanel from './NextMonthPanel'
 import NextMonthMiniCalendar from './NextMonthMiniCalendar'
 import './Operations.scss'
@@ -42,11 +43,6 @@ const now = new Date()
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const pad2 = (n) => String(n).padStart(2, '0')
-
-const restrictedDaysForMonth = (vehicle, month) => {
-  const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)] ?? {}
-  return [restr.d1, restr.d2].filter(Boolean).map(Number)
-}
 
 // ── badge ─────────────────────────────────────────────────────────────────────
 
@@ -235,7 +231,7 @@ const Operations = () => {
     // pico y placa
     if (selected.has('pico-placa')) {
       for (const v of vehicles) {
-        for (const day of restrictedDaysForMonth(v, month)) {
+        for (const day of restrictedDaysFor(v?.restrictions, year, month)) {
           if (!map.has(day)) map.set(day, [])
           map
             .get(day)
@@ -264,7 +260,7 @@ const Operations = () => {
     }
 
     return map
-  }, [selected, vehicles, driversByVehicle, month, lastByCategory, monthStr])
+  }, [selected, vehicles, driversByVehicle, month, year, lastByCategory, monthStr])
 
   return (
     <CCard>

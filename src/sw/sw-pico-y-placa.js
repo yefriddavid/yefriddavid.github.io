@@ -1,6 +1,7 @@
 import { openDB, DB_STORES } from '../services/idb/db'
 import { getVehicles, saveVehicles } from '../services/idb/cashflow/taxiVehicles'
 import { getNotifyHours } from '../services/idb/picoPlacaConfig'
+import { restrictedDaysFor } from '../views/taxis/picoPlacaHelpers'
 
 const DAY_LABELS = ['Hoy', 'Mañana', 'En 2 días', 'En 3 días', 'En 4 días']
 
@@ -37,7 +38,7 @@ export async function checkPicoYPlaca() {
       const d = new Date(now)
       d.setDate(d.getDate() + i)
       const restricted = vehicles
-        .filter((v) => isRestricted(v.restrictions, d.getMonth() + 1, d.getDate()))
+        .filter((v) => isRestricted(v.restrictions, d.getFullYear(), d.getMonth() + 1, d.getDate()))
         .map((v) => v.plate)
 
       if (i === 0) {
@@ -73,13 +74,8 @@ export async function checkPicoYPlaca() {
   }
 }
 
-function isRestricted(restrictions, month, day) {
-  if (!restrictions) return false
-  const monthData = restrictions[String(month)]
-  if (!monthData) return false
-  const d1 = Number(monthData.d1) || 0
-  const d2 = Number(monthData.d2) || 0
-  return (d1 !== 0 && d1 === day) || (d2 !== 0 && d2 === day)
+function isRestricted(restrictions, year, month, day) {
+  return restrictedDaysFor(restrictions, year, month).includes(day)
 }
 
 async function fetchVehiclesFromFirestore() {
@@ -96,17 +92,36 @@ async function fetchVehiclesFromFirestore() {
   }
 }
 
+function parseFirestoreDayEntry(mapValueFields) {
+  const mf = mapValueFields ?? {}
+  return {
+    d1: Number(mf.d1?.integerValue ?? mf.d1?.doubleValue ?? 0),
+    d2: Number(mf.d2?.integerValue ?? mf.d2?.doubleValue ?? 0),
+    d3: Number(mf.d3?.integerValue ?? mf.d3?.doubleValue ?? 0),
+  }
+}
+
+// Firestore's `restrictions` map is keyed either by month (legacy, applies to every
+// year) or by year → month (current). Both shapes can coexist across vehicles until
+// every vehicle has been edited at least once through the new UI.
 function parseFirestoreVehicle(doc) {
   const fields = doc.fields ?? {}
   const id = doc.name.split('/').pop()
 
   const restrictionsFields = fields.restrictions?.mapValue?.fields ?? {}
   const restrictions = {}
-  for (const [month, monthVal] of Object.entries(restrictionsFields)) {
-    const mf = monthVal.mapValue?.fields ?? {}
-    restrictions[month] = {
-      d1: Number(mf.d1?.integerValue ?? mf.d1?.doubleValue ?? 0),
-      d2: Number(mf.d2?.integerValue ?? mf.d2?.doubleValue ?? 0),
+  for (const [key, val] of Object.entries(restrictionsFields)) {
+    const isYear = Number(key) > 12
+    const nested = val.mapValue?.fields ?? {}
+    if (isYear) {
+      restrictions[key] = Object.fromEntries(
+        Object.entries(nested).map(([month, monthVal]) => [
+          month,
+          parseFirestoreDayEntry(monthVal.mapValue?.fields),
+        ]),
+      )
+    } else {
+      restrictions[key] = parseFirestoreDayEntry(nested)
     }
   }
 

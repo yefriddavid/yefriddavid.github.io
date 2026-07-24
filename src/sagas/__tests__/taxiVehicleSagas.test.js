@@ -129,5 +129,25 @@ describe('taxiVehicleSagas', () => {
         put(actions.errorRequestUpdateRestrictions('perm denied')),
       )
     })
+
+    it('passes a multi-year restrictions payload through to the service untouched', () => {
+      // Vehicles.js merges edits across years (e.g. Aug-Dec of the current
+      // decree + January of the next one) into a single object before
+      // dispatching — the saga must forward it verbatim, not just one year.
+      const yearKeyed = {
+        2026: {
+          8: { d1: 9, d2: null, d3: null },
+          9: { d1: 6, d2: 20, d3: null },
+        },
+        2027: {
+          1: { d1: 4, d2: null, d3: null },
+        },
+      }
+      const payload = { id: 'v1', restrictions: yearKeyed }
+      const gen = updateRestrictions({ payload })
+
+      expect(gen.next().value).toEqual(call(service.updateRestrictions, 'v1', yearKeyed))
+      expect(gen.next().value).toEqual(put(actions.successRequestUpdateRestrictions(payload)))
+    })
   })
 })

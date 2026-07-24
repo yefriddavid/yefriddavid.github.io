@@ -1,3 +1,5 @@
+import { restrictedDaysFor } from 'src/views/taxis/picoPlacaHelpers'
+
 export const today = () => new Date().toISOString().split('T')[0]
 
 export const fmtDateDisplay = (iso) => {
@@ -8,12 +10,13 @@ export const fmtDateDisplay = (iso) => {
 
 export const getPicoPlacaWarning = (plate, date, vehiclesMap) => {
   if (!plate || !date) return null
-  const [, monthStr, dayStr] = date.split('-')
+  const [yearStr, monthStr, dayStr] = date.split('-')
+  const year = parseInt(yearStr, 10)
   const month = parseInt(monthStr, 10)
   const day = parseInt(dayStr, 10)
   const vehicle = vehiclesMap.get(plate)
-  const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)]
-  if (restr && new Set([restr.d1, restr.d2].filter(Boolean).map(Number)).has(day)) {
+  const restrictedDays = restrictedDaysFor(vehicle?.restrictions, year, month)
+  if (restrictedDays.includes(day)) {
     return `⚠ Pico y placa: ${plate} no puede circular el día ${day}`
   }
   return null

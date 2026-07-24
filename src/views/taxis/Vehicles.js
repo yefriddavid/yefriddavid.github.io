@@ -18,6 +18,7 @@ import {
   CModalBody,
   CModalFooter,
   CFormCheck,
+  CFormInput,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilX, cilTrash, cilBell, cilPencil } from '@coreui/icons'
@@ -29,6 +30,14 @@ import useIsMobile from 'src/hooks/useIsMobile'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { uploadImages } from 'src/services/facade/imageFacade'
 import StatusBadge from 'src/components/shared/StatusBadge'
+import {
+  getMonthRestriction,
+  restrictedDaysFor,
+  emptyRestrictions,
+  toYearKeyedRestrictions,
+  monthFormFor,
+  cleanMonthForm,
+} from './picoPlacaHelpers'
 import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
@@ -39,15 +48,12 @@ const MONTHS = [
 
 const EMPTY = { plate: '', brand: '', model: '', year: '', active: true, comment: '', photos: [] }
 
-const emptyRestrictions = () =>
-  Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { d1: '', d2: '' }]))
-
 const currentMonthSummary = (restrictions) => {
   if (!restrictions) return '—'
-  const month = new Date().getMonth() + 1
-  const entry = restrictions[month]
-  if (!entry || (!entry.d1 && !entry.d2)) return '—'
-  return [entry.d1, entry.d2]
+  const now = new Date()
+  const entry = getMonthRestriction(restrictions, now.getFullYear(), now.getMonth() + 1)
+  if (!entry || (!entry.d1 && !entry.d2 && !entry.d3)) return '—'
+  return [entry.d1, entry.d2, entry.d3]
     .filter(Boolean)
     .map((d) => `día ${d}`)
     .join(', ')
@@ -179,9 +185,18 @@ const Vehiculos = () => {
   const [showCreate, setShowCreate] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [restrictModal, setRestrictModal] = useState(null)
+  const [restrictYear, setRestrictYear] = useState(new Date().getFullYear())
   const [testingNotif, setTestingNotif] = useState(false)
   const [restrictForm, setRestrictForm] = useState(emptyRestrictions())
   const [restrictSaving, setRestrictSaving] = useState(false)
+  const restrictGridRef = useRef()
+  // DevExtreme's cell editor only commits a typed value into restrictForm on
+  // blur/Enter/Tab — clicking "Guardar" (outside the grid) can race that
+  // commit and silently drop the last edited cell. saveEditData() forces the
+  // commit; this ref lets the save/year-change handlers read the value it
+  // just wrote instead of a stale closure over restrictForm.
+  const restrictFormRef = useRef(restrictForm)
+  restrictFormRef.current = restrictForm
 
   useEffect(() => {
     dispatch(taxiVehicleActions.fetchRequest())
@@ -222,14 +237,22 @@ const Vehiculos = () => {
   }
 
   const openRestrictModal = (data) => {
-    const base = emptyRestrictions()
-    if (data.restrictions) {
-      Object.entries(data.restrictions).forEach(([m, v]) => {
-        base[m] = { d1: v?.d1 ?? '', d2: v?.d2 ?? '' }
-      })
+    const year = new Date().getFullYear()
+    const allRestrictions = toYearKeyedRestrictions(data.restrictions, year)
+    setRestrictYear(year)
+    setRestrictForm(monthFormFor(allRestrictions[year]))
+    setRestrictModal({ id: data.id, plate: data.plate, allRestrictions })
+  }
+
+  const handleRestrictYearChange = async (newYear) => {
+    await restrictGridRef.current?.instance()?.saveEditData()
+    const merged = {
+      ...restrictModal.allRestrictions,
+      [restrictYear]: cleanMonthForm(restrictFormRef.current),
     }
-    setRestrictForm(base)
-    setRestrictModal({ id: data.id, plate: data.plate })
+    setRestrictModal((prev) => ({ ...prev, allRestrictions: merged }))
+    setRestrictYear(newYear)
+    setRestrictForm(monthFormFor(merged[newYear]))
   }
 
   const restrictionsData = useMemo(
@@ -239,28 +262,41 @@ const Vehiculos = () => {
         name,
         d1: Number(restrictForm[i + 1]?.d1) || null,
         d2: Number(restrictForm[i + 1]?.d2) || null,
+        d3: Number(restrictForm[i + 1]?.d3) || null,
       })),
     [restrictForm],
   )
 
-  const onRestrictCellChanged = useCallback((e) => {
+  // DevExtreme DataGrid has no "onCellValueChanged" event — that name never
+  // existed in its API, so it silently never fired. onRowUpdating is the
+  // correct event for "cell" editing mode: it fires per committed cell edit,
+  // with e.key = the row key (month number) and e.newData = only the
+  // field(s) that changed.
+  const onRestrictRowUpdating = useCallback((e) => {
     const month = e.key
-    const field = e.column.dataField
-    setRestrictForm((prev) => ({
-      ...prev,
-      [month]: { ...prev[month], [field]: String(e.value ?? '') },
-    }))
+    const patch = Object.fromEntries(
+      Object.entries(e.newData).map(([field, value]) => [field, String(value ?? '')]),
+    )
+    setRestrictForm((prev) => {
+      const next = { ...prev, [month]: { ...prev[month], ...patch } }
+      // Written synchronously here (not left to the render-body sync below)
+      // so it's already correct the instant saveEditData()'s promise
+      // resolves, regardless of whether React has re-rendered yet.
+      restrictFormRef.current = next
+      return next
+    })
   }, [])
 
-  const handleSaveRestrictions = () => {
+  const handleSaveRestrictions = async () => {
     setRestrictSaving(true)
-    const clean = Object.fromEntries(
-      Object.entries(restrictForm).map(([m, v]) => [
-        m,
-        { d1: v.d1 ? Number(v.d1) : null, d2: v.d2 ? Number(v.d2) : null },
-      ]),
+    await restrictGridRef.current?.instance()?.saveEditData()
+    const merged = {
+      ...restrictModal.allRestrictions,
+      [restrictYear]: cleanMonthForm(restrictFormRef.current),
+    }
+    dispatch(
+      taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: merged }),
     )
-    dispatch(taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: clean }))
     setRestrictSaving(false)
     setRestrictModal(null)
   }
@@ -269,16 +305,13 @@ const Vehiculos = () => {
     setTestingNotif(true)
     try {
       const now = new Date()
+      const year = now.getFullYear()
       const month = now.getMonth() + 1
       const day = now.getDate()
       const vehicles = records ?? []
-      const restricted = vehicles.filter((v) => {
-        const monthData = v.restrictions?.[String(month)]
-        if (!monthData) return false
-        const d1 = Number(monthData.d1) || 0
-        const d2 = Number(monthData.d2) || 0
-        return (d1 !== 0 && d1 === day) || (d2 !== 0 && d2 === day)
-      })
+      const restricted = vehicles.filter((v) =>
+        restrictedDaysFor(v.restrictions, year, month).includes(day),
+      )
       const title = restricted.length ? 'Pico y Placa hoy' : 'Sin pico y placa hoy'
       const body = restricted.length
         ? `Placas restringidas: ${restricted.map((v) => v.plate).join(', ')}`
@@ -589,7 +622,21 @@ const Vehiculos = () => {
           <CModalTitle>Pico y placa — {restrictModal?.plate}</CModalTitle>
         </CModalHeader>
         <CModalBody>
+          <div className="master-restrict-year">
+            <label className="master-restrict-year__label">Año</label>
+            <CFormInput
+              type="number"
+              size="sm"
+              className="master-restrict-year__input"
+              value={restrictYear}
+              onChange={(e) => handleRestrictYearChange(Number(e.target.value) || restrictYear)}
+            />
+            <span className="master-restrict-year__hint">
+              Cada año guarda sus propias fechas — cambiar el decreto de un año no afecta a los demás.
+            </span>
+          </div>
           <StandardGrid
+            ref={restrictGridRef}
             dataSource={restrictionsData}
             keyExpr="id"
             style={{ margin: 0 }}
@@ -599,7 +646,7 @@ const Vehiculos = () => {
               allowAdding: false,
               allowDeleting: false,
             }}
-            onCellValueChanged={onRestrictCellChanged}
+            onRowUpdating={onRestrictRowUpdating}
           >
             <Paging enabled={false} />
             <Column dataField="name" caption="Mes" width={140} allowSorting={false} allowEditing={false} />
@@ -613,6 +660,13 @@ const Vehiculos = () => {
             <Column
               dataField="d2"
               caption="Día 2"
+              dataType="number"
+              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
+              allowSorting={false}
+            />
+            <Column
+              dataField="d3"
+              caption="Día 3"
               dataType="number"
               editorOptions={{ min: 1, max: 31, placeholder: '—' }}
               allowSorting={false}

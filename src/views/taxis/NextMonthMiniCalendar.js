@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { getColombianHolidays } from './auditHelpers'
+import { restrictedDaysFor } from './picoPlacaHelpers'
 import {
   TAXI_MAINTENANCE_CATEGORIES as MAINTENANCE_CATEGORIES,
   TAXI_MAINTENANCE_TYPE_COLORS as TYPE_COLORS,
@@ -7,11 +8,6 @@ import {
 
 const DOW_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 const pad2 = (n) => String(n).padStart(2, '0')
-
-const restrictedDaysForMonth = (vehicle, month) => {
-  const restr = vehicle?.restrictions?.[month] ?? vehicle?.restrictions?.[String(month)] ?? {}
-  return [restr.d1, restr.d2].filter(Boolean).map(Number)
-}
 
 const NextMonthMiniCalendar = ({ vehicles, lastByCategory, selected }) => {
   const today = new Date()
@@ -31,7 +27,7 @@ const NextMonthMiniCalendar = ({ vehicles, lastByCategory, selected }) => {
 
     if (selected.has('pico-placa')) {
       for (const v of vehicles) {
-        for (const day of restrictedDaysForMonth(v, nm)) {
+        for (const day of restrictedDaysFor(v?.restrictions, ny, nm)) {
           if (!map.has(day)) map.set(day, new Set())
           map.get(day).add('pico-placa')
         }
@@ -55,7 +51,7 @@ const NextMonthMiniCalendar = ({ vehicles, lastByCategory, selected }) => {
     }
 
     return map
-  }, [selected, vehicles, lastByCategory, nm, monthStr])
+  }, [selected, vehicles, lastByCategory, nm, ny, monthStr])
 
   const daysInMonth = new Date(ny, nm, 0).getDate()
   const firstDow = new Date(ny, nm - 1, 1).getDay()

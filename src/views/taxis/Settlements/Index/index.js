@@ -24,6 +24,7 @@ import * as taxiPeriodNoteActions from 'src/actions/taxi/taxiPeriodNoteActions'
 import * as taxiPeriodAttachmentActions from 'src/actions/taxi/taxiPeriodAttachmentActions'
 import { selectTaxiSettlementsPage } from 'src/selectors/taxiSelectors'
 import { getColombianHolidays, auditNoteId, buildAuditDay } from '../../auditHelpers'
+import { restrictedDaysFor } from '../../picoPlacaHelpers'
 import '../../../movements/payments/Payments.scss'
 import '../../../movements/payments/ItemDetail.scss'
 import '../../Taxis.scss'
@@ -242,9 +243,9 @@ const Taxis = () => {
       const plate = driver.defaultVehicle
       const vehicle = vehiclesMap.get(plate)
       if (vehicle && vehicle.active === false) continue
-      const restr =
-        vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-      const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+      const restrictedDays = new Set(
+        restrictedDaysFor(vehicle?.restrictions, period.year, period.month),
+      )
       const startDay = driver.startDate?.startsWith(periodPrefix)
         ? parseInt(driver.startDate.slice(-2), 10)
         : 1
@@ -316,9 +317,9 @@ const Taxis = () => {
       const plateKey = driver.defaultVehicle || rows.find((r) => r.plate)?.plate
       const vehicle = vehiclesMap.get(plateKey)
       if (vehicle && vehicle.active === false) return 0
-      const restr =
-        vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-      const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+      const restrictedDays = new Set(
+        restrictedDaysFor(vehicle?.restrictions, period.year, period.month),
+      )
       const periodPrefix = `${period.year}-${String(period.month).padStart(2, '0')}-`
       const driverEndDay = driver.endDate?.startsWith(periodPrefix)
         ? parseInt(driver.endDate.slice(-2), 10)
@@ -377,9 +378,9 @@ const Taxis = () => {
       const plate = driver.defaultVehicle
       const vehicle = vehiclesMap.get(plate)
       if (vehicle && vehicle.active === false) continue
-      const restr =
-        vehicle?.restrictions?.[period.month] ?? vehicle?.restrictions?.[String(period.month)] ?? {}
-      const restrictedDays = new Set([restr.d1, restr.d2].filter(Boolean).map(Number))
+      const restrictedDays = new Set(
+        restrictedDaysFor(vehicle?.restrictions, period.year, period.month),
+      )
       const driverStartDay = driver.startDate?.startsWith(periodPrefix)
         ? parseInt(driver.startDate.slice(-2), 10)
         : 1
@@ -487,8 +488,7 @@ const Taxis = () => {
   const auditVehicleRestrictions = new Map(
     auditVehicles.map((pl) => {
       const v = vehiclesMap.get(pl)
-      const restr = v?.restrictions?.[period.month] ?? v?.restrictions?.[String(period.month)] ?? {}
-      return [pl, new Set([restr.d1, restr.d2].filter(Boolean).map(Number))]
+      return [pl, new Set(restrictedDaysFor(v?.restrictions, period.year, period.month))]
     }),
   )
   const auditDays = Array.from({ length: daysInMonth }, (_, i) =>

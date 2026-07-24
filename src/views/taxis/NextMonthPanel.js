@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { fmt } from 'src/utils/formatters'
 import { getColombianHolidays } from './auditHelpers'
+import { restrictedDaysFor } from './picoPlacaHelpers'
 import {
   TAXI_MAINTENANCE_CATEGORIES,
   TAXI_REGULATORY_CATEGORIES,
@@ -203,13 +204,11 @@ const NextMonthPanel = ({ vehicles, drivers, expenses }) => {
   const picoByVehicle = useMemo(() => {
     const map = new Map()
     for (const v of activeVehicles) {
-      const restr =
-        v.restrictions?.[nextMonth] ?? v.restrictions?.[String(nextMonth)] ?? {}
-      const days = [restr.d1, restr.d2].filter(Boolean).map(Number)
+      const days = restrictedDaysFor(v.restrictions, nextYear, nextMonth)
       if (days.length > 0) map.set(v.plate, days)
     }
     return map
-  }, [activeVehicles, nextMonth])
+  }, [activeVehicles, nextYear, nextMonth])
 
   const { workingDays, holidayCount } = useMemo(() => {
     const daysInMonth = new Date(nextYear, nextMonth, 0).getDate()
