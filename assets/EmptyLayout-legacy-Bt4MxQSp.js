@@ -1,0 +1,1 @@
+System.register(["./index-legacy-BWrvD4_v.js","./index-legacy-DA3kZjkA.js","./vendor-pdfjs-legacy-BU2-Mn86.js","./vendor-firebase-legacy-B06dJ_Fh.js"],function(e,s){"use strict";var n,r,t;return{setters:[e=>{n=e.j,r=e.O},e=>{t=e.N},null,null],execute:function(){e("default",()=>n.jsxs(n.Fragment,{children:[n.jsx(r,{}),n.jsx(t,{})]}))}}});

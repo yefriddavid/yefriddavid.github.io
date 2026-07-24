@@ -1,0 +1,1 @@
+import{j as t,O as o}from"./index-3VIx8Ck-.js";import{N as s}from"./index-DMeZ3_Ho.js";import"./vendor-pdfjs-DFuvzjGi.js";import"./vendor-firebase-CEOsSTQM.js";const e=()=>t.jsxs(t.Fragment,{children:[t.jsx(o,{}),t.jsx(s,{})]});export{e as default};
