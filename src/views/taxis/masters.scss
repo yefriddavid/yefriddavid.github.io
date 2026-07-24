@@ -227,6 +227,15 @@
     font-size: var(--fs-sm);
     border-radius: 6px;
   }
+
+  &--addable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--cui-secondary-bg);
+      color: var(--cui-primary);
+    }
+  }
 }
 
 // ── Photo in detail panel ─────────────────────────────────────────

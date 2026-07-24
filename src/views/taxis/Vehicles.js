@@ -42,8 +42,18 @@ import './masters.scss'
 import Spinner from 'src/components/shared/Spinner'
 
 const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
 ]
 
 const EMPTY = { plate: '', brand: '', model: '', year: '', active: true, comment: '', photos: [] }
@@ -131,7 +141,11 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
         />
       </StandardField>
       <StandardField label="Comentario">
-        <input className={SF.input} placeholder="Observaciones opcionales" {...register('comment')} />
+        <input
+          className={SF.input}
+          placeholder="Observaciones opcionales"
+          {...register('comment')}
+        />
       </StandardField>
       <StandardField label="Fotos">
         <div className="master-photos-picker">
@@ -171,7 +185,6 @@ const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => 
     </StandardForm>
   )
 }
-
 
 const Vehiculos = () => {
   const { t } = useTranslation()
@@ -229,6 +242,41 @@ const Vehiculos = () => {
 
   const handleToggleActive = (vehicle) => {
     dispatch(taxiVehicleActions.updateRequest({ ...vehicle, active: !(vehicle.active !== false) }))
+  }
+
+  // Clicking the thumbnail opens a preview modal when the vehicle already has
+  // photos, or the file picker directly when it doesn't — no need to open the
+  // edit form first. photoUploadTarget tracks which row the (single, shared)
+  // hidden file input is for.
+  const [photoUploadTarget, setPhotoUploadTarget] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState(null)
+  const photoUploadInputRef = useRef()
+
+  const handlePhotoThumbClick = (vehicle) => {
+    if (vehicle.photos?.length > 0) {
+      setPhotoPreview(vehicle)
+      return
+    }
+    setPhotoUploadTarget(vehicle)
+    photoUploadInputRef.current?.click()
+  }
+
+  const handlePhotoUploadChange = async (e) => {
+    const target = photoUploadTarget
+    const files = e.target.files
+    if (!target || !files?.length) {
+      e.target.value = ''
+      return
+    }
+    const handles = await uploadImages(files)
+    e.target.value = ''
+    dispatch(
+      taxiVehicleActions.updateRequest({
+        ...target,
+        photos: [...(target.photos ?? []), ...handles],
+      }),
+    )
+    setPhotoUploadTarget(null)
   }
 
   const handleDelete = (id) => {
@@ -334,7 +382,7 @@ const Vehiculos = () => {
     ;(drivers ?? []).forEach((d) => {
       if (!d.defaultVehicle) return
       if (!map[d.defaultVehicle]) map[d.defaultVehicle] = []
-      map[d.defaultVehicle].push(d.name)
+      map[d.defaultVehicle].push(d)
     })
     return map
   }, [drivers])
@@ -342,6 +390,13 @@ const Vehiculos = () => {
 
   return (
     <>
+      <input
+        ref={photoUploadInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handlePhotoUploadChange}
+      />
       <CCard>
         <CCardHeader className="d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center gap-2">
@@ -391,7 +446,6 @@ const Vehiculos = () => {
             </div>
           ) : isMobile ? (
             <StandardCard
-              
               data={rows}
               keyExpr="id"
               emptyText="Sin vehículos registrados."
@@ -407,16 +461,49 @@ const Vehiculos = () => {
                 const ppSummary = currentMonthSummary(v.restrictions)
                 return [
                   [[v.brand, v.model, v.year].filter(Boolean).join(' · ') || false],
-                  drivers.length > 0 && drivers.map((name) => (
-                    <CBadge key={name} color="info" style={{ fontWeight: 400, marginRight: 4 }}>{name}</CBadge>
-                  )),
-                  [ppSummary !== '—' && <span style={{ color: '#e67700', fontWeight: 600 }}>📅 P&P: {ppSummary}</span>],
+                  drivers.length > 0 &&
+                    drivers.map((driver) => (
+                      <CBadge
+                        key={driver.name}
+                        color={driver.active !== false ? 'info' : 'secondary'}
+                        style={{ fontWeight: 400, marginRight: 4 }}
+                      >
+                        {driver.name}
+                        {driver.active === false ? ' (inactivo)' : ''}
+                      </CBadge>
+                    )),
+                  [
+                    ppSummary !== '—' && (
+                      <span style={{ color: '#e67700', fontWeight: 600 }}>📅 P&P: {ppSummary}</span>
+                    ),
+                  ],
                 ]
               }}
               renderActions={(v) => [
-                { label: '📅', color: 'warning', title: 'Pico y placa', onClick: () => openRestrictModal(v) },
-                { icon: cilPencil, color: 'primary', title: 'Editar', onClick: () => handleEdit(v) },
-                { icon: cilTrash, color: 'danger', title: 'Eliminar', onClick: () => handleDelete(v.id) },
+                {
+                  label: '📷',
+                  color: 'secondary',
+                  title: v.photos?.length > 0 ? 'Ver foto' : 'Agregar foto',
+                  onClick: () => handlePhotoThumbClick(v),
+                },
+                {
+                  label: '📅',
+                  color: 'warning',
+                  title: 'Pico y placa',
+                  onClick: () => openRestrictModal(v),
+                },
+                {
+                  icon: cilPencil,
+                  color: 'primary',
+                  title: 'Editar',
+                  onClick: () => handleEdit(v),
+                },
+                {
+                  icon: cilTrash,
+                  color: 'danger',
+                  title: 'Eliminar',
+                  onClick: () => handleDelete(v.id),
+                },
               ]}
             />
           ) : (
@@ -459,9 +546,21 @@ const Vehiculos = () => {
                 allowResizing={false}
                 cellRender={({ data: d }) =>
                   d.photos?.length > 0 ? (
-                    <img src={d.photos[0]} alt="" className="master-photo-thumb" />
+                    <img
+                      src={d.photos[0]}
+                      alt=""
+                      className="master-photo-thumb master-photo-thumb--addable"
+                      onClick={() => handlePhotoThumbClick(d)}
+                      title="Ver foto"
+                    />
                   ) : (
-                    <span className="master-photo-thumb master-photo-thumb--empty">–</span>
+                    <span
+                      className="master-photo-thumb master-photo-thumb--empty master-photo-thumb--addable"
+                      onClick={() => handlePhotoThumbClick(d)}
+                      title="Agregar foto"
+                    >
+                      +
+                    </span>
                   )
                 }
               />
@@ -487,22 +586,22 @@ const Vehiculos = () => {
                 dataType="number"
                 width={80}
               />
-              <Column
-                dataField="comment"
-                caption="Comentario"
-                minWidth={160}
-                hidingPriority={3}
-              />
+              <Column dataField="comment" caption="Comentario" minWidth={160} hidingPriority={3} />
               <Column
                 caption={t('taxis.vehicles.fields.drivers')}
                 allowEditing={false}
                 hidingPriority={2}
                 cellRender={({ data }) => {
-                  const names = driversByPlate(data.plate)
-                  if (names.length === 0) return <span className="text-body-tertiary">—</span>
-                  return names.map((n, i) => (
-                    <CBadge key={i} color="info" className="driver-badge">
-                      {n}
+                  const rowDrivers = driversByPlate(data.plate)
+                  if (rowDrivers.length === 0) return <span className="text-body-tertiary">—</span>
+                  return rowDrivers.map((driver) => (
+                    <CBadge
+                      key={driver.name}
+                      color={driver.active !== false ? 'info' : 'secondary'}
+                      className="driver-badge"
+                    >
+                      {driver.name}
+                      {driver.active === false ? ' (inactivo)' : ''}
                     </CBadge>
                   ))
                 }}
@@ -528,9 +627,13 @@ const Vehiculos = () => {
                       />
                     </div>
                   ) : (
-                    <DetailPanel columns={2}>
+                    <DetailPanel columns={2} className="detail-panel--flat">
                       <DetailSection title={t('taxis.drivers.fields.personalData')}>
-                        <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
+                        <DetailRow
+                          label={t('taxis.vehicles.fields.plate')}
+                          value={data.plate}
+                          mono
+                        />
                         <DetailRow
                           label={t('taxis.vehicles.fields.status')}
                           value={
@@ -548,20 +651,32 @@ const Vehiculos = () => {
                         <DetailSection title="Fotos">
                           <div className="master-photos-gallery">
                             {data.photos.map((p, i) => (
-                              <img key={i} src={p} alt={`Foto ${i + 1}`} className="master-photos-gallery__img" />
+                              <img
+                                key={i}
+                                src={p}
+                                alt={`Foto ${i + 1}`}
+                                className="master-photos-gallery__img"
+                              />
                             ))}
                           </div>
                         </DetailSection>
                       )}
                       <DetailSection title={t('taxis.vehicles.fields.drivers')}>
                         {(() => {
-                          const names = driversByPlate(data.plate)
-                          return names.length > 0 ? (
-                            names.map((name) => (
+                          const rowDrivers = driversByPlate(data.plate)
+                          return rowDrivers.length > 0 ? (
+                            rowDrivers.map((driver) => (
                               <DetailRow
-                                key={name}
+                                key={driver.name}
                                 label={t('taxis.settlements.fields.driver')}
-                                value={name}
+                                value={
+                                  <span
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                                  >
+                                    {driver.name}
+                                    <StatusBadge active={driver.active !== false} />
+                                  </span>
+                                }
                               />
                             ))
                           ) : (
@@ -632,7 +747,8 @@ const Vehiculos = () => {
               onChange={(e) => handleRestrictYearChange(Number(e.target.value) || restrictYear)}
             />
             <span className="master-restrict-year__hint">
-              Cada año guarda sus propias fechas — cambiar el decreto de un año no afecta a los demás.
+              Cada año guarda sus propias fechas — cambiar el decreto de un año no afecta a los
+              demás.
             </span>
           </div>
           <StandardGrid
@@ -649,7 +765,13 @@ const Vehiculos = () => {
             onRowUpdating={onRestrictRowUpdating}
           >
             <Paging enabled={false} />
-            <Column dataField="name" caption="Mes" width={140} allowSorting={false} allowEditing={false} />
+            <Column
+              dataField="name"
+              caption="Mes"
+              width={140}
+              allowSorting={false}
+              allowEditing={false}
+            />
             <Column
               dataField="d1"
               caption="Día 1"
@@ -674,11 +796,53 @@ const Vehiculos = () => {
           </StandardGrid>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" variant="outline" size="sm" onClick={() => setRestrictModal(null)}>
+          <CButton
+            color="secondary"
+            variant="outline"
+            size="sm"
+            onClick={() => setRestrictModal(null)}
+          >
             Cancelar
           </CButton>
-          <CButton color="primary" size="sm" disabled={restrictSaving} onClick={handleSaveRestrictions}>
+          <CButton
+            color="primary"
+            size="sm"
+            disabled={restrictSaving}
+            onClick={handleSaveRestrictions}
+          >
             {restrictSaving ? <Spinner size="sm" /> : 'Guardar'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* Photo preview modal */}
+      <CModal visible={!!photoPreview} onClose={() => setPhotoPreview(null)} size="lg">
+        <CModalHeader>
+          <CModalTitle>Fotos — {photoPreview?.plate}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <div className="master-photos-gallery">
+            {photoPreview?.photos?.map((p, i) => (
+              <img key={i} src={p} alt={`Foto ${i + 1}`} className="master-photos-gallery__img" />
+            ))}
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            color="secondary"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const vehicle = photoPreview
+              setPhotoPreview(null)
+              setPhotoUploadTarget(vehicle)
+              photoUploadInputRef.current?.click()
+            }}
+          >
+            + Agregar otra
+          </CButton>
+          <CButton color="primary" size="sm" onClick={() => setPhotoPreview(null)}>
+            Cerrar
           </CButton>
         </CModalFooter>
       </CModal>

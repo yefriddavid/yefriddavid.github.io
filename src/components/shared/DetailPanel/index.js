@@ -16,8 +16,8 @@ export const DetailSection = ({ title, children }) => (
   </div>
 )
 
-const DetailPanel = ({ children, columns = 1 }) => (
-  <div className="detail-panel">
+const DetailPanel = ({ children, columns = 1, className = '' }) => (
+  <div className={`detail-panel${className ? ` ${className}` : ''}`}>
     <div className="detail-panel__grid" style={{ '--columns': columns }}>
       {children}
     </div>

@@ -6,6 +6,12 @@
   padding: 16px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 
+  &--flat {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(var(--columns, 1), 1fr);
@@ -17,7 +23,7 @@
   display: flex;
   gap: 8px;
   padding: 5px 0;
-  border-bottom: 1px solid var(--cui-border-color, #e8e8e8);
+  border-bottom: 2px dotted var(--cui-secondary-color, #adb5bd);
 
   &__label {
     min-width: 150px;
@@ -37,6 +43,10 @@
 }
 
 .detail-section {
+  & + & {
+    margin-top: 16px;
+  }
+
   &__title {
     font-size: var(--fs-xs);
     font-weight: 700;
