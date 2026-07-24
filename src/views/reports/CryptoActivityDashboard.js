@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CFormSelect } from '@coreui/react'
+import { CFormSelect, CFormInput, CButton } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
 import AppModal from 'src/components/shared/AppModal'
@@ -23,8 +23,9 @@ const BAR_MAX_PX = 130
 const PRICE_BAR_MAX_PX = 260
 const CURRENT_YEAR = new Date().getFullYear()
 const BTC_SYMBOL = 'BTCUSDT'
-const PRICE_BUCKET_SIZE = 10000
-const PRICE_BUCKET_MAX = 120000 // buckets cover 0-120k; anything higher lands in an overflow bucket
+const DEFAULT_PRICE_RANGE_MIN = 0
+const DEFAULT_PRICE_RANGE_MAX = 120000
+const DEFAULT_PRICE_BUCKET_SIZE = 10000
 
 const monthKey = (dateStr) => (dateStr || '').slice(0, 7)
 const yearOf = (dateStr) => Number((dateStr || '').slice(0, 4)) || null
@@ -46,6 +47,22 @@ const CryptoActivityDashboard = () => {
   const [year, setYear] = useState(CURRENT_YEAR)
   const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
   const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
+  // Applied values drive priceBuckets; draft values track the inputs as the
+  // user types. They only sync on "Aplicar" so every keystroke doesn't
+  // recompute the chart.
+  const [priceRangeMin, setPriceRangeMin] = useState(DEFAULT_PRICE_RANGE_MIN)
+  const [priceRangeMax, setPriceRangeMax] = useState(DEFAULT_PRICE_RANGE_MAX)
+  const [priceRangeStep, setPriceRangeStep] = useState(DEFAULT_PRICE_BUCKET_SIZE)
+  const [priceRangeDraft, setPriceRangeDraft] = useState({
+    min: DEFAULT_PRICE_RANGE_MIN,
+    max: DEFAULT_PRICE_RANGE_MAX,
+    step: DEFAULT_PRICE_BUCKET_SIZE,
+  })
+  const applyPriceRange = () => {
+    setPriceRangeMin(priceRangeDraft.min)
+    setPriceRangeMax(priceRangeDraft.max)
+    setPriceRangeStep(priceRangeDraft.step)
+  }
   const [equilibriumAssetFilter, setEquilibriumAssetFilter] = useState(BTC_SYMBOL)
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
@@ -75,22 +92,26 @@ const CryptoActivityDashboard = () => {
   )
 
   // Buys and sells of the selected asset for the selected year, bucketed by
-  // purchase price in $10k steps (0-10k, 10k-20k, ... 110k-120k), plus a
-  // 120k+ overflow bucket. The $10k step is sized for BTC-range prices — for
-  // cheaper assets (ETH, LINK, SOL, BNB) most activity will land in the
-  // first bucket or two.
+  // purchase price in user-defined steps across the user-defined
+  // [priceRangeMin, priceRangeMax] range (defaults to 0-120k in $10k steps),
+  // plus an overflow bucket for anything at or above priceRangeMax. The
+  // defaults are sized for BTC-range prices — for cheaper assets the range
+  // and step inputs let the user narrow it down.
   const priceBuckets = useMemo(() => {
-    const bucketCount = PRICE_BUCKET_MAX / PRICE_BUCKET_SIZE
+    const bucketSize = Math.max(priceRangeStep, 1)
+    const rangeSize = Math.max(priceRangeMax - priceRangeMin, bucketSize)
+    const bucketCount = Math.max(1, Math.round(rangeSize / bucketSize))
     const buckets = Array.from({ length: bucketCount }, (_, i) => ({
-      from: i * PRICE_BUCKET_SIZE,
-      to: (i + 1) * PRICE_BUCKET_SIZE,
+      from: priceRangeMin + i * bucketSize,
+      to: priceRangeMin + (i + 1) * bucketSize,
       buyQty: 0,
       buyInvested: 0,
       sellQty: 0,
       sellProceeds: 0,
     }))
+    const overflowFrom = priceRangeMin + bucketCount * bucketSize
     const overflow = {
-      from: PRICE_BUCKET_MAX,
+      from: overflowFrom,
       to: null,
       buyQty: 0,
       buyInvested: 0,
@@ -103,8 +124,11 @@ const CryptoActivityDashboard = () => {
       .forEach((p) => {
         const price = Number(p.purchasePrice) || 0
         const qty = Number(p.quantity) || 0
+        if (price < priceRangeMin) return
         const bucket =
-          price >= PRICE_BUCKET_MAX ? overflow : buckets[Math.floor(price / PRICE_BUCKET_SIZE)]
+          price >= overflowFrom
+            ? overflow
+            : buckets[Math.floor((price - priceRangeMin) / bucketSize)]
         if (!bucket) return
         if (isSale(p)) {
           bucket.sellQty += qty
@@ -121,7 +145,7 @@ const CryptoActivityDashboard = () => {
     // tiny. Only fall back to 1 when everything is 0.
     const max = Math.max(...rows.flatMap((r) => [r.buyQty, r.sellQty])) || 1
     return { rows, max }
-  }, [activity, priceAssetFilter])
+  }, [activity, priceAssetFilter, priceRangeMin, priceRangeMax, priceRangeStep])
 
   const handleYearChange = (e) => {
     setYear(Number(e.target.value))
@@ -693,25 +717,68 @@ const CryptoActivityDashboard = () => {
       <div className="cad__panel">
         <div className="cad__panel-head">
           <div>
-            <p className="cad__panel-title">
-              Compras de {symbolLabel(priceAssetFilter)} por rango de precio
-            </p>
+            <p className="cad__panel-title">Compras por rango de precio</p>
             <p className="cad__panel-hint">
               {symbolLabel(priceAssetFilter)} comprado y vendido por rango de USD, {year}
             </p>
           </div>
-          <CFormSelect
-            size="sm"
-            className="cad__panel-select"
-            value={priceAssetFilter}
-            onChange={(e) => setPriceAssetFilter(e.target.value)}
-          >
-            {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </CFormSelect>
+          <div className="cad__panel-controls">
+            <div className="cad__price-range">
+              <CFormInput
+                type="number"
+                size="sm"
+                className="cad__price-range-input"
+                value={priceRangeDraft.min}
+                step={priceRangeDraft.step}
+                onChange={(e) =>
+                  setPriceRangeDraft((d) => ({ ...d, min: Number(e.target.value) || 0 }))
+                }
+              />
+              <span className="cad__price-range-sep">–</span>
+              <CFormInput
+                type="number"
+                size="sm"
+                className="cad__price-range-input"
+                value={priceRangeDraft.max}
+                step={priceRangeDraft.step}
+                onChange={(e) =>
+                  setPriceRangeDraft((d) => ({
+                    ...d,
+                    max: Number(e.target.value) || DEFAULT_PRICE_BUCKET_SIZE,
+                  }))
+                }
+              />
+              <span className="cad__price-range-sep">/</span>
+              <CFormInput
+                type="number"
+                size="sm"
+                className="cad__price-range-input cad__price-range-input--step"
+                value={priceRangeDraft.step}
+                min={1}
+                onChange={(e) =>
+                  setPriceRangeDraft((d) => ({
+                    ...d,
+                    step: Number(e.target.value) || DEFAULT_PRICE_BUCKET_SIZE,
+                  }))
+                }
+              />
+              <CButton size="sm" color="primary" variant="outline" onClick={applyPriceRange}>
+                Aplicar
+              </CButton>
+            </div>
+            <CFormSelect
+              size="sm"
+              className="cad__panel-select"
+              value={priceAssetFilter}
+              onChange={(e) => setPriceAssetFilter(e.target.value)}
+            >
+              {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </CFormSelect>
+          </div>
         </div>
         <div className="cad__scroll">
           <div className="cad__price-chart">
