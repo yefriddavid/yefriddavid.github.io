@@ -34,6 +34,7 @@ import {
   cilSwapVertical,
   cilExitToApp,
   cilBank,
+  cilSpreadsheet,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -244,6 +245,12 @@ const getNav = (t, role) => {
               name: 'Calc Percentage',
               to: '/finance/tools/calc-percentage',
               icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Calc Sheet',
+              to: '/finance/tools/calc-sheet',
+              icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
             },
           ],
         },
