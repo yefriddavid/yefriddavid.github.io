@@ -8,6 +8,7 @@ import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
+import * as withdrawalActions from 'src/actions/finance/cryptoWithdrawalActions'
 import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_SYMBOL_COLORS } from 'src/constants/finance'
 import {
   isSale,
@@ -39,6 +40,7 @@ const CryptoActivityDashboard = () => {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
+  const { withdrawals } = useSelector((s) => s.cryptoWithdrawal)
   const { monthLabels } = useLocaleData()
   const { prices } = useCryptoPrices()
   const [year, setYear] = useState(CURRENT_YEAR)
@@ -51,6 +53,7 @@ const CryptoActivityDashboard = () => {
 
   useEffect(() => {
     dispatch(actions.loadRequest())
+    dispatch(withdrawalActions.loadRequest())
   }, [dispatch, activeTenantId])
 
   // Balance adjustments aren't real trading activity — they'd distort counts
@@ -221,14 +224,22 @@ const CryptoActivityDashboard = () => {
 
   const byCoin = useMemo(() => {
     const rows = CRYPTO_PURCHASE_SYMBOLS.map((s) => {
-      const invested = buys
-        .filter((p) => p.symbol === s.value)
-        .reduce((sum, p) => sum + (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0), 0)
-      return { symbol: s.value, label: s.label, invested }
+      const coinBuys = buys.filter((p) => p.symbol === s.value)
+      const coinSells = sells.filter((p) => p.symbol === s.value)
+      const invested = coinBuys.reduce(
+        (sum, p) => sum + (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0),
+        0,
+      )
+      const buysQty = coinBuys.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
+      const sellsQty = coinSells.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
+      // Volume invested stays gross (what you put in), but the quantity shown
+      // is the net position still held — buys minus sells.
+      const qty = buysQty - sellsQty
+      return { symbol: s.value, label: s.label, invested, qty }
     }).filter((r) => r.invested > 0)
     const max = Math.max(1, ...rows.map((r) => r.invested))
     return { rows: rows.sort((a, b) => b.invested - a.invested), max }
-  }, [buys])
+  }, [buys, sells])
 
   // Total gain/loss per coin for the selected year: net cash flow (buys cost
   // minus sell proceeds) compared against the current value of whatever
@@ -260,6 +271,32 @@ const CryptoActivityDashboard = () => {
       max,
     }
   }, [activity, prices])
+
+  // Withdrawals for the selected year, grouped by coin. Withdrawals have no
+  // recorded cost basis (only the amount that left the exchange), so the bar
+  // is sized by an approximate current value (qty × live price) — the only
+  // way to compare different coins on the same scale — with the actual
+  // withdrawn quantity shown as the muted line underneath.
+  const withdrawalsByCoin = useMemo(() => {
+    const yearWithdrawals = withdrawals.filter(
+      (w) => (w.applyTime || '').slice(0, 4) === String(year),
+    )
+    const qtyByCoin = {}
+    yearWithdrawals.forEach((w) => {
+      qtyByCoin[w.coin] = (qtyByCoin[w.coin] ?? 0) + (Number(w.amount) || 0)
+    })
+    const rows = Object.entries(qtyByCoin).map(([coin, qty]) => {
+      const symbol = `${coin}USDT`
+      const livePrice = prices[symbol]?.price ?? null
+      const usdValue = livePrice != null ? qty * livePrice : null
+      return { coin, symbol, qty, usdValue }
+    })
+    const max = Math.max(1, ...rows.map((r) => r.usdValue ?? 0))
+    return {
+      rows: rows.sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0)),
+      max,
+    }
+  }, [withdrawals, year, prices])
 
   // Total compras/ventas por mes y por moneda — independiente de los filtros
   // del ledger (barra/chip), siempre sobre el año seleccionado.
@@ -568,7 +605,10 @@ const CryptoActivityDashboard = () => {
                   }}
                 />
               </div>
-              <div className="cad__coin-value">{fmtUSD(r.invested)}</div>
+              <div className="cad__coin-value">
+                <span className="cad__coin-value-usd">{fmtUSD(r.invested)}</span>
+                <span className="cad__coin-value-qty">{qtyLabel(r.qty, r.symbol)}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -608,6 +648,37 @@ const CryptoActivityDashboard = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="cad__panel">
+        <p className="cad__panel-title">Retiros por moneda</p>
+        <p className="cad__panel-hint">Retirado en {year} — valor aproximado al precio actual</p>
+        {withdrawalsByCoin.rows.length === 0 ? (
+          <p className="cad__panel-hint">Sin retiros registrados para {year}.</p>
+        ) : (
+          withdrawalsByCoin.rows.map((r) => (
+            <div className="cad__coin-row" key={r.coin}>
+              <div className="cad__coin-name">{r.coin}</div>
+              <div className="cad__coin-track">
+                {r.usdValue != null && (
+                  <div
+                    className="cad__coin-fill"
+                    style={{
+                      width: `${(r.usdValue / withdrawalsByCoin.max) * 100}%`,
+                      background: CRYPTO_PURCHASE_SYMBOL_COLORS[r.symbol] ?? '#8a8f98',
+                    }}
+                  />
+                )}
+              </div>
+              <div className="cad__coin-value">
+                <span className="cad__coin-value-usd">
+                  {r.usdValue != null ? fmtUSD(r.usdValue) : '—'}
+                </span>
+                <span className="cad__coin-value-qty">{qtyLabel(r.qty, r.symbol)}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <div className="cad__panel">

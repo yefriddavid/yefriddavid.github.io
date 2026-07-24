@@ -263,7 +263,7 @@
 
   &__coin-row {
     display: grid;
-    grid-template-columns: 52px 1fr 84px;
+    grid-template-columns: 52px 1fr 110px;
     align-items: center;
     gap: 10px;
     padding: 8px 0;
@@ -301,9 +301,22 @@
   }
 
   &__coin-value {
-    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
     font-size: var(--fs-xs);
     font-variant-numeric: tabular-nums;
+    color: var(--cui-secondary-color);
+  }
+
+  &__coin-value-usd {
+    font-weight: 700;
+    color: var(--cui-body-color);
+  }
+
+  &__coin-value-qty {
+    font-size: var(--fs-2xs);
     color: var(--cui-secondary-color);
   }
 
