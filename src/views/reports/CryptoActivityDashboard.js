@@ -33,7 +33,7 @@ const bucketFullLabel = (r) =>
   r.to != null
     ? `$${r.from.toLocaleString()}–$${r.to.toLocaleString()}`
     : `$${r.from.toLocaleString()}+`
-const btcQtyLabel = (qty) => `${qty.toFixed(4)} BTC`
+const qtyLabel = (qty, symbol) => `${qty.toFixed(4)} ${symbolLabel(symbol)}`
 
 const CryptoActivityDashboard = () => {
   const dispatch = useDispatch()
@@ -42,6 +42,8 @@ const CryptoActivityDashboard = () => {
   const { monthLabels } = useLocaleData()
   const { prices } = useCryptoPrices()
   const [year, setYear] = useState(CURRENT_YEAR)
+  const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
+  const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
   const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
@@ -68,9 +70,12 @@ const CryptoActivityDashboard = () => {
     [allActivity, year],
   )
 
-  // BTC buys and sells for the selected year, bucketed by purchase price in
-  // $10k steps (0-10k, 10k-20k, ... 110k-120k), plus a 120k+ overflow bucket.
-  const btcPriceBuckets = useMemo(() => {
+  // Buys and sells of the selected asset for the selected year, bucketed by
+  // purchase price in $10k steps (0-10k, 10k-20k, ... 110k-120k), plus a
+  // 120k+ overflow bucket. The $10k step is sized for BTC-range prices — for
+  // cheaper assets (ETH, LINK, SOL, BNB) most activity will land in the
+  // first bucket or two.
+  const priceBuckets = useMemo(() => {
     const bucketCount = PRICE_BUCKET_MAX / PRICE_BUCKET_SIZE
     const buckets = Array.from({ length: bucketCount }, (_, i) => ({
       from: i * PRICE_BUCKET_SIZE,
@@ -90,7 +95,7 @@ const CryptoActivityDashboard = () => {
     }
 
     activity
-      .filter((p) => p.symbol === BTC_SYMBOL)
+      .filter((p) => p.symbol === priceAssetFilter)
       .forEach((p) => {
         const price = Number(p.purchasePrice) || 0
         const qty = Number(p.quantity) || 0
@@ -107,12 +112,12 @@ const CryptoActivityDashboard = () => {
       })
 
     const rows = [...buckets, overflow]
-    // Unlike the monthly counts chart, BTC quantities are fractional (often
-    // well under 1) — clamping the floor to 1 like that chart does would
-    // make every bar's ratio tiny. Only fall back to 1 when everything is 0.
+    // Quantities are fractional (often well under 1) — clamping the floor to
+    // 1 like the monthly counts chart does would make every bar's ratio
+    // tiny. Only fall back to 1 when everything is 0.
     const max = Math.max(...rows.flatMap((r) => [r.buyQty, r.sellQty])) || 1
     return { rows, max }
-  }, [activity])
+  }, [activity, priceAssetFilter])
 
   const handleYearChange = (e) => {
     setYear(Number(e.target.value))
@@ -164,15 +169,33 @@ const CryptoActivityDashboard = () => {
 
   const monthly = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
-    const rows = months.map((m) => ({
-      month: m,
-      label: monthLabels[Number(m.slice(5, 7)) - 1]?.slice(0, 3) ?? m,
-      buys: buys.filter((p) => monthKey(p.purchaseDate) === m).length,
-      sells: sells.filter((p) => monthKey(p.purchaseDate) === m).length,
-    }))
+    const investedOf = (list) =>
+      list.reduce((s, p) => s + (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0), 0)
+    const qtyOf = (list) => list.reduce((s, p) => s + (Number(p.quantity) || 0), 0)
+    // Counts (bar height) stay across all coins, but the USD/quantity labels
+    // only make sense for one asset at a time — mixing BTC + ETH + LINK
+    // quantities into a single number would be meaningless.
+    const assetBuys = buys.filter((p) => p.symbol === monthlyAssetFilter)
+    const assetSells = sells.filter((p) => p.symbol === monthlyAssetFilter)
+    const rows = months.map((m) => {
+      const monthBuys = buys.filter((p) => monthKey(p.purchaseDate) === m)
+      const monthSells = sells.filter((p) => monthKey(p.purchaseDate) === m)
+      const monthAssetBuys = assetBuys.filter((p) => monthKey(p.purchaseDate) === m)
+      const monthAssetSells = assetSells.filter((p) => monthKey(p.purchaseDate) === m)
+      return {
+        month: m,
+        label: monthLabels[Number(m.slice(5, 7)) - 1]?.slice(0, 3) ?? m,
+        buys: monthBuys.length,
+        sells: monthSells.length,
+        buysQty: qtyOf(monthAssetBuys),
+        sellsQty: qtyOf(monthAssetSells),
+        buysInvested: investedOf(monthAssetBuys),
+        sellsProceeds: investedOf(monthAssetSells),
+      }
+    })
     const max = Math.max(1, ...rows.flatMap((r) => [r.buys, r.sells]))
     return { rows, max }
-  }, [buys, sells, monthLabels, year])
+  }, [buys, sells, monthLabels, year, monthlyAssetFilter])
 
   const byCoin = useMemo(() => {
     const rows = CRYPTO_PURCHASE_SYMBOLS.map((s) => {
@@ -184,6 +207,37 @@ const CryptoActivityDashboard = () => {
     const max = Math.max(1, ...rows.map((r) => r.invested))
     return { rows: rows.sort((a, b) => b.invested - a.invested), max }
   }, [buys])
+
+  // Total gain/loss per coin for the selected year: net cash flow (buys cost
+  // minus sell proceeds) compared against the current value of whatever
+  // quantity is still held, valued at the live price. Sales reduce net
+  // invested and net quantity, so a coin that was fully sold off nets out to
+  // its realized result instead of showing a phantom unrealized position.
+  const gainLossByCoin = useMemo(() => {
+    const rows = CRYPTO_PURCHASE_SYMBOLS.map((s) => {
+      let netInvested = 0
+      let netQty = 0
+      let hasActivity = false
+      activity
+        .filter((p) => p.symbol === s.value)
+        .forEach((p) => {
+          hasActivity = true
+          const qty = Number(p.quantity) || 0
+          const price = Number(p.purchasePrice) || 0
+          const sign = isSale(p) ? -1 : 1
+          netInvested += sign * qty * price
+          netQty += sign * qty
+        })
+      const livePrice = prices[s.value]?.price ?? null
+      const gainLoss = livePrice != null ? netQty * livePrice - netInvested : null
+      return { symbol: s.value, label: s.label, gainLoss, hasActivity }
+    }).filter((r) => r.hasActivity)
+    const max = Math.max(1, ...rows.map((r) => Math.abs(r.gainLoss ?? 0)))
+    return {
+      rows: rows.sort((a, b) => Math.abs(b.gainLoss ?? 0) - Math.abs(a.gainLoss ?? 0)),
+      max,
+    }
+  }, [activity, prices])
 
   // Total compras/ventas por mes y por moneda — independiente de los filtros
   // del ledger (barra/chip), siempre sobre el año seleccionado.
@@ -353,29 +407,82 @@ const CryptoActivityDashboard = () => {
 
       <div className="cad__grid">
         <div className="cad__panel">
-          <p className="cad__panel-title">Actividad mensual</p>
-          <p className="cad__panel-hint">Número de operaciones por mes, {year}</p>
+          <div className="cad__panel-head">
+            <div>
+              <p className="cad__panel-title">Actividad mensual</p>
+              <p className="cad__panel-hint">Número de operaciones por mes, {year}</p>
+            </div>
+            <CFormSelect
+              size="sm"
+              className="cad__panel-select"
+              value={monthlyAssetFilter}
+              onChange={(e) => setMonthlyAssetFilter(e.target.value)}
+            >
+              {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </CFormSelect>
+          </div>
           <div className="cad__scroll">
             <div className="cad__months">
-              {monthly.rows.map((r) => (
-                <div className="cad__month" key={r.month}>
-                  <div className="cad__month-bars">
-                    <div
-                      className={`cad__bar cad__bar--buy${barFilter?.month === r.month && barFilter?.type === 'buy' ? ' cad__bar--active' : ''}`}
-                      style={{ height: `${(r.buys / monthly.max) * BAR_MAX_PX}px` }}
-                      title={`Compras ${r.month}: ${r.buys}`}
-                      onClick={() => r.buys > 0 && setBarFilter({ month: r.month, type: 'buy' })}
-                    />
-                    <div
-                      className={`cad__bar cad__bar--sell${barFilter?.month === r.month && barFilter?.type === 'sell' ? ' cad__bar--active' : ''}`}
-                      style={{ height: `${(r.sells / monthly.max) * BAR_MAX_PX}px` }}
-                      title={`Ventas ${r.month}: ${r.sells}`}
-                      onClick={() => r.sells > 0 && setBarFilter({ month: r.month, type: 'sell' })}
-                    />
+              {monthly.rows.map((r) => {
+                const livePrice = prices[monthlyAssetFilter]?.price ?? null
+                const buyGainLoss =
+                  r.buysQty > 0 && livePrice != null ? livePrice * r.buysQty - r.buysInvested : null
+                return (
+                  <div className="cad__month" key={r.month}>
+                    <div className="cad__month-bars">
+                      <div className="cad__price-bar-group">
+                        {r.buys > 0 && (
+                          <div className="cad__price-values">
+                            <span className="cad__price-value-usd">{fmtUSD(r.buysInvested)}</span>
+                            <span className="cad__price-value-qty">
+                              {qtyLabel(r.buysQty, monthlyAssetFilter)}
+                            </span>
+                            {buyGainLoss != null && (
+                              <span
+                                className={`cad__price-value-gl${buyGainLoss >= 0 ? ' cad__price-value-gl--gain' : ' cad__price-value-gl--loss'}`}
+                              >
+                                {buyGainLoss >= 0 ? '+' : ''}
+                                {fmtUSD(buyGainLoss)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <div
+                          className={`cad__bar cad__bar--buy${barFilter?.month === r.month && barFilter?.type === 'buy' ? ' cad__bar--active' : ''}`}
+                          style={{ height: `${(r.buys / monthly.max) * BAR_MAX_PX}px` }}
+                          title={`Compras ${r.month}: ${r.buys}`}
+                          onClick={() =>
+                            r.buys > 0 && setBarFilter({ month: r.month, type: 'buy' })
+                          }
+                        />
+                      </div>
+                      <div className="cad__price-bar-group">
+                        {r.sells > 0 && (
+                          <div className="cad__price-values">
+                            <span className="cad__price-value-usd">{fmtUSD(r.sellsProceeds)}</span>
+                            <span className="cad__price-value-qty">
+                              {qtyLabel(r.sellsQty, monthlyAssetFilter)}
+                            </span>
+                          </div>
+                        )}
+                        <div
+                          className={`cad__bar cad__bar--sell${barFilter?.month === r.month && barFilter?.type === 'sell' ? ' cad__bar--active' : ''}`}
+                          style={{ height: `${(r.sells / monthly.max) * BAR_MAX_PX}px` }}
+                          title={`Ventas ${r.month}: ${r.sells}`}
+                          onClick={() =>
+                            r.sells > 0 && setBarFilter({ month: r.month, type: 'sell' })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="cad__month-label">{r.label}</div>
                   </div>
-                  <div className="cad__month-label">{r.label}</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
           <div className="cad__legend">
@@ -412,12 +519,68 @@ const CryptoActivityDashboard = () => {
       </div>
 
       <div className="cad__panel">
-        <p className="cad__panel-title">Compras de BTC por rango de precio</p>
-        <p className="cad__panel-hint">BTC comprado y vendido por rango de USD, {year}</p>
+        <p className="cad__panel-title">Ganancias y pérdidas por moneda</p>
+        <p className="cad__panel-hint">
+          Ganancia/pérdida total (compras y ventas) vs. precio en vivo, {year}
+        </p>
+        {gainLossByCoin.rows.map((r) => (
+          <div className="cad__coin-row" key={r.symbol}>
+            <div className="cad__coin-name">{r.label}</div>
+            <div className="cad__coin-track">
+              {r.gainLoss != null && (
+                <div
+                  className="cad__coin-fill"
+                  style={{
+                    width: `${(Math.abs(r.gainLoss) / gainLossByCoin.max) * 100}%`,
+                    background: r.gainLoss >= 0 ? 'var(--cad-gain)' : 'var(--cad-loss)',
+                  }}
+                />
+              )}
+            </div>
+            <div
+              className="cad__coin-value"
+              style={{
+                color:
+                  r.gainLoss == null
+                    ? undefined
+                    : r.gainLoss >= 0
+                      ? 'var(--cad-gain)'
+                      : 'var(--cad-loss)',
+              }}
+            >
+              {r.gainLoss == null ? '—' : `${r.gainLoss >= 0 ? '+' : ''}${fmtUSD(r.gainLoss)}`}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="cad__panel">
+        <div className="cad__panel-head">
+          <div>
+            <p className="cad__panel-title">
+              Compras de {symbolLabel(priceAssetFilter)} por rango de precio
+            </p>
+            <p className="cad__panel-hint">
+              {symbolLabel(priceAssetFilter)} comprado y vendido por rango de USD, {year}
+            </p>
+          </div>
+          <CFormSelect
+            size="sm"
+            className="cad__panel-select"
+            value={priceAssetFilter}
+            onChange={(e) => setPriceAssetFilter(e.target.value)}
+          >
+            {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </CFormSelect>
+        </div>
         <div className="cad__scroll">
           <div className="cad__price-chart">
-            {btcPriceBuckets.rows.map((r, i) => {
-              const livePrice = prices[BTC_SYMBOL]?.price ?? null
+            {priceBuckets.rows.map((r, i) => {
+              const livePrice = prices[priceAssetFilter]?.price ?? null
               const buyGainLoss =
                 r.buyQty > 0 && livePrice != null ? livePrice * r.buyQty - r.buyInvested : null
               return (
@@ -427,7 +590,9 @@ const CryptoActivityDashboard = () => {
                       {r.buyQty > 0 && (
                         <div className="cad__price-values">
                           <span className="cad__price-value-usd">{fmtUSD(r.buyInvested)}</span>
-                          <span className="cad__price-value-qty">{btcQtyLabel(r.buyQty)}</span>
+                          <span className="cad__price-value-qty">
+                            {qtyLabel(r.buyQty, priceAssetFilter)}
+                          </span>
                           {buyGainLoss != null && (
                             <span
                               className={`cad__price-value-gl${buyGainLoss >= 0 ? ' cad__price-value-gl--gain' : ' cad__price-value-gl--loss'}`}
@@ -441,24 +606,26 @@ const CryptoActivityDashboard = () => {
                       <div
                         className="cad__price-bar cad__price-bar--buy"
                         style={{
-                          height: `${(r.buyQty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px`,
+                          height: `${(r.buyQty / priceBuckets.max) * PRICE_BAR_MAX_PX}px`,
                         }}
-                        title={`Compras ${bucketFullLabel(r)}: ${fmtQty(r.buyQty, BTC_SYMBOL)}`}
+                        title={`Compras ${bucketFullLabel(r)}: ${fmtQty(r.buyQty, priceAssetFilter)}`}
                       />
                     </div>
                     <div className="cad__price-bar-group">
                       {r.sellQty > 0 && (
                         <div className="cad__price-values">
                           <span className="cad__price-value-usd">{fmtUSD(r.sellProceeds)}</span>
-                          <span className="cad__price-value-qty">{btcQtyLabel(r.sellQty)}</span>
+                          <span className="cad__price-value-qty">
+                            {qtyLabel(r.sellQty, priceAssetFilter)}
+                          </span>
                         </div>
                       )}
                       <div
                         className="cad__price-bar cad__price-bar--sell"
                         style={{
-                          height: `${(r.sellQty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px`,
+                          height: `${(r.sellQty / priceBuckets.max) * PRICE_BAR_MAX_PX}px`,
                         }}
-                        title={`Ventas ${bucketFullLabel(r)}: ${fmtQty(r.sellQty, BTC_SYMBOL)}`}
+                        title={`Ventas ${bucketFullLabel(r)}: ${fmtQty(r.sellQty, priceAssetFilter)}`}
                       />
                     </div>
                   </div>

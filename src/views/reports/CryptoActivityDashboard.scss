@@ -141,11 +141,26 @@
     margin: 0 0 16px;
   }
 
+  &__panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__panel-select {
+    width: auto;
+    min-width: 110px;
+  }
+
   &__months {
     display: flex;
     align-items: flex-end;
     gap: 10px;
-    height: 168px;
+    // Taller than a bare counts chart — leaves room for the invested/quantity
+    // (and, for buys, gain/loss) labels stacked above each bar.
+    height: 220px;
     padding-top: 4px;
     // Keeps its natural width so it scrolls inside .cad__scroll on narrow
     // screens instead of squeezing the bars down to nothing.
@@ -154,8 +169,8 @@
   }
 
   &__month {
-    flex: 1;
-    min-width: 26px;
+    flex: 0 0 auto;
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -167,8 +182,8 @@
   &__month-bars {
     display: flex;
     align-items: flex-end;
-    gap: 3px;
-    height: 130px;
+    gap: 16px;
+    height: calc(100% - 18px);
     width: 100%;
     justify-content: center;
   }
