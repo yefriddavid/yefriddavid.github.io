@@ -289,14 +289,20 @@ const CryptoActivityDashboard = () => {
       const symbol = `${coin}USDT`
       const livePrice = prices[symbol]?.price ?? null
       const usdValue = livePrice != null ? qty * livePrice : null
-      return { coin, symbol, qty, usdValue }
+      // Net buys minus sells of this coin within the selected year (same
+      // scope as the withdrawals above), minus what was withdrawn that year.
+      const netBuySellQty = activity
+        .filter((p) => p.symbol === symbol)
+        .reduce((sum, p) => sum + (isSale(p) ? -1 : 1) * (Number(p.quantity) || 0), 0)
+      const remainingQty = netBuySellQty - qty
+      return { coin, symbol, qty, usdValue, remainingQty }
     })
     const max = Math.max(1, ...rows.map((r) => r.usdValue ?? 0))
     return {
       rows: rows.sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0)),
       max,
     }
-  }, [withdrawals, year, prices])
+  }, [withdrawals, year, prices, activity])
 
   // Total compras/ventas por mes y por moneda — independiente de los filtros
   // del ledger (barra/chip), siempre sobre el año seleccionado.
@@ -674,7 +680,10 @@ const CryptoActivityDashboard = () => {
                 <span className="cad__coin-value-usd">
                   {r.usdValue != null ? fmtUSD(r.usdValue) : '—'}
                 </span>
-                <span className="cad__coin-value-qty">{qtyLabel(r.qty, r.symbol)}</span>
+                <span className="cad__coin-value-qty">{qtyLabel(r.qty, r.symbol)} retirado</span>
+                <span className="cad__coin-value-qty">
+                  {qtyLabel(r.remainingQty, r.symbol)} restante
+                </span>
               </div>
             </div>
           ))
