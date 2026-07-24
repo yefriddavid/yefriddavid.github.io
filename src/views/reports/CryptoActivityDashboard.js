@@ -68,35 +68,49 @@ const CryptoActivityDashboard = () => {
     [allActivity, year],
   )
 
-  // BTC purchases for the selected year, bucketed by purchase price in $10k
-  // steps (0-10k, 10k-20k, ... 110k-120k), plus a 120k+ overflow bucket.
+  // BTC buys and sells for the selected year, bucketed by purchase price in
+  // $10k steps (0-10k, 10k-20k, ... 110k-120k), plus a 120k+ overflow bucket.
   const btcPriceBuckets = useMemo(() => {
     const bucketCount = PRICE_BUCKET_MAX / PRICE_BUCKET_SIZE
     const buckets = Array.from({ length: bucketCount }, (_, i) => ({
       from: i * PRICE_BUCKET_SIZE,
       to: (i + 1) * PRICE_BUCKET_SIZE,
-      qty: 0,
-      invested: 0,
+      buyQty: 0,
+      buyInvested: 0,
+      sellQty: 0,
+      sellProceeds: 0,
     }))
-    const overflow = { from: PRICE_BUCKET_MAX, to: null, qty: 0, invested: 0 }
+    const overflow = {
+      from: PRICE_BUCKET_MAX,
+      to: null,
+      buyQty: 0,
+      buyInvested: 0,
+      sellQty: 0,
+      sellProceeds: 0,
+    }
 
     activity
-      .filter((p) => p.symbol === BTC_SYMBOL && !isSale(p))
+      .filter((p) => p.symbol === BTC_SYMBOL)
       .forEach((p) => {
         const price = Number(p.purchasePrice) || 0
         const qty = Number(p.quantity) || 0
         const bucket =
           price >= PRICE_BUCKET_MAX ? overflow : buckets[Math.floor(price / PRICE_BUCKET_SIZE)]
         if (!bucket) return
-        bucket.qty += qty
-        bucket.invested += qty * price
+        if (isSale(p)) {
+          bucket.sellQty += qty
+          bucket.sellProceeds += qty * price
+        } else {
+          bucket.buyQty += qty
+          bucket.buyInvested += qty * price
+        }
       })
 
     const rows = [...buckets, overflow]
     // Unlike the monthly counts chart, BTC quantities are fractional (often
     // well under 1) — clamping the floor to 1 like that chart does would
     // make every bar's ratio tiny. Only fall back to 1 when everything is 0.
-    const max = Math.max(...rows.map((r) => r.qty)) || 1
+    const max = Math.max(...rows.flatMap((r) => [r.buyQty, r.sellQty])) || 1
     return { rows, max }
   }, [activity])
 
@@ -399,26 +413,70 @@ const CryptoActivityDashboard = () => {
 
       <div className="cad__panel">
         <p className="cad__panel-title">Compras de BTC por rango de precio</p>
-        <p className="cad__panel-hint">BTC comprado por rango de USD, {year}</p>
+        <p className="cad__panel-hint">BTC comprado y vendido por rango de USD, {year}</p>
         <div className="cad__scroll">
           <div className="cad__price-chart">
-            {btcPriceBuckets.rows.map((r, i) => (
-              <div className="cad__price-col" key={i}>
-                {r.qty > 0 && (
-                  <div className="cad__price-values">
-                    <span className="cad__price-value-usd">{fmtUSD(r.invested)}</span>
-                    <span className="cad__price-value-qty">{btcQtyLabel(r.qty)}</span>
+            {btcPriceBuckets.rows.map((r, i) => {
+              const livePrice = prices[BTC_SYMBOL]?.price ?? null
+              const buyGainLoss =
+                r.buyQty > 0 && livePrice != null ? livePrice * r.buyQty - r.buyInvested : null
+              return (
+                <div className="cad__price-col" key={i}>
+                  <div className="cad__price-bars">
+                    <div className="cad__price-bar-group">
+                      {r.buyQty > 0 && (
+                        <div className="cad__price-values">
+                          <span className="cad__price-value-usd">{fmtUSD(r.buyInvested)}</span>
+                          <span className="cad__price-value-qty">{btcQtyLabel(r.buyQty)}</span>
+                          {buyGainLoss != null && (
+                            <span
+                              className={`cad__price-value-gl${buyGainLoss >= 0 ? ' cad__price-value-gl--gain' : ' cad__price-value-gl--loss'}`}
+                            >
+                              {buyGainLoss >= 0 ? '+' : ''}
+                              {fmtUSD(buyGainLoss)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div
+                        className="cad__price-bar cad__price-bar--buy"
+                        style={{
+                          height: `${(r.buyQty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px`,
+                        }}
+                        title={`Compras ${bucketFullLabel(r)}: ${fmtQty(r.buyQty, BTC_SYMBOL)}`}
+                      />
+                    </div>
+                    <div className="cad__price-bar-group">
+                      {r.sellQty > 0 && (
+                        <div className="cad__price-values">
+                          <span className="cad__price-value-usd">{fmtUSD(r.sellProceeds)}</span>
+                          <span className="cad__price-value-qty">{btcQtyLabel(r.sellQty)}</span>
+                        </div>
+                      )}
+                      <div
+                        className="cad__price-bar cad__price-bar--sell"
+                        style={{
+                          height: `${(r.sellQty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px`,
+                        }}
+                        title={`Ventas ${bucketFullLabel(r)}: ${fmtQty(r.sellQty, BTC_SYMBOL)}`}
+                      />
+                    </div>
                   </div>
-                )}
-                <div
-                  className="cad__price-bar"
-                  style={{ height: `${(r.qty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px` }}
-                  title={`${bucketFullLabel(r)}: ${fmtQty(r.qty, BTC_SYMBOL)}`}
-                />
-                <div className="cad__price-label">{bucketShortLabel(r)}</div>
-              </div>
-            ))}
+                  <div className="cad__price-label">{bucketShortLabel(r)}</div>
+                </div>
+              )
+            })}
           </div>
+        </div>
+        <div className="cad__legend">
+          <span>
+            <i style={{ background: 'var(--cad-buy)' }} />
+            Compras
+          </span>
+          <span>
+            <i style={{ background: 'var(--cad-sell)' }} />
+            Ventas
+          </span>
         </div>
       </div>
 

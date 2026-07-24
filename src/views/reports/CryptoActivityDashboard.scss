@@ -3,6 +3,11 @@
   --cad-sell: #e55353;
   --cad-buy-soft: rgba(46, 184, 92, 0.12);
   --cad-sell-soft: rgba(229, 83, 83, 0.12);
+  // Unrealized gain/loss vs the live price uses its own blue/orange pair —
+  // deliberately distinct from the buy/sell green/red so the two concepts
+  // (transaction type vs. performance) don't get visually conflated.
+  --cad-gain: #2a78d6;
+  --cad-loss: #e8730c;
 
   padding: 8px 4px 32px;
 
@@ -282,8 +287,8 @@
   }
 
   &__price-col {
-    flex: 1;
-    min-width: 56px;
+    flex: 0 0 auto;
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -292,16 +297,43 @@
     gap: 6px;
   }
 
+  &__price-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    height: calc(100% - 18px);
+  }
+
+  &__price-bar-group {
+    flex: 0 0 64px;
+    width: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 6px;
+  }
+
   &__price-bar {
     width: 16px;
     min-height: 2px;
     border-radius: 3px 3px 1px 1px;
-    background: var(--cad-buy);
     cursor: default;
     transition: opacity 0.12s;
 
     &:hover {
       opacity: 0.8;
+    }
+
+    &--buy {
+      background: var(--cad-buy);
+    }
+
+    &--sell {
+      background: var(--cad-sell);
     }
   }
 
@@ -328,6 +360,19 @@
   &__price-value-qty {
     font-size: var(--fs-2xs);
     color: var(--cui-secondary-color);
+  }
+
+  &__price-value-gl {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+
+    &--gain {
+      color: var(--cad-gain);
+    }
+
+    &--loss {
+      color: var(--cad-loss);
+    }
   }
 
   &__ledger {
