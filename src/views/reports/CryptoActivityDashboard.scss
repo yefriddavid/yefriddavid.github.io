@@ -39,7 +39,10 @@
 
   &__kpis {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    // auto-fit instead of a fixed column count so an extra card (e.g. the
+    // equilibrium price KPI) reflows naturally instead of leaving a
+    // half-empty row.
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
   }
@@ -66,6 +69,23 @@
     text-transform: uppercase;
     color: var(--cui-secondary-color);
     margin-bottom: 6px;
+  }
+
+  &__kpi-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+
+    // The row's own height already grows to include &__kpi-label's
+    // margin-bottom (tallest flex item's margin box), so no extra spacing
+    // rule is needed here to separate it from &__kpi-value below.
+  }
+
+  &__kpi-select {
+    width: auto;
+    min-width: 68px;
+    font-size: var(--fs-2xs);
   }
 
   &__kpi-value {

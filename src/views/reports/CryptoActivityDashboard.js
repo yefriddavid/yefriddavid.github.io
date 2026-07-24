@@ -44,6 +44,7 @@ const CryptoActivityDashboard = () => {
   const [year, setYear] = useState(CURRENT_YEAR)
   const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
   const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
+  const [equilibriumAssetFilter, setEquilibriumAssetFilter] = useState(BTC_SYMBOL)
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
   const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
@@ -166,6 +167,27 @@ const CryptoActivityDashboard = () => {
         dates.length > 0 ? `${dates[0].slice(0, 7)} → ${dates[dates.length - 1].slice(0, 7)}` : '',
     }
   }, [activity, buys, sells])
+
+  // Break-even price for the selected asset, scoped to the selected year:
+  // the price at which the net quantity still held (buys minus sells) would
+  // be worth exactly the net cash put in (buys cost minus sell proceeds) —
+  // i.e. gain/loss == 0. Only meaningful when there's a net position left.
+  const equilibrium = useMemo(() => {
+    let netInvested = 0
+    let netQty = 0
+    activity
+      .filter((p) => p.symbol === equilibriumAssetFilter)
+      .forEach((p) => {
+        const qty = Number(p.quantity) || 0
+        const price = Number(p.purchasePrice) || 0
+        const sign = isSale(p) ? -1 : 1
+        netInvested += sign * qty * price
+        netQty += sign * qty
+      })
+    const price = netQty > 0 ? netInvested / netQty : null
+    const livePrice = prices[equilibriumAssetFilter]?.price ?? null
+    return { price, netQty, livePrice }
+  }, [activity, equilibriumAssetFilter, prices])
 
   const monthly = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
@@ -402,6 +424,40 @@ const CryptoActivityDashboard = () => {
           <div className="cad__kpi-label">Racha activa</div>
           <div className="cad__kpi-value">{totals.streakLabel}</div>
           <div className="cad__kpi-sub">{totals.rangeLabel}</div>
+        </div>
+        <div className="cad__kpi">
+          <div className="cad__kpi-label-row">
+            <div className="cad__kpi-label">Precio de equilibrio</div>
+            <CFormSelect
+              size="sm"
+              className="cad__kpi-select"
+              value={equilibriumAssetFilter}
+              onChange={(e) => setEquilibriumAssetFilter(e.target.value)}
+            >
+              {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </CFormSelect>
+          </div>
+          <div className="cad__kpi-value">
+            {equilibrium.price != null ? fmtUSD(equilibrium.price) : '—'}
+          </div>
+          <div className="cad__kpi-sub">
+            {equilibrium.netQty > 0
+              ? `${qtyLabel(equilibrium.netQty, equilibriumAssetFilter)} en posición`
+              : 'Sin posición neta este año'}
+          </div>
+          {equilibrium.price != null && equilibrium.livePrice != null && (
+            <div
+              className={`cad__kpi-sub cad__price-value-gl${equilibrium.livePrice >= equilibrium.price ? ' cad__price-value-gl--gain' : ' cad__price-value-gl--loss'}`}
+            >
+              {equilibrium.livePrice >= equilibrium.price
+                ? 'Ya por encima del equilibrio'
+                : `Falta ${fmtUSD(equilibrium.price - equilibrium.livePrice)} para equilibrio`}
+            </div>
+          )}
         </div>
       </div>
 
