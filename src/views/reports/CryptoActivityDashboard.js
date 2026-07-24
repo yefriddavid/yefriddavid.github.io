@@ -14,14 +14,26 @@ import {
   isAdjustment,
   symbolLabel,
   fmtUSD,
+  fmtQty,
 } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
 import './CryptoActivityDashboard.scss'
 
 const BAR_MAX_PX = 130
+const PRICE_BAR_MAX_PX = 260
 const CURRENT_YEAR = new Date().getFullYear()
+const BTC_SYMBOL = 'BTCUSDT'
+const PRICE_BUCKET_SIZE = 10000
+const PRICE_BUCKET_MAX = 120000 // buckets cover 0-120k; anything higher lands in an overflow bucket
 
 const monthKey = (dateStr) => (dateStr || '').slice(0, 7)
 const yearOf = (dateStr) => Number((dateStr || '').slice(0, 4)) || null
+const bucketShortLabel = (r) =>
+  r.to != null ? `${r.from / 1000}k-${r.to / 1000}k` : `${r.from / 1000}k+`
+const bucketFullLabel = (r) =>
+  r.to != null
+    ? `$${r.from.toLocaleString()}–$${r.to.toLocaleString()}`
+    : `$${r.from.toLocaleString()}+`
+const btcQtyLabel = (qty) => `${qty.toFixed(4)} BTC`
 
 const CryptoActivityDashboard = () => {
   const dispatch = useDispatch()
@@ -55,6 +67,38 @@ const CryptoActivityDashboard = () => {
     () => allActivity.filter((p) => yearOf(p.purchaseDate) === year),
     [allActivity, year],
   )
+
+  // BTC purchases for the selected year, bucketed by purchase price in $10k
+  // steps (0-10k, 10k-20k, ... 110k-120k), plus a 120k+ overflow bucket.
+  const btcPriceBuckets = useMemo(() => {
+    const bucketCount = PRICE_BUCKET_MAX / PRICE_BUCKET_SIZE
+    const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+      from: i * PRICE_BUCKET_SIZE,
+      to: (i + 1) * PRICE_BUCKET_SIZE,
+      qty: 0,
+      invested: 0,
+    }))
+    const overflow = { from: PRICE_BUCKET_MAX, to: null, qty: 0, invested: 0 }
+
+    activity
+      .filter((p) => p.symbol === BTC_SYMBOL && !isSale(p))
+      .forEach((p) => {
+        const price = Number(p.purchasePrice) || 0
+        const qty = Number(p.quantity) || 0
+        const bucket =
+          price >= PRICE_BUCKET_MAX ? overflow : buckets[Math.floor(price / PRICE_BUCKET_SIZE)]
+        if (!bucket) return
+        bucket.qty += qty
+        bucket.invested += qty * price
+      })
+
+    const rows = [...buckets, overflow]
+    // Unlike the monthly counts chart, BTC quantities are fractional (often
+    // well under 1) — clamping the floor to 1 like that chart does would
+    // make every bar's ratio tiny. Only fall back to 1 when everything is 0.
+    const max = Math.max(...rows.map((r) => r.qty)) || 1
+    return { rows, max }
+  }, [activity])
 
   const handleYearChange = (e) => {
     setYear(Number(e.target.value))
@@ -350,6 +394,31 @@ const CryptoActivityDashboard = () => {
               <div className="cad__coin-value">{fmtUSD(r.invested)}</div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="cad__panel">
+        <p className="cad__panel-title">Compras de BTC por rango de precio</p>
+        <p className="cad__panel-hint">BTC comprado por rango de USD, {year}</p>
+        <div className="cad__scroll">
+          <div className="cad__price-chart">
+            {btcPriceBuckets.rows.map((r, i) => (
+              <div className="cad__price-col" key={i}>
+                {r.qty > 0 && (
+                  <div className="cad__price-values">
+                    <span className="cad__price-value-usd">{fmtUSD(r.invested)}</span>
+                    <span className="cad__price-value-qty">{btcQtyLabel(r.qty)}</span>
+                  </div>
+                )}
+                <div
+                  className="cad__price-bar"
+                  style={{ height: `${(r.qty / btcPriceBuckets.max) * PRICE_BAR_MAX_PX}px` }}
+                  title={`${bucketFullLabel(r)}: ${fmtQty(r.qty, BTC_SYMBOL)}`}
+                />
+                <div className="cad__price-label">{bucketShortLabel(r)}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

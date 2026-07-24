@@ -267,6 +267,69 @@
     color: var(--cui-secondary-color);
   }
 
+  &__price-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    // Taller than the monthly chart — bigger bars plus room for the
+    // invested/quantity labels stacked above each one.
+    height: 340px;
+    padding-top: 4px;
+    // Keeps its natural width so it scrolls inside .cad__scroll on narrow
+    // screens instead of squeezing the bars down to nothing.
+    width: max-content;
+    min-width: 100%;
+  }
+
+  &__price-col {
+    flex: 1;
+    min-width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  &__price-bar {
+    width: 16px;
+    min-height: 2px;
+    border-radius: 3px 3px 1px 1px;
+    background: var(--cad-buy);
+    cursor: default;
+    transition: opacity 0.12s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__price-label {
+    font-size: var(--fs-2xs);
+    color: var(--cui-secondary-color);
+    white-space: nowrap;
+  }
+
+  &__price-values {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    white-space: nowrap;
+  }
+
+  &__price-value-usd {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    color: var(--cui-body-color);
+  }
+
+  &__price-value-qty {
+    font-size: var(--fs-2xs);
+    color: var(--cui-secondary-color);
+  }
+
   &__ledger {
     background: var(--cui-body-bg);
     border: 1px solid var(--cui-border-color);

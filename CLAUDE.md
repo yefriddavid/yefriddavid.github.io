@@ -303,6 +303,18 @@ Available tokens (`src/scss/_custom.scss`):
 
 To change sizing app-wide (e.g. "make everything a bit smaller"), edit the token values once in `src/scss/_custom.scss` — never go file-by-file changing literals.
 
+#### RULE: Every new screen must be mobile-compatible
+
+**No exceptions.** Any view or component created from now on must render and function correctly on mobile viewports, not just desktop. This app is used from phones as much as from desktop, so a screen that only works above ~900px is an incomplete implementation, not a follow-up task.
+
+- ✅ Reuse the mobile-ready shared components instead of hand-rolling desktop-only layouts: `StandardCard`/`StandardList` for record lists (see the Mobile List Views rule below), `StandardForm` bottom-sheet modals for create/edit, `StandardGrid` (which already scrolls horizontally on narrow screens)
+- ✅ Filter bars, KPI card rows, and button groups must use `flex-wrap: wrap` or `grid-template-columns: repeat(auto-fit, minmax(...))` so they reflow instead of overflowing or forcing horizontal scroll on the whole page
+- ✅ Wrap wide tables/grids in a `&__scroll { overflow-x: auto }` container (see `.cad__scroll` / `.cq__scroll` in `src/views/reports/`) so only the table scrolls, never the page body
+- ✅ Add a `@media (max-width: 900px)` (or the existing Bootstrap/CoreUI `767.98px` breakpoint already used across the codebase) block collapsing multi-column grids to `1fr` or `repeat(2, 1fr)` when a screen introduces its own KPI/summary grid
+- ✅ Before marking a new screen done, check it at a narrow viewport (resize the browser or use the `webapp-testing` skill with a mobile viewport) in addition to desktop
+- ❌ Never ship a screen whose only layout is a fixed multi-column grid/table with no reflow or scroll handling at mobile widths
+- ❌ Never assume "it's an admin tool, nobody uses it on mobile" — verify instead of assuming
+
 ### i18n
 `i18next` with Spanish (`es`) as default. Translation files loaded via HTTP backend. Use `useTranslation()` hook and `t('key')` in components.
 
