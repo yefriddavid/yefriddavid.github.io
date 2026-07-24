@@ -389,6 +389,37 @@ const Vehiculos = () => {
           ) : (
             <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
               <Column
+                caption=""
+                width={90}
+                allowSorting={false}
+                allowResizing={false}
+                cellRender={({ data }) => (
+                  <div className="master-actions">
+                    <button
+                      className="master-btn master-btn--warning"
+                      onClick={() => openRestrictModal(data)}
+                      title="Pico y placa"
+                    >
+                      📅
+                    </button>
+                    <button
+                      className="master-btn master-btn--primary"
+                      onClick={() => handleEdit(data)}
+                      title="Editar"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      className="master-btn master-btn--danger"
+                      onClick={() => handleDelete(data.id)}
+                      title="Eliminar"
+                    >
+                      <CIcon icon={cilTrash} size="sm" />
+                    </button>
+                  </div>
+                )}
+              />
+              <Column
                 caption="📷"
                 width={48}
                 allowSorting={false}
@@ -448,37 +479,6 @@ const Vehiculos = () => {
                 allowEditing={false}
                 hidingPriority={1}
                 cellRender={({ data }) => currentMonthSummary(data.restrictions)}
-              />
-              <Column
-                caption=""
-                width={90}
-                allowSorting={false}
-                allowResizing={false}
-                cellRender={({ data }) => (
-                  <div className="master-actions">
-                    <button
-                      className="master-btn master-btn--warning"
-                      onClick={() => openRestrictModal(data)}
-                      title="Pico y placa"
-                    >
-                      📅
-                    </button>
-                    <button
-                      className="master-btn master-btn--primary"
-                      onClick={() => handleEdit(data)}
-                      title="Editar"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      className="master-btn master-btn--danger"
-                      onClick={() => handleDelete(data.id)}
-                      title="Eliminar"
-                    >
-                      <CIcon icon={cilTrash} size="sm" />
-                    </button>
-                  </div>
-                )}
               />
               <MasterDetail
                 enabled={true}
