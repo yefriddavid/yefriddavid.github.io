@@ -3,16 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { resolveHook } from '../reducers/system/programHookSlice'
 import * as errorLogActions from '../actions/system/errorLogActions'
 import { logRequest as auditLog } from '../actions/system/auditLogActions'
-
-const STORAGE_KEY = 'localrunner_programs'
-
-const loadPrograms = () => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
+import { getHookPrograms, resolveArgs } from '../utils/programRunner'
 
 export default function useProgramHooks() {
   const pending = useSelector((s) => s.programHook.pending)
@@ -24,15 +15,14 @@ export default function useProgramHooks() {
     const extId = sessionStorage.getItem('__localrunner_ext_id__')
     if (!extId || typeof chrome === 'undefined' || !chrome.runtime) return
 
-    const programs = loadPrograms()
-
     pending.forEach((hook) => {
       dispatch(resolveHook(hook.id))
 
-      const matches = programs.filter((p) => p.hooks?.includes(hook.tag) && !p.disabled)
+      const matches = getHookPrograms(hook.tag)
       matches.forEach((program) => {
+        const args = resolveArgs(program.args, hook.context)
         // eslint-disable-next-line no-undef
-        chrome.runtime.sendMessage(extId, { binary: program.binary, args: program.args }, (response) => {
+        chrome.runtime.sendMessage(extId, { binary: program.binary, args }, (response) => {
           // eslint-disable-next-line no-undef
           const runtimeErr = chrome.runtime.lastError?.message
           const err = runtimeErr || response?.error

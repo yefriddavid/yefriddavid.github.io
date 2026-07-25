@@ -1,10 +1,7 @@
 import { call, put, takeEvery } from 'redux-saga/effects'
 import { triggerHook, resolveHook } from '../../reducers/system/programHookSlice'
 import { push as notify } from '../../reducers/notificationsSlice'
-import { getHookPrograms, runProgram } from '../../utils/programRunner'
-
-const resolveArgs = (args, context = {}) =>
-  args.map((arg) => arg.replace(/\{\{(\w+)\}\}/g, (_, key) => context[key] ?? ''))
+import { getHookPrograms, runProgram, resolveArgs } from '../../utils/programRunner'
 
 function* executeHook({ payload: { id, tag, context } }) {
   const programs = getHookPrograms(tag)

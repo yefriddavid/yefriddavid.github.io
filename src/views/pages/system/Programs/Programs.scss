@@ -218,6 +218,51 @@
     font-family: monospace;
     cursor: default;
   }
+
+  &__help {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--cui-secondary-color);
+    cursor: pointer;
+    border-radius: 50%;
+
+    &:hover {
+      color: var(--cui-info);
+      background: var(--cui-info-bg-subtle);
+    }
+  }
+}
+
+.lp-vars-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  th,
+  td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--cui-border-color);
+  }
+
+  th {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--cui-secondary-color);
+  }
+
+  td:first-child {
+    white-space: nowrap;
+    font-family: monospace;
+  }
 }
 
 .lp-empty {

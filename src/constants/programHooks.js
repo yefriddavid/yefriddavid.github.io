@@ -26,10 +26,30 @@ export const PROGRAM_HOOKS = [
   { key: 'cryptoPurchase.sync', label: 'Crypto Purchases — sincronizar', vars: [] },
 ]
 
+// tenantId and currentUserName are always resolvable (see resolveArgs in
+// src/utils/programRunner.js) regardless of which hook fired — they're the
+// active tenant and the logged-in admin, not part of the entity a hook acted
+// on — so they're always listed as available on top of whatever vars that
+// hook's own entity context adds (id, plate, name, username, etc.).
+const ALWAYS_AVAILABLE_VARS = ['tenantId', 'currentUserName']
+
 export const getHookVars = (selectedKeys = []) => {
-  const all = new Set()
+  const all = new Set(ALWAYS_AVAILABLE_VARS)
   PROGRAM_HOOKS.filter((h) => selectedKeys.includes(h.key)).forEach((h) =>
     h.vars.forEach((v) => all.add(v)),
   )
   return [...all]
+}
+
+// Plain-language meaning of each {{var}} — shown in the "¿Qué significa cada
+// variable?" help modal on the Programs screen.
+export const PROGRAM_VAR_DESCRIPTIONS = {
+  tenantId: 'ID del tenant activo (la cuenta/empresa seleccionada al ejecutar la acción).',
+  currentUserName: 'Usuario que inició sesión y disparó la acción — no el registro afectado.',
+  username: 'Nombre de usuario del registro afectado (creado, editado o eliminado).',
+  id: 'ID del registro afectado (conductor, vehículo, liquidación, gasto, socio, pago o transacción).',
+  name: 'Nombre del registro afectado (conductor o socio).',
+  plate: 'Placa del vehículo afectado.',
+  driver: 'Nombre del conductor asociado a la liquidación.',
+  category: 'Categoría del gasto afectado.',
 }

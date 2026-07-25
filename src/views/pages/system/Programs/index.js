@@ -14,12 +14,20 @@ import {
   CFormLabel,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilTerminal, cilPlus, cilTrash, cilPencil, cilMediaPlay, cilBan } from '@coreui/icons'
+import {
+  cilTerminal,
+  cilPlus,
+  cilTrash,
+  cilPencil,
+  cilMediaPlay,
+  cilBan,
+  cilInfo,
+} from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
-import { PROGRAM_HOOKS, getHookVars } from 'src/constants/programHooks'
+import { PROGRAM_HOOKS, getHookVars, PROGRAM_VAR_DESCRIPTIONS } from 'src/constants/programHooks'
 import { logRequest as auditLog } from 'src/actions/system/auditLogActions'
 import './Programs.scss'
 
@@ -51,6 +59,7 @@ const Programs = () => {
   const [editId, setEditId] = useState(null)
   const [promptProgram, setPromptProgram] = useState(null)
   const [promptValues, setPromptValues] = useState({})
+  const [varsHelpOpen, setVarsHelpOpen] = useState(false)
 
   const {
     register,
@@ -114,8 +123,9 @@ const Programs = () => {
     persist([...programs, { ...p, id: Date.now().toString(), name: `${p.name} (copia)` }])
   }
 
-  const deleteProgram = (id, e) => {
+  const deleteProgram = (id, name, e) => {
     e.stopPropagation()
+    if (!window.confirm(`¿Eliminar el programa "${name}"?`)) return
     persist(programs.filter((p) => p.id !== id))
     if (selected?.id === id) {
       setSelected(null)
@@ -277,7 +287,7 @@ const Programs = () => {
                     color="danger"
                     variant="ghost"
                     title="Eliminar"
-                    onClick={(e) => deleteProgram(p.id, e)}
+                    onClick={(e) => deleteProgram(p.id, p.name, e)}
                   >
                     <CIcon icon={cilTrash} />
                   </CButton>
@@ -350,6 +360,14 @@ const Programs = () => {
             {hookVars.length > 0 && (
               <div className="lp-vars-hint">
                 <span className="lp-vars-hint__label">Variables disponibles:</span>
+                <button
+                  type="button"
+                  className="lp-vars-hint__help"
+                  title="¿Qué significa cada variable?"
+                  onClick={() => setVarsHelpOpen(true)}
+                >
+                  <CIcon icon={cilInfo} size="sm" />
+                </button>
                 {hookVars.map((v) => (
                   <code key={v} className="lp-vars-hint__token">{`{{${v}}}`}</code>
                 ))}
@@ -402,6 +420,37 @@ const Programs = () => {
           </CButton>
           <CButton color="success" onClick={runFromPrompt}>
             Ejecutar
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      <CModal visible={varsHelpOpen} onClose={() => setVarsHelpOpen(false)}>
+        <CModalHeader>
+          <CModalTitle>¿Qué significa cada variable?</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <table className="lp-vars-table">
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Significado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hookVars.map((v) => (
+                <tr key={v}>
+                  <td>
+                    <code>{`{{${v}}}`}</code>
+                  </td>
+                  <td>{PROGRAM_VAR_DESCRIPTIONS[v] ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setVarsHelpOpen(false)}>
+            Cerrar
           </CButton>
         </CModalFooter>
       </CModal>
