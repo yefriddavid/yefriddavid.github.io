@@ -28,7 +28,7 @@ export const EMPTY_PURCHASE = {
   notes: '',
 }
 
-const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, liveUsdCopRate }) => {
+const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, fetchHistoricalTrm }) => {
   const isEdit = !!initial?.id
   const {
     register,
@@ -44,12 +44,29 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, liveUsdCopRate 
   const purchasePrice = Number(watch('purchasePrice')) || 0
   const total = quantity * purchasePrice
 
-  useEffect(() => {
-    if (!isEdit && liveUsdCopRate != null && !watch('usdCopRate')) {
-      setValue('usdCopRate', liveUsdCopRate)
+  // Looks up the official TRM for the given date and fills it in — used both
+  // for the initial default (new records) and whenever the user changes the
+  // purchase date, so the field always matches the date it's tied to instead
+  // of today's rate. Left untouched on API failure so the user can still type
+  // it manually.
+  const applyHistoricalTrm = async (date) => {
+    if (!date) return
+    try {
+      const rate = await fetchHistoricalTrm(date)
+      if (rate != null) setValue('usdCopRate', rate)
+    } catch {
+      // no-op — keep whatever value is already in the field
     }
+  }
+
+  useEffect(() => {
+    if (!isEdit) applyHistoricalTrm(initial?.purchaseDate ?? EMPTY_PURCHASE.purchaseDate)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveUsdCopRate])
+  }, [])
+
+  const { onChange: rhfDateChange, ...dateFieldReg } = register('purchaseDate', {
+    required: 'La fecha es obligatoria',
+  })
 
   const submit = (form) =>
     onSave({
@@ -153,7 +170,11 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, liveUsdCopRate 
           <input
             className={SF.input}
             type="date"
-            {...register('purchaseDate', { required: 'La fecha es obligatoria' })}
+            {...dateFieldReg}
+            onChange={(e) => {
+              rhfDateChange(e)
+              applyHistoricalTrm(e.target.value)
+            }}
           />
           {fieldError(errors.purchaseDate)}
         </StandardField>

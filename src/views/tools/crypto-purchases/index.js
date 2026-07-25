@@ -8,7 +8,7 @@ import IconClone from 'src/components/shared/IconClone'
 import AppModal from 'src/components/shared/AppModal'
 import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_TYPES } from 'src/constants/finance'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
-import { useUsdCopRate } from 'src/hooks/useUsdCopRate'
+import { useHistoricalTrm } from 'src/hooks/useHistoricalTrm'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import { triggerHook } from 'src/reducers/system/programHookSlice'
 import CryptoPurchaseForm, { EMPTY_PURCHASE } from './CryptoPurchaseForm'
@@ -34,7 +34,7 @@ const CryptoPurchases = () => {
   const activeTenantId = useActiveTenantId()
   const { purchases, loading, saving } = useSelector((s) => s.cryptoPurchase)
   const { prices, connected } = useCryptoPrices()
-  const { rate: liveUsdCopRate } = useUsdCopRate()
+  const { fetchTrm } = useHistoricalTrm()
 
   const [sheet, setSheet] = useState(null)
   const [filterSymbol, setFilterSymbol] = useState('all')
@@ -380,7 +380,7 @@ const CryptoPurchases = () => {
           onSave={handleSave}
           onCancel={() => setSheet(null)}
           saving={saving}
-          liveUsdCopRate={liveUsdCopRate}
+          fetchHistoricalTrm={fetchTrm}
         />
       </AppModal>
     </div>
