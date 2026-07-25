@@ -5,7 +5,8 @@
 // Based on list_buys_and_sells.go (go-binance NewListTradesService, t.IsBuyer to
 // classify buy vs sell). Each trade becomes one document matching the app's schema:
 // { type, symbol, quantity, purchasePrice, purchaseDate, platform, usdCopRate,
-//   binanceTradeId, notes, tenantId }.
+//
+//	binanceTradeId, notes, tenantId }.
 //
 // Coins are commonly traded against more than one quote currency (USDT, USDC,
 // FDUSD, …). For each configured base asset the script tries every known quote
@@ -31,7 +32,7 @@
 //
 //	export BINANCE_API_KEY=...
 //	export BINANCE_SECRET_KEY=...
-//	go run . [--apply] [--symbol BTC] [--since 2025-08-01] [--sa path/to/service-account.json]
+//	go run . [--apply] [--symbol BTC] [--since 2025-08-01] [--tenant tenantId] [--sa path/to/service-account.json]
 //
 // Without --apply it only prints the plan (dry run).
 package main
@@ -58,11 +59,11 @@ import (
 )
 
 const (
-	collectionName = "Finance_Crypto_Purchases"
-	tenantID       = "Atlfc1jvEUbLsintnpAq"
-	platformValue  = "binance_col"
-	trmEndpoint    = "https://www.datos.gov.co/resource/mcec-87by.json"
-	pageLimit      = 1000
+	collectionName  = "Finance_Crypto_Purchases"
+	defaultTenantID = "Atlfc1jvEUbLsintnpAq"
+	platformValue   = "binance_col"
+	trmEndpoint     = "https://www.datos.gov.co/resource/mcec-87by.json"
+	pageLimit       = 1000
 )
 
 var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB"}
@@ -133,6 +134,7 @@ func main() {
 	apply := flag.Bool("apply", false, "write changes to Firestore (default is dry run)")
 	since := flag.String("since", "2020-01-01", "only write trades from this date onward (YYYY-MM-DD)")
 	onlyBase := flag.String("symbol", "", "sync only this base asset (e.g. BTC); omit for all configured bases")
+	tenant := flag.String("tenant", defaultTenantID, "tenant id to sync into (defaults to the primary tenant)")
 	flag.Parse()
 
 	apiKey := os.Getenv("BINANCE_API_KEY")
@@ -173,7 +175,7 @@ func main() {
 
 	// Existing binanceTradeId values already stored, so re-runs don't duplicate.
 	existing := map[string]bool{}
-	iter := fsClient.Collection(collectionName).Where("tenantId", "==", tenantID).Documents(ctx)
+	iter := fsClient.Collection(collectionName).Where("tenantId", "==", *tenant).Documents(ctx)
 	for {
 		snap, err := iter.Next()
 		if err == iterator.Done {
@@ -243,7 +245,7 @@ func main() {
 						"platform":       platformValue,
 						"usdCopRate":     usdCopRate,
 						"notes":          notes,
-						"tenantId":       tenantID,
+						"tenantId":       *tenant,
 						"createdAt":      firestore.ServerTimestamp,
 					},
 				})

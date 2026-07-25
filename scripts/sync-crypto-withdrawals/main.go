@@ -15,7 +15,7 @@
 //
 //	export BINANCE_API_KEY=...
 //	export BINANCE_SECRET_KEY=...
-//	go run . [--apply] [--since 2023-01-01] [--coin BTC] [--sa path/to/service-account.json]
+//	go run . [--apply] [--since 2023-01-01] [--coin BTC] [--tenant tenantId] [--sa path/to/service-account.json]
 package main
 
 import (
@@ -37,8 +37,8 @@ import (
 )
 
 const (
-	collectionName = "Finance_Crypto_Withdrawals"
-	tenantID       = "Atlfc1jvEUbLsintnpAq"
+	collectionName  = "Finance_Crypto_Withdrawals"
+	defaultTenantID = "Atlfc1jvEUbLsintnpAq"
 )
 
 func allWithdrawals(ctx context.Context, client *binance.Client, since time.Time, coin string) ([]*binance.Withdraw, error) {
@@ -75,6 +75,7 @@ func main() {
 	apply := flag.Bool("apply", false, "write changes to Firestore (default is dry run)")
 	since := flag.String("since", "2023-01-01", "walk back this far (YYYY-MM-DD)")
 	coin := flag.String("coin", "", "filter to a single coin (e.g. BTC); omit for all")
+	tenant := flag.String("tenant", defaultTenantID, "tenant id to sync into (defaults to the primary tenant)")
 	flag.Parse()
 
 	apiKey := os.Getenv("BINANCE_API_KEY")
@@ -113,7 +114,7 @@ func main() {
 
 	// Existing binanceWithdrawId values already stored, so re-runs don't duplicate.
 	existing := map[string]bool{}
-	iter := fsClient.Collection(collectionName).Where("tenantId", "==", tenantID).Documents(ctx)
+	iter := fsClient.Collection(collectionName).Where("tenantId", "==", *tenant).Documents(ctx)
 	for {
 		snap, err := iter.Next()
 		if err == iterator.Done {
@@ -151,7 +152,7 @@ func main() {
 			"status":            w.Status,
 			"applyTime":         w.ApplyTime,
 			"txId":              w.TxID,
-			"tenantId":          tenantID,
+			"tenantId":          *tenant,
 			"createdAt":         firestore.ServerTimestamp,
 		})
 	}
