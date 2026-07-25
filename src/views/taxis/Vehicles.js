@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Column, MasterDetail, Paging } from 'devextreme-react/data-grid'
@@ -11,20 +11,17 @@ import {
   CCardBody,
   CBadge,
   CButton,
-  CCollapse,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CFormCheck,
   CFormInput,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX, cilTrash, cilBell, cilPencil } from '@coreui/icons'
+import { cilPlus, cilTrash, cilBell, cilPencil } from '@coreui/icons'
 import * as taxiVehicleActions from 'src/actions/taxi/taxiVehicleActions'
 import * as taxiDriverActions from 'src/actions/taxi/taxiDriverActions'
-import StandardForm, { StandardField, SF } from 'src/components/shared/StandardForm'
 import DetailPanel, { DetailSection, DetailRow } from 'src/components/shared/DetailPanel'
 import useIsMobile from 'src/hooks/useIsMobile'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
@@ -56,8 +53,6 @@ const MONTHS = [
   'Diciembre',
 ]
 
-const EMPTY = { plate: '', brand: '', model: '', year: '', active: true, comment: '', photos: [] }
-
 const currentMonthSummary = (restrictions) => {
   if (!restrictions) return '—'
   const now = new Date()
@@ -69,134 +64,16 @@ const currentMonthSummary = (restrictions) => {
     .join(', ')
 }
 
-const fieldError = (err) =>
-  err ? (
-    <span style={{ fontSize: 11, color: '#b91c1c', marginTop: 2, display: 'block' }}>
-      {err.message}
-    </span>
-  ) : null
-
-const VehicleForm = ({ initial, onSave, onCancel, saving, title, subtitle }) => {
-  const { t } = useTranslation()
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({ defaultValues: initial })
-
-  const active = watch('active') ?? true
-  const [photos, setPhotos] = useState(initial?.photos ?? [])
-  const photosInputRef = useRef()
-
-  const handlePhotosChange = async (e) => {
-    const handles = await uploadImages(e.target.files)
-    setPhotos((prev) => [...prev, ...handles])
-    e.target.value = ''
-  }
-
-  const removePhoto = (idx) => setPhotos((prev) => prev.filter((_, i) => i !== idx))
-
-  return (
-    <StandardForm
-      title={title}
-      subtitle={subtitle}
-      onCancel={onCancel}
-      onSave={handleSubmit((data) => onSave({ ...data, photos }))}
-      saving={saving}
-    >
-      <StandardField label={t('taxis.vehicles.fields.plate')}>
-        <input
-          className={SF.input}
-          placeholder="ABC-123"
-          {...register('plate', { required: 'La placa es obligatoria' })}
-        />
-        {fieldError(errors.plate)}
-      </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.brand')}>
-        <input
-          className={SF.input}
-          placeholder="Renault"
-          {...register('brand', { required: 'La marca es obligatoria' })}
-        />
-        {fieldError(errors.brand)}
-      </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.model')}>
-        <input className={SF.input} placeholder="Logan" {...register('model')} />
-      </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.year')}>
-        <input className={SF.input} type="number" placeholder="2020" {...register('year')} />
-      </StandardField>
-      <StandardField label={t('taxis.vehicles.fields.status')}>
-        <CFormCheck
-          id={`active-${initial?.id || 'new'}`}
-          checked={active !== false}
-          onChange={(e) => setValue('active', e.target.checked)}
-          label={
-            active !== false
-              ? t('taxis.vehicles.fields.active')
-              : t('taxis.vehicles.fields.inactive')
-          }
-        />
-      </StandardField>
-      <StandardField label="Comentario">
-        <input
-          className={SF.input}
-          placeholder="Observaciones opcionales"
-          {...register('comment')}
-        />
-      </StandardField>
-      <StandardField label="Fotos">
-        <div className="master-photos-picker">
-          {photos.length > 0 && (
-            <div className="master-photos-picker__grid">
-              {photos.map((p, i) => (
-                <div key={i} className="master-photos-picker__thumb">
-                  <img src={p} alt={`Foto ${i + 1}`} />
-                  <button
-                    type="button"
-                    className="master-photos-picker__remove"
-                    onClick={() => removePhoto(i)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <input
-            ref={photosInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handlePhotosChange}
-          />
-          <button
-            type="button"
-            className="master-photo-picker__btn"
-            onClick={() => photosInputRef.current?.click()}
-          >
-            + Agregar fotos
-          </button>
-        </div>
-      </StandardField>
-    </StandardForm>
-  )
-}
-
 const Vehiculos = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const isMobile = useIsMobile()
   const activeTenantId = useActiveTenantId()
   const { data: records, fetching } = useSelector((s) => s.taxiVehicle)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
   const gridRef = useRef()
 
-  const [showCreate, setShowCreate] = useState(false)
-  const [editingRow, setEditingRow] = useState(null)
   const [restrictModal, setRestrictModal] = useState(null)
   const [restrictYear, setRestrictYear] = useState(new Date().getFullYear())
   const [testingNotif, setTestingNotif] = useState(false)
@@ -216,29 +93,7 @@ const Vehiculos = () => {
     dispatch(taxiDriverActions.fetchRequest())
   }, [dispatch, activeTenantId])
 
-  const handleCreate = (form) => {
-    dispatch(taxiVehicleActions.createRequest(form))
-    setShowCreate(false)
-  }
-
-  useEffect(() => {
-    if (editingRow && !isMobile) {
-      gridRef.current?.instance()?.expandRow(editingRow.id)
-    }
-  }, [editingRow, isMobile])
-
-  const handleEdit = (row) => setEditingRow(row)
-
-  const handleEditSave = (form) => {
-    dispatch(taxiVehicleActions.updateRequest({ id: editingRow.id, ...form }))
-    if (!isMobile) gridRef.current?.instance()?.collapseRow(editingRow.id)
-    setEditingRow(null)
-  }
-
-  const handleEditCancel = () => {
-    if (!isMobile) gridRef.current?.instance()?.collapseRow(editingRow.id)
-    setEditingRow(null)
-  }
+  const handleEdit = (row) => navigate(`/taxis/vehicles/${row.id}`)
 
   const handleToggleActive = (vehicle) => {
     dispatch(taxiVehicleActions.updateRequest({ ...vehicle, active: !(vehicle.active !== false) }))
@@ -417,27 +272,14 @@ const Vehiculos = () => {
             </CButton>
             <CButton
               size="sm"
-              color={showCreate ? 'danger' : 'primary'}
+              color="primary"
               variant="outline"
-              onClick={() => setShowCreate((p) => !p)}
+              onClick={() => navigate('/taxis/vehicles/new')}
             >
-              <CIcon icon={showCreate ? cilX : cilPlus} size="sm" />{' '}
-              {showCreate ? 'Cancelar' : 'Nuevo vehículo'}
+              <CIcon icon={cilPlus} size="sm" /> Nuevo vehículo
             </CButton>
           </div>
         </CCardHeader>
-
-        <CCollapse visible={!isMobile && showCreate}>
-          <div className="master-form-panel">
-            <VehicleForm
-              initial={EMPTY}
-              title="Nuevo vehículo"
-              onSave={handleCreate}
-              onCancel={() => setShowCreate(false)}
-              saving={fetching}
-            />
-          </div>
-        </CCollapse>
 
         <CCardBody>
           {fetching && !records ? (
@@ -614,122 +456,67 @@ const Vehiculos = () => {
               />
               <MasterDetail
                 enabled={true}
-                render={({ data }) =>
-                  editingRow?.id === data.id ? (
-                    <div className="master-edit-panel">
-                      <VehicleForm
-                        initial={data}
-                        title="Editar vehículo"
-                        subtitle={data.plate}
-                        onSave={handleEditSave}
-                        onCancel={handleEditCancel}
-                        saving={fetching}
+                render={({ data }) => (
+                  <DetailPanel columns={2} className="detail-panel--flat">
+                    <DetailSection title={t('taxis.drivers.fields.personalData')}>
+                      <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
+                      <DetailRow
+                        label={t('taxis.vehicles.fields.status')}
+                        value={
+                          data.active !== false
+                            ? t('taxis.vehicles.fields.active')
+                            : t('taxis.vehicles.fields.inactive')
+                        }
                       />
-                    </div>
-                  ) : (
-                    <DetailPanel columns={2} className="detail-panel--flat">
-                      <DetailSection title={t('taxis.drivers.fields.personalData')}>
-                        <DetailRow
-                          label={t('taxis.vehicles.fields.plate')}
-                          value={data.plate}
-                          mono
-                        />
-                        <DetailRow
-                          label={t('taxis.vehicles.fields.status')}
-                          value={
-                            data.active !== false
-                              ? t('taxis.vehicles.fields.active')
-                              : t('taxis.vehicles.fields.inactive')
-                          }
-                        />
-                        <DetailRow label={t('taxis.vehicles.fields.brand')} value={data.brand} />
-                        <DetailRow label={t('taxis.vehicles.fields.model')} value={data.model} />
-                        <DetailRow label={t('taxis.vehicles.fields.year')} value={data.year} />
-                        <DetailRow label="Comentario" value={data.comment || null} />
+                      <DetailRow label={t('taxis.vehicles.fields.brand')} value={data.brand} />
+                      <DetailRow label={t('taxis.vehicles.fields.model')} value={data.model} />
+                      <DetailRow label={t('taxis.vehicles.fields.year')} value={data.year} />
+                      <DetailRow label="Comentario" value={data.comment || null} />
+                    </DetailSection>
+                    {data.photos?.length > 0 && (
+                      <DetailSection title="Fotos">
+                        <div className="master-photos-gallery">
+                          {data.photos.map((p, i) => (
+                            <img
+                              key={i}
+                              src={p}
+                              alt={`Foto ${i + 1}`}
+                              className="master-photos-gallery__img"
+                            />
+                          ))}
+                        </div>
                       </DetailSection>
-                      {data.photos?.length > 0 && (
-                        <DetailSection title="Fotos">
-                          <div className="master-photos-gallery">
-                            {data.photos.map((p, i) => (
-                              <img
-                                key={i}
-                                src={p}
-                                alt={`Foto ${i + 1}`}
-                                className="master-photos-gallery__img"
-                              />
-                            ))}
-                          </div>
-                        </DetailSection>
-                      )}
-                      <DetailSection title={t('taxis.vehicles.fields.drivers')}>
-                        {(() => {
-                          const rowDrivers = driversByPlate(data.plate)
-                          return rowDrivers.length > 0 ? (
-                            rowDrivers.map((driver) => (
-                              <DetailRow
-                                key={driver.name}
-                                label={t('taxis.settlements.fields.driver')}
-                                value={
-                                  <span
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                                  >
-                                    {driver.name}
-                                    <StatusBadge active={driver.active !== false} />
-                                  </span>
-                                }
-                              />
-                            ))
-                          ) : (
-                            <span className="master-empty">{t('taxis.settlements.noRecords')}</span>
-                          )
-                        })()}
-                      </DetailSection>
-                    </DetailPanel>
-                  )
-                }
+                    )}
+                    <DetailSection title={t('taxis.vehicles.fields.drivers')}>
+                      {(() => {
+                        const rowDrivers = driversByPlate(data.plate)
+                        return rowDrivers.length > 0 ? (
+                          rowDrivers.map((driver) => (
+                            <DetailRow
+                              key={driver.name}
+                              label={t('taxis.settlements.fields.driver')}
+                              value={
+                                <span
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                                >
+                                  {driver.name}
+                                  <StatusBadge active={driver.active !== false} />
+                                </span>
+                              }
+                            />
+                          ))
+                        ) : (
+                          <span className="master-empty">{t('taxis.settlements.noRecords')}</span>
+                        )
+                      })()}
+                    </DetailSection>
+                  </DetailPanel>
+                )}
               />
             </StandardGrid>
           )}
         </CCardBody>
       </CCard>
-
-      {/* Create modal — mobile */}
-      {isMobile && showCreate && (
-        <CModal visible onClose={() => setShowCreate(false)} size="lg" scrollable>
-          <CModalHeader>
-            <CModalTitle>Nuevo vehículo</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <VehicleForm
-              initial={EMPTY}
-              title=""
-              onSave={handleCreate}
-              onCancel={() => setShowCreate(false)}
-              saving={fetching}
-            />
-          </CModalBody>
-        </CModal>
-      )}
-
-      {/* Edit modal — mobile */}
-      {isMobile && editingRow && (
-        <CModal visible onClose={handleEditCancel} size="lg" scrollable>
-          <CModalHeader>
-            <CModalTitle>Editar vehículo</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <VehicleForm
-              key={editingRow.id}
-              initial={editingRow}
-              title=""
-              subtitle={editingRow.plate}
-              onSave={handleEditSave}
-              onCancel={handleEditCancel}
-              saving={fetching}
-            />
-          </CModalBody>
-        </CModal>
-      )}
 
       {/* Pico y placa modal */}
       <CModal visible={!!restrictModal} onClose={() => setRestrictModal(null)} size="lg">
