@@ -39,6 +39,7 @@ const getTimeBasedScheme = () => {
 
 import { AppBreadcrumb } from '../../index'
 import AppHeaderDropdown from '../AppHeaderDropdown'
+import CurrentTenant from '../CurrentTenant'
 import LanguageSwitcher from '../../shared/LanguageSwitcher'
 import useVersionCheck from '../../../hooks/useVersionCheck'
 import { InfoTip } from '../../StatCard/StatCard'
@@ -397,6 +398,7 @@ const AppHeader = () => {
           <li className="nav-item py-0">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
+          <CurrentTenant />
           <AppHeaderDropdown />
         </CHeaderNav>
       </CContainer>
