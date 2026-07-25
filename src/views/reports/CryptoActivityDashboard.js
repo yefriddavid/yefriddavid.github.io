@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CFormSelect, CFormInput, CButton } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilSettings, cilReload } from '@coreui/icons'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
 import AppModal from 'src/components/shared/AppModal'
@@ -43,7 +45,13 @@ const CryptoActivityDashboard = () => {
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
   const { withdrawals } = useSelector((s) => s.cryptoWithdrawal)
   const { monthLabels } = useLocaleData()
-  const { prices } = useCryptoPrices()
+  const { prices, connected } = useCryptoPrices()
+  const [pricesModalOpen, setPricesModalOpen] = useState(false)
+  // Manual "what if" price overrides set from the reference-prices modal —
+  // once a symbol is overridden it freezes there (the live WebSocket keeps
+  // ticking underneath but no longer reaches calculations for that symbol)
+  // until the user resets it back to live.
+  const [priceOverrides, setPriceOverrides] = useState({})
   const [year, setYear] = useState(CURRENT_YEAR)
   const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
   const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
@@ -72,6 +80,18 @@ const CryptoActivityDashboard = () => {
     dispatch(actions.loadRequest())
     dispatch(withdrawalActions.loadRequest())
   }, [dispatch, activeTenantId])
+
+  // Live prices merged with any active "what if" overrides — every
+  // calculation below reads from this instead of `prices` directly, so a
+  // simulated value propagates through the whole dashboard. Only `.price` is
+  // overridable; change/high/low keep coming from the live feed.
+  const effectivePrices = useMemo(() => {
+    const merged = { ...prices }
+    Object.entries(priceOverrides).forEach(([symbol, price]) => {
+      merged[symbol] = { ...merged[symbol], price }
+    })
+    return merged
+  }, [prices, priceOverrides])
 
   // Balance adjustments aren't real trading activity — they'd distort counts
   // and volumes here, so this dashboard only looks at genuine buy/sell records.
@@ -212,9 +232,9 @@ const CryptoActivityDashboard = () => {
         netQty += sign * qty
       })
     const price = netQty > 0 ? netInvested / netQty : null
-    const livePrice = prices[equilibriumAssetFilter]?.price ?? null
+    const livePrice = effectivePrices[equilibriumAssetFilter]?.price ?? null
     return { price, netQty, livePrice }
-  }, [activity, equilibriumAssetFilter, prices])
+  }, [activity, equilibriumAssetFilter, effectivePrices])
 
   const monthly = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
@@ -285,7 +305,7 @@ const CryptoActivityDashboard = () => {
           netInvested += sign * qty * price
           netQty += sign * qty
         })
-      const livePrice = prices[s.value]?.price ?? null
+      const livePrice = effectivePrices[s.value]?.price ?? null
       const gainLoss = livePrice != null ? netQty * livePrice - netInvested : null
       return { symbol: s.value, label: s.label, gainLoss, hasActivity }
     }).filter((r) => r.hasActivity)
@@ -294,7 +314,7 @@ const CryptoActivityDashboard = () => {
       rows: rows.sort((a, b) => Math.abs(b.gainLoss ?? 0) - Math.abs(a.gainLoss ?? 0)),
       max,
     }
-  }, [activity, prices])
+  }, [activity, effectivePrices])
 
   // Withdrawals for the selected year, grouped by coin. Withdrawals have no
   // recorded cost basis (only the amount that left the exchange), so the bar
@@ -311,7 +331,7 @@ const CryptoActivityDashboard = () => {
     })
     const rows = Object.entries(qtyByCoin).map(([coin, qty]) => {
       const symbol = `${coin}USDT`
-      const livePrice = prices[symbol]?.price ?? null
+      const livePrice = effectivePrices[symbol]?.price ?? null
       const usdValue = livePrice != null ? qty * livePrice : null
       // Net buys minus sells of this coin within the selected year (same
       // scope as the withdrawals above), minus what was withdrawn that year.
@@ -326,7 +346,7 @@ const CryptoActivityDashboard = () => {
       rows: rows.sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0)),
       max,
     }
-  }, [withdrawals, year, prices, activity])
+  }, [withdrawals, year, effectivePrices, activity])
 
   // Total compras/ventas por mes y por moneda — independiente de los filtros
   // del ledger (barra/chip), siempre sobre el año seleccionado.
@@ -383,7 +403,7 @@ const CryptoActivityDashboard = () => {
   // buys (a sell already realized its own price, no FIFO cost basis to compare against).
   const gainLossFor = (p) => {
     if (isSale(p)) return null
-    const livePrice = prices[p.symbol]?.price
+    const livePrice = effectivePrices[p.symbol]?.price
     if (livePrice == null) return null
     return (livePrice - (Number(p.purchasePrice) || 0)) * (Number(p.quantity) || 0)
   }
@@ -404,7 +424,7 @@ const CryptoActivityDashboard = () => {
         { count: 0, quantity: 0, value: 0, gainLoss: 0 },
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recent, prices],
+    [recent, effectivePrices],
   )
 
   const monthlyByCoinTotals = useMemo(
@@ -438,18 +458,28 @@ const CryptoActivityDashboard = () => {
     <div className="cad">
       <div className="cad__head">
         <h1 className="cad__title">Compras y Ventas</h1>
-        <CFormSelect
-          size="sm"
-          className="cad__year-select"
-          value={year}
-          onChange={handleYearChange}
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </CFormSelect>
+        <div className="cad__head-actions">
+          <button
+            type="button"
+            className="cad__cog-btn"
+            title="Precios de referencia"
+            onClick={() => setPricesModalOpen(true)}
+          >
+            <CIcon icon={cilSettings} />
+          </button>
+          <CFormSelect
+            size="sm"
+            className="cad__year-select"
+            value={year}
+            onChange={handleYearChange}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </CFormSelect>
+        </div>
       </div>
       <p className="cad__subtitle">Actividad de trading — {totals.rangeLabel}</p>
 
@@ -551,7 +581,7 @@ const CryptoActivityDashboard = () => {
           <div className="cad__scroll">
             <div className="cad__months">
               {monthly.rows.map((r) => {
-                const livePrice = prices[monthlyAssetFilter]?.price ?? null
+                const livePrice = effectivePrices[monthlyAssetFilter]?.price ?? null
                 const buyGainLoss =
                   r.buysQty > 0 && livePrice != null ? livePrice * r.buysQty - r.buysInvested : null
                 return (
@@ -783,7 +813,7 @@ const CryptoActivityDashboard = () => {
         <div className="cad__scroll">
           <div className="cad__price-chart">
             {priceBuckets.rows.map((r, i) => {
-              const livePrice = prices[priceAssetFilter]?.price ?? null
+              const livePrice = effectivePrices[priceAssetFilter]?.price ?? null
               const buyGainLoss =
                 r.buyQty > 0 && livePrice != null ? livePrice * r.buyQty - r.buyInvested : null
               return (
@@ -1045,6 +1075,117 @@ const CryptoActivityDashboard = () => {
           </table>
         </div>
       </div>
+
+      {pricesModalOpen && (
+        <AppModal
+          visible
+          onClose={() => setPricesModalOpen(false)}
+          variant="center"
+          size="md"
+          title="Precios de referencia"
+          subtitle={
+            connected
+              ? 'Editá un precio para simular "qué pasaría si..." — se usa en ganancia/pérdida, equilibrio y valorización de retiros'
+              : 'Desconectado — mostrando el último precio recibido'
+          }
+        >
+          {Object.keys(priceOverrides).length > 0 && (
+            <div className="cad__ledger-head">
+              <span className="cad__muted">
+                Simulando {Object.keys(priceOverrides).length} moneda(s)
+              </span>
+              <button
+                type="button"
+                className="cad__clear-filter"
+                onClick={() => setPriceOverrides({})}
+              >
+                ✕ Restablecer todo
+              </button>
+            </div>
+          )}
+          <div className="cad__scroll">
+            <table className="cad__table">
+              <thead>
+                <tr>
+                  <th>Moneda</th>
+                  <th className="num">Precio</th>
+                  <th className="num">Cambio 24h</th>
+                  <th className="num">Máx 24h</th>
+                  <th className="num">Mín 24h</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CRYPTO_PURCHASE_SYMBOLS.map((s) => {
+                  const p = prices[s.value]
+                  const override = priceOverrides[s.value]
+                  const isSimulated = override != null
+                  return (
+                    <tr key={s.value} className={isSimulated ? 'cad__row--simulated' : undefined}>
+                      <td>
+                        <span className="cad__sym">
+                          <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[s.value] }} />
+                          {s.label}
+                        </span>
+                      </td>
+                      <td className="num">
+                        <div className="cad__price-input-group">
+                          <CFormInput
+                            type="number"
+                            size="sm"
+                            className="cad__price-input"
+                            step="any"
+                            value={override ?? p?.price ?? ''}
+                            onChange={(e) =>
+                              setPriceOverrides((prev) => ({
+                                ...prev,
+                                [s.value]: Number(e.target.value) || 0,
+                              }))
+                            }
+                          />
+                          {isSimulated && (
+                            <button
+                              type="button"
+                              className="cad__price-reset-btn"
+                              title="Volver al precio en vivo"
+                              onClick={() =>
+                                setPriceOverrides((prev) => {
+                                  const next = { ...prev }
+                                  delete next[s.value]
+                                  return next
+                                })
+                              }
+                            >
+                              <CIcon icon={cilReload} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="num">
+                        {p ? (
+                          <span
+                            className={`cad__amount${p.change >= 0 ? ' cad__amount--positive' : ' cad__amount--negative'}`}
+                          >
+                            {p.change >= 0 ? '+' : ''}
+                            {p.change.toFixed(2)}%
+                          </span>
+                        ) : (
+                          <span className="cad__muted">—</span>
+                        )}
+                      </td>
+                      <td className="num">
+                        {p ? fmtUSD(p.high) : <span className="cad__muted">—</span>}
+                      </td>
+                      <td className="num">
+                        {p ? fmtUSD(p.low) : <span className="cad__muted">—</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </AppModal>
+      )}
 
       {coinMonthModal && (
         <AppModal

@@ -26,9 +26,39 @@
     margin: 0;
   }
 
+  &__head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__year-select {
     width: auto;
     min-width: 100px;
+  }
+
+  &__cog-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    background: var(--cui-tertiary-bg);
+    color: var(--cui-secondary-color);
+    cursor: pointer;
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    &:hover {
+      background: var(--cui-secondary-bg);
+      color: var(--cui-body-color);
+    }
   }
 
   &__subtitle {
@@ -564,6 +594,47 @@
 
   &__row--month-end td {
     border-bottom: 2px solid var(--cui-body-color);
+  }
+
+  &__row--simulated {
+    background: rgba(237, 161, 0, 0.08);
+  }
+
+  &__price-input-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  &__price-input {
+    width: 110px;
+    text-align: right;
+  }
+
+  &__price-reset-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex: none;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--cui-secondary-color);
+    cursor: pointer;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    &:hover {
+      background: var(--cui-tertiary-bg);
+      color: var(--cui-body-color);
+    }
   }
 
   &__total-row {
