@@ -129,6 +129,7 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
   { value: 'SOLUSDT', label: 'SOL' },
   { value: 'LINKUSDT', label: 'LINK' },
   { value: 'BNBUSDT', label: 'BNB' },
+  { value: 'PAXGUSDT', label: 'PAXG' },
 ]
 
 // Fixed categorical order (validated CVD-safe palette) — used for per-coin
@@ -139,6 +140,7 @@ export const CRYPTO_PURCHASE_SYMBOL_COLORS = {
   SOLUSDT: '#1baf7a',
   LINKUSDT: '#eda100',
   BNBUSDT: '#e87ba4',
+  PAXGUSDT: '#a6842e',
 }
 
 export const CRYPTO_PURCHASE_TYPES = [
