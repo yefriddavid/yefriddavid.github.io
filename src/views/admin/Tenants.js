@@ -241,6 +241,11 @@ const Tenants = () => {
     dispatch(pushNotification({ type: 'success', message: 'Tenant actualizado correctamente.' }))
   }
 
+  const copyTenantId = (id) => {
+    navigator.clipboard.writeText(id)
+    dispatch(pushNotification({ type: 'success', message: 'ID copiado al portapapeles.' }))
+  }
+
   const handleDelete = (row) => {
     if (!window.confirm(`¿Eliminar tenant "${row.name}"?`)) return
     dispatch(tenantsActions.deleteRequest({ id: row.id }))
@@ -313,6 +318,22 @@ const Tenants = () => {
           noDataText={fetching ? 'Cargando...' : 'Sin tenants registrados.'}
         >
           <Column dataField="name" caption="Nombre" />
+          <Column
+            dataField="id"
+            caption="ID"
+            width={200}
+            allowEditing={false}
+            allowSorting={false}
+            cellRender={({ value }) => (
+              <span
+                onClick={() => copyTenantId(value)}
+                title="Clic para copiar"
+                style={{ fontFamily: 'monospace', fontSize: 12, cursor: 'pointer' }}
+              >
+                {value}
+              </span>
+            )}
+          />
           <Column dataField="slug" caption="Slug" width={160} />
           <Column
             dataField="plan"
