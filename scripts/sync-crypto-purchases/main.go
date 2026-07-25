@@ -61,12 +61,12 @@ import (
 const (
 	collectionName  = "Finance_Crypto_Purchases"
 	defaultTenantID = "Atlfc1jvEUbLsintnpAq"
-	platformValue   = "binance_col"
+	platformValue   = "binance_arg"
 	trmEndpoint     = "https://www.datos.gov.co/resource/mcec-87by.json"
 	pageLimit       = 1000
 )
 
-var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB"}
+var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB", "PAXG"}
 var quotes = []string{"USDT", "USDC", "FDUSD"}
 
 type trmRow struct {
