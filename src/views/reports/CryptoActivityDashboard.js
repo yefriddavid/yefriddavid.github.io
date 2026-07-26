@@ -11,7 +11,11 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import * as withdrawalActions from 'src/actions/finance/cryptoWithdrawalActions'
-import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_SYMBOL_COLORS } from 'src/constants/finance'
+import {
+  CRYPTO_PURCHASE_SYMBOLS,
+  CRYPTO_PURCHASE_SYMBOL_COLORS,
+  CRYPTO_PURCHASE_PLATFORMS,
+} from 'src/constants/finance'
 import {
   isSale,
   isAdjustment,
@@ -53,6 +57,7 @@ const CryptoActivityDashboard = () => {
   // until the user resets it back to live.
   const [priceOverrides, setPriceOverrides] = useState({})
   const [year, setYear] = useState(CURRENT_YEAR)
+  const [platformFilter, setPlatformFilter] = useState('binance_arg')
   const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
   const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
   // Applied values drive priceBuckets; draft values track the inputs as the
@@ -95,7 +100,13 @@ const CryptoActivityDashboard = () => {
 
   // Balance adjustments aren't real trading activity — they'd distort counts
   // and volumes here, so this dashboard only looks at genuine buy/sell records.
-  const allActivity = useMemo(() => purchases.filter((p) => !isAdjustment(p)), [purchases])
+  const allActivity = useMemo(
+    () =>
+      purchases.filter(
+        (p) => !isAdjustment(p) && (platformFilter === 'all' || p.platform === platformFilter),
+      ),
+    [purchases, platformFilter],
+  )
 
   const years = useMemo(() => {
     const set = new Set(allActivity.map((p) => yearOf(p.purchaseDate)).filter(Boolean))
@@ -467,6 +478,19 @@ const CryptoActivityDashboard = () => {
           >
             <CIcon icon={cilSettings} />
           </button>
+          <CFormSelect
+            size="sm"
+            className="cad__year-select"
+            value={platformFilter}
+            onChange={(e) => setPlatformFilter(e.target.value)}
+          >
+            <option value="all">Todas</option>
+            {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </CFormSelect>
           <CFormSelect
             size="sm"
             className="cad__year-select"
