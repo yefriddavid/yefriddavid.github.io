@@ -401,6 +401,19 @@
     height: 100%;
     justify-content: flex-end;
     gap: 6px;
+    padding: 4px 6px 0;
+    border-radius: 6px;
+
+    // Alternating tint + a visible divider between every bucket — otherwise
+    // adjacent ranges (60k-70k, 70k-80k, ...) blend together with nothing
+    // marking where one ends and the next begins.
+    &:nth-child(odd) {
+      background: var(--cui-tertiary-bg);
+    }
+
+    &:not(:first-child) {
+      border-left: 2px solid var(--cui-border-color);
+    }
   }
 
   &__price-bars {
