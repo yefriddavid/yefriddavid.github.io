@@ -80,6 +80,7 @@ const CryptoActivityDashboard = () => {
   const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
   const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
+  const [priceBucketModal, setPriceBucketModal] = useState(null) // { from, to, type: 'buy' | 'sell' }
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -460,6 +461,18 @@ const CryptoActivityDashboard = () => {
       )
       .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
   }, [activity, coinMonthModal])
+
+  const priceBucketRecords = useMemo(() => {
+    if (!priceBucketModal) return []
+    const { from, to, type } = priceBucketModal
+    return activity
+      .filter((p) => p.symbol === priceAssetFilter && isSale(p) === (type === 'sell'))
+      .filter((p) => {
+        const price = Number(p.purchasePrice) || 0
+        return price >= from && (to == null || price < to)
+      })
+      .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+  }, [activity, priceAssetFilter, priceBucketModal])
 
   if (loading) return <Spinner mode="section" />
   if (activity.length === 0)
@@ -861,11 +874,15 @@ const CryptoActivityDashboard = () => {
                         </div>
                       )}
                       <div
-                        className="cad__price-bar cad__price-bar--buy"
+                        className={`cad__price-bar cad__price-bar--buy${r.buyQty > 0 ? ' cad__price-bar--clickable' : ''}`}
                         style={{
                           height: `${(r.buyQty / priceBuckets.max) * PRICE_BAR_MAX_PX}px`,
                         }}
                         title={`Compras ${bucketFullLabel(r)}: ${fmtQty(r.buyQty, priceAssetFilter)}`}
+                        onClick={() =>
+                          r.buyQty > 0 &&
+                          setPriceBucketModal({ from: r.from, to: r.to, type: 'buy' })
+                        }
                       />
                     </div>
                     <div className="cad__price-bar-group">
@@ -878,11 +895,15 @@ const CryptoActivityDashboard = () => {
                         </div>
                       )}
                       <div
-                        className="cad__price-bar cad__price-bar--sell"
+                        className={`cad__price-bar cad__price-bar--sell${r.sellQty > 0 ? ' cad__price-bar--clickable' : ''}`}
                         style={{
                           height: `${(r.sellQty / priceBuckets.max) * PRICE_BAR_MAX_PX}px`,
                         }}
                         title={`Ventas ${bucketFullLabel(r)}: ${fmtQty(r.sellQty, priceAssetFilter)}`}
+                        onClick={() =>
+                          r.sellQty > 0 &&
+                          setPriceBucketModal({ from: r.from, to: r.to, type: 'sell' })
+                        }
                       />
                     </div>
                   </div>
@@ -1249,6 +1270,42 @@ const CryptoActivityDashboard = () => {
                           </span>
                         )}
                       </td>
+                      <td className="num">{p.quantity}</td>
+                      <td className="num">{fmtUSD(p.purchasePrice)}</td>
+                      <td className="num">{fmtUSD(total)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </AppModal>
+      )}
+
+      {priceBucketModal && (
+        <AppModal
+          visible
+          onClose={() => setPriceBucketModal(null)}
+          variant="center"
+          size="md"
+          title={`${priceBucketModal.type === 'sell' ? 'Ventas' : 'Compras'} de ${symbolLabel(priceAssetFilter)} — ${bucketFullLabel(priceBucketModal)}`}
+        >
+          <div className="cad__scroll">
+            <table className="cad__table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th className="num">Cantidad</th>
+                  <th className="num">Precio</th>
+                  <th className="num">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {priceBucketRecords.map((p) => {
+                  const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+                  return (
+                    <tr key={p.id}>
+                      <td>{p.purchaseDate}</td>
                       <td className="num">{p.quantity}</td>
                       <td className="num">{fmtUSD(p.purchasePrice)}</td>
                       <td className="num">{fmtUSD(total)}</td>

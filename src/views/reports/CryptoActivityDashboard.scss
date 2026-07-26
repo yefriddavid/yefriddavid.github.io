@@ -454,6 +454,10 @@
     &--sell {
       background: var(--cad-sell);
     }
+
+    &--clickable {
+      cursor: pointer;
+    }
   }
 
   &__price-label {
