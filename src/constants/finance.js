@@ -155,6 +155,8 @@ export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'lnp2p_long', label: 'LNP2P Long' },
   { value: 'lnp2p_short', label: 'LNP2P Short' },
   { value: 'wos', label: 'WOS' },
+  { value: 'phoenix_long', label: 'Phoenix Long' },
+  { value: 'aqua', label: 'AQUA' },
 ]
 
 // Binance withdraw status codes — GET /sapi/v1/capital/withdraw/history
