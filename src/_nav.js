@@ -33,6 +33,7 @@ import {
   cibBitcoin,
   cilSwapVertical,
   cilExitToApp,
+  cilArrowThickFromBottom,
   cilBank,
   cilSpreadsheet,
 } from '@coreui/icons'
@@ -140,6 +141,12 @@ const getNav = (t, role) => {
           name: 'Consulta de Compras/Ventas',
           to: '/finance/management/crypto-query',
           icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Retiros',
+          to: '/finance/management/crypto-withdrawals-report',
+          icon: <CIcon icon={cilArrowThickFromBottom} customClassName="nav-icon" />,
         },
       ],
     })

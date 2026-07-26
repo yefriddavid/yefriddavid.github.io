@@ -141,6 +141,31 @@
       background: var(--cq-sell-soft);
       color: var(--cq-sell);
     }
+
+    &--active {
+      background: var(--cq-buy-soft);
+      color: var(--cq-buy);
+    }
+
+    &--inactive {
+      background: var(--cq-sell-soft);
+      color: var(--cq-sell);
+    }
+
+    &--warning {
+      background: rgba(243, 156, 18, 0.15);
+      color: #f39c12;
+    }
+
+    &--info {
+      background: rgba(42, 120, 214, 0.12);
+      color: var(--cq-neutral);
+    }
+
+    &--default {
+      background: var(--cui-tertiary-bg);
+      color: var(--cui-secondary-color);
+    }
   }
 
   &__dot {
