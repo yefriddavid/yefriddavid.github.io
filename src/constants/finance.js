@@ -157,6 +157,7 @@ export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'wos', label: 'WOS' },
   { value: 'phoenix_long', label: 'Phoenix Long' },
   { value: 'aqua', label: 'AQUA' },
+  { value: 'muun', label: 'Muun' },
 ]
 
 // Binance withdraw status codes — GET /sapi/v1/capital/withdraw/history
