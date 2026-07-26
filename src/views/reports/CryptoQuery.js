@@ -6,7 +6,7 @@ import moment from 'src/utils/moment'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
-import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
+import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 import {
   isSale,
   isAdjustment,
@@ -28,6 +28,7 @@ const CryptoQuery = () => {
   const { monthLabels } = useLocaleData()
 
   const [symbol, setSymbol] = useState(CRYPTO_PURCHASE_SYMBOLS[0].value)
+  const [platform, setPlatform] = useState('binance_arg')
   const [dateMode, setDateMode] = useState('range') // 'range' | 'month' | 'year'
   const [rangeFrom, setRangeFrom] = useState('')
   const [rangeTo, setRangeTo] = useState('')
@@ -68,12 +69,13 @@ const CryptoQuery = () => {
     const max = priceMax !== '' ? Number(priceMax) : null
     return purchases
       .filter((p) => p.symbol === symbol && !isAdjustment(p))
+      .filter((p) => platform === 'all' || p.platform === platform)
       .filter((p) => !dateFrom || (p.purchaseDate || '') >= dateFrom)
       .filter((p) => !dateTo || (p.purchaseDate || '') <= dateTo)
       .filter((p) => min == null || (Number(p.purchasePrice) || 0) >= min)
       .filter((p) => max == null || (Number(p.purchasePrice) || 0) <= max)
       .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
-  }, [purchases, symbol, dateFrom, dateTo, priceMin, priceMax])
+  }, [purchases, symbol, platform, dateFrom, dateTo, priceMin, priceMax])
 
   const totals = useMemo(() => {
     const buys = filtered.filter((p) => !isSale(p))
@@ -216,6 +218,17 @@ const CryptoQuery = () => {
             {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
+              </option>
+            ))}
+          </CFormSelect>
+        </div>
+        <div className="cq__field">
+          <label>Plataforma</label>
+          <CFormSelect size="sm" value={platform} onChange={(e) => setPlatform(e.target.value)}>
+            <option value="all">Todas</option>
+            {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </CFormSelect>

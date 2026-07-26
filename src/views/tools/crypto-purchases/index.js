@@ -6,7 +6,11 @@ import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import AppModal from 'src/components/shared/AppModal'
-import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_TYPES } from 'src/constants/finance'
+import {
+  CRYPTO_PURCHASE_SYMBOLS,
+  CRYPTO_PURCHASE_TYPES,
+  CRYPTO_PURCHASE_PLATFORMS,
+} from 'src/constants/finance'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { useHistoricalTrm } from 'src/hooks/useHistoricalTrm'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
@@ -39,6 +43,7 @@ const CryptoPurchases = () => {
   const [sheet, setSheet] = useState(null)
   const [filterSymbol, setFilterSymbol] = useState('all')
   const [filterType, setFilterType] = useState('all')
+  const [filterPlatform, setFilterPlatform] = useState('binance_arg')
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -49,8 +54,9 @@ const CryptoPurchases = () => {
       [...purchases]
         .filter((p) => filterSymbol === 'all' || p.symbol === filterSymbol)
         .filter((p) => filterType === 'all' || (p.type ?? 'buy') === filterType)
+        .filter((p) => filterPlatform === 'all' || p.platform === filterPlatform)
         .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || '')),
-    [purchases, filterSymbol, filterType],
+    [purchases, filterSymbol, filterType, filterPlatform],
   )
 
   // Net position per symbol (buys minus sells) — no FIFO lot matching yet, so "invertido"
@@ -220,6 +226,24 @@ const CryptoPurchases = () => {
             onClick={() => setFilterSymbol(s.value)}
           >
             {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="cpu-filters">
+        <button
+          className={`cpu-filters__chip${filterPlatform === 'all' ? ' cpu-filters__chip--active' : ''}`}
+          onClick={() => setFilterPlatform('all')}
+        >
+          Todas
+        </button>
+        {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
+          <button
+            key={p.value}
+            className={`cpu-filters__chip${filterPlatform === p.value ? ' cpu-filters__chip--active' : ''}`}
+            onClick={() => setFilterPlatform(p.value)}
+          >
+            {p.label}
           </button>
         ))}
       </div>
