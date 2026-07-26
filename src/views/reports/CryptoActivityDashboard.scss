@@ -596,6 +596,19 @@
     }
   }
 
+  &__th--sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--cui-body-color);
+    }
+  }
+
+  &__th-sort-arrow {
+    font-size: var(--fs-2xs);
+  }
+
   &__month-cell {
     vertical-align: top;
     border-right: 1px solid var(--cui-border-color);

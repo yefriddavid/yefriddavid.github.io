@@ -81,6 +81,7 @@ const CryptoActivityDashboard = () => {
   const [symbolFilter, setSymbolFilter] = useState('all')
   const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
   const [priceBucketModal, setPriceBucketModal] = useState(null) // { from, to, type: 'buy' | 'sell' }
+  const [priceBucketSort, setPriceBucketSort] = useState({ key: 'purchaseDate', dir: 'desc' })
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -471,8 +472,26 @@ const CryptoActivityDashboard = () => {
         const price = Number(p.purchasePrice) || 0
         return price >= from && (to == null || price < to)
       })
-      .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+      .map((p) => ({
+        ...p,
+        total: (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0),
+      }))
   }, [activity, priceAssetFilter, priceBucketModal])
+
+  const sortedPriceBucketRecords = useMemo(() => {
+    const { key, dir } = priceBucketSort
+    const sign = dir === 'asc' ? 1 : -1
+    return [...priceBucketRecords].sort((a, b) => {
+      if (key === 'purchaseDate')
+        return sign * (a.purchaseDate || '').localeCompare(b.purchaseDate || '')
+      return sign * ((Number(a[key]) || 0) - (Number(b[key]) || 0))
+    })
+  }, [priceBucketRecords, priceBucketSort])
+
+  const togglePriceBucketSort = (key) =>
+    setPriceBucketSort((prev) =>
+      prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' },
+    )
 
   if (loading) return <Spinner mode="section" />
   if (activity.length === 0)
@@ -1294,24 +1313,36 @@ const CryptoActivityDashboard = () => {
             <table className="cad__table">
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th className="num">Cantidad</th>
-                  <th className="num">Precio</th>
-                  <th className="num">Total</th>
+                  {[
+                    { key: 'purchaseDate', label: 'Fecha' },
+                    { key: 'quantity', label: 'Cantidad', num: true },
+                    { key: 'purchasePrice', label: 'Precio', num: true },
+                    { key: 'total', label: 'Total', num: true },
+                  ].map((col) => (
+                    <th
+                      key={col.key}
+                      className={`cad__th--sortable${col.num ? ' num' : ''}`}
+                      onClick={() => togglePriceBucketSort(col.key)}
+                    >
+                      {col.label}
+                      {priceBucketSort.key === col.key && (
+                        <span className="cad__th-sort-arrow">
+                          {priceBucketSort.dir === 'asc' ? ' ▲' : ' ▼'}
+                        </span>
+                      )}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {priceBucketRecords.map((p) => {
-                  const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
-                  return (
-                    <tr key={p.id}>
-                      <td>{p.purchaseDate}</td>
-                      <td className="num">{p.quantity}</td>
-                      <td className="num">{fmtUSD(p.purchasePrice)}</td>
-                      <td className="num">{fmtUSD(total)}</td>
-                    </tr>
-                  )
-                })}
+                {sortedPriceBucketRecords.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.purchaseDate}</td>
+                    <td className="num">{p.quantity}</td>
+                    <td className="num">{fmtUSD(p.purchasePrice)}</td>
+                    <td className="num">{fmtUSD(p.total)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
