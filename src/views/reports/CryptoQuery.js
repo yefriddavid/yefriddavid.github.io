@@ -38,6 +38,8 @@ const CryptoQuery = () => {
   const [groupByQty, setGroupByQty] = useState(false)
   const [minGroupCount, setMinGroupCount] = useState('')
   const [expandedGroups, setExpandedGroups] = useState(new Set())
+  const [editMode, setEditMode] = useState(false)
+  const [selectedForLink, setSelectedForLink] = useState(null)
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -132,6 +134,49 @@ const CryptoQuery = () => {
       else next.add(key)
       return next
     })
+
+  const handleRowClick = (p) => {
+    if (!editMode) return
+
+    if (p.matchGroupId) {
+      if (window.confirm('¿Desvincular este par de compra/venta?')) {
+        const partner = purchases.find((x) => x.id !== p.id && x.matchGroupId === p.matchGroupId)
+        dispatch(actions.updateRequest({ ...p, matchGroupId: null }))
+        if (partner) dispatch(actions.updateRequest({ ...partner, matchGroupId: null }))
+      }
+      return
+    }
+
+    if (!selectedForLink) {
+      setSelectedForLink(p)
+      return
+    }
+
+    if (selectedForLink.id === p.id) {
+      setSelectedForLink(null)
+      return
+    }
+
+    if (isSale(selectedForLink) === isSale(p)) {
+      window.alert('Solo podés vincular una compra con una venta.')
+      setSelectedForLink(null)
+      return
+    }
+
+    const buy = isSale(selectedForLink) ? p : selectedForLink
+    const sell = isSale(selectedForLink) ? selectedForLink : p
+    const confirmed = window.confirm(
+      '¿Vincular estos dos registros como compra/venta?\n\n' +
+        `Compra: ${fmtDateLong(buy.purchaseDate)} — ${buy.quantity} @ ${fmtUSD(buy.purchasePrice)}\n` +
+        `Venta: ${fmtDateLong(sell.purchaseDate)} — ${sell.quantity} @ ${fmtUSD(sell.purchasePrice)}`,
+    )
+    if (confirmed) {
+      const matchGroupId = crypto.randomUUID()
+      dispatch(actions.updateRequest({ ...selectedForLink, matchGroupId }))
+      dispatch(actions.updateRequest({ ...p, matchGroupId }))
+    }
+    setSelectedForLink(null)
+  }
 
   return (
     <div className="cq">
@@ -291,6 +336,17 @@ const CryptoQuery = () => {
                 <label className="cq__group-toggle">
                   <input
                     type="checkbox"
+                    checked={editMode}
+                    onChange={(e) => {
+                      setEditMode(e.target.checked)
+                      setSelectedForLink(null)
+                    }}
+                  />
+                  Modo edición
+                </label>
+                <label className="cq__group-toggle">
+                  <input
+                    type="checkbox"
                     checked={groupByQty}
                     onChange={(e) => setGroupByQty(e.target.checked)}
                   />
@@ -417,8 +473,19 @@ const CryptoQuery = () => {
                       })
                     : filtered.map((p) => {
                         const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+                        const rowClass = [
+                          editMode && 'cq__row--editable',
+                          selectedForLink?.id === p.id && 'cq__row--selected',
+                          p.matchGroupId && 'cq__row--linked',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')
                         return (
-                          <tr key={p.id}>
+                          <tr
+                            key={p.id}
+                            className={rowClass || undefined}
+                            onClick={() => handleRowClick(p)}
+                          >
                             <td>{fmtDateLong(p.purchaseDate)}</td>
                             <td>
                               {isSale(p) ? (
@@ -430,6 +497,11 @@ const CryptoQuery = () => {
                                 <span className="cq__pill cq__pill--buy">
                                   <span className="cq__dot" />
                                   Compra
+                                </span>
+                              )}
+                              {p.matchGroupId && (
+                                <span className="cq__link-badge" title="Vinculado">
+                                  🔗
                                 </span>
                               )}
                             </td>
