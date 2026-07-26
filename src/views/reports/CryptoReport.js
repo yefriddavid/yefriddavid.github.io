@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
-import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
+import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { useUsdCopRate } from 'src/hooks/useUsdCopRate'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
@@ -18,6 +18,9 @@ import './CryptoReport.scss'
 
 const amountClass = (value) =>
   `crypto-report__amount${value >= 0 ? ' crypto-report__amount--positive' : ' crypto-report__amount--negative'}`
+const yearOf = (dateStr) => Number((dateStr || '').slice(0, 4)) || null
+const toggleInArray = (arr, value) =>
+  arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
 
 const CryptoReport = () => {
   const dispatch = useDispatch()
@@ -27,6 +30,8 @@ const CryptoReport = () => {
   const { rate: liveUsdCopRate } = useUsdCopRate()
   const [selectedSymbol, setSelectedSymbol] = useState(null)
   const [modalPrice, setModalPrice] = useState(null)
+  const [selectedPlatforms, setSelectedPlatforms] = useState(['binance_arg'])
+  const [selectedYears, setSelectedYears] = useState([])
 
   // Freeze the price at the moment the modal opens — the modal reads a live
   // websocket feed via `prices`, and re-deriving it on every tick made the
@@ -36,14 +41,31 @@ const CryptoReport = () => {
     setModalPrice(prices[symbol]?.price ?? null)
   }
   const closeLotModal = useCallback(() => setSelectedSymbol(null), [])
+  const togglePlatform = (value) => setSelectedPlatforms((prev) => toggleInArray(prev, value))
+  const toggleYear = (value) => setSelectedYears((prev) => toggleInArray(prev, value))
 
   useEffect(() => {
     dispatch(actions.loadRequest())
   }, [dispatch, activeTenantId])
 
+  const years = useMemo(() => {
+    const set = new Set(purchases.map((p) => yearOf(p.purchaseDate)).filter(Boolean))
+    return [...set].sort((a, b) => b - a)
+  }, [purchases])
+
+  const filteredPurchases = useMemo(
+    () =>
+      purchases.filter(
+        (p) =>
+          (selectedPlatforms.length === 0 || selectedPlatforms.includes(p.platform)) &&
+          (selectedYears.length === 0 || selectedYears.includes(yearOf(p.purchaseDate))),
+      ),
+    [purchases, selectedPlatforms, selectedYears],
+  )
+
   const bySymbol = useMemo(() => {
     return CRYPTO_PURCHASE_SYMBOLS.map((s) => {
-      const rows = purchases.filter((p) => p.symbol === s.value)
+      const rows = filteredPurchases.filter((p) => p.symbol === s.value)
       let qty = 0
       let investedUSD = 0
       let costWeightSum = 0
@@ -87,7 +109,7 @@ const CryptoReport = () => {
         gainLossCOP,
       }
     }).filter((r) => r.count > 0)
-  }, [purchases, prices, liveUsdCopRate])
+  }, [filteredPurchases, prices, liveUsdCopRate])
 
   const totals = useMemo(() => {
     const invested = bySymbol.reduce((s, r) => s + r.investedUSD, 0)
@@ -107,18 +129,58 @@ const CryptoReport = () => {
   const totalLossCOP = lossesCOP.reduce((s, r) => s + r.gainLossCOP, 0)
 
   const modalPurchases = useMemo(
-    () => purchases.filter((p) => p.symbol === selectedSymbol),
-    [purchases, selectedSymbol],
+    () => filteredPurchases.filter((p) => p.symbol === selectedSymbol),
+    [filteredPurchases, selectedSymbol],
   )
 
   if (loading) return <Spinner mode="section" />
-  if (bySymbol.length === 0) return <EmptyState message="Sin compras registradas para analizar." />
+  if (purchases.length === 0) return <EmptyState message="Sin compras registradas para analizar." />
 
   return (
     <div className="crypto-report">
       <div className="crypto-report__sheet">
         <h1 className="crypto-report__title">Análisis de Cripto</h1>
         <div className="crypto-report__subtitle">Desglose por moneda — datos en vivo</div>
+
+        <div className="crypto-report__filters">
+          <button
+            type="button"
+            className={`crypto-report__chip${selectedPlatforms.length === 0 ? ' crypto-report__chip--active' : ''}`}
+            onClick={() => setSelectedPlatforms([])}
+          >
+            Todas
+          </button>
+          {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
+            <button
+              type="button"
+              key={p.value}
+              className={`crypto-report__chip${selectedPlatforms.includes(p.value) ? ' crypto-report__chip--active' : ''}`}
+              onClick={() => togglePlatform(p.value)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="crypto-report__filters">
+          <button
+            type="button"
+            className={`crypto-report__chip${selectedYears.length === 0 ? ' crypto-report__chip--active' : ''}`}
+            onClick={() => setSelectedYears([])}
+          >
+            Todos
+          </button>
+          {years.map((y) => (
+            <button
+              type="button"
+              key={y}
+              className={`crypto-report__chip${selectedYears.includes(y) ? ' crypto-report__chip--active' : ''}`}
+              onClick={() => toggleYear(y)}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
 
         <div className="crypto-report__summary">
           <div className="crypto-report__summary-card">
