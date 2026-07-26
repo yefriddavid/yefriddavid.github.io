@@ -63,8 +63,8 @@
   gap: 10px;
   font-size: var(--fs-xs);
   color: var(--cui-secondary-color);
-  white-space: nowrap;
   flex-wrap: wrap;
+  word-break: break-word;
 }
 
 .sc__footer {
