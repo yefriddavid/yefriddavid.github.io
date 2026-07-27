@@ -126,34 +126,47 @@ const getNav = (t, role) => {
           icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
         },
         {
-          component: CNavItem,
+          component: CNavGroup,
           name: 'Cripto',
-          to: '/finance/management/crypto-report',
           icon: <CIcon icon={cibBitcoin} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Compras y Ventas',
-          to: '/finance/management/crypto-activity',
-          icon: <CIcon icon={cilSwapVertical} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Consulta de Compras/Ventas',
-          to: '/finance/management/crypto-query',
-          icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Retiros',
-          to: '/finance/management/crypto-withdrawals-report',
-          icon: <CIcon icon={cilArrowThickFromBottom} customClassName="nav-icon" />,
-        },
-        {
-          component: CNavItem,
-          name: 'Totales por Plataforma',
-          to: '/finance/management/crypto-platforms',
-          icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+          items: [
+            {
+              component: CNavItem,
+              name: 'Resumen',
+              to: '/finance/management/crypto-report',
+              icon: <CIcon icon={cibBitcoin} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Compras y Ventas',
+              to: '/finance/management/crypto-activity',
+              icon: <CIcon icon={cilSwapVertical} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Consulta de Compras/Ventas',
+              to: '/finance/management/crypto-query',
+              icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Retiros',
+              to: '/finance/management/crypto-withdrawals-report',
+              icon: <CIcon icon={cilArrowThickFromBottom} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Totales por Plataforma',
+              to: '/finance/management/crypto-platforms',
+              icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'BTC Pérdidas 2025',
+              to: '/finance/management/btc-perdidas-2025',
+              icon: <CIcon icon={cilWarning} customClassName="nav-icon" />,
+            },
+          ],
         },
       ],
     })
@@ -232,7 +245,7 @@ const getNav = (t, role) => {
           items: [
             {
               component: CNavItem,
-              name: 'Calculators',
+              name: 'Btc Histograma',
               to: '/finance/trade/tools',
               icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
             },
