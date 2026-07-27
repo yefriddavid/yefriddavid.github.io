@@ -91,6 +91,18 @@
     white-space: nowrap;
   }
 
+  &__export-btn {
+    padding: 0.3rem 0.75rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    border: 1px solid #2f9e44;
+    border-radius: 6px;
+    background: none;
+    color: #2f9e44;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
   &__kpis {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -336,6 +348,16 @@
     padding-right: 0 !important;
   }
 
+  &__mark-col {
+    width: 24px;
+    text-align: center !important;
+    padding-right: 0 !important;
+
+    input {
+      cursor: pointer;
+    }
+  }
+
   &__chevron {
     display: inline-block;
     transition: transform 0.15s ease;
@@ -400,6 +422,11 @@
 
     &--net td {
       border-top: 2px solid var(--cui-body-color);
+    }
+
+    &--marked td {
+      color: var(--cq-neutral);
+      background: var(--cui-tertiary-bg);
     }
   }
 

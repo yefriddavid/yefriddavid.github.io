@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
@@ -28,6 +29,20 @@ const CURRENT_YEAR = new Date().getFullYear()
 const fmtDateLong = (date) => (date ? moment(date).format('D [de] MMMM [de] YYYY') : '')
 const monthOf = (dateStr) => Number((dateStr || '').slice(5, 7)) || null
 const identity = (v) => v
+
+const DEFAULT_SORT = [{ key: 'purchaseDate', dir: 'desc' }]
+const parseSort = (raw) => {
+  if (!raw) return DEFAULT_SORT
+  const parsed = raw
+    .split(',')
+    .map((part) => {
+      const [key, dir] = part.split(':')
+      return key ? { key, dir: dir === 'asc' ? 'asc' : 'desc' } : null
+    })
+    .filter(Boolean)
+  return parsed.length > 0 ? parsed : DEFAULT_SORT
+}
+const serializeSort = (sort) => sort.map((s) => `${s.key}:${s.dir}`).join(',')
 
 // MultiSelectDropdown represents "Todos unchecked to none" with an internal Symbol
 // added to the Set — fine for plain useState, but Array#join throws on a Symbol,
@@ -120,6 +135,8 @@ const CryptoQuery = () => {
   const setTotalMax = (v) => setParam('totalMax', v)
   const groupByQty = searchParams.get('groupByQty') === '1'
   const setGroupByQty = (v) => setParam('groupByQty', v ? '1' : '')
+  const editMode = searchParams.get('edit') === '1'
+  const setEditMode = (v) => setParam('edit', v ? '1' : '')
   const minGroupCount = searchParams.get('minGroupCount') || ''
   const setMinGroupCount = (v) => setParam('minGroupCount', v)
 
@@ -145,26 +162,43 @@ const CryptoQuery = () => {
   const hasFilters = FILTER_PARAM_KEYS.some((k) => searchParams.has(k))
 
   const [expandedGroups, setExpandedGroups] = useState(new Set())
-  const [editMode, setEditMode] = useState(false)
   const [selectedForLink, setSelectedForLink] = useState(null)
+
+  // Purely local scratch-marking of rows — not persisted anywhere (not the URL,
+  // not Firestore), just a visual aid that resets on refresh.
+  const [markedIds, setMarkedIds] = useState(new Set())
+  const toggleMarked = (id) =>
+    setMarkedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+
   // Array of { key, dir } in priority order — plain click sorts by that column
   // alone; shift-click adds/toggles it as an extra tiebreaker level (like a
   // spreadsheet's multi-column sort) without discarding the earlier columns.
-  const [sort, setSort] = useState([{ key: 'purchaseDate', dir: 'desc' }])
-  const toggleSort = (key, additive) => {
-    setSort((prev) => {
-      const existing = prev.find((s) => s.key === key)
+  // Persisted in the URL (like the other filters) so a refresh keeps the order.
+  const sort = useMemo(() => parseSort(searchParams.get('sort')), [searchParams])
+  const toggleSort = (key, additive) =>
+    setSearchParams((prev) => {
+      const current = parseSort(prev.get('sort'))
+      const existing = current.find((s) => s.key === key)
+      let next
       if (!additive) {
         const dir =
-          prev.length === 1 && existing ? (existing.dir === 'asc' ? 'desc' : 'asc') : 'asc'
-        return [{ key, dir }]
+          current.length === 1 && existing ? (existing.dir === 'asc' ? 'desc' : 'asc') : 'asc'
+        next = [{ key, dir }]
+      } else if (existing) {
+        next = current.map((s) =>
+          s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : s,
+        )
+      } else {
+        next = [...current, { key, dir: 'asc' }]
       }
-      if (existing) {
-        return prev.map((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : s))
-      }
-      return [...prev, { key, dir: 'asc' }]
+      const nextParams = new URLSearchParams(prev)
+      nextParams.set('sort', serializeSort(next))
+      return nextParams
     })
-  }
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -275,6 +309,15 @@ const CryptoQuery = () => {
     }
   }, [filtered])
 
+  const markedSummary = useMemo(() => {
+    const rows = filtered.filter((p) => markedIds.has(p.id))
+    return {
+      count: rows.length,
+      quantity: rows.reduce((s, p) => s + (Number(p.quantity) || 0), 0),
+      total: rows.reduce((s, p) => s + (Number(p.total) || 0), 0),
+    }
+  }, [filtered, markedIds])
+
   const groupedRows = useMemo(() => {
     const map = new Map()
     filtered.forEach((p) => {
@@ -352,6 +395,34 @@ const CryptoQuery = () => {
       dispatch(actions.updateRequest({ ...p, matchGroupId }))
     }
     setSelectedForLink(null)
+  }
+
+  // Exports exactly what's on screen right now — whichever table mode is
+  // active (grouped by quantity or the full ledger), respecting the current
+  // filters and sort order.
+  const exportToExcel = () => {
+    const aoa = groupByQty
+      ? [
+          ['Cantidad', 'Compras', 'Ventas', 'Operaciones', 'Total'],
+          ...groupedRows.map((g) => [g.quantity, g.buysCount, g.sellsCount, g.count, g.total]),
+        ]
+      : [
+          ['Fecha', 'Tipo', 'Cantidad', 'Precio', 'Total', 'PnL', 'Vinculado', 'Notas'],
+          ...sortedFiltered.map((p) => [
+            p.purchaseDate,
+            isSale(p) ? 'Venta' : 'Compra',
+            p.quantity,
+            p.purchasePrice,
+            p.total,
+            p.pnl ?? '',
+            p.matchGroupId ? 'Sí' : '',
+            p.notes ?? '',
+          ]),
+        ]
+    const ws = XLSX.utils.aoa_to_sheet(aoa)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos')
+    XLSX.writeFile(wb, `crypto_${symbol}_${dateMode}.xlsx`)
   }
 
   return (
@@ -617,6 +688,9 @@ const CryptoQuery = () => {
                     />
                   </label>
                 )}
+                <button type="button" className="cq__export-btn" onClick={exportToExcel}>
+                  ↓ Excel
+                </button>
               </div>
             </div>
             <div className="cq__scroll">
@@ -632,6 +706,7 @@ const CryptoQuery = () => {
                     </tr>
                   ) : (
                     <tr>
+                      <th className="cq__mark-col" />
                       {[
                         { key: 'purchaseDate', label: 'Fecha' },
                         { key: 'type', label: 'Tipo' },
@@ -759,6 +834,13 @@ const CryptoQuery = () => {
                             className={rowClass || undefined}
                             onClick={() => handleRowClick(p)}
                           >
+                            <td className="cq__mark-col" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={markedIds.has(p.id)}
+                                onChange={() => toggleMarked(p.id)}
+                              />
+                            </td>
                             <td>{fmtDateLong(p.purchaseDate)}</td>
                             <td>
                               {isSale(p) ? (
@@ -801,7 +883,7 @@ const CryptoQuery = () => {
                       })}
                   {(groupByQty ? groupedRows.length === 0 : filtered.length === 0) && (
                     <tr>
-                      <td colSpan={groupByQty ? 5 : 7} className="cq__empty">
+                      <td colSpan={groupByQty ? 5 : 8} className="cq__empty">
                         Sin operaciones para los filtros seleccionados.
                       </td>
                     </tr>
@@ -810,27 +892,39 @@ const CryptoQuery = () => {
                 {!groupByQty && (
                   <tfoot>
                     <tr className="cq__total-row">
-                      <td colSpan={2}>Total compras ({totals.buysCount})</td>
+                      <td colSpan={3}>Total compras ({totals.buysCount})</td>
                       <td className="num">{totals.buysQty.toFixed(8)}</td>
                       <td className="num">—</td>
                       <td className="num">{fmtUSD(totals.invested)}</td>
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
-                      <td colSpan={2}>Total ventas ({totals.sellsCount})</td>
+                      <td colSpan={3}>Total ventas ({totals.sellsCount})</td>
                       <td className="num">{totals.sellsQty.toFixed(8)}</td>
                       <td className="num">—</td>
                       <td className="num">{fmtUSD(totals.proceeds)}</td>
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row cq__total-row--net">
-                      <td colSpan={4}>Neto (Ventas − Compras)</td>
-                      <td className="num" colSpan={2}>
+                      <td colSpan={5}>Neto (Ventas − Compras)</td>
+                      <td className="num" colSpan={3}>
                         <span className="cq__amount cq__amount--neutral">
                           {fmtUSD(Math.abs(totals.net))}
                         </span>
                       </td>
                     </tr>
+                    {markedSummary.count > 0 && (
+                      <tr className="cq__total-row cq__total-row--marked">
+                        <td colSpan={3}>Marcados ({markedSummary.count})</td>
+                        <td className="num">{markedSummary.quantity}</td>
+                        <td className="num">—</td>
+                        <td className="num">{fmtUSD(markedSummary.total)}</td>
+                        <td />
+                        <td />
+                      </tr>
+                    )}
                   </tfoot>
                 )}
               </table>
