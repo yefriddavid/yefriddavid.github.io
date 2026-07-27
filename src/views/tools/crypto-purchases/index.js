@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilPencil, cilTrash, cilCloudUpload, cilSync } from '@coreui/icons'
 import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
@@ -44,10 +45,30 @@ const CryptoPurchases = () => {
   const [filterSymbol, setFilterSymbol] = useState('all')
   const [filterType, setFilterType] = useState('all')
   const [filterPlatform, setFilterPlatform] = useState('binance_arg')
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     dispatch(actions.loadRequest())
   }, [dispatch, activeTenantId])
+
+  // Deep-link support: ?edit=<id> (used by the "Editar" button in Crypto Query,
+  // which opens this screen in a new tab) auto-opens that record's edit sheet
+  // once it's loaded, then cleans the param so closing/reopening doesn't loop.
+  const editId = searchParams.get('edit')
+  useEffect(() => {
+    if (!editId || loading) return
+    const match = purchases.find((p) => p.id === editId)
+    if (!match) return
+    setSheet(match)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('edit')
+        return next
+      },
+      { replace: true },
+    )
+  }, [editId, loading, purchases, setSearchParams])
 
   const filtered = useMemo(
     () =>
