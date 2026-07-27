@@ -15,6 +15,7 @@ const Analysis = React.lazy(() => import('./views/Finance/Analysis'))
 const CryptoReport = React.lazy(() => import('./views/reports/CryptoReport'))
 const CryptoActivityDashboard = React.lazy(() => import('./views/reports/CryptoActivityDashboard'))
 const CryptoQuery = React.lazy(() => import('./views/reports/CryptoQuery'))
+const CryptoPlatforms = React.lazy(() => import('./views/reports/CryptoPlatforms'))
 const CryptoWithdrawalsReport = React.lazy(() => import('./views/reports/CryptoWithdrawalsReport'))
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
@@ -49,6 +50,7 @@ const financeRoutes = [
   { path: '/management/crypto-report', element: CryptoReport, landingPage: true },
   { path: '/management/crypto-activity', element: CryptoActivityDashboard, landingPage: true },
   { path: '/management/crypto-query', element: CryptoQuery, landingPage: true },
+  { path: '/management/crypto-platforms', element: CryptoPlatforms, landingPage: true },
   {
     path: '/management/crypto-withdrawals-report',
     element: CryptoWithdrawalsReport,

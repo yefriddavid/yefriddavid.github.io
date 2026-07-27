@@ -36,6 +36,7 @@ import {
   cilArrowThickFromBottom,
   cilBank,
   cilSpreadsheet,
+  cilLayers,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
@@ -147,6 +148,12 @@ const getNav = (t, role) => {
           name: 'Retiros',
           to: '/finance/management/crypto-withdrawals-report',
           icon: <CIcon icon={cilArrowThickFromBottom} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Totales por Plataforma',
+          to: '/finance/management/crypto-platforms',
+          icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
         },
       ],
     })
