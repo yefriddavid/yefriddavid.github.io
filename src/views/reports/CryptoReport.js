@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
+import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { useUsdCopRate } from 'src/hooks/useUsdCopRate'
@@ -19,8 +20,6 @@ import './CryptoReport.scss'
 const amountClass = (value) =>
   `crypto-report__amount${value >= 0 ? ' crypto-report__amount--positive' : ' crypto-report__amount--negative'}`
 const yearOf = (dateStr) => Number((dateStr || '').slice(0, 4)) || null
-const toggleInArray = (arr, value) =>
-  arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
 
 const CryptoReport = () => {
   const dispatch = useDispatch()
@@ -30,8 +29,8 @@ const CryptoReport = () => {
   const { rate: liveUsdCopRate } = useUsdCopRate()
   const [selectedSymbol, setSelectedSymbol] = useState(null)
   const [modalPrice, setModalPrice] = useState(null)
-  const [selectedPlatforms, setSelectedPlatforms] = useState(['binance_arg'])
-  const [selectedYears, setSelectedYears] = useState([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState(new Set())
+  const [selectedYears, setSelectedYears] = useState(new Set())
 
   // Freeze the price at the moment the modal opens — the modal reads a live
   // websocket feed via `prices`, and re-deriving it on every tick made the
@@ -41,8 +40,6 @@ const CryptoReport = () => {
     setModalPrice(prices[symbol]?.price ?? null)
   }
   const closeLotModal = useCallback(() => setSelectedSymbol(null), [])
-  const togglePlatform = (value) => setSelectedPlatforms((prev) => toggleInArray(prev, value))
-  const toggleYear = (value) => setSelectedYears((prev) => toggleInArray(prev, value))
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -57,8 +54,8 @@ const CryptoReport = () => {
     () =>
       purchases.filter(
         (p) =>
-          (selectedPlatforms.length === 0 || selectedPlatforms.includes(p.platform)) &&
-          (selectedYears.length === 0 || selectedYears.includes(yearOf(p.purchaseDate))),
+          (selectedPlatforms.size === 0 || selectedPlatforms.has(p.platform)) &&
+          (selectedYears.size === 0 || selectedYears.has(yearOf(p.purchaseDate))),
       ),
     [purchases, selectedPlatforms, selectedYears],
   )
@@ -143,43 +140,32 @@ const CryptoReport = () => {
         <div className="crypto-report__subtitle">Desglose por moneda — datos en vivo</div>
 
         <div className="crypto-report__filters">
-          <button
-            type="button"
-            className={`crypto-report__chip${selectedPlatforms.length === 0 ? ' crypto-report__chip--active' : ''}`}
-            onClick={() => setSelectedPlatforms([])}
-          >
-            Todas
-          </button>
-          {CRYPTO_PURCHASE_PLATFORMS.map((p) => (
-            <button
-              type="button"
-              key={p.value}
-              className={`crypto-report__chip${selectedPlatforms.includes(p.value) ? ' crypto-report__chip--active' : ''}`}
-              onClick={() => togglePlatform(p.value)}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="crypto-report__filters">
-          <button
-            type="button"
-            className={`crypto-report__chip${selectedYears.length === 0 ? ' crypto-report__chip--active' : ''}`}
-            onClick={() => setSelectedYears([])}
-          >
-            Todos
-          </button>
-          {years.map((y) => (
-            <button
-              type="button"
-              key={y}
-              className={`crypto-report__chip${selectedYears.includes(y) ? ' crypto-report__chip--active' : ''}`}
-              onClick={() => toggleYear(y)}
-            >
-              {y}
-            </button>
-          ))}
+          <MultiSelectDropdown
+            label={(size) => (size > 0 ? `Plataforma (${size})` : 'Plataforma: Todas')}
+            options={CRYPTO_PURCHASE_PLATFORMS}
+            selected={selectedPlatforms}
+            onToggle={(value) =>
+              setSelectedPlatforms((prev) => {
+                const next = new Set(prev)
+                next.has(value) ? next.delete(value) : next.add(value)
+                return next
+              })
+            }
+            onClearAll={() => setSelectedPlatforms(new Set())}
+          />
+          <MultiSelectDropdown
+            label={(size) => (size > 0 ? `Año (${size})` : 'Año: Todos')}
+            options={years.map((y) => ({ value: y, label: String(y) }))}
+            selected={selectedYears}
+            onToggle={(y) =>
+              setSelectedYears((prev) => {
+                const next = new Set(prev)
+                next.has(y) ? next.delete(y) : next.add(y)
+                return next
+              })
+            }
+            onClearAll={() => setSelectedYears(new Set())}
+          />
         </div>
 
         <div className="crypto-report__summary">

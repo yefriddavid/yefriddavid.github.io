@@ -74,6 +74,23 @@
     color: var(--cui-body-color);
   }
 
+  &__field--clear {
+    justify-content: flex-end;
+  }
+
+  &__clear-btn {
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.75rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    border: 1px solid #e03131;
+    border-radius: 6px;
+    background: none;
+    color: #e03131;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
   &__kpis {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -181,6 +198,12 @@
     font-size: var(--fs-2xs);
   }
 
+  &__notes-cell {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   &__row--editable {
     cursor: pointer;
 
@@ -285,10 +308,27 @@
     }
   }
 
+  &__th--sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--cui-body-color);
+    }
+  }
+
+  &__th-sort-arrow {
+    font-size: var(--fs-2xs);
+  }
+
   &__empty {
     text-align: center !important;
     color: var(--cui-secondary-color);
     padding: 20px 10px !important;
+  }
+
+  &__muted {
+    color: var(--cui-secondary-color);
   }
 
   &__expand-col {
@@ -368,6 +408,14 @@
 
     &--neutral {
       color: var(--cq-neutral);
+    }
+
+    &--positive {
+      color: var(--cq-buy);
+    }
+
+    &--negative {
+      color: var(--cq-sell);
     }
   }
 }

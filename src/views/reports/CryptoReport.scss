@@ -30,23 +30,6 @@
     margin-bottom: 10px;
   }
 
-  &__chip {
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: none;
-    white-space: nowrap;
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    cursor: pointer;
-    background: var(--cui-tertiary-bg);
-    color: var(--cui-secondary-color);
-
-    &--active {
-      background: var(--cui-primary);
-      color: #fff;
-    }
-  }
-
   &__summary {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

@@ -5,6 +5,22 @@ import './MultiSelectDropdown.scss'
 // value we can put in the Set to mean "match nothing" without a consumer-side change.
 // This sentinel is a value no real option will ever equal, so `selected.has(realValue)`
 // stays false for every real option while `selected.size` is non-zero (not the "all" state).
+//
+// GOTCHA for consumers that persist `selected` outside React state (URL search params,
+// localStorage, Firestore, anywhere it gets serialized to a string): this Symbol ends up
+// INSIDE the Set you receive via onToggle. `Array.prototype.join` (and any `${...}`
+// template-literal interpolation) THROWS on a Symbol — "Cannot convert a Symbol value to
+// a string" — so a naive `[...selected].join(',')` silently breaks the "Todos" checkbox
+// the moment the user unchecks it (the state update throws inside the setter and never
+// applies). If you persist this Set as a string, special-case the Symbol first, e.g.:
+//
+//   const hasNone = [...updated].some((v) => typeof v === 'symbol')
+//   const toStore = hasNone ? 'YOUR_OWN_NONE_MARKER' : [...updated].join(',')
+//
+// and translate 'YOUR_OWN_NONE_MARKER' back into a one-element Set (any non-matching
+// placeholder value) on read. See src/views/reports/CryptoQuery.js's `useMultiParam`
+// for a working example (bug fixed there on 2026-07-27, filters were un-clearable
+// because of exactly this).
 const NONE = Symbol('multi-select-none')
 
 const MultiSelectDropdown = ({

@@ -148,6 +148,11 @@ export const CRYPTO_PURCHASE_TYPES = [
   { value: 'sell', label: 'Venta' },
 ]
 
+export const CRYPTO_PURCHASE_LINK_STATUS = [
+  { value: 'linked', label: 'Con vínculo' },
+  { value: 'unlinked', label: 'Sin vínculo' },
+]
+
 export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'binance_arg', label: 'Binance ARG' },
   { value: 'binance_col', label: 'Binance COL' },

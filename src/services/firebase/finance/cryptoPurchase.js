@@ -30,6 +30,7 @@ export const fetchAll = async () => {
       isAdjustment: data.isAdjustment ?? false,
       active: data.active ?? true,
       notes: data.notes ?? '',
+      matchGroupId: data.matchGroupId ?? null,
       createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt ?? null,
     }
   })
