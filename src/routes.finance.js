@@ -17,6 +17,7 @@ const CryptoActivityDashboard = React.lazy(() => import('./views/reports/CryptoA
 const CryptoQuery = React.lazy(() => import('./views/reports/CryptoQuery'))
 const CryptoPlatforms = React.lazy(() => import('./views/reports/CryptoPlatforms'))
 const CryptoWithdrawalsReport = React.lazy(() => import('./views/reports/CryptoWithdrawalsReport'))
+const BtcLosses2025 = React.lazy(() => import('./views/reports/BtcLosses2025'))
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
 const Assets = React.lazy(() => import('./views/CashFlow/assets/Assets'))
@@ -56,6 +57,7 @@ const financeRoutes = [
     element: CryptoWithdrawalsReport,
     landingPage: true,
   },
+  { path: '/management/btc-perdidas-2025', element: BtcLosses2025, landingPage: true },
   { path: '/management/users', element: Users, roles: ['superAdmin'] },
   { path: '/management/users/:username', element: UserEdit, roles: ['superAdmin'] },
   { path: '/profile', element: Profile },

@@ -10,19 +10,25 @@ consumir ninguno de los lotes listados abajo.
 
 ## Lotes que quedaron en cartera
 
-| Fecha compra | Cantidad BTC | Precio compra (USD) | Costo (USD) |
-|---|---|---|---|
-| 2025-08-17 | 0.00334 (parcial) | 117,389.98 | 392.08 |
-| 2025-08-18 | 0.01735 | 115,236.61 | 1,999.36 |
-| 2025-08-19 | 0.00878 | 113,822.74 | 999.36 |
-| 2025-10-10 | 0.00833 | 120,000.00 | 999.60 |
-| 2025-10-10 | 0.01407 | 111,527.53 | 1,569.19 |
-| 2025-10-10 | 0.01713 | 116,810.92 | 2,000.97 |
-| 2025-10-13 | 0.00868 | 115,150.11 | 999.50 |
-| 2025-10-14 | 0.01799 | 111,133.56 | 1,999.29 |
-| 2025-10-28 | 0.00887 | 112,739.15 | 1,000.00 *(nota: nunca se vendió)* |
+PnL calculado con precio actual de BTC = **$64,803** (USD) — el precio de referencia
+que me pasó el usuario en el momento del análisis, no una cotización en vivo. Fórmula:
+`(precio_actual - precio_compra) * cantidad`.
 
-**Total: 0.10454 BTC — costo total $11,959.36 — precio promedio ponderado $114,399.82**
+| Fecha compra | Cantidad BTC | Precio compra (USD) | Costo (USD) | PnL (USD) @ $64,803 |
+|---|---|---|---|---|
+| 2025-08-17 | 0.00334 (parcial) | 117,389.98 | 392.08 | -175.64 |
+| 2025-08-18 | 0.01735 | 115,236.61 | 1,999.36 | -875.02 |
+| 2025-08-19 | 0.00878 | 113,822.74 | 999.36 | -430.39 |
+| 2025-10-10 | 0.00833 | 120,000.00 | 999.60 | -459.79 |
+| 2025-10-10 | 0.01407 | 111,527.53 | 1,569.19 | -657.41 |
+| 2025-10-10 | 0.01713 | 116,810.92 | 2,000.97 | -890.90 |
+| 2025-10-13 | 0.00868 | 115,150.11 | 999.50 | -437.01 |
+| 2025-10-14 | 0.01799 | 111,133.56 | 1,999.29 | -833.49 |
+| 2025-10-28 | 0.00887 | 112,739.15 | 1,000.00 *(nota: nunca se vendió)* | -425.19 |
+| **Total** | **0.10454** | — | **11,959.36** | **-5,184.85** |
+
+**Total: 0.10454 BTC — costo total $11,959.36 — precio promedio ponderado $114,399.82 —
+valor actual $6,774.51 — PnL -$5,184.85**
 
 ## Pendiente
 
