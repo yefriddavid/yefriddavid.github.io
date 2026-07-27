@@ -18,6 +18,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
   const totalValue = data.reduce((s, a) => s + a.valueCOP, 0)
   const totalMonthlyGain = data.reduce((s, a) => s + (Number(a.monthlyGain) || 0), 0)
   const totalQuantity = data.reduce((s, a) => s + (Number(a.quantity) || 0), 0)
+  const totalProjection = data.reduce((s, a) => s + (a.projection ? a.valueCOP : 0), 0)
 
   const groupCounts = {}
   const groupTotals = {}
@@ -36,6 +37,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
     <table className="assets-table">
       <thead>
         <tr>
+          <th>#</th>
           <th />
           <th>Nombre</th>
           <th>Descripción</th>
@@ -52,14 +54,14 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
         </tr>
       </thead>
       <tbody>
-        {data.map((a) => {
+        {data.map((a, index) => {
           const isNewGroup = groupByType && a.type !== lastType
           lastType = a.type
           return (
             <React.Fragment key={a.id}>
               {isNewGroup && (
                 <tr className="assets-table__group-row">
-                  <td colSpan={13}>
+                  <td colSpan={14}>
                     <span style={{ color: TYPE_COLOR[a.type] }}>{a.type}</span>
                     <span className="assets-table__group-meta">
                       {groupCounts[a.type]} · {fmt(groupTotals[a.type])}
@@ -68,6 +70,7 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
                 </tr>
               )}
               <tr className={a.archived ? 'assets-table__row--archived' : ''}>
+                <td className="assets-table__index">{index + 1}</td>
                 <td className="assets-table__actions">
                   <button onClick={() => onEdit(a)} title="Editar">
                     ✏️
@@ -357,12 +360,24 @@ const AssetsTable = ({ data, groupByType, onEdit, onDelete, onClone, onQuickUpda
       <tfoot>
         <tr className="assets-table__total-row">
           <td />
+          <td />
           <td colSpan={4}>Total</td>
           <td>{fmtNum(totalQuantity)}</td>
           <td />
           <td className="assets-table__value">{fmt(totalValue)}</td>
           <td colSpan={3} />
           <td>{totalMonthlyGain ? fmt(totalMonthlyGain) : '—'}</td>
+          <td />
+        </tr>
+        <tr className="assets-table__total-row assets-table__total-row--projection">
+          <td />
+          <td />
+          <td colSpan={4}>Total - Proyección</td>
+          <td />
+          <td />
+          <td className="assets-table__value">{fmt(totalValue - totalProjection)}</td>
+          <td colSpan={3} />
+          <td />
           <td />
         </tr>
       </tfoot>

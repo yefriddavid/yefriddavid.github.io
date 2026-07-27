@@ -108,6 +108,11 @@
     }
   }
 
+  &__index {
+    color: var(--cui-secondary-color, #888);
+    text-align: center !important;
+  }
+
   &__actions {
     display: flex;
     gap: 6px;
@@ -128,10 +133,17 @@
 
     td {
       position: sticky;
-      bottom: 0;
+      // ponytail: assumes this row's rendered height (~32px, from the shared
+      // td padding/font-size above); bump this if that padding/font-size changes,
+      // so it keeps stacking above --projection's own bottom: 0 instead of overlapping.
+      bottom: 32px;
       z-index: 1;
       background: var(--cui-body-bg, #fff);
       border-bottom: none;
+    }
+
+    &--projection td {
+      bottom: 0;
     }
   }
 }
