@@ -38,6 +38,12 @@ const CryptoPlatforms = () => {
     dispatch(actions.loadRequest())
   }, [dispatch, activeTenantId])
 
+  // The years multiselect is only shown in "year" mode — clear it on the way
+  // out so it doesn't keep silently filtering once the field is hidden.
+  useEffect(() => {
+    if (dateMode !== 'year') setSelectedYears([])
+  }, [dateMode])
+
   const activity = useMemo(() => purchases.filter((p) => !isAdjustment(p)), [purchases])
 
   const years = useMemo(() => {
@@ -188,24 +194,26 @@ const CryptoPlatforms = () => {
           </>
         )}
 
-        <div className="cpl__field">
-          <label>Años (multiselección)</label>
-          <CFormSelect
-            size="sm"
-            multiple
-            className="cpl__years-select"
-            value={selectedYears}
-            onChange={(e) =>
-              setSelectedYears(Array.from(e.target.selectedOptions, (o) => Number(o.value)))
-            }
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </CFormSelect>
-        </div>
+        {dateMode === 'year' && (
+          <div className="cpl__field">
+            <label>Años (multiselección)</label>
+            <CFormSelect
+              size="sm"
+              multiple
+              className="cpl__years-select"
+              value={selectedYears}
+              onChange={(e) =>
+                setSelectedYears(Array.from(e.target.selectedOptions, (o) => Number(o.value)))
+              }
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </CFormSelect>
+          </div>
+        )}
       </div>
 
       <div className="cpl__filters">
