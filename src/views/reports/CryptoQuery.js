@@ -197,6 +197,8 @@ const CryptoQuery = () => {
   const setGroupByQty = (v) => setParam('groupByQty', v ? '1' : '')
   const editMode = searchParams.get('edit') === '1'
   const setEditMode = (v) => setParam('edit', v ? '1' : '')
+  const showSubtotals = searchParams.get('subtotals') === '1'
+  const setShowSubtotals = (v) => setParam('subtotals', v ? '1' : '')
   const minGroupCount = searchParams.get('minGroupCount') || ''
   const setMinGroupCount = (v) => setParam('minGroupCount', v)
 
@@ -344,6 +346,37 @@ const CryptoQuery = () => {
       return 0
     })
   }, [filtered, sort])
+
+  // Each marked row carries the sum of "total" for the segment since the
+  // previous marked row (or since the top of the table for the first mark).
+  const rowsWithSubtotals = useMemo(() => {
+    const empty = () => ({ qty: 0, total: 0 })
+    let all = empty()
+    let buys = empty()
+    let sells = empty()
+    return sortedFiltered.map((p) => {
+      const qty = Number(p.quantity) || 0
+      all = { qty: all.qty + qty, total: all.total + p.total }
+      if (isSale(p)) sells = { qty: sells.qty + qty, total: sells.total + p.total }
+      else buys = { qty: buys.qty + qty, total: buys.total + p.total }
+
+      if (!markedIds.has(p.id)) {
+        return { ...p, subtotal: null, subtotalBuys: null, subtotalSells: null, subtotalNet: null }
+      }
+      const net = { qty: buys.qty - sells.qty, total: buys.total - sells.total }
+      const result = {
+        ...p,
+        subtotal: all,
+        subtotalBuys: buys,
+        subtotalSells: sells,
+        subtotalNet: net,
+      }
+      all = empty()
+      buys = empty()
+      sells = empty()
+      return result
+    })
+  }, [sortedFiltered, markedIds])
 
   const totals = useMemo(() => {
     const buys = filtered.filter((p) => !isSale(p))
@@ -729,6 +762,14 @@ const CryptoQuery = () => {
                 <label className="cq__group-toggle">
                   <input
                     type="checkbox"
+                    checked={showSubtotals}
+                    onChange={(e) => setShowSubtotals(e.target.checked)}
+                  />
+                  Mostrar subtotales
+                </label>
+                <label className="cq__group-toggle">
+                  <input
+                    type="checkbox"
                     checked={groupByQty}
                     onChange={(e) => setGroupByQty(e.target.checked)}
                   />
@@ -886,7 +927,7 @@ const CryptoQuery = () => {
                           </React.Fragment>
                         )
                       })
-                    : sortedFiltered.map((p) => {
+                    : rowsWithSubtotals.map((p) => {
                         const total = p.total
                         const rowClass = [
                           editMode && 'cq__row--editable',
@@ -896,70 +937,109 @@ const CryptoQuery = () => {
                           .filter(Boolean)
                           .join(' ')
                         return (
-                          <tr
-                            key={p.id}
-                            className={rowClass || undefined}
-                            onClick={() => handleRowClick(p)}
-                          >
-                            <td className="cq__mark-col" onClick={(e) => e.stopPropagation()}>
-                              <input
-                                type="checkbox"
-                                checked={markedIds.has(p.id)}
-                                onChange={() => toggleMarked(p.id)}
-                              />
-                              <button
-                                type="button"
-                                className="cq__edit-btn"
-                                title="Editar este registro (pestaña nueva)"
-                                onClick={() =>
-                                  window.open(
-                                    `/finance/tools/v2/adjustments?edit=${p.id}`,
-                                    '_blank',
-                                    'noopener,noreferrer',
-                                  )
-                                }
-                              >
-                                ✎
-                              </button>
-                            </td>
-                            <td>{fmtDateLong(p.purchaseDate)}</td>
-                            <td>
-                              {isSale(p) ? (
-                                <span className="cq__pill cq__pill--sell">
-                                  <span className="cq__dot" />
-                                  Venta
-                                </span>
-                              ) : (
-                                <span className="cq__pill cq__pill--buy">
-                                  <span className="cq__dot" />
-                                  Compra
-                                </span>
-                              )}
-                              {p.matchGroupId && (
-                                <span className="cq__link-badge" title="Vinculado">
-                                  🔗
-                                </span>
-                              )}
-                            </td>
-                            <td className="num">{p.quantity}</td>
-                            <td className="num">{fmtUSD(p.purchasePrice)}</td>
-                            <td className="num">{fmtUSD(total)}</td>
-                            <td className="num">
-                              {p.pnl == null ? (
-                                <span className="cq__muted">—</span>
-                              ) : (
-                                <span
-                                  className={`cq__amount${p.pnl >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                          <React.Fragment key={p.id}>
+                            <tr className={rowClass || undefined} onClick={() => handleRowClick(p)}>
+                              <td className="cq__mark-col" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={markedIds.has(p.id)}
+                                  onChange={() => toggleMarked(p.id)}
+                                />
+                                <button
+                                  type="button"
+                                  className="cq__edit-btn"
+                                  title="Editar este registro (pestaña nueva)"
+                                  onClick={() =>
+                                    window.open(
+                                      `/finance/tools/v2/adjustments?edit=${p.id}`,
+                                      '_blank',
+                                      'noopener,noreferrer',
+                                    )
+                                  }
                                 >
-                                  {p.pnl >= 0 ? '+' : ''}
-                                  {fmtUSD(p.pnl)}
-                                </span>
-                              )}
-                            </td>
-                            <td className="cq__notes-cell" title={p.notes || undefined}>
-                              {p.notes}
-                            </td>
-                          </tr>
+                                  ✎
+                                </button>
+                              </td>
+                              <td>{fmtDateLong(p.purchaseDate)}</td>
+                              <td>
+                                {isSale(p) ? (
+                                  <span className="cq__pill cq__pill--sell">
+                                    <span className="cq__dot" />
+                                    Venta
+                                  </span>
+                                ) : (
+                                  <span className="cq__pill cq__pill--buy">
+                                    <span className="cq__dot" />
+                                    Compra
+                                  </span>
+                                )}
+                                {p.matchGroupId && (
+                                  <span className="cq__link-badge" title="Vinculado">
+                                    🔗
+                                  </span>
+                                )}
+                              </td>
+                              <td className="num">{p.quantity}</td>
+                              <td className="num">{fmtUSD(p.purchasePrice)}</td>
+                              <td className="num">{fmtUSD(total)}</td>
+                              <td className="num">
+                                {p.pnl == null ? (
+                                  <span className="cq__muted">—</span>
+                                ) : (
+                                  <span
+                                    className={`cq__amount${p.pnl >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                                  >
+                                    {p.pnl >= 0 ? '+' : ''}
+                                    {fmtUSD(p.pnl)}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="cq__notes-cell" title={p.notes || undefined}>
+                                {p.notes}
+                              </td>
+                            </tr>
+                            {showSubtotals && p.subtotal != null && (
+                              <>
+                                <tr className="cq__subtotal-row">
+                                  <td colSpan={3}>Subtotal</td>
+                                  <td className="num">{p.subtotal.qty}</td>
+                                  <td className="num">—</td>
+                                  <td className="num">{fmtUSD(p.subtotal.total)}</td>
+                                  <td />
+                                  <td />
+                                </tr>
+                                <tr className="cq__subtotal-row cq__subtotal-row--buy">
+                                  <td colSpan={3}>Subtotal compras</td>
+                                  <td className="num">{p.subtotalBuys.qty}</td>
+                                  <td className="num">—</td>
+                                  <td className="num">{fmtUSD(p.subtotalBuys.total)}</td>
+                                  <td />
+                                  <td />
+                                </tr>
+                                <tr className="cq__subtotal-row cq__subtotal-row--sell">
+                                  <td colSpan={3}>Subtotal ventas</td>
+                                  <td className="num">{p.subtotalSells.qty}</td>
+                                  <td className="num">—</td>
+                                  <td className="num">{fmtUSD(p.subtotalSells.total)}</td>
+                                  <td />
+                                  <td />
+                                </tr>
+                                <tr className="cq__subtotal-row cq__subtotal-row--net">
+                                  <td colSpan={3}>Neto (Compras − Ventas)</td>
+                                  <td className="num">{p.subtotalNet.qty}</td>
+                                  <td className="num">—</td>
+                                  <td
+                                    className={`num${p.subtotalNet.total >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                                  >
+                                    {p.subtotalNet.total >= 0 ? '+' : ''}
+                                    {fmtUSD(p.subtotalNet.total)}
+                                  </td>
+                                  <td />
+                                  <td />
+                                </tr>
+                              </>
+                            )}
+                          </React.Fragment>
                         )
                       })}
                   {(groupByQty ? groupedRows.length === 0 : filtered.length === 0) && (

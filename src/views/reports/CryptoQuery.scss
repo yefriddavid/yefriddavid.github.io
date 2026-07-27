@@ -285,6 +285,26 @@
     background: rgba(46, 184, 92, 0.06);
   }
 
+  &__subtotal-row {
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    background: var(--cui-tertiary-bg);
+    color: var(--cq-neutral);
+
+    td {
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+
+    &--buy {
+      color: var(--cq-buy);
+    }
+
+    &--sell {
+      color: var(--cq-sell);
+    }
+  }
+
   &__ledger {
     background: var(--cui-body-bg);
     border: 1px solid var(--cui-border-color);
