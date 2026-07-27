@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import EmptyState from 'src/components/shared/EmptyState'
+import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
-import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
+import { CRYPTO_PURCHASE_SYMBOLS, CRYPTO_PURCHASE_PLATFORMS } from 'src/constants/finance'
 import {
   isSale,
   isAdjustment,
@@ -31,8 +32,9 @@ const CryptoPlatforms = () => {
   const [rangeTo, setRangeTo] = useState('')
   const [year, setYear] = useState(CURRENT_YEAR)
   const [month, setMonth] = useState(new Date().getMonth() + 1)
-  const [selectedYears, setSelectedYears] = useState([])
+  const [selectedYears, setSelectedYears] = useState(new Set())
   const [selectedSymbols, setSelectedSymbols] = useState([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState(new Set())
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -41,7 +43,7 @@ const CryptoPlatforms = () => {
   // The years multiselect is only shown in "year" mode — clear it on the way
   // out so it doesn't keep silently filtering once the field is hidden.
   useEffect(() => {
-    if (dateMode !== 'year') setSelectedYears([])
+    if (dateMode !== 'year') setSelectedYears(new Set())
   }, [dateMode])
 
   const activity = useMemo(() => purchases.filter((p) => !isAdjustment(p)), [purchases])
@@ -67,9 +69,10 @@ const CryptoPlatforms = () => {
       activity
         .filter((p) => !dateFrom || (p.purchaseDate || '') >= dateFrom)
         .filter((p) => !dateTo || (p.purchaseDate || '') <= dateTo)
-        .filter((p) => selectedYears.length === 0 || selectedYears.includes(yearOf(p.purchaseDate)))
-        .filter((p) => selectedSymbols.length === 0 || selectedSymbols.includes(p.symbol)),
-    [activity, dateFrom, dateTo, selectedYears, selectedSymbols],
+        .filter((p) => selectedYears.size === 0 || selectedYears.has(yearOf(p.purchaseDate)))
+        .filter((p) => selectedSymbols.length === 0 || selectedSymbols.includes(p.symbol))
+        .filter((p) => selectedPlatforms.size === 0 || selectedPlatforms.has(p.platform)),
+    [activity, dateFrom, dateTo, selectedYears, selectedSymbols, selectedPlatforms],
   )
 
   const byPlatform = useMemo(() => {
@@ -196,27 +199,40 @@ const CryptoPlatforms = () => {
 
         {dateMode === 'year' && (
           <div className="cpl__field">
-            <label>Años (multiselección)</label>
-            <CFormSelect
-              size="sm"
-              multiple
-              className="cpl__years-select"
-              value={selectedYears}
-              onChange={(e) =>
-                setSelectedYears(Array.from(e.target.selectedOptions, (o) => Number(o.value)))
+            <label>Años</label>
+            <MultiSelectDropdown
+              label={(size) => (size > 0 ? `Año (${size})` : 'Año: Todos')}
+              options={years.map((y) => ({ value: y, label: String(y) }))}
+              selected={selectedYears}
+              onToggle={(y) =>
+                setSelectedYears((prev) => {
+                  const next = new Set(prev)
+                  next.has(y) ? next.delete(y) : next.add(y)
+                  return next
+                })
               }
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </CFormSelect>
+              onClearAll={() => setSelectedYears(new Set())}
+              acceptLabel="Aceptar"
+            />
           </div>
         )}
       </div>
 
       <div className="cpl__filters">
+        <MultiSelectDropdown
+          label={(size) => (size > 0 ? `Plataforma (${size})` : 'Plataforma: Todas')}
+          options={CRYPTO_PURCHASE_PLATFORMS}
+          selected={selectedPlatforms}
+          onToggle={(value) =>
+            setSelectedPlatforms((prev) => {
+              const next = new Set(prev)
+              next.has(value) ? next.delete(value) : next.add(value)
+              return next
+            })
+          }
+          onClearAll={() => setSelectedPlatforms(new Set())}
+          acceptLabel="Aceptar"
+        />
         <button
           type="button"
           className={`cpl__chip${selectedSymbols.length === 0 ? ' cpl__chip--active' : ''}`}
