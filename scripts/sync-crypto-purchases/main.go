@@ -34,6 +34,14 @@
 //	export BINANCE_SECRET_KEY=...
 //	go run . [--apply] [--symbol BTC] [--since 2025-08-01] [--tenant tenantId] [--sa path/to/service-account.json]
 //
+// Or pass the keys directly instead of exporting them:
+//
+//	go run . --api-key ... --secret-key ... [--apply] ...
+//
+// --platform sets the value stored in each purchase's "platform" field
+// (defaults to "binance_arg") — use it to sync a different Binance account
+// under its own platform label, e.g. --platform binance_col.
+//
 // Without --apply it only prints the plan (dry run).
 package main
 
@@ -61,7 +69,7 @@ import (
 const (
 	collectionName  = "Finance_Crypto_Purchases"
 	defaultTenantID = "Atlfc1jvEUbLsintnpAq"
-	platformValue   = "binance_arg"
+	defaultPlatform = "binance_arg"
 	trmEndpoint     = "https://www.datos.gov.co/resource/mcec-87by.json"
 	pageLimit       = 1000
 )
@@ -135,12 +143,21 @@ func main() {
 	since := flag.String("since", "2020-01-01", "only write trades from this date onward (YYYY-MM-DD)")
 	onlyBase := flag.String("symbol", "", "sync only this base asset (e.g. BTC); omit for all configured bases")
 	tenant := flag.String("tenant", defaultTenantID, "tenant id to sync into (defaults to the primary tenant)")
+	platform := flag.String("platform", defaultPlatform, "platform value stored on each synced purchase")
+	apiKeyFlag := flag.String("api-key", "", "Binance API key (defaults to BINANCE_API_KEY env var)")
+	secretKeyFlag := flag.String("secret-key", "", "Binance secret key (defaults to BINANCE_SECRET_KEY env var)")
 	flag.Parse()
 
-	apiKey := os.Getenv("BINANCE_API_KEY")
-	secretKey := os.Getenv("BINANCE_SECRET_KEY")
+	apiKey := *apiKeyFlag
+	if apiKey == "" {
+		apiKey = os.Getenv("BINANCE_API_KEY")
+	}
+	secretKey := *secretKeyFlag
+	if secretKey == "" {
+		secretKey = os.Getenv("BINANCE_SECRET_KEY")
+	}
 	if apiKey == "" || secretKey == "" {
-		log.Fatal("Configura las variables de entorno BINANCE_API_KEY y BINANCE_SECRET_KEY")
+		log.Fatal("Configura --api-key/--secret-key o las variables de entorno BINANCE_API_KEY y BINANCE_SECRET_KEY")
 	}
 
 	if _, err := time.Parse("2006-01-02", *since); err != nil {
@@ -154,6 +171,7 @@ func main() {
 
 	fmt.Printf("\n🔧  sync-crypto-purchases\n")
 	fmt.Printf("    Bases    : %s (contra %s)\n", strings.Join(bases, ", "), strings.Join(quotes, "/"))
+	fmt.Printf("    Plataforma: %s\n", *platform)
 	fmt.Printf("    Desde    : %s\n", *since)
 	fmt.Printf("    Modo     : %s\n\n", map[bool]string{true: "APLICAR CAMBIOS", false: "dry run (solo muestra el plan)"}[*apply])
 
@@ -242,7 +260,7 @@ func main() {
 						"quantity":       qty,
 						"purchasePrice":  price,
 						"purchaseDate":   date,
-						"platform":       platformValue,
+						"platform":       *platform,
 						"usdCopRate":     usdCopRate,
 						"notes":          notes,
 						"tenantId":       *tenant,

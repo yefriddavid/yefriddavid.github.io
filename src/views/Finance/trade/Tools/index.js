@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { fmtUsd as fmt } from '../tradeUtils'
+import BtcHistogram from './BtcHistogram'
 import './Tools.scss'
 
 function GridCalculator() {
@@ -162,6 +163,7 @@ export default function Tools() {
         <GridCalculator />
         <PositionCalculator />
       </div>
+      <BtcHistogram />
     </div>
   )
 }
