@@ -16,7 +16,55 @@
 
   &__price {
     font-size: var(--fs-md);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__sim-active {
+    color: #f7931a;
+    font-weight: 600;
+  }
+
+  &__sim {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  &__sim-label {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cui-secondary-color);
+  }
+
+  &__sim-input {
+    width: 160px;
+    padding: 0.35rem 0.6rem;
+    font-size: var(--fs-sm);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    background: var(--cui-body-bg);
+    color: var(--cui-body-color);
+  }
+
+  &__sim-btn {
+    padding: 0.35rem 0.9rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    border: 1px solid var(--cui-primary);
+    border-radius: 6px;
+    background: var(--cui-primary);
+    color: #fff;
+    cursor: pointer;
+
+    &--reset {
+      background: none;
+      border-color: var(--cui-border-color);
+      color: var(--cui-secondary-color);
+    }
   }
 
   &__scroll {
@@ -46,6 +94,19 @@
       text-transform: uppercase;
     }
 
+    .btcl__th--sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        color: var(--cui-body-color);
+      }
+    }
+
+    .btcl__th-sort-arrow {
+      font-size: var(--fs-2xs);
+    }
+
     th:first-child,
     td:first-child {
       text-align: left;
@@ -54,6 +115,10 @@
     th.num,
     td.num {
       text-align: right;
+    }
+
+    .btcl__cost-col {
+      background: var(--cui-secondary-bg);
     }
   }
 
@@ -85,5 +150,16 @@
     font-size: var(--fs-2xs);
     color: var(--cui-secondary-color);
     margin-top: 8px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .btcl__sim {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btcl__sim-input {
+    width: 100%;
   }
 }

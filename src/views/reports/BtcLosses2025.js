@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Spinner from 'src/components/shared/Spinner'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { fmtUSD } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
@@ -36,13 +36,38 @@ const BtcLosses2025 = () => {
   const { prices, connected } = useCryptoPrices()
   const livePrice = prices.BTCUSDT?.price ?? null
 
+  const [simInput, setSimInput] = useState('')
+  const [simPrice, setSimPrice] = useState(null)
+
+  const handleApplySim = () => {
+    const parsed = Number(simInput)
+    if (simInput !== '' && parsed > 0) setSimPrice(parsed)
+  }
+  const handleResetSim = () => {
+    setSimInput('')
+    setSimPrice(null)
+  }
+
+  const effectivePrice = simPrice ?? livePrice
+
   const rows = LOTS.map((lot) => {
     const cost = lot.quantity * lot.price
-    const value = livePrice != null ? lot.quantity * livePrice : null
+    const value = effectivePrice != null ? lot.quantity * effectivePrice : null
     const pnl = value != null ? value - cost : null
     const interest = loanInterest(cost, lot.date)
     const perMonth = monthlyInterest(cost)
     return { ...lot, cost, value, pnl, interest, perMonth }
+  })
+
+  const [sort, setSort] = useState({ key: 'date', dir: 'asc' })
+  const toggleSort = (key) =>
+    setSort((prev) =>
+      prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' },
+    )
+  const sortedRows = [...rows].sort((a, b) => {
+    const sign = sort.dir === 'asc' ? 1 : -1
+    if (sort.key === 'date') return sign * a.date.localeCompare(b.date)
+    return sign * ((a[sort.key] ?? 0) - (b[sort.key] ?? 0))
   })
 
   const totals = rows.reduce(
@@ -72,24 +97,62 @@ const BtcLosses2025 = () => {
       <div className="btcl__price">
         Precio BTC en vivo:{' '}
         {livePrice != null ? <strong>{fmtUSD(livePrice)}</strong> : <Spinner size="sm" />}
+        {simPrice != null && (
+          <span className="btcl__sim-active"> — simulando a {fmtUSD(simPrice)}</span>
+        )}
+      </div>
+
+      <div className="btcl__sim">
+        <label className="btcl__sim-label">Simular precio BTC (USD)</label>
+        <input
+          type="number"
+          className="btcl__sim-input"
+          placeholder="Ej: 150000"
+          value={simInput}
+          onChange={(e) => setSimInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleApplySim()}
+        />
+        <button type="button" className="btcl__sim-btn" onClick={handleApplySim}>
+          Aplicar
+        </button>
+        <button
+          type="button"
+          className="btcl__sim-btn btcl__sim-btn--reset"
+          onClick={handleResetSim}
+        >
+          Reset
+        </button>
       </div>
 
       <div className="btcl__scroll">
         <table className="btcl__table">
           <thead>
             <tr>
-              <th>Fecha compra</th>
-              <th className="num">Cantidad BTC</th>
-              <th className="num">Precio compra</th>
-              <th className="num">Costo</th>
-              <th className="num">Valor actual</th>
-              <th className="num">PnL</th>
-              <th className="num">Interés préstamo (5% EA)</th>
-              <th className="num">Interés / mes</th>
+              {[
+                { key: 'date', label: 'Fecha compra' },
+                { key: 'quantity', label: 'Cantidad BTC', num: true },
+                { key: 'price', label: 'Precio compra', num: true },
+                { key: 'cost', label: 'Costo', num: true, cost: true },
+                { key: 'value', label: 'Valor actual', num: true },
+                { key: 'pnl', label: 'PnL', num: true },
+                { key: 'interest', label: 'Interés préstamo (5% EA)', num: true },
+                { key: 'perMonth', label: 'Interés / mes', num: true },
+              ].map((col) => (
+                <th
+                  key={col.key}
+                  className={`btcl__th--sortable${col.num ? ' num' : ''}${col.cost ? ' btcl__cost-col' : ''}`}
+                  onClick={() => toggleSort(col.key)}
+                >
+                  {col.label}
+                  {sort.key === col.key && (
+                    <span className="btcl__th-sort-arrow">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
+                  )}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
+            {sortedRows.map((r, i) => (
               <tr key={i}>
                 <td>
                   {r.date}
@@ -102,7 +165,7 @@ const BtcLosses2025 = () => {
                 </td>
                 <td className="num">{r.quantity}</td>
                 <td className="num">{fmtUSD(r.price)}</td>
-                <td className="num">{fmtUSD(r.cost)}</td>
+                <td className="num btcl__cost-col">{fmtUSD(r.cost)}</td>
                 <td className="num">{r.value != null ? fmtUSD(r.value) : '—'}</td>
                 <td
                   className={`num${r.pnl == null ? '' : r.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
@@ -119,12 +182,14 @@ const BtcLosses2025 = () => {
               <td>Total</td>
               <td className="num">{totals.quantity.toFixed(8)}</td>
               <td className="num">—</td>
-              <td className="num">{fmtUSD(totals.cost)}</td>
-              <td className="num">{livePrice != null ? fmtUSD(totals.value) : '—'}</td>
+              <td className="num btcl__cost-col">{fmtUSD(totals.cost)}</td>
+              <td className="num">{effectivePrice != null ? fmtUSD(totals.value) : '—'}</td>
               <td
-                className={`num${livePrice == null ? '' : totals.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
+                className={`num${effectivePrice == null ? '' : totals.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
               >
-                {livePrice != null ? `${totals.pnl >= 0 ? '+' : ''}${fmtUSD(totals.pnl)}` : '—'}
+                {effectivePrice != null
+                  ? `${totals.pnl >= 0 ? '+' : ''}${fmtUSD(totals.pnl)}`
+                  : '—'}
               </td>
               <td className="num">{fmtUSD(totals.interest)}</td>
               <td className="num">{fmtUSD(totals.perMonth)}</td>
