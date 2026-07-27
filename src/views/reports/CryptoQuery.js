@@ -411,6 +411,45 @@ const CryptoQuery = () => {
     }
   }, [filtered, markedIds])
 
+  // Separate, read-only table — doesn't touch the main ledger's rows/logic.
+  // Pairs up each matchGroupId's buy+sell (from the already-filtered rows) and
+  // shows the realized PnL (actual sell price, not the live-price estimate).
+  const linkedPairs = useMemo(() => {
+    const groups = {}
+    filtered.forEach((p) => {
+      if (!p.matchGroupId) return
+      const g = groups[p.matchGroupId] || {}
+      if (isSale(p)) g.sell = p
+      else g.buy = p
+      groups[p.matchGroupId] = g
+    })
+    return Object.entries(groups)
+      .filter(([, g]) => g.buy && g.sell)
+      .map(([id, g]) => ({
+        id,
+        buy: g.buy,
+        sell: g.sell,
+        invested: g.buy.total,
+        proceeds: g.sell.total,
+        pnl: g.sell.total - g.buy.total,
+      }))
+      .sort((a, b) => (b.sell.purchaseDate || '').localeCompare(a.sell.purchaseDate || ''))
+  }, [filtered])
+
+  const linkedPairsTotals = useMemo(
+    () =>
+      linkedPairs.reduce(
+        (acc, pair) => ({
+          quantity: acc.quantity + (Number(pair.buy.quantity) || 0),
+          invested: acc.invested + pair.invested,
+          proceeds: acc.proceeds + pair.proceeds,
+          pnl: acc.pnl + pair.pnl,
+        }),
+        { quantity: 0, invested: 0, proceeds: 0, pnl: 0 },
+      ),
+    [linkedPairs],
+  )
+
   const groupedRows = useMemo(() => {
     const map = new Map()
     filtered.forEach((p) => {
@@ -1091,6 +1130,65 @@ const CryptoQuery = () => {
               </table>
             </div>
           </div>
+
+          {linkedPairs.length > 0 && (
+            <div className="cq__ledger cq__linked">
+              <div className="cq__panel-header">
+                <p className="cq__panel-title">
+                  Pares vinculados (compra + venta) — {linkedPairs.length}
+                </p>
+              </div>
+              <div className="cq__scroll">
+                <table className="cq__table">
+                  <thead>
+                    <tr>
+                      <th>Fecha compra</th>
+                      <th className="num">Precio compra</th>
+                      <th>Fecha venta</th>
+                      <th className="num">Precio venta</th>
+                      <th className="num">Cantidad</th>
+                      <th className="num">Invertido</th>
+                      <th className="num">Recibido</th>
+                      <th className="num">PnL realizado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {linkedPairs.map((pair) => (
+                      <tr key={pair.id}>
+                        <td>{fmtDateLong(pair.buy.purchaseDate)}</td>
+                        <td className="num">{fmtUSD(pair.buy.purchasePrice)}</td>
+                        <td>{fmtDateLong(pair.sell.purchaseDate)}</td>
+                        <td className="num">{fmtUSD(pair.sell.purchasePrice)}</td>
+                        <td className="num">{pair.buy.quantity}</td>
+                        <td className="num">{fmtUSD(pair.invested)}</td>
+                        <td className="num">{fmtUSD(pair.proceeds)}</td>
+                        <td
+                          className={`num${pair.pnl >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                        >
+                          {pair.pnl >= 0 ? '+' : ''}
+                          {fmtUSD(pair.pnl)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="cq__total-row">
+                      <td colSpan={4}>Total</td>
+                      <td className="num">{linkedPairsTotals.quantity}</td>
+                      <td className="num">{fmtUSD(linkedPairsTotals.invested)}</td>
+                      <td className="num">{fmtUSD(linkedPairsTotals.proceeds)}</td>
+                      <td
+                        className={`num${linkedPairsTotals.pnl >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                      >
+                        {linkedPairsTotals.pnl >= 0 ? '+' : ''}
+                        {fmtUSD(linkedPairsTotals.pnl)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
 
