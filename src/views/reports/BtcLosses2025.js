@@ -19,6 +19,9 @@ const LOTS = [
 ]
 
 const LOAN_RATE_EA = 0.05
+// Effective monthly rate equivalent to 5% EA — (1+EA)^(1/12) - 1, the standard
+// conversion so compounding monthly still lands on 5% after a full year.
+const LOAN_RATE_MONTHLY = Math.pow(1 + LOAN_RATE_EA, 1 / 12) - 1
 
 // Compound interest at a 5% effective-annual rate, from the purchase date to today.
 const loanInterest = (cost, purchaseDate) => {
@@ -26,6 +29,8 @@ const loanInterest = (cost, purchaseDate) => {
   const years = days / 365
   return cost * (Math.pow(1 + LOAN_RATE_EA, years) - 1)
 }
+
+const monthlyInterest = (cost) => cost * LOAN_RATE_MONTHLY
 
 const BtcLosses2025 = () => {
   const { prices, connected } = useCryptoPrices()
@@ -36,7 +41,8 @@ const BtcLosses2025 = () => {
     const value = livePrice != null ? lot.quantity * livePrice : null
     const pnl = value != null ? value - cost : null
     const interest = loanInterest(cost, lot.date)
-    return { ...lot, cost, value, pnl, interest }
+    const perMonth = monthlyInterest(cost)
+    return { ...lot, cost, value, pnl, interest, perMonth }
   })
 
   const totals = rows.reduce(
@@ -46,8 +52,9 @@ const BtcLosses2025 = () => {
       value: acc.value + (r.value ?? 0),
       pnl: acc.pnl + (r.pnl ?? 0),
       interest: acc.interest + r.interest,
+      perMonth: acc.perMonth + r.perMonth,
     }),
-    { quantity: 0, cost: 0, value: 0, pnl: 0, interest: 0 },
+    { quantity: 0, cost: 0, value: 0, pnl: 0, interest: 0, perMonth: 0 },
   )
 
   return (
@@ -57,7 +64,8 @@ const BtcLosses2025 = () => {
         Lotes de BTC comprados en 2025 sin vender todavía (dato fijo, análisis puntual) — PnL
         calculado con el precio de BTC/USDT en vivo. El interés de préstamo simula qué pasaría si el
         costo de cada compra fuera plata prestada al 5% efectivo anual, compuesto desde la fecha de
-        compra hasta hoy.
+        compra hasta hoy. «Interés / mes» es la tasa mensual equivalente a ese 5% EA aplicada al
+        costo — cuánto suma la deuda simulada por cada mes que pase.
         {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
       </p>
 
@@ -77,6 +85,7 @@ const BtcLosses2025 = () => {
               <th className="num">Valor actual</th>
               <th className="num">PnL</th>
               <th className="num">Interés préstamo (5% EA)</th>
+              <th className="num">Interés / mes</th>
             </tr>
           </thead>
           <tbody>
@@ -101,6 +110,7 @@ const BtcLosses2025 = () => {
                   {r.pnl != null ? `${r.pnl >= 0 ? '+' : ''}${fmtUSD(r.pnl)}` : '—'}
                 </td>
                 <td className="num">{fmtUSD(r.interest)}</td>
+                <td className="num">{fmtUSD(r.perMonth)}</td>
               </tr>
             ))}
           </tbody>
@@ -117,6 +127,7 @@ const BtcLosses2025 = () => {
                 {livePrice != null ? `${totals.pnl >= 0 ? '+' : ''}${fmtUSD(totals.pnl)}` : '—'}
               </td>
               <td className="num">{fmtUSD(totals.interest)}</td>
+              <td className="num">{fmtUSD(totals.perMonth)}</td>
             </tr>
           </tfoot>
         </table>
