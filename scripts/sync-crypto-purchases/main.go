@@ -4,9 +4,14 @@
 //
 // Based on list_buys_and_sells.go (go-binance NewListTradesService, t.IsBuyer to
 // classify buy vs sell). Each trade becomes one document matching the app's schema:
-// { type, symbol, quantity, purchasePrice, purchaseDate, platform, usdCopRate,
+// { type, symbol, quantity, purchasePrice, purchaseDate, purchaseTime, platform,
 //
-//	binanceTradeId, notes, tenantId }.
+//	usdCopRate, binanceTradeId, binanceOrderId, notes, tenantId }.
+//
+// binanceOrderId is Binance's order id — when an order fills across several
+// partial trades (e.g. "buy 5" executes as 1 + 2 + 1.5 + 0.5), every one of
+// those trades shares the same orderId, so records with matching
+// (platform, symbol, binanceOrderId) are fills of the same order.
 //
 // Coins are commonly traded against more than one quote currency (USDT, USDC,
 // FDUSD, …). For each configured base asset the script tries every known quote
@@ -74,7 +79,7 @@ const (
 	pageLimit       = 1000
 )
 
-var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB", "PAXG"}
+var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB", "PAXG", "XRP"}
 var quotes = []string{"USDT", "USDC", "FDUSD"}
 
 type trmRow struct {
@@ -227,7 +232,8 @@ func main() {
 					continue
 				}
 
-				date := time.UnixMilli(t.Time).Format("2006-01-02")
+				tradeTime := time.UnixMilli(t.Time)
+				date := tradeTime.Format("2006-01-02")
 				if date < *since {
 					continue
 				}
@@ -260,6 +266,8 @@ func main() {
 						"quantity":       qty,
 						"purchasePrice":  price,
 						"purchaseDate":   date,
+						"purchaseTime":   tradeTime.Format("15:04:05"),
+						"binanceOrderId": t.OrderID,
 						"platform":       *platform,
 						"usdCopRate":     usdCopRate,
 						"notes":          notes,

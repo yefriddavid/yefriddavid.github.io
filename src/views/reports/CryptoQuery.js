@@ -29,8 +29,81 @@ import './CryptoQuery.scss'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const fmtDateLong = (date) => (date ? moment(date).format('D [de] MMMM [de] YYYY') : '')
+const fmtDateTime = (p) =>
+  p.purchaseTime ? `${fmtDateLong(p.purchaseDate)} ${p.purchaseTime}` : fmtDateLong(p.purchaseDate)
 const monthOf = (dateStr) => Number((dateStr || '').slice(5, 7)) || null
 const identity = (v) => v
+
+const sortBySpec = (list, sort) => {
+  const compare = (a, b, key) =>
+    key === 'purchaseDate' || key === 'type' || key === 'notes'
+      ? String(a[key] || '').localeCompare(String(b[key] || ''))
+      : (Number(a[key]) || 0) - (Number(b[key]) || 0)
+  return [...list].sort((a, b) => {
+    for (const { key, dir } of sort) {
+      const cmp = compare(a, b, key)
+      if (cmp !== 0) return dir === 'asc' ? cmp : -cmp
+    }
+    return 0
+  })
+}
+
+// Binance splits some orders into several partial fills that share the same
+// orderId (e.g. "buy 5" executes as 1 + 2 + 1.5 + 0.5) — group those fills
+// back into the single purchase the user actually made. binanceOrderId (like
+// every Binance-derived field: binanceTradeId, purchaseTime) is read-only —
+// it's written only by scripts/sync-crypto-purchases, never by an edit form —
+// so a synthetic group row here can never go stale from a manual edit.
+const buildLedgerEntries = (records) => {
+  const orderMap = new Map()
+  const entries = []
+  records.forEach((p) => {
+    if (!p.binanceOrderId) {
+      entries.push({ ...p, isGroup: false, records: [p] })
+      return
+    }
+    const key = `${p.platform}|${p.symbol}|${p.binanceOrderId}`
+    const arr = orderMap.get(key) || []
+    arr.push(p)
+    orderMap.set(key, arr)
+  })
+  orderMap.forEach((recs, key) => {
+    if (recs.length === 1) {
+      entries.push({ ...recs[0], isGroup: false, records: recs })
+      return
+    }
+    const quantity = recs.reduce((s, r) => s + (Number(r.quantity) || 0), 0)
+    const total = recs.reduce((s, r) => s + (Number(r.total) || 0), 0)
+    const pnl = recs.every((r) => r.pnl != null) ? recs.reduce((s, r) => s + r.pnl, 0) : null
+    const last = [...recs]
+      .sort((a, b) =>
+        `${a.purchaseDate}${a.purchaseTime || ''}`.localeCompare(
+          `${b.purchaseDate}${b.purchaseTime || ''}`,
+        ),
+      )
+      .pop()
+    entries.push({
+      id: `order:${key}`,
+      isGroup: true,
+      key,
+      type: recs[0].type,
+      platform: recs[0].platform,
+      symbol: recs[0].symbol,
+      quantity,
+      purchasePrice: quantity ? total / quantity : 0,
+      total,
+      pnl,
+      purchaseDate: last.purchaseDate,
+      purchaseTime: last.purchaseTime,
+      notes: '',
+      // Linking a group writes the same matchGroupId to every fill in it
+      // (see handleRowClick), so any one fill's value represents the group.
+      matchGroupId: recs[0].matchGroupId ?? null,
+      records: recs,
+    })
+  })
+  return entries
+}
 
 const DEFAULT_SORT = [{ key: 'purchaseDate', dir: 'desc' }]
 const parseSort = (raw) => {
@@ -224,6 +297,13 @@ const CryptoQuery = () => {
   const hasFilters = FILTER_PARAM_KEYS.some((k) => searchParams.has(k))
 
   const [expandedGroups, setExpandedGroups] = useState(new Set())
+  const [expandedOrders, setExpandedOrders] = useState(new Set())
+  const toggleOrderExpand = (key) =>
+    setExpandedOrders((prev) => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
   const [selectedForLink, setSelectedForLink] = useState(null)
 
   // Purely local scratch-marking of rows — not persisted anywhere (not the URL,
@@ -333,19 +413,15 @@ const CryptoQuery = () => {
     livePrice,
   ])
 
-  const sortedFiltered = useMemo(() => {
-    const compare = (a, b, key) =>
-      key === 'purchaseDate' || key === 'type' || key === 'notes'
-        ? String(a[key] || '').localeCompare(String(b[key] || ''))
-        : (Number(a[key]) || 0) - (Number(b[key]) || 0)
-    return [...filtered].sort((a, b) => {
-      for (const { key, dir } of sort) {
-        const cmp = compare(a, b, key)
-        if (cmp !== 0) return dir === 'asc' ? cmp : -cmp
-      }
-      return 0
-    })
-  }, [filtered, sort])
+  const sortedFiltered = useMemo(() => sortBySpec(filtered, sort), [filtered, sort])
+
+  // The main ledger renders one row per Binance order (see buildLedgerEntries)
+  // instead of one row per raw purchase — built from `filtered` (not the
+  // already-sorted `sortedFiltered`) so grouping happens before the user's
+  // sort is applied, then re-sorted the same way so grouped and single rows
+  // interleave correctly regardless of which column is sorted.
+  const ledgerEntries = useMemo(() => buildLedgerEntries(filtered), [filtered])
+  const sortedLedgerEntries = useMemo(() => sortBySpec(ledgerEntries, sort), [ledgerEntries, sort])
 
   // Each marked row carries the sum of "total" for the segment since the
   // previous marked row (or since the top of the table for the first mark).
@@ -354,7 +430,7 @@ const CryptoQuery = () => {
     let all = empty()
     let buys = empty()
     let sells = empty()
-    return sortedFiltered.map((p) => {
+    return sortedLedgerEntries.map((p) => {
       const qty = Number(p.quantity) || 0
       all = { qty: all.qty + qty, total: all.total + p.total }
       if (isSale(p)) sells = { qty: sells.qty + qty, total: sells.total + p.total }
@@ -376,7 +452,7 @@ const CryptoQuery = () => {
       sells = empty()
       return result
     })
-  }, [sortedFiltered, markedIds])
+  }, [sortedLedgerEntries, markedIds])
 
   const totals = useMemo(() => {
     const buys = filtered.filter((p) => !isSale(p))
@@ -541,7 +617,7 @@ const CryptoQuery = () => {
       : [
           ['Fecha', 'Tipo', 'Cantidad', 'Precio', 'Total', 'PnL', 'Vinculado', 'Notas'],
           ...sortedFiltered.map((p) => [
-            p.purchaseDate,
+            fmtDateTime(p),
             isSale(p) ? 'Venta' : 'Compra',
             p.quantity,
             p.purchasePrice,
@@ -934,7 +1010,7 @@ const CryptoQuery = () => {
                                     <tbody>
                                       {g.records.map((p) => (
                                         <tr key={p.id}>
-                                          <td>{fmtDateLong(p.purchaseDate)}</td>
+                                          <td>{fmtDateTime(p)}</td>
                                           <td>
                                             {isSale(p) ? (
                                               <span className="cq__pill cq__pill--sell">
@@ -968,51 +1044,71 @@ const CryptoQuery = () => {
                       })
                     : rowsWithSubtotals.map((p) => {
                         const total = p.total
-                        const rowClass = [
-                          editMode && 'cq__row--editable',
-                          selectedForLink?.id === p.id && 'cq__row--selected',
-                          p.matchGroupId && 'cq__row--linked',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')
+                        const rowClass = p.isGroup
+                          ? 'cq__group-row'
+                          : [
+                              editMode && 'cq__row--editable',
+                              selectedForLink?.id === p.id && 'cq__row--selected',
+                              p.matchGroupId && 'cq__row--linked',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')
                         return (
                           <React.Fragment key={p.id}>
-                            <tr className={rowClass || undefined} onClick={() => handleRowClick(p)}>
-                              <td className="cq__mark-col" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={markedIds.has(p.id)}
-                                  onChange={() => toggleMarked(p.id)}
-                                />
-                                <button
-                                  type="button"
-                                  className="cq__edit-btn"
-                                  title="Editar este registro (pestaña nueva)"
-                                  onClick={() =>
-                                    window.open(
-                                      `/finance/tools/v2/adjustments?edit=${p.id}`,
-                                      '_blank',
-                                      'noopener,noreferrer',
-                                    )
-                                  }
-                                >
-                                  ✎
-                                </button>
+                            <tr
+                              className={rowClass || undefined}
+                              onClick={() =>
+                                p.isGroup ? toggleOrderExpand(p.key) : handleRowClick(p)
+                              }
+                            >
+                              <td
+                                className="cq__mark-col"
+                                onClick={(e) => !p.isGroup && e.stopPropagation()}
+                              >
+                                {p.isGroup ? (
+                                  <span
+                                    className={`cq__chevron${expandedOrders.has(p.key) ? ' cq__chevron--open' : ''}`}
+                                  >
+                                    ▸
+                                  </span>
+                                ) : (
+                                  <>
+                                    <input
+                                      type="checkbox"
+                                      checked={markedIds.has(p.id)}
+                                      onChange={() => toggleMarked(p.id)}
+                                    />
+                                    <button
+                                      type="button"
+                                      className="cq__edit-btn"
+                                      title="Editar este registro (pestaña nueva)"
+                                      onClick={() =>
+                                        window.open(
+                                          `/finance/tools/v2/adjustments?edit=${p.id}`,
+                                          '_blank',
+                                          'noopener,noreferrer',
+                                        )
+                                      }
+                                    >
+                                      ✎
+                                    </button>
+                                  </>
+                                )}
                               </td>
-                              <td>{fmtDateLong(p.purchaseDate)}</td>
+                              <td>{fmtDateTime(p)}</td>
                               <td>
                                 {isSale(p) ? (
                                   <span className="cq__pill cq__pill--sell">
                                     <span className="cq__dot" />
-                                    Venta
+                                    Venta{p.isGroup ? ` (${p.records.length})` : ''}
                                   </span>
                                 ) : (
                                   <span className="cq__pill cq__pill--buy">
                                     <span className="cq__dot" />
-                                    Compra
+                                    Compra{p.isGroup ? ` (${p.records.length})` : ''}
                                   </span>
                                 )}
-                                {p.matchGroupId && (
+                                {!p.isGroup && p.matchGroupId && (
                                   <span className="cq__link-badge" title="Vinculado">
                                     🔗
                                   </span>
@@ -1037,6 +1133,71 @@ const CryptoQuery = () => {
                                 {p.notes}
                               </td>
                             </tr>
+                            {p.isGroup && expandedOrders.has(p.key) && (
+                              <tr className="cq__detail-row">
+                                <td />
+                                <td colSpan={7}>
+                                  <table className="cq__detail-table">
+                                    <thead>
+                                      <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th className="num">Cantidad</th>
+                                        <th className="num">Precio</th>
+                                        <th className="num">Total</th>
+                                        <th>Notas</th>
+                                        <th />
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {p.records.map((r) => (
+                                        <tr key={r.id}>
+                                          <td>{fmtDateTime(r)}</td>
+                                          <td>
+                                            {isSale(r) ? (
+                                              <span className="cq__pill cq__pill--sell">
+                                                <span className="cq__dot" />
+                                                Venta
+                                              </span>
+                                            ) : (
+                                              <span className="cq__pill cq__pill--buy">
+                                                <span className="cq__dot" />
+                                                Compra
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td className="num">{r.quantity}</td>
+                                          <td className="num">{fmtUSD(r.purchasePrice)}</td>
+                                          <td className="num">
+                                            {fmtUSD(
+                                              (Number(r.quantity) || 0) *
+                                                (Number(r.purchasePrice) || 0),
+                                            )}
+                                          </td>
+                                          <td>{r.notes}</td>
+                                          <td>
+                                            <button
+                                              type="button"
+                                              className="cq__edit-btn"
+                                              title="Editar este registro (pestaña nueva)"
+                                              onClick={() =>
+                                                window.open(
+                                                  `/finance/tools/v2/adjustments?edit=${r.id}`,
+                                                  '_blank',
+                                                  'noopener,noreferrer',
+                                                )
+                                              }
+                                            >
+                                              ✎
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            )}
                             {showSubtotals && p.subtotal != null && (
                               <>
                                 <tr className="cq__subtotal-row">
@@ -1155,9 +1316,9 @@ const CryptoQuery = () => {
                   <tbody>
                     {linkedPairs.map((pair) => (
                       <tr key={pair.id}>
-                        <td>{fmtDateLong(pair.buy.purchaseDate)}</td>
+                        <td>{fmtDateTime(pair.buy)}</td>
                         <td className="num">{fmtUSD(pair.buy.purchasePrice)}</td>
-                        <td>{fmtDateLong(pair.sell.purchaseDate)}</td>
+                        <td>{fmtDateTime(pair.sell)}</td>
                         <td className="num">{fmtUSD(pair.sell.purchasePrice)}</td>
                         <td className="num">{pair.buy.quantity}</td>
                         <td className="num">{fmtUSD(pair.invested)}</td>

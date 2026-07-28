@@ -26,6 +26,8 @@ export const fetchAll = async () => {
       quantity: data.quantity ?? 0,
       purchasePrice: data.purchasePrice ?? 0,
       purchaseDate: data.purchaseDate ?? '',
+      purchaseTime: data.purchaseTime ?? '',
+      binanceOrderId: data.binanceOrderId ?? null,
       usdCopRate: data.usdCopRate ?? null,
       isAdjustment: data.isAdjustment ?? false,
       active: data.active ?? true,
@@ -48,6 +50,12 @@ export const saveEntry = async (entry) => {
   return ref.id
 }
 
+// Binance-derived fields (binanceTradeId, binanceOrderId, purchaseTime) are
+// written only by scripts/sync-crypto-purchases and scripts/backfill-crypto-
+// purchase-field — never by the app. CryptoPurchaseForm never registers them,
+// so `entry` here never carries them on an edit and `merge: true` leaves
+// whatever is already in Firestore untouched. Do not add them to the edit
+// form under any circumstance.
 export const updateEntry = async (entry) => {
   const { id, ...data } = entry
   await firestoreCall(() =>

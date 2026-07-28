@@ -15,6 +15,10 @@ const fieldError = (err) =>
     </span>
   ) : null
 
+// Never register binanceTradeId, binanceOrderId, or purchaseTime on this form —
+// they're Binance-derived and only ever written by scripts/sync-crypto-purchases
+// / scripts/backfill-crypto-purchase-field. Registering them here would let a
+// manual edit desync a purchase from the trade it actually came from.
 export const EMPTY_PURCHASE = {
   type: 'buy',
   symbol: CRYPTO_PURCHASE_SYMBOLS[0].value,
