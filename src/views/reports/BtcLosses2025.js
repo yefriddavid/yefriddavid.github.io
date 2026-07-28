@@ -33,8 +33,56 @@ const LOTS = [
 ]
 
 // Purchases made in 2026 — not just unsold lots like LOTS above, the full set
-// for the year. Same shape: { date, quantity, price, note? }.
-const LOTS_2026 = []
+// for the year. Same shape: { date, quantity, price, note? }. Grouped orders
+// from Crypto Query (Binance orders split across several partial fills) are
+// entered as one lot each, using the group's total quantity and weighted-
+// average price — same convention as LOTS above.
+const LOTS_2026 = [
+  { date: '2026-01-15', quantity: 0.00067, price: 95653.17 },
+  { date: '2026-01-15', quantity: 0.00524, price: 95406.53 },
+  { date: '2026-01-23', quantity: 0.00337, price: 89004.49 },
+  { date: '2026-01-29', quantity: 0.00351, price: 85375.9 },
+  { date: '2026-01-29', quantity: 0.0012, price: 83568.01 },
+  { date: '2026-01-29', quantity: 0.00121, price: 82116 },
+  { date: '2026-01-30', quantity: 0.00592, price: 84354.86 },
+  { date: '2026-01-31', quantity: 0.00128, price: 77840 },
+  { date: '2026-01-31', quantity: 0.00629, price: 79440.67 },
+  { date: '2026-01-31', quantity: 0.00633, price: 79043.31 },
+  { date: '2026-02-02', quantity: 0.00128, price: 78416.99 },
+  { date: '2026-02-04', quantity: 0.0075, price: 70972.17 },
+  { date: '2026-02-05', quantity: 0.00777, price: 66346.57 },
+  { date: '2026-02-23', quantity: 0.00007, price: 64865.85 },
+  { date: '2026-02-26', quantity: 0.00149, price: 66744.81 },
+  { date: '2026-02-27', quantity: 0.00763, price: 65485.85 },
+  { date: '2026-03-31', quantity: 0.01797, price: 66752.7 },
+  { date: '2026-04-30', quantity: 0.00254, price: 76310.14 },
+  { date: '2026-04-30', quantity: 0.01304, price: 76344.21 },
+  { date: '2026-05-17', quantity: 0.00153, price: 77997.53 },
+  { date: '2026-05-25', quantity: 0.00112, price: 76746.33, note: 'vía USDC' },
+  { date: '2026-05-25', quantity: 0.00011, price: 76815.26 },
+  { date: '2026-05-31', quantity: 0.00271, price: 73538 },
+  { date: '2026-05-31', quantity: 0.0034, price: 73521.68 },
+  { date: '2026-05-31', quantity: 0.0135, price: 73806.01 },
+  { date: '2026-06-02', quantity: 0.00301, price: 66414.48 },
+  { date: '2026-06-02', quantity: 0.00147, price: 67923.24 },
+  { date: '2026-06-03', quantity: 0.00315, price: 63554 },
+  { date: '2026-06-03', quantity: 0.00306, price: 65181.41 },
+  { date: '2026-06-03', quantity: 0.00303, price: 65927.01 },
+  { date: '2026-06-03', quantity: 0.00322, price: 62182.57 },
+  { date: '2026-06-03', quantity: 0.00311, price: 64322.93 },
+  { date: '2026-06-05', quantity: 0.00165, price: 60520 },
+  { date: '2026-06-05', quantity: 0.00333, price: 59975.26 },
+  { date: '2026-06-05', quantity: 0.00321, price: 62151.6 },
+  { date: '2026-06-30', quantity: 0.0025, price: 59568.09 },
+  { date: '2026-06-30', quantity: 0.00579, price: 59602 },
+  { date: '2026-06-30', quantity: 0.00834, price: 59700.01 },
+  {
+    date: '2026-07-04',
+    quantity: 0.00799,
+    price: 62612.78,
+    note: 'Vender en 67500 — comprado con préstamo (Binance Loans)',
+  },
+]
 
 const LOAN_RATE_EA = 0.05
 // Effective monthly rate equivalent to 5% EA — (1+EA)^(1/12) - 1, the standard
@@ -160,6 +208,18 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
               </td>
               <td className="num">{fmtUSD(totals.interest)}</td>
               <td className="num">{fmtUSD(totals.perMonth)}</td>
+              <td />
+            </tr>
+            <tr className="btcl__total-row">
+              <td colSpan={4}>Costo − Valor actual</td>
+              <td
+                className={`num${effectivePrice == null ? '' : totals.cost - totals.value >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
+              >
+                {effectivePrice != null ? fmtUSD(totals.cost - totals.value) : '—'}
+              </td>
+              <td />
+              <td />
+              <td />
               <td />
             </tr>
           </tfoot>
