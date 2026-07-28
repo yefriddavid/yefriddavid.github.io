@@ -23,6 +23,9 @@ export const isSale = (purchase) => purchase.type === 'sell'
 // a savings/earn product, etc.) — anything the trades API can't see.
 export const isAdjustment = (purchase) => isSale(purchase) && !!purchase.isAdjustment
 
+// A buy made with money borrowed via Binance Loans, rather than the user's own funds.
+export const isLoanFunded = (purchase) => !isSale(purchase) && !!purchase.fundedByLoan
+
 // purchase: { type, quantity, purchasePrice }, currentPrice: live price from useCryptoPrices (USD) or null
 // For 'sell' records there's no FIFO cost-basis matching yet, so only proceeds are known —
 // investedUSD/gainLoss don't apply and are returned as null.

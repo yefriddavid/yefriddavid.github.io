@@ -28,6 +28,7 @@ export const EMPTY_PURCHASE = {
   purchaseDate: today(),
   usdCopRate: '',
   isAdjustment: false,
+  fundedByLoan: false,
   active: true,
   notes: '',
 }
@@ -83,6 +84,7 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, fetchHistorical
       purchaseDate: form.purchaseDate,
       usdCopRate: form.usdCopRate ? Number(form.usdCopRate) : null,
       isAdjustment: isSale && !!form.isAdjustment,
+      fundedByLoan: !isSale && !!form.fundedByLoan,
       notes: form.notes.trim(),
     })
 
@@ -206,6 +208,13 @@ const CryptoPurchaseForm = ({ initial, onSave, onCancel, saving, fetchHistorical
         <label className="cpu-form__adjustment-check">
           <input type="checkbox" {...register('isAdjustment')} />
           Es un ajuste de saldo (no una venta real) — usa precio 0 y explica el motivo en notas
+        </label>
+      )}
+
+      {!isSale && (
+        <label className="cpu-form__adjustment-check">
+          <input type="checkbox" {...register('fundedByLoan')} />
+          Comprado con dinero prestado (Binance Loans)
         </label>
       )}
 
