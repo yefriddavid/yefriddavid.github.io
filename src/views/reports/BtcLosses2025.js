@@ -32,6 +32,10 @@ const LOTS = [
   { date: '2025-11-18', quantity: 0.00535, price: 93448.79 },
 ]
 
+// Purchases made in 2026 — not just unsold lots like LOTS above, the full set
+// for the year. Same shape: { date, quantity, price, note? }.
+const LOTS_2026 = []
+
 const LOAN_RATE_EA = 0.05
 // Effective monthly rate equivalent to 5% EA — (1+EA)^(1/12) - 1, the standard
 // conversion so compounding monthly still lands on 5% after a full year.
@@ -46,25 +50,10 @@ const loanInterest = (cost, purchaseDate) => {
 
 const monthlyInterest = (cost) => cost * LOAN_RATE_MONTHLY
 
-const BtcLosses2025 = () => {
-  const { prices, connected } = useCryptoPrices()
-  const livePrice = prices.BTCUSDT?.price ?? null
-
-  const [simInput, setSimInput] = useState('')
-  const [simPrice, setSimPrice] = useState(null)
-
-  const handleApplySim = () => {
-    const parsed = Number(simInput)
-    if (simInput !== '' && parsed > 0) setSimPrice(parsed)
-  }
-  const handleResetSim = () => {
-    setSimInput('')
-    setSimPrice(null)
-  }
-
-  const effectivePrice = simPrice ?? livePrice
-
-  const rows = LOTS.map((lot) => {
+// Renders one sortable lots table + totals footer — shared by the 2025
+// unsold-lots table and the 2026 all-purchases table below it.
+const LotsTable = ({ title, lots, effectivePrice }) => {
+  const rows = lots.map((lot) => {
     const cost = lot.quantity * lot.price
     const value = effectivePrice != null ? lot.quantity * effectivePrice : null
     const pnl = value != null ? value - cost : null
@@ -96,6 +85,107 @@ const BtcLosses2025 = () => {
     }),
     { quantity: 0, cost: 0, value: 0, pnl: 0, interest: 0, perMonth: 0 },
   )
+
+  return (
+    <>
+      <h2 className="btcl__section-title">{title}</h2>
+      <div className="btcl__scroll">
+        <table className="btcl__table">
+          <thead>
+            <tr>
+              {[
+                { key: 'date', label: 'Fecha compra' },
+                { key: 'quantity', label: 'Cantidad BTC', num: true },
+                { key: 'price', label: 'Precio compra', num: true },
+                { key: 'cost', label: 'Costo', num: true, cost: true },
+                { key: 'value', label: 'Valor actual', num: true },
+                { key: 'pnl', label: 'PnL', num: true },
+                { key: 'interest', label: 'Interés préstamo (5% EA)', num: true },
+                { key: 'perMonth', label: 'Interés / mes', num: true },
+                { key: 'note', label: 'Notas' },
+              ].map((col) => (
+                <th
+                  key={col.key}
+                  className={`btcl__th--sortable${col.num ? ' num' : ''}${col.cost ? ' btcl__cost-col' : ''}`}
+                  onClick={() => toggleSort(col.key)}
+                >
+                  {col.label}
+                  {sort.key === col.key && (
+                    <span className="btcl__th-sort-arrow">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedRows.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="btcl__empty">
+                  Sin registros todavía.
+                </td>
+              </tr>
+            ) : (
+              sortedRows.map((r, i) => (
+                <tr key={i}>
+                  <td>{fmtDateLong(r.date)}</td>
+                  <td className="num">{r.quantity}</td>
+                  <td className="num">{fmtUSD(r.price)}</td>
+                  <td className="num btcl__cost-col">{fmtUSD(r.cost)}</td>
+                  <td className="num">{r.value != null ? fmtUSD(r.value) : '—'}</td>
+                  <td
+                    className={`num${r.pnl == null ? '' : r.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
+                  >
+                    {r.pnl != null ? `${r.pnl >= 0 ? '+' : ''}${fmtUSD(r.pnl)}` : '—'}
+                  </td>
+                  <td className="num">{fmtUSD(r.interest)}</td>
+                  <td className="num">{fmtUSD(r.perMonth)}</td>
+                  <td>{r.note}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          <tfoot>
+            <tr className="btcl__total-row">
+              <td>Total</td>
+              <td className="num">{totals.quantity.toFixed(8)}</td>
+              <td className="num">—</td>
+              <td className="num btcl__cost-col">{fmtUSD(totals.cost)}</td>
+              <td className="num">{effectivePrice != null ? fmtUSD(totals.value) : '—'}</td>
+              <td
+                className={`num${effectivePrice == null ? '' : totals.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
+              >
+                {effectivePrice != null
+                  ? `${totals.pnl >= 0 ? '+' : ''}${fmtUSD(totals.pnl)}`
+                  : '—'}
+              </td>
+              <td className="num">{fmtUSD(totals.interest)}</td>
+              <td className="num">{fmtUSD(totals.perMonth)}</td>
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </>
+  )
+}
+
+const BtcLosses2025 = () => {
+  const { prices, connected } = useCryptoPrices()
+  const livePrice = prices.BTCUSDT?.price ?? null
+
+  const [simInput, setSimInput] = useState('')
+  const [simPrice, setSimPrice] = useState(null)
+
+  const handleApplySim = () => {
+    const parsed = Number(simInput)
+    if (simInput !== '' && parsed > 0) setSimPrice(parsed)
+  }
+  const handleResetSim = () => {
+    setSimInput('')
+    setSimPrice(null)
+  }
+
+  const effectivePrice = simPrice ?? livePrice
 
   return (
     <div className="btcl">
@@ -139,74 +229,8 @@ const BtcLosses2025 = () => {
         </button>
       </div>
 
-      <div className="btcl__scroll">
-        <table className="btcl__table">
-          <thead>
-            <tr>
-              {[
-                { key: 'date', label: 'Fecha compra' },
-                { key: 'quantity', label: 'Cantidad BTC', num: true },
-                { key: 'price', label: 'Precio compra', num: true },
-                { key: 'cost', label: 'Costo', num: true, cost: true },
-                { key: 'value', label: 'Valor actual', num: true },
-                { key: 'pnl', label: 'PnL', num: true },
-                { key: 'interest', label: 'Interés préstamo (5% EA)', num: true },
-                { key: 'perMonth', label: 'Interés / mes', num: true },
-                { key: 'note', label: 'Notas' },
-              ].map((col) => (
-                <th
-                  key={col.key}
-                  className={`btcl__th--sortable${col.num ? ' num' : ''}${col.cost ? ' btcl__cost-col' : ''}`}
-                  onClick={() => toggleSort(col.key)}
-                >
-                  {col.label}
-                  {sort.key === col.key && (
-                    <span className="btcl__th-sort-arrow">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedRows.map((r, i) => (
-              <tr key={i}>
-                <td>{fmtDateLong(r.date)}</td>
-                <td className="num">{r.quantity}</td>
-                <td className="num">{fmtUSD(r.price)}</td>
-                <td className="num btcl__cost-col">{fmtUSD(r.cost)}</td>
-                <td className="num">{r.value != null ? fmtUSD(r.value) : '—'}</td>
-                <td
-                  className={`num${r.pnl == null ? '' : r.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
-                >
-                  {r.pnl != null ? `${r.pnl >= 0 ? '+' : ''}${fmtUSD(r.pnl)}` : '—'}
-                </td>
-                <td className="num">{fmtUSD(r.interest)}</td>
-                <td className="num">{fmtUSD(r.perMonth)}</td>
-                <td>{r.note}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="btcl__total-row">
-              <td>Total</td>
-              <td className="num">{totals.quantity.toFixed(8)}</td>
-              <td className="num">—</td>
-              <td className="num btcl__cost-col">{fmtUSD(totals.cost)}</td>
-              <td className="num">{effectivePrice != null ? fmtUSD(totals.value) : '—'}</td>
-              <td
-                className={`num${effectivePrice == null ? '' : totals.pnl >= 0 ? ' btcl__pnl--positive' : ' btcl__pnl--negative'}`}
-              >
-                {effectivePrice != null
-                  ? `${totals.pnl >= 0 ? '+' : ''}${fmtUSD(totals.pnl)}`
-                  : '—'}
-              </td>
-              <td className="num">{fmtUSD(totals.interest)}</td>
-              <td className="num">{fmtUSD(totals.perMonth)}</td>
-              <td />
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <LotsTable title="Lotes sin vender (2025)" lots={LOTS} effectivePrice={effectivePrice} />
+      <LotsTable title="Compras 2026" lots={LOTS_2026} effectivePrice={effectivePrice} />
     </div>
   )
 }

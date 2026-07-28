@@ -14,6 +14,19 @@
     margin: 4px 0 16px;
   }
 
+  &__section-title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--cui-body-color);
+    margin: 24px 0 8px;
+  }
+
+  &__empty {
+    text-align: center !important;
+    color: var(--cui-secondary-color);
+    padding: 20px 10px !important;
+  }
+
   &__price {
     font-size: var(--fs-md);
     margin-bottom: 12px;

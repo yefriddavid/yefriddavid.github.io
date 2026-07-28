@@ -467,6 +467,17 @@ const CryptoQuery = () => {
       (s, p) => s + (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0),
       0,
     )
+    const pnlLosses = filtered.reduce((s, p) => s + (p.pnl != null && p.pnl < 0 ? p.pnl : 0), 0)
+    const pnlGains = filtered.reduce((s, p) => s + (p.pnl != null && p.pnl > 0 ? p.pnl : 0), 0)
+    const investedLosses = filtered.reduce(
+      (s, p) => s + (p.pnl != null && p.pnl < 0 ? p.total : 0),
+      0,
+    )
+    const investedGains = filtered.reduce(
+      (s, p) => s + (p.pnl != null && p.pnl > 0 ? p.total : 0),
+      0,
+    )
+    const currentValue = livePrice != null ? buysQty * livePrice : null
     return {
       buysCount: buys.length,
       sellsCount: sells.length,
@@ -475,8 +486,13 @@ const CryptoQuery = () => {
       invested,
       proceeds,
       net: proceeds - invested,
+      pnlLosses,
+      pnlGains,
+      investedLosses,
+      investedGains,
+      currentValue,
     }
-  }, [filtered])
+  }, [filtered, livePrice])
 
   const markedSummary = useMemo(() => {
     const rows = filtered.filter((p) => markedIds.has(p.id))
@@ -1280,6 +1296,58 @@ const CryptoQuery = () => {
                           {fmtUSD(Math.abs(totals.net))}
                         </span>
                       </td>
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={6}>Total pérdidas (PnL)</td>
+                      <td className="num">
+                        <span className="cq__amount cq__amount--negative">
+                          {fmtUSD(totals.pnlLosses)}
+                        </span>
+                      </td>
+                      <td />
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={6}>Total ganancias (PnL)</td>
+                      <td className="num">
+                        <span className="cq__amount cq__amount--positive">
+                          {totals.pnlGains > 0 ? '+' : ''}
+                          {fmtUSD(totals.pnlGains)}
+                        </span>
+                      </td>
+                      <td />
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={6}>Total invertido</td>
+                      <td className="num">{fmtUSD(totals.invested)}</td>
+                      <td />
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={6}>Total invertido (perdiendo)</td>
+                      <td className="num">
+                        <span className="cq__amount cq__amount--negative">
+                          {fmtUSD(totals.investedLosses)}
+                        </span>
+                      </td>
+                      <td />
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={6}>Total invertido (ganando)</td>
+                      <td className="num">
+                        <span className="cq__amount cq__amount--positive">
+                          {fmtUSD(totals.investedGains)}
+                        </span>
+                      </td>
+                      <td />
+                    </tr>
+                    <tr className="cq__total-row">
+                      <td colSpan={3}>Valor actual (cantidad comprada)</td>
+                      <td className="num">{totals.buysQty.toFixed(8)}</td>
+                      <td className="num">{livePrice != null ? fmtUSD(livePrice) : '—'}</td>
+                      <td className="num">
+                        {totals.currentValue != null ? fmtUSD(totals.currentValue) : '—'}
+                      </td>
+                      <td />
+                      <td />
                     </tr>
                     {markedSummary.count > 0 && (
                       <tr className="cq__total-row cq__total-row--marked">
