@@ -1,0 +1,8 @@
+{
+  "name": "blockchain-sandbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node lib/chain.check.mjs"
+  }
+}

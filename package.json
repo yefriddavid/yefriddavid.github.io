@@ -25,6 +25,7 @@
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "serve": "vite preview",
     "start:dev": "vite",
+    "sandbox:blockchain": "vite --config src-sandbox/blockchain/vite.config.js",
     "start": "vite --mode production --host",
     "copy-to-test": "node scripts/copy-prod-to-test.mjs",
     "test": "vitest run",
