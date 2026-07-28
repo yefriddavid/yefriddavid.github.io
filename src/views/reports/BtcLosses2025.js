@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Spinner from 'src/components/shared/Spinner'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { fmtUSD } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
@@ -13,23 +13,23 @@ const fmtDateLong = (date) => (date ? moment(date).format('D [de] MMMM [de] YYYY
 // grouped rows (Binance orders split across several partial fills) are entered as
 // one lot each, using the group's total quantity and weighted-average price.
 const LOTS = [
-  { date: '2025-08-17', quantity: 0.00334, price: 117389.98 },
-  { date: '2025-08-18', quantity: 0.01735, price: 115236.61 },
-  { date: '2025-08-19', quantity: 0.00878, price: 113822.74 },
-  { date: '2025-10-10', quantity: 0.00833, price: 120000 },
-  { date: '2025-10-10', quantity: 0.01407, price: 111527.53 },
-  { date: '2025-10-10', quantity: 0.01713, price: 116810.92 },
-  { date: '2025-10-10', quantity: 0.01854, price: 111527.17 },
-  { date: '2025-10-13', quantity: 0.00868, price: 115150.11 },
-  { date: '2025-10-14', quantity: 0.01799, price: 111133.56 },
-  { date: '2025-10-28', quantity: 0.00887, price: 112739.15, note: 'Nunca se vendió' },
-  { date: '2025-10-29', quantity: 0.0091, price: 109874.76 },
-  { date: '2025-10-30', quantity: 0.00459, price: 108910.8 },
-  { date: '2025-11-03', quantity: 0.0047, price: 106330.01 },
-  { date: '2025-11-04', quantity: 0.00287, price: 104468.66 },
-  { date: '2025-11-04', quantity: 0.00192, price: 104304.01 },
-  { date: '2025-11-04', quantity: 0.00099, price: 100981.43 },
-  { date: '2025-11-18', quantity: 0.00535, price: 93448.79 },
+  { date: '2025-08-17', quantity: 0.00334, price: 117389.98, trm: 4019.24 },
+  { date: '2025-08-18', quantity: 0.01735, price: 115236.61, trm: 4019.24 },
+  { date: '2025-08-19', quantity: 0.00878, price: 113822.74, trm: 4019.24 },
+  { date: '2025-10-10', quantity: 0.00833, price: 120000, trm: 3894.99 },
+  { date: '2025-10-10', quantity: 0.01407, price: 111527.53, trm: 3894.99 },
+  { date: '2025-10-10', quantity: 0.01713, price: 116810.92, trm: 3894.99 },
+  { date: '2025-10-10', quantity: 0.01854, price: 111527.17, trm: 3894.99 },
+  { date: '2025-10-13', quantity: 0.00868, price: 115150.11, trm: 3913.24 },
+  { date: '2025-10-14', quantity: 0.01799, price: 111133.56, trm: 3913.24 },
+  { date: '2025-10-28', quantity: 0.00887, price: 112739.15, trm: 3844.2, note: 'Nunca se vendió' },
+  { date: '2025-10-29', quantity: 0.0091, price: 109874.76, trm: 3874.84 },
+  { date: '2025-10-30', quantity: 0.00459, price: 108910.8, trm: 3885.29 },
+  { date: '2025-11-03', quantity: 0.0047, price: 106330.01, trm: 3860.12 },
+  { date: '2025-11-04', quantity: 0.00287, price: 104468.66, trm: 3860.12 },
+  { date: '2025-11-04', quantity: 0.00192, price: 104304.01, trm: 3860.12 },
+  { date: '2025-11-04', quantity: 0.00099, price: 100981.43, trm: 3860.12 },
+  { date: '2025-11-18', quantity: 0.00535, price: 93448.79, trm: 3764.77 },
 ]
 
 // Purchases made in 2026 — not just unsold lots like LOTS above, the full set
@@ -38,48 +38,49 @@ const LOTS = [
 // entered as one lot each, using the group's total quantity and weighted-
 // average price — same convention as LOTS above.
 const LOTS_2026 = [
-  { date: '2026-01-15', quantity: 0.00067, price: 95653.17 },
-  { date: '2026-01-15', quantity: 0.00524, price: 95406.53 },
-  { date: '2026-01-23', quantity: 0.00337, price: 89004.49 },
-  { date: '2026-01-29', quantity: 0.00351, price: 85375.9 },
-  { date: '2026-01-29', quantity: 0.0012, price: 83568.01 },
-  { date: '2026-01-29', quantity: 0.00121, price: 82116 },
-  { date: '2026-01-30', quantity: 0.00592, price: 84354.86 },
-  { date: '2026-01-31', quantity: 0.00128, price: 77840 },
-  { date: '2026-01-31', quantity: 0.00629, price: 79440.67 },
-  { date: '2026-01-31', quantity: 0.00633, price: 79043.31 },
-  { date: '2026-02-02', quantity: 0.00128, price: 78416.99 },
-  { date: '2026-02-04', quantity: 0.0075, price: 70972.17 },
-  { date: '2026-02-05', quantity: 0.00777, price: 66346.57 },
-  { date: '2026-02-23', quantity: 0.00007, price: 64865.85 },
-  { date: '2026-02-26', quantity: 0.00149, price: 66744.81 },
-  { date: '2026-02-27', quantity: 0.00763, price: 65485.85 },
-  { date: '2026-03-31', quantity: 0.01797, price: 66752.7 },
-  { date: '2026-04-30', quantity: 0.00254, price: 76310.14 },
-  { date: '2026-04-30', quantity: 0.01304, price: 76344.21 },
-  { date: '2026-05-17', quantity: 0.00153, price: 77997.53 },
-  { date: '2026-05-25', quantity: 0.00112, price: 76746.33, note: 'vía USDC' },
-  { date: '2026-05-25', quantity: 0.00011, price: 76815.26 },
-  { date: '2026-05-31', quantity: 0.00271, price: 73538 },
-  { date: '2026-05-31', quantity: 0.0034, price: 73521.68 },
-  { date: '2026-05-31', quantity: 0.0135, price: 73806.01 },
-  { date: '2026-06-02', quantity: 0.00301, price: 66414.48 },
-  { date: '2026-06-02', quantity: 0.00147, price: 67923.24 },
-  { date: '2026-06-03', quantity: 0.00315, price: 63554 },
-  { date: '2026-06-03', quantity: 0.00306, price: 65181.41 },
-  { date: '2026-06-03', quantity: 0.00303, price: 65927.01 },
-  { date: '2026-06-03', quantity: 0.00322, price: 62182.57 },
-  { date: '2026-06-03', quantity: 0.00311, price: 64322.93 },
-  { date: '2026-06-05', quantity: 0.00165, price: 60520 },
-  { date: '2026-06-05', quantity: 0.00333, price: 59975.26 },
-  { date: '2026-06-05', quantity: 0.00321, price: 62151.6 },
-  { date: '2026-06-30', quantity: 0.0025, price: 59568.09 },
-  { date: '2026-06-30', quantity: 0.00579, price: 59602 },
-  { date: '2026-06-30', quantity: 0.00834, price: 59700.01 },
+  { date: '2026-01-15', quantity: 0.00067, price: 95653.17, trm: 3655.16 },
+  { date: '2026-01-15', quantity: 0.00524, price: 95406.53, trm: 3655.16 },
+  { date: '2026-01-23', quantity: 0.00337, price: 89004.49, trm: 3630.33 },
+  { date: '2026-01-29', quantity: 0.00351, price: 85375.9, trm: 3665.97 },
+  { date: '2026-01-29', quantity: 0.0012, price: 83568.01, trm: 3665.97 },
+  { date: '2026-01-29', quantity: 0.00121, price: 82116, trm: 3665.97 },
+  { date: '2026-01-30', quantity: 0.00592, price: 84354.86, trm: 3661.29 },
+  { date: '2026-01-31', quantity: 0.00128, price: 77840, trm: 3670.47 },
+  { date: '2026-01-31', quantity: 0.00629, price: 79440.67, trm: 3670.47 },
+  { date: '2026-01-31', quantity: 0.00633, price: 79043.31, trm: 3670.47 },
+  { date: '2026-02-02', quantity: 0.00128, price: 78416.99, trm: 3670.47 },
+  { date: '2026-02-04', quantity: 0.0075, price: 70972.17, trm: 3622 },
+  { date: '2026-02-05', quantity: 0.00777, price: 66346.57, trm: 3644.93 },
+  { date: '2026-02-23', quantity: 0.00007, price: 64865.85, trm: 3691.34 },
+  { date: '2026-02-26', quantity: 0.00149, price: 66744.81, trm: 3703.69 },
+  { date: '2026-02-27', quantity: 0.00763, price: 65485.85, trm: 3745.78 },
+  { date: '2026-03-31', quantity: 0.01797, price: 66752.7, trm: 3669.96 },
+  { date: '2026-04-30', quantity: 0.00254, price: 76310.14, trm: 3621.86 },
+  { date: '2026-04-30', quantity: 0.01304, price: 76344.21, trm: 3621.86 },
+  { date: '2026-05-17', quantity: 0.00153, price: 77997.53, trm: 3796.78 },
+  { date: '2026-05-25', quantity: 0.00112, price: 76746.33, trm: 3667.06, note: 'vía USDC' },
+  { date: '2026-05-25', quantity: 0.00011, price: 76815.26, trm: 3667.06 },
+  { date: '2026-05-31', quantity: 0.00271, price: 73538, trm: 3678.15 },
+  { date: '2026-05-31', quantity: 0.0034, price: 73521.68, trm: 3678.15 },
+  { date: '2026-05-31', quantity: 0.0135, price: 73806.01, trm: 3678.15 },
+  { date: '2026-06-02', quantity: 0.00301, price: 66414.48, trm: 3560.24 },
+  { date: '2026-06-02', quantity: 0.00147, price: 67923.24, trm: 3560.24 },
+  { date: '2026-06-03', quantity: 0.00315, price: 63554, trm: 3562 },
+  { date: '2026-06-03', quantity: 0.00306, price: 65181.41, trm: 3562 },
+  { date: '2026-06-03', quantity: 0.00303, price: 65927.01, trm: 3562 },
+  { date: '2026-06-03', quantity: 0.00322, price: 62182.57, trm: 3562 },
+  { date: '2026-06-03', quantity: 0.00311, price: 64322.93, trm: 3562 },
+  { date: '2026-06-05', quantity: 0.00165, price: 60520, trm: 3565.32 },
+  { date: '2026-06-05', quantity: 0.00333, price: 59975.26, trm: 3565.32 },
+  { date: '2026-06-05', quantity: 0.00321, price: 62151.6, trm: 3565.32 },
+  { date: '2026-06-30', quantity: 0.0025, price: 59568.09, trm: 3443.59 },
+  { date: '2026-06-30', quantity: 0.00579, price: 59602, trm: 3443.59 },
+  { date: '2026-06-30', quantity: 0.00834, price: 59700.01, trm: 3443.59 },
   {
     date: '2026-07-04',
     quantity: 0.00799,
     price: 62612.78,
+    trm: 3334.93,
     note: 'Vender en 67500 — comprado con préstamo (Binance Loans)',
   },
 ]
@@ -151,6 +152,7 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
                 { key: 'interest', label: 'Interés préstamo (5% EA)', num: true },
                 { key: 'perMonth', label: 'Interés / mes', num: true },
                 { key: 'note', label: 'Notas' },
+                { key: 'trm', label: 'TRM USD/COP', num: true },
               ].map((col) => (
                 <th
                   key={col.key}
@@ -168,7 +170,7 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
           <tbody>
             {sortedRows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="btcl__empty">
+                <td colSpan={10} className="btcl__empty">
                   Sin registros todavía.
                 </td>
               </tr>
@@ -188,6 +190,7 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
                   <td className="num">{fmtUSD(r.interest)}</td>
                   <td className="num">{fmtUSD(r.perMonth)}</td>
                   <td>{r.note}</td>
+                  <td className="num">{r.trm}</td>
                 </tr>
               ))
             )}
@@ -209,6 +212,7 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
               <td className="num">{fmtUSD(totals.interest)}</td>
               <td className="num">{fmtUSD(totals.perMonth)}</td>
               <td />
+              <td />
             </tr>
             <tr className="btcl__total-row">
               <td colSpan={4}>Costo − Valor actual</td>
@@ -217,6 +221,7 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
               >
                 {effectivePrice != null ? fmtUSD(totals.cost - totals.value) : '—'}
               </td>
+              <td />
               <td />
               <td />
               <td />
@@ -247,6 +252,17 @@ const BtcLosses2025 = () => {
 
   const effectivePrice = simPrice ?? livePrice
 
+  // Combines both tables (2025 unsold lots + all 2026 purchases) into one
+  // headline loss figure — same cost/value math as LotsTable, kept separate
+  // since LotsTable doesn't expose its computed totals to the parent.
+  const totalLoss = useMemo(() => {
+    const allLots = [...LOTS, ...LOTS_2026]
+    const cost = allLots.reduce((s, l) => s + l.quantity * l.price, 0)
+    if (effectivePrice == null) return null
+    const value = allLots.reduce((s, l) => s + l.quantity * effectivePrice, 0)
+    return cost - value
+  }, [effectivePrice])
+
   return (
     <div className="btcl">
       <h1 className="btcl__title">BTC Pérdidas 2025</h1>
@@ -258,6 +274,15 @@ const BtcLosses2025 = () => {
         costo — cuánto suma la deuda simulada por cada mes que pase.
         {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
       </p>
+
+      <div className="btcl__kpi-card">
+        <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
+        <strong
+          className={`btcl__kpi-value${totalLoss == null ? '' : totalLoss >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
+        >
+          {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
+        </strong>
+      </div>
 
       <div className="btcl__price">
         Precio BTC en vivo:{' '}

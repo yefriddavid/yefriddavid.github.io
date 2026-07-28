@@ -32,6 +32,29 @@
     margin-bottom: 12px;
   }
 
+  &__kpi-card {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--cui-tertiary-bg);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 16px;
+  }
+
+  &__kpi-label {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cui-secondary-color);
+  }
+
+  &__kpi-value {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+  }
+
   &__sim-active {
     color: #f7931a;
     font-weight: 600;
