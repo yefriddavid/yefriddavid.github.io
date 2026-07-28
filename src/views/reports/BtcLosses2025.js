@@ -2,10 +2,16 @@ import React, { useState } from 'react'
 import Spinner from 'src/components/shared/Spinner'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { fmtUSD } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
+import moment from 'src/utils/moment'
 import './BtcLosses2025.scss'
+
+const fmtDateLong = (date) => (date ? moment(date).format('D [de] MMMM [de] YYYY') : '')
 
 // Fixed snapshot from a manual FIFO buy/sell match run on 2026-07-27 — the BTC
 // purchase lots from 2025 that were still unsold. See docs/btc-remaining-lots-2025.md.
+// Extended 2026-07-28 with additional unsold lots found in Crypto Query; the two
+// grouped rows (Binance orders split across several partial fills) are entered as
+// one lot each, using the group's total quantity and weighted-average price.
 const LOTS = [
   { date: '2025-08-17', quantity: 0.00334, price: 117389.98 },
   { date: '2025-08-18', quantity: 0.01735, price: 115236.61 },
@@ -13,9 +19,17 @@ const LOTS = [
   { date: '2025-10-10', quantity: 0.00833, price: 120000 },
   { date: '2025-10-10', quantity: 0.01407, price: 111527.53 },
   { date: '2025-10-10', quantity: 0.01713, price: 116810.92 },
+  { date: '2025-10-10', quantity: 0.01854, price: 111527.17 },
   { date: '2025-10-13', quantity: 0.00868, price: 115150.11 },
   { date: '2025-10-14', quantity: 0.01799, price: 111133.56 },
   { date: '2025-10-28', quantity: 0.00887, price: 112739.15, note: 'Nunca se vendió' },
+  { date: '2025-10-29', quantity: 0.0091, price: 109874.76 },
+  { date: '2025-10-30', quantity: 0.00459, price: 108910.8 },
+  { date: '2025-11-03', quantity: 0.0047, price: 106330.01 },
+  { date: '2025-11-04', quantity: 0.00287, price: 104468.66 },
+  { date: '2025-11-04', quantity: 0.00192, price: 104304.01 },
+  { date: '2025-11-04', quantity: 0.00099, price: 100981.43 },
+  { date: '2025-11-18', quantity: 0.00535, price: 93448.79 },
 ]
 
 const LOAN_RATE_EA = 0.05
@@ -59,14 +73,15 @@ const BtcLosses2025 = () => {
     return { ...lot, cost, value, pnl, interest, perMonth }
   })
 
-  const [sort, setSort] = useState({ key: 'date', dir: 'asc' })
+  const [sort, setSort] = useState({ key: 'date', dir: 'desc' })
   const toggleSort = (key) =>
     setSort((prev) =>
       prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' },
     )
   const sortedRows = [...rows].sort((a, b) => {
     const sign = sort.dir === 'asc' ? 1 : -1
-    if (sort.key === 'date') return sign * a.date.localeCompare(b.date)
+    if (sort.key === 'date' || sort.key === 'note')
+      return sign * String(a[sort.key] || '').localeCompare(String(b[sort.key] || ''))
     return sign * ((a[sort.key] ?? 0) - (b[sort.key] ?? 0))
   })
 
@@ -137,6 +152,7 @@ const BtcLosses2025 = () => {
                 { key: 'pnl', label: 'PnL', num: true },
                 { key: 'interest', label: 'Interés préstamo (5% EA)', num: true },
                 { key: 'perMonth', label: 'Interés / mes', num: true },
+                { key: 'note', label: 'Notas' },
               ].map((col) => (
                 <th
                   key={col.key}
@@ -154,15 +170,7 @@ const BtcLosses2025 = () => {
           <tbody>
             {sortedRows.map((r, i) => (
               <tr key={i}>
-                <td>
-                  {r.date}
-                  {r.note && (
-                    <span className="btcl__note" title={r.note}>
-                      {' '}
-                      *
-                    </span>
-                  )}
-                </td>
+                <td>{fmtDateLong(r.date)}</td>
                 <td className="num">{r.quantity}</td>
                 <td className="num">{fmtUSD(r.price)}</td>
                 <td className="num btcl__cost-col">{fmtUSD(r.cost)}</td>
@@ -174,6 +182,7 @@ const BtcLosses2025 = () => {
                 </td>
                 <td className="num">{fmtUSD(r.interest)}</td>
                 <td className="num">{fmtUSD(r.perMonth)}</td>
+                <td>{r.note}</td>
               </tr>
             ))}
           </tbody>
@@ -193,12 +202,11 @@ const BtcLosses2025 = () => {
               </td>
               <td className="num">{fmtUSD(totals.interest)}</td>
               <td className="num">{fmtUSD(totals.perMonth)}</td>
+              <td />
             </tr>
           </tfoot>
         </table>
       </div>
-
-      <p className="btcl__caption">* Nunca se vendió este lote.</p>
     </div>
   )
 }

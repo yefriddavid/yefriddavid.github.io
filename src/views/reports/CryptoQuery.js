@@ -562,45 +562,54 @@ const CryptoQuery = () => {
       return next
     })
 
-  const handleRowClick = (p) => {
+  // `entry.records` is always the underlying raw Firestore doc(s) — 1 for a
+  // normal row, N for an order group (see buildLedgerEntries) — so linking/
+  // unlinking a group replicates matchGroupId to every fill in it, and a
+  // normal row just updates its one doc. Always dispatch from `records`,
+  // never spread `entry` itself — it carries synthetic isGroup/records/key
+  // fields that must never reach Firestore.
+  const handleRowClick = (entry) => {
     if (!editMode) return
 
-    if (p.matchGroupId) {
+    if (entry.matchGroupId) {
       if (window.confirm('¿Desvincular este par de compra/venta?')) {
-        const partner = purchases.find((x) => x.id !== p.id && x.matchGroupId === p.matchGroupId)
-        dispatch(actions.updateRequest({ ...p, matchGroupId: null }))
+        const groupIds = new Set(entry.records.map((r) => r.id))
+        const partner = purchases.find(
+          (x) => !groupIds.has(x.id) && x.matchGroupId === entry.matchGroupId,
+        )
+        entry.records.forEach((r) => dispatch(actions.updateRequest({ ...r, matchGroupId: null })))
         if (partner) dispatch(actions.updateRequest({ ...partner, matchGroupId: null }))
       }
       return
     }
 
     if (!selectedForLink) {
-      setSelectedForLink(p)
+      setSelectedForLink(entry)
       return
     }
 
-    if (selectedForLink.id === p.id) {
+    if (selectedForLink.id === entry.id) {
       setSelectedForLink(null)
       return
     }
 
-    if (isSale(selectedForLink) === isSale(p)) {
+    if (isSale(selectedForLink) === isSale(entry)) {
       window.alert('Solo podés vincular una compra con una venta.')
       setSelectedForLink(null)
       return
     }
 
-    const buy = isSale(selectedForLink) ? p : selectedForLink
-    const sell = isSale(selectedForLink) ? selectedForLink : p
+    const buyEntry = isSale(selectedForLink) ? entry : selectedForLink
+    const sellEntry = isSale(selectedForLink) ? selectedForLink : entry
     const confirmed = window.confirm(
       '¿Vincular estos dos registros como compra/venta?\n\n' +
-        `Compra: ${fmtDateLong(buy.purchaseDate)} — ${buy.quantity} @ ${fmtUSD(buy.purchasePrice)}\n` +
-        `Venta: ${fmtDateLong(sell.purchaseDate)} — ${sell.quantity} @ ${fmtUSD(sell.purchasePrice)}`,
+        `Compra: ${fmtDateLong(buyEntry.purchaseDate)} — ${buyEntry.quantity} @ ${fmtUSD(buyEntry.purchasePrice)}\n` +
+        `Venta: ${fmtDateLong(sellEntry.purchaseDate)} — ${sellEntry.quantity} @ ${fmtUSD(sellEntry.purchasePrice)}`,
     )
     if (confirmed) {
       const matchGroupId = crypto.randomUUID()
-      dispatch(actions.updateRequest({ ...selectedForLink, matchGroupId }))
-      dispatch(actions.updateRequest({ ...p, matchGroupId }))
+      buyEntry.records.forEach((r) => dispatch(actions.updateRequest({ ...r, matchGroupId })))
+      sellEntry.records.forEach((r) => dispatch(actions.updateRequest({ ...r, matchGroupId })))
     }
     setSelectedForLink(null)
   }
@@ -1044,26 +1053,22 @@ const CryptoQuery = () => {
                       })
                     : rowsWithSubtotals.map((p) => {
                         const total = p.total
-                        const rowClass = p.isGroup
-                          ? 'cq__group-row'
-                          : [
-                              editMode && 'cq__row--editable',
-                              selectedForLink?.id === p.id && 'cq__row--selected',
-                              p.matchGroupId && 'cq__row--linked',
-                            ]
-                              .filter(Boolean)
-                              .join(' ')
+                        const rowClass = [
+                          p.isGroup ? 'cq__group-row' : editMode && 'cq__row--editable',
+                          selectedForLink?.id === p.id && 'cq__row--selected',
+                          p.matchGroupId && 'cq__row--linked',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')
                         return (
                           <React.Fragment key={p.id}>
-                            <tr
-                              className={rowClass || undefined}
-                              onClick={() =>
-                                p.isGroup ? toggleOrderExpand(p.key) : handleRowClick(p)
-                              }
-                            >
+                            <tr className={rowClass || undefined} onClick={() => handleRowClick(p)}>
                               <td
                                 className="cq__mark-col"
-                                onClick={(e) => !p.isGroup && e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (p.isGroup) toggleOrderExpand(p.key)
+                                }}
                               >
                                 {p.isGroup ? (
                                   <span
@@ -1108,7 +1113,7 @@ const CryptoQuery = () => {
                                     Compra{p.isGroup ? ` (${p.records.length})` : ''}
                                   </span>
                                 )}
-                                {!p.isGroup && p.matchGroupId && (
+                                {p.matchGroupId && (
                                   <span className="cq__link-badge" title="Vinculado">
                                     🔗
                                   </span>
