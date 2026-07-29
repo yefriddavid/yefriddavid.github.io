@@ -5,8 +5,9 @@ import * as a from 'src/actions/finance/calcListActions'
 import { push as notify } from 'src/reducers/notificationsSlice'
 import { fmtUsd } from '../tradeUtils'
 import { CALC_LIST_CATEGORIES, CALC_LIST_CLASSIFICATIONS } from 'src/constants/finance'
-import usePeerSync from 'src/hooks/usePeerSync'
+import usePeerSync, { STATUS } from 'src/hooks/usePeerSync'
 import SyncModal from './SyncModal'
+import PresenceModal from './PresenceModal'
 import './CalcList.scss'
 
 const COLUMNS = [
@@ -448,6 +449,7 @@ export default function CalcList() {
   const activeList  = activeGroup?.items.find((l) => l.id === activeListId)
 
   const [syncOpen, setSyncOpen] = useState(false)
+  const [presenceOpen, setPresenceOpen] = useState(false)
   const [noteRow, setNoteRow]   = useState(null)
   const importInputRef = useRef(null)
 
@@ -462,7 +464,8 @@ export default function CalcList() {
     return [...items].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity)).map((l) => l.id)
   })
 
-  const { myId, status, error, connectTo } = usePeerSync()
+  const { myId, status, error, peers, myDataVersion, connectTo } = usePeerSync()
+  const busy = status === STATUS.CONNECTING || status === STATUS.CONNECTED
 
   useEffect(() => { dispatch(a.loadRequest()) }, [dispatch])
 
@@ -627,6 +630,9 @@ export default function CalcList() {
       {syncOpen && (
         <SyncModal myId={myId} status={status} error={error} onConnect={connectTo} onClose={() => setSyncOpen(false)} />
       )}
+      {presenceOpen && (
+        <PresenceModal peers={peers} busy={busy} myDataVersion={myDataVersion} onConnect={connectTo} onClose={() => setPresenceOpen(false)} />
+      )}
 
       <div className="calc-list__groups">
         {orderedGroupIds.map((id) => {
@@ -691,6 +697,9 @@ export default function CalcList() {
         />
         <button className="calc-list__sync-btn" onClick={() => setSyncOpen(true)} title="Sincronizar con otro dispositivo">
           ⇄
+        </button>
+        <button className="calc-list__sync-btn" onClick={() => setPresenceOpen(true)} title="Usuarios en línea">
+          👥
         </button>
       </div>
 

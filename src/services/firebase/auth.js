@@ -39,6 +39,9 @@ import { emitAuthSignedOut, emitAuthSignedIn } from 'src/utils/broadcastChannel'
 /** Converts a username to a Firebase Auth synthetic email */
 export const toAuthEmail = (username) => `${username.toLowerCase().trim()}@cashflow.app`
 
+/** Reverses toAuthEmail — reads the logged-in username from the current session */
+export const getCurrentUsername = () => auth.currentUser?.email?.split('@')[0] ?? null
+
 // ── Core auth operations ───────────────────────────────────────────────────────
 
 /**

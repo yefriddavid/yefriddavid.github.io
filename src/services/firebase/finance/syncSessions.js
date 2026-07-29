@@ -8,8 +8,22 @@ import { firestoreCall } from '../firebaseClient'
 const sessionRef    = (id)       => doc(db, COL, id)
 const candidatesRef = (id, role) => collection(db, COL, id, `${role}Candidates`)
 
-export const createSession = (id) =>
-  firestoreCall(() => setDoc(sessionRef(id), { createdAt: serverTimestamp() }))
+export const createSession = (id, username, deviceType, dataVersion) =>
+  firestoreCall(() =>
+    setDoc(sessionRef(id), {
+      createdAt: serverTimestamp(),
+      lastSeen: serverTimestamp(),
+      username,
+      deviceType,
+      dataVersion,
+    })
+  )
+
+export const touchSession = (id, dataVersion) =>
+  firestoreCall(() => updateDoc(sessionRef(id), { lastSeen: serverTimestamp(), dataVersion }))
+
+export const subscribePresence = (cb) =>
+  onSnapshot(collection(db, COL), cb)
 
 export const writeOffer = (id, sdp) =>
   firestoreCall(() => updateDoc(sessionRef(id), { offerSdp: sdp }))

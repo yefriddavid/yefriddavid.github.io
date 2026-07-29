@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as a from 'src/actions/finance/calcListActions'
 import * as signaling from 'src/services/firebase/finance/syncSessions'
+import { getCurrentUsername } from 'src/services/firebase/auth'
 
 export const STATUS = {
   IDLE:       'idle',
@@ -10,6 +11,12 @@ export const STATUS = {
   SYNCED:     'synced',
   ERROR:      'error',
 }
+
+const HEARTBEAT_MS = 20000
+const PRESENCE_STALE_MS = 60000
+const getDeviceType = () => (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'desktop')
+// Latest updatedAt across all groups — the "data version" shown in the presence table.
+const getDataVersion = (groups) => groups.reduce((max, g) => (g.updatedAt > max ? g.updatedAt : max), '')
 
 const RTC_CONFIG = {
   iceServers: [
@@ -27,6 +34,7 @@ export default function usePeerSync() {
   const [myId] = useState(() => crypto.randomUUID())
   const [status, setStatus] = useState(STATUS.IDLE)
   const [error, setError]   = useState(null)
+  const [peers, setPeers]   = useState([])
 
   const callerPcRef = useRef(null)
   const calleePcRef = useRef(null)
@@ -56,7 +64,12 @@ export default function usePeerSync() {
 
     const init = async () => {
       try {
-        await signaling.createSession(myId)
+        await signaling.createSession(myId, getCurrentUsername(), getDeviceType(), getDataVersion(listsRef.current))
+        const heartbeat = setInterval(
+          () => signaling.touchSession(myId, getDataVersion(listsRef.current)).catch(() => {}),
+          HEARTBEAT_MS
+        )
+        unsubsRef.current.push(() => clearInterval(heartbeat))
 
         const pc = new RTCPeerConnection(RTC_CONFIG)
         callerPcRef.current = pc
@@ -120,6 +133,20 @@ export default function usePeerSync() {
     }
   }, [myId, setupChannel])
 
+  // Presence: watch other devices' active sessions for the "online users" table.
+  useEffect(() => {
+    const unsub = signaling.subscribePresence((snap) => {
+      const cutoff = Date.now() - PRESENCE_STALE_MS
+      setPeers(
+        snap.docs
+          .filter((doc) => doc.id !== myId)
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((p) => (p.lastSeen?.toMillis?.() ?? 0) > cutoff)
+      )
+    })
+    return unsub
+  }, [myId])
+
   // connectTo: become the callee for another device's session.
   const connectTo = useCallback(async (remoteId) => {
     try {
@@ -169,5 +196,5 @@ export default function usePeerSync() {
     setStatus(STATUS.IDLE)
   }, [])
 
-  return { myId, status, error, connectTo, disconnect }
+  return { myId, status, error, peers, myDataVersion: getDataVersion(groups), connectTo, disconnect }
 }

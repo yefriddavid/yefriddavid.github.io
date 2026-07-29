@@ -1,0 +1,121 @@
+.presence-modal {
+  background: var(--cui-body-bg);
+  border: 1px solid var(--cui-border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 16px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--cui-border-color);
+    flex-shrink: 0;
+  }
+
+  &__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__my-version {
+    font-size: var(--fs-xs);
+    color: var(--cui-secondary-color);
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    color: var(--cui-body-color);
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--cui-secondary-color);
+    padding: 0 4px;
+    &:hover { color: var(--cui-danger); }
+  }
+
+  &__body {
+    overflow: auto;
+    padding: 12px 18px 18px;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      font-size: var(--fs-base);
+      color: var(--cui-body-color);
+      border-bottom: 1px solid var(--cui-border-color);
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: var(--fs-xs);
+      text-transform: uppercase;
+      color: var(--cui-secondary-color);
+    }
+  }
+
+  &__action-cell {
+    text-align: right;
+  }
+
+  &__sync-btn {
+    padding: 5px 12px;
+    background: var(--cui-primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+
+    &:hover:not(:disabled) { opacity: 0.88; }
+    &:disabled { opacity: 0.45; cursor: default; }
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--cui-secondary-color);
+  }
+
+  @media (max-width: 540px) {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    border-radius: 16px 16px 0 0;
+
+    &__overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+  }
+}
