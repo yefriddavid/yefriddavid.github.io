@@ -255,13 +255,25 @@ const BtcLosses2025 = () => {
   // Combines both tables (2025 unsold lots + all 2026 purchases) into one
   // headline cost/loss figure — same cost/value math as LotsTable, kept
   // separate since LotsTable doesn't expose its computed totals to the parent.
-  const { totalCost, totalLoss } = useMemo(() => {
+  const { totalCost, totalLoss, cost2025, cost2026, loss2025, loss2026 } = useMemo(() => {
     const allLots = [...LOTS, ...LOTS_2026]
     const cost = allLots.reduce((s, l) => s + l.quantity * l.price, 0)
-    if (effectivePrice == null) return { totalCost: cost, totalLoss: null }
+    const c2025 = LOTS.reduce((s, l) => s + l.quantity * l.price, 0)
+    const c2026 = LOTS_2026.reduce((s, l) => s + l.quantity * l.price, 0)
+    const base = { totalCost: cost, cost2025: c2025, cost2026: c2026 }
+    if (effectivePrice == null) return { ...base, totalLoss: null, loss2025: null, loss2026: null }
     const value = allLots.reduce((s, l) => s + l.quantity * effectivePrice, 0)
-    return { totalCost: cost, totalLoss: cost - value }
+    const v2025 = LOTS.reduce((s, l) => s + l.quantity * effectivePrice, 0)
+    const v2026 = LOTS_2026.reduce((s, l) => s + l.quantity * effectivePrice, 0)
+    return { ...base, totalLoss: cost - value, loss2025: c2025 - v2025, loss2026: c2026 - v2026 }
   }, [effectivePrice])
+
+  const pct2025 = totalCost ? (cost2025 / totalCost) * 100 : 0
+  const pct2026 = totalCost ? (cost2026 / totalCost) * 100 : 0
+
+  const lossAbsTotal = totalLoss != null ? Math.abs(loss2025) + Math.abs(loss2026) : 0
+  const lossPct2025 = lossAbsTotal ? (Math.abs(loss2025) / lossAbsTotal) * 100 : 0
+  const lossPct2026 = lossAbsTotal ? (Math.abs(loss2026) / lossAbsTotal) * 100 : 0
 
   return (
     <div className="btcl">
@@ -279,6 +291,20 @@ const BtcLosses2025 = () => {
         <div className="btcl__kpi-card">
           <span className="btcl__kpi-label">Costo total (2025 + 2026)</span>
           <strong className="btcl__kpi-value">{fmtUSD(totalCost)}</strong>
+          <div className="btcl__kpi-split" title={`2025: ${fmtUSD(cost2025)} · 2026: ${fmtUSD(cost2026)}`}>
+            <div className="btcl__kpi-split-bar">
+              <span className="btcl__kpi-split-seg btcl__kpi-split-seg--2025" style={{ width: `${pct2025}%` }} />
+              <span className="btcl__kpi-split-seg btcl__kpi-split-seg--2026" style={{ width: `${pct2026}%` }} />
+            </div>
+            <div className="btcl__kpi-split-legend">
+              <span className="btcl__kpi-split-item btcl__kpi-split-item--2025">
+                2025 · {fmtUSD(cost2025)} <em>({pct2025.toFixed(0)}%)</em>
+              </span>
+              <span className="btcl__kpi-split-item btcl__kpi-split-item--2026">
+                2026 · {fmtUSD(cost2026)} <em>({pct2026.toFixed(0)}%)</em>
+              </span>
+            </div>
+          </div>
         </div>
         <div className="btcl__kpi-card">
           <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
@@ -287,6 +313,41 @@ const BtcLosses2025 = () => {
           >
             {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
           </strong>
+          {totalLoss != null && (
+            <div
+              className="btcl__kpi-split"
+              title={`2025: ${loss2025 >= 0 ? '+' : ''}${fmtUSD(loss2025)} · 2026: ${loss2026 >= 0 ? '+' : ''}${fmtUSD(loss2026)}`}
+            >
+              <div className="btcl__kpi-split-bar">
+                <span
+                  className={`btcl__kpi-split-seg${loss2025 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
+                  style={{ width: `${lossPct2025}%` }}
+                />
+                <span
+                  className={`btcl__kpi-split-seg${loss2026 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
+                  style={{ width: `${lossPct2026}%` }}
+                />
+              </div>
+              <div className="btcl__kpi-split-legend">
+                <span className="btcl__kpi-split-item">
+                  <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2025" />
+                  2025 ·{' '}
+                  <span className={loss2025 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}>
+                    {loss2025 >= 0 ? '+' : ''}
+                    {fmtUSD(loss2025)}
+                  </span>
+                </span>
+                <span className="btcl__kpi-split-item">
+                  <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2026" />
+                  2026 ·{' '}
+                  <span className={loss2026 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}>
+                    {loss2026 >= 0 ? '+' : ''}
+                    {fmtUSD(loss2026)}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
