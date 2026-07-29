@@ -32,6 +32,20 @@
     margin-bottom: 12px;
   }
 
+  &__note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--fs-md);
+    font-weight: 700;
+    color: #f7931a;
+    background: rgba(247, 147, 26, 0.1);
+    border: 1px solid rgba(247, 147, 26, 0.35);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+  }
+
   &__kpi-row {
     display: flex;
     flex-wrap: wrap;

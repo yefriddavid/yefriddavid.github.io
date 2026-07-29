@@ -287,6 +287,11 @@ const BtcLosses2025 = () => {
         {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
       </p>
 
+      <div className="btcl__note">
+        📌 Vender en {fmtUSD(130000)} · nota del {fmtDateLong('2026-07-29')} · BTC hoy:{' '}
+        {livePrice != null ? fmtUSD(livePrice) : <Spinner size="sm" />}
+      </div>
+
       <div className="btcl__kpi-row">
         <div className="btcl__kpi-card">
           <span className="btcl__kpi-label">Costo total (2025 + 2026)</span>
