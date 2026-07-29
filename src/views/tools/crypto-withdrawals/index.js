@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import Spinner from 'src/components/shared/Spinner'
+import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import * as actions from 'src/actions/finance/cryptoWithdrawalActions'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import { fmtAmount, statusLabel, statusVariant, splitApplyTime } from './cryptoWithdrawalHelpers'
@@ -16,19 +17,25 @@ const CryptoWithdrawals = () => {
   const { withdrawals, loading } = useSelector((s) => s.cryptoWithdrawal)
 
   const [filterCoin, setFilterCoin] = useState('all')
+  const [filterPlatform, setFilterPlatform] = useState(new Set())
 
   useEffect(() => {
     dispatch(actions.loadRequest())
   }, [dispatch, activeTenantId])
 
   const coins = useMemo(() => [...new Set(withdrawals.map((w) => w.coin))].sort(), [withdrawals])
+  const platforms = useMemo(
+    () => [...new Set(withdrawals.map((w) => w.platform).filter(Boolean))].sort(),
+    [withdrawals],
+  )
 
   const filtered = useMemo(
     () =>
       [...withdrawals]
         .filter((w) => filterCoin === 'all' || w.coin === filterCoin)
+        .filter((w) => filterPlatform.size === 0 || filterPlatform.has(w.platform))
         .sort((a, b) => (b.applyTime || '').localeCompare(a.applyTime || '')),
-    [withdrawals, filterCoin],
+    [withdrawals, filterCoin, filterPlatform],
   )
 
   const totalsByCoin = useMemo(() => {
@@ -75,6 +82,22 @@ const CryptoWithdrawals = () => {
         ))}
       </div>
 
+      <div className="cwd-filters cwd-filters--wrap">
+        <MultiSelectDropdown
+          label={(size) => (size > 0 ? `Plataforma (${size})` : 'Plataforma: Todas')}
+          options={platforms.map((p) => ({ value: p, label: p }))}
+          selected={filterPlatform}
+          onToggle={(p) =>
+            setFilterPlatform((prev) => {
+              const next = new Set(prev)
+              next.has(p) ? next.delete(p) : next.add(p)
+              return next
+            })
+          }
+          onClearAll={() => setFilterPlatform(new Set())}
+        />
+      </div>
+
       {loading ? (
         <Spinner mode="section" />
       ) : (
@@ -107,6 +130,12 @@ const CryptoWithdrawals = () => {
                   <>
                     <span className={SC.label}>Red </span>
                     <span className={SC.mono}>{w.network}</span>
+                  </>
+                ),
+                w.platform && (
+                  <>
+                    <span className={SC.label}>Plataforma </span>
+                    <span className={SC.muted}>{w.platform}</span>
                   </>
                 ),
               ],

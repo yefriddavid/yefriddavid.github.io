@@ -72,6 +72,11 @@
       color: #fff;
     }
   }
+
+  &--wrap {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
 }
 
 .cwd-amount {

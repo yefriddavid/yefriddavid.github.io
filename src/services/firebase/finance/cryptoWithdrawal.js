@@ -18,6 +18,7 @@ export const fetchAll = async () => {
       applyTime: data.applyTime ?? '',
       txId: data.txId ?? '',
       binanceWithdrawId: data.binanceWithdrawId ?? '',
+      platform: data.platform ?? '',
     }
   })
 }

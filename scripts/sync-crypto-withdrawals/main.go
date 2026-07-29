@@ -11,11 +11,15 @@
 // Re-runs are safe: each withdrawal's Binance id is stored as
 // binanceWithdrawId and already-synced withdrawals are skipped.
 //
+// --platform sets the value stored in each withdrawal's "platform" field
+// (defaults to "binance_arg") — use it to sync a different Binance account
+// under its own platform label, e.g. --platform binance_col.
+//
 // Usage:
 //
 //	export BINANCE_API_KEY=...
 //	export BINANCE_SECRET_KEY=...
-//	go run . [--apply] [--since 2023-01-01] [--coin BTC] [--tenant tenantId] [--sa path/to/service-account.json]
+//	go run . [--apply] [--since 2023-01-01] [--coin BTC] [--platform binance_col] [--tenant tenantId] [--sa path/to/service-account.json]
 package main
 
 import (
@@ -39,6 +43,7 @@ import (
 const (
 	collectionName  = "Finance_Crypto_Withdrawals"
 	defaultTenantID = "Atlfc1jvEUbLsintnpAq"
+	defaultPlatform = "binance_arg"
 )
 
 func allWithdrawals(ctx context.Context, client *binance.Client, since time.Time, coin string) ([]*binance.Withdraw, error) {
@@ -76,6 +81,7 @@ func main() {
 	since := flag.String("since", "2023-01-01", "walk back this far (YYYY-MM-DD)")
 	coin := flag.String("coin", "", "filter to a single coin (e.g. BTC); omit for all")
 	tenant := flag.String("tenant", defaultTenantID, "tenant id to sync into (defaults to the primary tenant)")
+	platform := flag.String("platform", defaultPlatform, "platform value stored on each synced withdrawal")
 	flag.Parse()
 
 	apiKey := os.Getenv("BINANCE_API_KEY")
@@ -94,6 +100,7 @@ func main() {
 	if *coin != "" {
 		fmt.Printf("    Coin     : %s\n", strings.ToUpper(*coin))
 	}
+	fmt.Printf("    Plataforma: %s\n", *platform)
 	fmt.Printf("    Modo     : %s\n\n", map[bool]string{true: "APLICAR CAMBIOS", false: "dry run (solo muestra el plan)"}[*apply])
 
 	if *apply {
@@ -153,6 +160,7 @@ func main() {
 			"applyTime":         w.ApplyTime,
 			"txId":              w.TxID,
 			"tenantId":          *tenant,
+			"platform":          *platform,
 			"createdAt":         firestore.ServerTimestamp,
 		})
 	}
