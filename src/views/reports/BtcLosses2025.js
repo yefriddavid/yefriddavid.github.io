@@ -253,14 +253,14 @@ const BtcLosses2025 = () => {
   const effectivePrice = simPrice ?? livePrice
 
   // Combines both tables (2025 unsold lots + all 2026 purchases) into one
-  // headline loss figure — same cost/value math as LotsTable, kept separate
-  // since LotsTable doesn't expose its computed totals to the parent.
-  const totalLoss = useMemo(() => {
+  // headline cost/loss figure — same cost/value math as LotsTable, kept
+  // separate since LotsTable doesn't expose its computed totals to the parent.
+  const { totalCost, totalLoss } = useMemo(() => {
     const allLots = [...LOTS, ...LOTS_2026]
     const cost = allLots.reduce((s, l) => s + l.quantity * l.price, 0)
-    if (effectivePrice == null) return null
+    if (effectivePrice == null) return { totalCost: cost, totalLoss: null }
     const value = allLots.reduce((s, l) => s + l.quantity * effectivePrice, 0)
-    return cost - value
+    return { totalCost: cost, totalLoss: cost - value }
   }, [effectivePrice])
 
   return (
@@ -275,13 +275,19 @@ const BtcLosses2025 = () => {
         {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
       </p>
 
-      <div className="btcl__kpi-card">
-        <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
-        <strong
-          className={`btcl__kpi-value${totalLoss == null ? '' : totalLoss >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
-        >
-          {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
-        </strong>
+      <div className="btcl__kpi-row">
+        <div className="btcl__kpi-card">
+          <span className="btcl__kpi-label">Costo total (2025 + 2026)</span>
+          <strong className="btcl__kpi-value">{fmtUSD(totalCost)}</strong>
+        </div>
+        <div className="btcl__kpi-card">
+          <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
+          <strong
+            className={`btcl__kpi-value${totalLoss == null ? '' : totalLoss >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
+          >
+            {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
+          </strong>
+        </div>
       </div>
 
       <div className="btcl__price">
