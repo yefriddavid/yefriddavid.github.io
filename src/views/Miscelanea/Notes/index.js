@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
@@ -1352,6 +1352,15 @@ const Notes = () => {
   useEffect(() => {
     if (!dragging) setItems(sortByOrder(data ?? []))
   }, [data, dragging])
+
+  // Categories start collapsed by default — only once, the first time notes load.
+  const collapseInitRef = useRef(false)
+  useEffect(() => {
+    if (!collapseInitRef.current && data && data.length > 0) {
+      setCollapsedCategories(getDistinctCategories(data))
+      collapseInitRef.current = true
+    }
+  }, [data])
 
   const handleDragStart = () => setDragging(true)
 
