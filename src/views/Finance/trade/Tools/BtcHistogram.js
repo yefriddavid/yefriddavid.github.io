@@ -3,9 +3,15 @@ import { useSearchParams } from 'react-router-dom'
 import { CChartBar } from '@coreui/react-chartjs'
 import Spinner from 'src/components/shared/Spinner'
 import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
+import AppModal from 'src/components/shared/AppModal'
+import SaveViewForm from 'src/components/shared/SaveViewForm'
+import SavedViewsList from 'src/components/shared/SavedViewsList'
 import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
+import useSavedViews from 'src/hooks/useSavedViews'
 import { fetchPriceSeries } from 'src/services/cryptoKlinesService'
+
+const SAVED_VIEWS_KEY = 'btcHistogram.savedViews'
 
 const GRANULARITIES = [
   { value: '1d', label: 'Días' },
@@ -165,6 +171,15 @@ const halvingLinePlugin = {
 
 export default function BtcHistogram() {
   const { monthLabels } = useLocaleData()
+  const {
+    showViewModal,
+    setShowViewModal,
+    savedViews,
+    saveViewFormKey,
+    saveView,
+    deleteView,
+    loadView,
+  } = useSavedViews(SAVED_VIEWS_KEY)
 
   // Filters live in the URL (not useState) so a page refresh restores exactly
   // what was applied instead of resetting to defaults.
@@ -399,6 +414,13 @@ export default function BtcHistogram() {
         >
           {loading ? <Spinner size="sm" /> : 'Consultar'}
         </button>
+        <button
+          type="button"
+          className="trade-tools__view-btn"
+          onClick={() => setShowViewModal(true)}
+        >
+          ⭐ Vista
+        </button>
       </div>
 
       {error && <p className="trade-tools__error">{error}</p>}
@@ -450,6 +472,20 @@ export default function BtcHistogram() {
             />
           </div>
         ))}
+
+      {showViewModal && (
+        <AppModal
+          visible
+          onClose={() => setShowViewModal(false)}
+          variant="center"
+          size="md"
+          title="Vistas guardadas"
+          subtitle="Guardá los filtros actuales del gráfico con un nombre, para volver a ellos después."
+        >
+          <SaveViewForm key={saveViewFormKey} onSave={saveView} />
+          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+        </AppModal>
+      )}
     </div>
   )
 }

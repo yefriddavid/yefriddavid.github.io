@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
 import AppModal from 'src/components/shared/AppModal'
+import SaveViewForm from 'src/components/shared/SaveViewForm'
+import SavedViewsList from 'src/components/shared/SavedViewsList'
 import moment from 'src/utils/moment'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
+import useSavedViews from 'src/hooks/useSavedViews'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import {
@@ -138,70 +140,24 @@ const FILTER_PARAM_KEYS = [
   'minGroupCount',
 ]
 
-// Named URL snapshots — every filter/sort/mode above already lives in the URL,
-// so "saving a view" is just naming the current pathname+search string.
 const SAVED_VIEWS_KEY = 'cryptoQuery.savedViews'
-const loadSavedViews = () => {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_VIEWS_KEY)) || []
-  } catch {
-    return []
-  }
-}
-
-const SaveViewForm = ({ onSave }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({ defaultValues: { name: '' } })
-  return (
-    <form className="cq__view-save" onSubmit={handleSubmit(({ name }) => onSave(name.trim()))}>
-      <input
-        className="cq__input"
-        placeholder="Nombre de la vista"
-        {...register('name', { required: 'Ponele un nombre' })}
-      />
-      <button type="submit" className="cq__export-btn">
-        Guardar vista actual
-      </button>
-      {errors.name && <span className="cq__view-error">{errors.name.message}</span>}
-    </form>
-  )
-}
 
 const CryptoQuery = () => {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const activeTenantId = useActiveTenantId()
   const { purchases, loading } = useSelector((s) => s.cryptoPurchase)
   const { monthLabels } = useLocaleData()
   const { prices } = useCryptoPrices()
 
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [savedViews, setSavedViews] = useState(loadSavedViews)
-  const [saveViewFormKey, setSaveViewFormKey] = useState(0)
-
-  const persistSavedViews = (views) => {
-    setSavedViews(views)
-    localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(views))
-  }
-  const handleSaveView = (name) => {
-    if (!name) return
-    const view = {
-      id: crypto.randomUUID(),
-      name,
-      url: window.location.pathname + window.location.search,
-      createdAt: new Date().toISOString(),
-    }
-    persistSavedViews([view, ...savedViews])
-    setSaveViewFormKey((k) => k + 1)
-  }
-  const handleDeleteView = (id) => persistSavedViews(savedViews.filter((v) => v.id !== id))
-  const handleLoadView = (view) => {
-    navigate(view.url)
-    setShowViewModal(false)
-  }
+  const {
+    showViewModal,
+    setShowViewModal,
+    savedViews,
+    saveViewFormKey,
+    saveView,
+    deleteView,
+    loadView,
+  } = useSavedViews(SAVED_VIEWS_KEY)
 
   // Filters live in the URL (not useState) so a page refresh restores exactly
   // what was applied instead of resetting to defaults.
@@ -1415,28 +1371,8 @@ const CryptoQuery = () => {
           title="Vistas guardadas"
           subtitle="Guardá los filtros y el orden actuales con un nombre, para volver a ellos después."
         >
-          <SaveViewForm key={saveViewFormKey} onSave={handleSaveView} />
-          {savedViews.length === 0 ? (
-            <p className="cq__muted">Todavía no guardaste ninguna vista.</p>
-          ) : (
-            <ul className="cq__view-list">
-              {savedViews.map((v) => (
-                <li key={v.id} className="cq__view-item">
-                  <button type="button" className="cq__view-link" onClick={() => handleLoadView(v)}>
-                    {v.name}
-                  </button>
-                  <button
-                    type="button"
-                    className="cq__view-delete"
-                    title="Eliminar vista"
-                    onClick={() => handleDeleteView(v.id)}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <SaveViewForm key={saveViewFormKey} onSave={saveView} />
+          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
         </AppModal>
       )}
     </div>
