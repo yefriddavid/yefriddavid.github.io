@@ -207,7 +207,7 @@ const NoteTableFull = ({ note, onToggleCheck, onCellChange, onAddRow, onRemoveRo
         </thead>
         <tbody>
           {body.map((row, ri) => (
-            <tr key={ri}>
+            <tr key={`${ri}|${row.join('|')}`}>
               {row.map((c, ci) =>
                 types[ci] === 'checkbox' ? (
                   <td key={ci} className="nfp__table-check">
