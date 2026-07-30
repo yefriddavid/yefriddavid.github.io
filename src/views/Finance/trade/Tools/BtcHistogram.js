@@ -10,6 +10,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
 import useSavedViews from 'src/hooks/useSavedViews'
 import { fetchPriceSeries } from 'src/services/cryptoKlinesService'
+import { CRYPTO_PURCHASE_SYMBOLS } from 'src/constants/finance'
 import './Tools.scss'
 
 const SAVED_VIEWS_KEY = 'btcHistogram.savedViews'
@@ -38,7 +39,8 @@ const monthsAgoStr = (n) => {
   d.setMonth(d.getMonth() - n)
   return d.toISOString().slice(0, 10)
 }
-const fmtUsd = (v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+const fmtUsd = (v) =>
+  `$${Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const fmtBucketLabel = (ms, granularity) => {
   const d = new Date(ms)
@@ -244,6 +246,10 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
       return next
     })
 
+  const symbol = searchParams.get('symbol') || 'BTCUSDT'
+  const setSymbol = (v) => setParam('symbol', v)
+  const assetLabel = CRYPTO_PURCHASE_SYMBOLS.find((s) => s.value === symbol)?.label || symbol
+
   const dateMode = searchParams.get('dateMode') || 'range'
   const setDateMode = (v) => setParam('dateMode', v)
   const rangeFrom = searchParams.get('from') || monthsAgoStr(3)
@@ -299,7 +305,7 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
     try {
       const startTime = new Date(`${dateFrom}T00:00:00.000Z`).getTime()
       const endTime = new Date(`${dateTo}T23:59:59.999Z`).getTime()
-      const data = await fetchPriceSeries('BTCUSDT', granularity, startTime, endTime)
+      const data = await fetchPriceSeries(symbol, granularity, startTime, endTime)
       const filtered =
         dateMode === 'range'
           ? data
@@ -323,8 +329,8 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
 
   const colors = series.map((p) => (p.close >= p.open ? UP_COLOR : DOWN_COLOR))
   const monthGroups = granularity === '1d' ? computeMonthGroups(series) : []
-  const halvingMarkers = computeHalvingMarkers(series)
-  const buyMarkers = computePurchaseMarkers(series, purchases)
+  const halvingMarkers = symbol === 'BTCUSDT' ? computeHalvingMarkers(series) : []
+  const buyMarkers = symbol === 'BTCUSDT' ? computePurchaseMarkers(series, purchases) : []
   const buyByIndex = new Map(buyMarkers.map((m) => [m.index, m]))
 
   // Candlestick faked with two overlaid floating-bar datasets (Chart.js supports
@@ -344,7 +350,7 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
         grouped: false,
       },
       {
-        label: 'BTC/USDT',
+        label: `${assetLabel}/USDT`,
         data: series.map((p) => [Math.min(p.open, p.close), Math.max(p.open, p.close)]),
         backgroundColor: colors,
         maxBarThickness: 12,
@@ -374,7 +380,7 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
 
   return (
     <div className="trade-tools__card trade-tools__card--wide">
-      <p className="trade-tools__card-title">Velas BTC/USDT</p>
+      <p className="trade-tools__card-title">Velas {assetLabel}/USDT</p>
 
       <div className="trade-tools__mode-toggle">
         <button
@@ -401,6 +407,20 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
       </div>
 
       <div className="trade-tools__histogram-filters">
+        <div className="trade-tools__field">
+          <label className="trade-tools__label">Activo</label>
+          <select
+            className="trade-tools__input"
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+          >
+            {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
         {dateMode === 'range' ? (
           <>
             <div className="trade-tools__field">
