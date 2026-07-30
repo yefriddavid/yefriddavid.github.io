@@ -1,7 +1,10 @@
 import React, { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { CNav, CNavItem, CNavLink, CTabContent, CTabPane } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import { fmtUSD } from 'src/views/tools/crypto-purchases/cryptoPurchaseHelpers'
+import BtcHistogram from 'src/views/Finance/trade/Tools/BtcHistogram'
 import moment from 'src/utils/moment'
 import './BtcLosses2025.scss'
 
@@ -84,6 +87,14 @@ const LOTS_2026 = [
     note: 'Vender en 67500 — comprado con préstamo (Binance Loans)',
   },
 ]
+
+// Every purchase point (2025 + 2026) to mark on the Análisis candlestick chart.
+const PURCHASE_MARKERS = [...LOTS, ...LOTS_2026].map((l) => ({
+  date: l.date,
+  quantity: l.quantity,
+  price: l.price,
+  trm: l.trm,
+}))
 
 const LOAN_RATE_EA = 0.05
 // Effective monthly rate equivalent to 5% EA — (1+EA)^(1/12) - 1, the standard
@@ -235,6 +246,16 @@ const LotsTable = ({ title, lots, effectivePrice }) => {
 }
 
 const BtcLosses2025 = () => {
+  // Selected tab lives in the URL (not useState) so a page refresh or shared
+  // link restores it instead of always landing back on "Tablas".
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get('tab') || 'tables'
+  const setTab = (v) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('tab', v)
+      return next
+    })
   const { prices, connected } = useCryptoPrices()
   const livePrice = prices.BTCUSDT?.price ?? null
 
@@ -278,122 +299,166 @@ const BtcLosses2025 = () => {
   return (
     <div className="btcl">
       <h1 className="btcl__title">BTC Pérdidas 2025</h1>
-      <p className="btcl__subtitle">
-        Lotes de BTC comprados en 2025 sin vender todavía (dato fijo, análisis puntual) — PnL
-        calculado con el precio de BTC/USDT en vivo. El interés de préstamo simula qué pasaría si el
-        costo de cada compra fuera plata prestada al 5% efectivo anual, compuesto desde la fecha de
-        compra hasta hoy. «Interés / mes» es la tasa mensual equivalente a ese 5% EA aplicada al
-        costo — cuánto suma la deuda simulada por cada mes que pase.
-        {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
-      </p>
 
-      <div className="btcl__notes">
-        <div className="btcl__note">
-          📌 Vender en {fmtUSD(130000)} · nota del {fmtDateLong('2026-07-29')} · BTC hoy: {fmtUSD(64000)}
-        </div>
-        <div className="btcl__note">
-          🏦 En billetera: mantener todo · en Binance ARG: dejar {fmtUSD(10000)} para trade
-        </div>
-        <div className="btcl__note">🎯 Llegar a 1 BTC</div>
-        <div className="btcl__note">💳 Después de haber llegado a 1 BTC, pagar deuda</div>
-      </div>
+      <CNav variant="tabs" className="mb-3">
+        <CNavItem>
+          <CNavLink
+            active={tab === 'tables'}
+            onClick={() => setTab('tables')}
+            className="cursor-pointer"
+          >
+            Tablas
+          </CNavLink>
+        </CNavItem>
+        <CNavItem>
+          <CNavLink
+            active={tab === 'analysis'}
+            onClick={() => setTab('analysis')}
+            className="cursor-pointer"
+          >
+            Análisis
+          </CNavLink>
+        </CNavItem>
+      </CNav>
 
-      <div className="btcl__kpi-row">
-        <div className="btcl__kpi-card">
-          <span className="btcl__kpi-label">Costo total (2025 + 2026)</span>
-          <strong className="btcl__kpi-value">{fmtUSD(totalCost)}</strong>
-          <div className="btcl__kpi-split" title={`2025: ${fmtUSD(cost2025)} · 2026: ${fmtUSD(cost2026)}`}>
-            <div className="btcl__kpi-split-bar">
-              <span className="btcl__kpi-split-seg btcl__kpi-split-seg--2025" style={{ width: `${pct2025}%` }} />
-              <span className="btcl__kpi-split-seg btcl__kpi-split-seg--2026" style={{ width: `${pct2026}%` }} />
+      <CTabContent>
+        <CTabPane visible={tab === 'tables'}>
+          <p className="btcl__subtitle">
+            Lotes de BTC comprados en 2025 sin vender todavía (dato fijo, análisis puntual) — PnL
+            calculado con el precio de BTC/USDT en vivo. El interés de préstamo simula qué pasaría
+            si el costo de cada compra fuera plata prestada al 5% efectivo anual, compuesto desde la
+            fecha de compra hasta hoy. «Interés / mes» es la tasa mensual equivalente a ese 5% EA
+            aplicada al costo — cuánto suma la deuda simulada por cada mes que pase.
+            {!connected && ' Sin conexión de precios — mostrando el último valor recibido.'}
+          </p>
+
+          <div className="btcl__notes">
+            <div className="btcl__note">
+              📌 Vender en {fmtUSD(130000)} · nota del {fmtDateLong('2026-07-29')} · BTC hoy:{' '}
+              {fmtUSD(64000)}
             </div>
-            <div className="btcl__kpi-split-legend">
-              <span className="btcl__kpi-split-item btcl__kpi-split-item--2025">
-                2025 · {fmtUSD(cost2025)} <em>({pct2025.toFixed(0)}%)</em>
-              </span>
-              <span className="btcl__kpi-split-item btcl__kpi-split-item--2026">
-                2026 · {fmtUSD(cost2026)} <em>({pct2026.toFixed(0)}%)</em>
-              </span>
+            <div className="btcl__note">
+              🏦 En billetera: mantener todo · en Binance ARG: dejar {fmtUSD(10000)} para trade
+            </div>
+            <div className="btcl__note">🎯 Llegar a 1 BTC</div>
+            <div className="btcl__note">💳 Después de haber llegado a 1 BTC, pagar deuda</div>
+          </div>
+
+          <div className="btcl__kpi-row">
+            <div className="btcl__kpi-card">
+              <span className="btcl__kpi-label">Costo total (2025 + 2026)</span>
+              <strong className="btcl__kpi-value">{fmtUSD(totalCost)}</strong>
+              <div
+                className="btcl__kpi-split"
+                title={`2025: ${fmtUSD(cost2025)} · 2026: ${fmtUSD(cost2026)}`}
+              >
+                <div className="btcl__kpi-split-bar">
+                  <span
+                    className="btcl__kpi-split-seg btcl__kpi-split-seg--2025"
+                    style={{ width: `${pct2025}%` }}
+                  />
+                  <span
+                    className="btcl__kpi-split-seg btcl__kpi-split-seg--2026"
+                    style={{ width: `${pct2026}%` }}
+                  />
+                </div>
+                <div className="btcl__kpi-split-legend">
+                  <span className="btcl__kpi-split-item btcl__kpi-split-item--2025">
+                    2025 · {fmtUSD(cost2025)} <em>({pct2025.toFixed(0)}%)</em>
+                  </span>
+                  <span className="btcl__kpi-split-item btcl__kpi-split-item--2026">
+                    2026 · {fmtUSD(cost2026)} <em>({pct2026.toFixed(0)}%)</em>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="btcl__kpi-card">
+              <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
+              <strong
+                className={`btcl__kpi-value${totalLoss == null ? '' : totalLoss >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
+              >
+                {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
+              </strong>
+              {totalLoss != null && (
+                <div
+                  className="btcl__kpi-split"
+                  title={`2025: ${loss2025 >= 0 ? '+' : ''}${fmtUSD(loss2025)} · 2026: ${loss2026 >= 0 ? '+' : ''}${fmtUSD(loss2026)}`}
+                >
+                  <div className="btcl__kpi-split-bar">
+                    <span
+                      className={`btcl__kpi-split-seg${loss2025 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
+                      style={{ width: `${lossPct2025}%` }}
+                    />
+                    <span
+                      className={`btcl__kpi-split-seg${loss2026 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
+                      style={{ width: `${lossPct2026}%` }}
+                    />
+                  </div>
+                  <div className="btcl__kpi-split-legend">
+                    <span className="btcl__kpi-split-item">
+                      <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2025" />
+                      2025 ·{' '}
+                      <span
+                        className={loss2025 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}
+                      >
+                        {loss2025 >= 0 ? '+' : ''}
+                        {fmtUSD(loss2025)}
+                      </span>
+                    </span>
+                    <span className="btcl__kpi-split-item">
+                      <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2026" />
+                      2026 ·{' '}
+                      <span
+                        className={loss2026 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}
+                      >
+                        {loss2026 >= 0 ? '+' : ''}
+                        {fmtUSD(loss2026)}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-        <div className="btcl__kpi-card">
-          <span className="btcl__kpi-label">Pérdida total (2025 + 2026)</span>
-          <strong
-            className={`btcl__kpi-value${totalLoss == null ? '' : totalLoss >= 0 ? ' btcl__pnl--negative' : ' btcl__pnl--positive'}`}
-          >
-            {totalLoss != null ? fmtUSD(totalLoss) : <Spinner size="sm" />}
-          </strong>
-          {totalLoss != null && (
-            <div
-              className="btcl__kpi-split"
-              title={`2025: ${loss2025 >= 0 ? '+' : ''}${fmtUSD(loss2025)} · 2026: ${loss2026 >= 0 ? '+' : ''}${fmtUSD(loss2026)}`}
+
+          <div className="btcl__price">
+            Precio BTC en vivo:{' '}
+            {livePrice != null ? <strong>{fmtUSD(livePrice)}</strong> : <Spinner size="sm" />}
+            {simPrice != null && (
+              <span className="btcl__sim-active"> — simulando a {fmtUSD(simPrice)}</span>
+            )}
+          </div>
+
+          <div className="btcl__sim">
+            <label className="btcl__sim-label">Simular precio BTC (USD)</label>
+            <input
+              type="number"
+              className="btcl__sim-input"
+              placeholder="Ej: 150000"
+              value={simInput}
+              onChange={(e) => setSimInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleApplySim()}
+            />
+            <button type="button" className="btcl__sim-btn" onClick={handleApplySim}>
+              Aplicar
+            </button>
+            <button
+              type="button"
+              className="btcl__sim-btn btcl__sim-btn--reset"
+              onClick={handleResetSim}
             >
-              <div className="btcl__kpi-split-bar">
-                <span
-                  className={`btcl__kpi-split-seg${loss2025 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
-                  style={{ width: `${lossPct2025}%` }}
-                />
-                <span
-                  className={`btcl__kpi-split-seg${loss2026 >= 0 ? ' btcl__kpi-split-seg--loss' : ' btcl__kpi-split-seg--gain'}`}
-                  style={{ width: `${lossPct2026}%` }}
-                />
-              </div>
-              <div className="btcl__kpi-split-legend">
-                <span className="btcl__kpi-split-item">
-                  <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2025" />
-                  2025 ·{' '}
-                  <span className={loss2025 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}>
-                    {loss2025 >= 0 ? '+' : ''}
-                    {fmtUSD(loss2025)}
-                  </span>
-                </span>
-                <span className="btcl__kpi-split-item">
-                  <em className="btcl__kpi-split-dot btcl__kpi-split-dot--2026" />
-                  2026 ·{' '}
-                  <span className={loss2026 >= 0 ? 'btcl__pnl--negative' : 'btcl__pnl--positive'}>
-                    {loss2026 >= 0 ? '+' : ''}
-                    {fmtUSD(loss2026)}
-                  </span>
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+              Reset
+            </button>
+          </div>
 
-      <div className="btcl__price">
-        Precio BTC en vivo:{' '}
-        {livePrice != null ? <strong>{fmtUSD(livePrice)}</strong> : <Spinner size="sm" />}
-        {simPrice != null && (
-          <span className="btcl__sim-active"> — simulando a {fmtUSD(simPrice)}</span>
-        )}
-      </div>
+          <LotsTable title="Lotes sin vender (2025)" lots={LOTS} effectivePrice={effectivePrice} />
+          <LotsTable title="Compras 2026" lots={LOTS_2026} effectivePrice={effectivePrice} />
+        </CTabPane>
 
-      <div className="btcl__sim">
-        <label className="btcl__sim-label">Simular precio BTC (USD)</label>
-        <input
-          type="number"
-          className="btcl__sim-input"
-          placeholder="Ej: 150000"
-          value={simInput}
-          onChange={(e) => setSimInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleApplySim()}
-        />
-        <button type="button" className="btcl__sim-btn" onClick={handleApplySim}>
-          Aplicar
-        </button>
-        <button
-          type="button"
-          className="btcl__sim-btn btcl__sim-btn--reset"
-          onClick={handleResetSim}
-        >
-          Reset
-        </button>
-      </div>
-
-      <LotsTable title="Lotes sin vender (2025)" lots={LOTS} effectivePrice={effectivePrice} />
-      <LotsTable title="Compras 2026" lots={LOTS_2026} effectivePrice={effectivePrice} />
+        <CTabPane visible={tab === 'analysis'}>
+          <BtcHistogram purchaseMarkers={PURCHASE_MARKERS} />
+        </CTabPane>
+      </CTabContent>
     </div>
   )
 }

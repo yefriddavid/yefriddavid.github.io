@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CChartBar } from '@coreui/react-chartjs'
 import Spinner from 'src/components/shared/Spinner'
@@ -10,6 +10,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
 import useSavedViews from 'src/hooks/useSavedViews'
 import { fetchPriceSeries } from 'src/services/cryptoKlinesService'
+import './Tools.scss'
 
 const SAVED_VIEWS_KEY = 'btcHistogram.savedViews'
 
@@ -169,7 +170,58 @@ const halvingLinePlugin = {
   },
 }
 
-export default function BtcHistogram() {
+// Maps each { date, quantity, price, trm } purchase to the index of the series
+// point on that same calendar day, so it can be marked on the category axis.
+// Purchases outside the queried range/granularity simply find no match and
+// are skipped.
+const computePurchaseMarkers = (points, purchases) => {
+  if (!points.length || !purchases?.length) return []
+  const indexByDate = new Map(
+    points.map((p, i) => [new Date(p.time).toISOString().slice(0, 10), i]),
+  )
+  return purchases
+    .map((buy) => {
+      const index = indexByDate.get(buy.date)
+      if (index == null) return null
+      return {
+        index,
+        low: points[index].low,
+        date: buy.date,
+        quantity: buy.quantity,
+        price: buy.price,
+        trm: buy.trm,
+      }
+    })
+    .filter(Boolean)
+}
+
+// Chart.js plugin: draws a small upward triangle under the candle's low on
+// each day a purchase was made.
+const purchaseMarkerPlugin = {
+  id: 'purchaseMarkers',
+  afterDraw(chart) {
+    const markers = chart.config.options?.plugins?.purchaseMarkers?.markers
+    if (!markers?.length) return
+    const { ctx, scales } = chart
+    const x = scales.x
+    const y = scales.y
+    ctx.save()
+    ctx.fillStyle = '#ffd43b'
+    markers.forEach((m) => {
+      const px = x.getPixelForValue(m.index)
+      const py = y.getPixelForValue(m.low) + 8
+      ctx.beginPath()
+      ctx.moveTo(px, py)
+      ctx.lineTo(px - 4, py + 7)
+      ctx.lineTo(px + 4, py + 7)
+      ctx.closePath()
+      ctx.fill()
+    })
+    ctx.restore()
+  },
+}
+
+export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
   const { monthLabels } = useLocaleData()
   const {
     showViewModal,
@@ -217,6 +269,8 @@ export default function BtcHistogram() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [queried, setQueried] = useState(false)
+  const [selectedPurchase, setSelectedPurchase] = useState(null)
+  const chartRef = useRef(null)
 
   // 'month'/'year' modes fetch the envelope spanning every selected year, then
   // narrow further by the selected years/months after fetching — a multiselect
@@ -270,6 +324,8 @@ export default function BtcHistogram() {
   const colors = series.map((p) => (p.close >= p.open ? UP_COLOR : DOWN_COLOR))
   const monthGroups = granularity === '1d' ? computeMonthGroups(series) : []
   const halvingMarkers = computeHalvingMarkers(series)
+  const buyMarkers = computePurchaseMarkers(series, purchases)
+  const buyByIndex = new Map(buyMarkers.map((m) => [m.index, m]))
 
   // Candlestick faked with two overlaid floating-bar datasets (Chart.js supports
   // [min, max] data points natively): a thin wick (low-high) under a wide body (open-close).
@@ -433,9 +489,22 @@ export default function BtcHistogram() {
         ) : (
           <div className="trade-tools__histogram-chart">
             <CChartBar
-              style={{ height: 320 }}
+              ref={chartRef}
+              style={{ height: 320, cursor: buyMarkers.length ? 'pointer' : 'default' }}
               data={chartData}
-              plugins={[monthGroupPlugin, halvingLinePlugin]}
+              plugins={[monthGroupPlugin, halvingLinePlugin, purchaseMarkerPlugin]}
+              onClick={(e) => {
+                if (!chartRef.current) return
+                const elements = chartRef.current.getElementsAtEventForMode(
+                  e,
+                  'index',
+                  { intersect: false },
+                  true,
+                )
+                if (!elements.length) return
+                const bought = buyByIndex.get(elements[0].index)
+                if (bought) setSelectedPurchase(bought)
+              }}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -444,6 +513,7 @@ export default function BtcHistogram() {
                   legend: { display: false },
                   monthGroups: { groups: monthGroups },
                   halvingLines: { markers: halvingMarkers },
+                  purchaseMarkers: { markers: buyMarkers },
                   tooltip: {
                     filter: (ctx) => ctx.datasetIndex === 1,
                     callbacks: {
@@ -451,12 +521,15 @@ export default function BtcHistogram() {
                         fmtBucketLabel(series[items[0].dataIndex].time, granularity),
                       label: (ctx) => {
                         const p = series[ctx.dataIndex]
-                        return [
+                        const lines = [
                           `Apertura: ${fmtUsd(p.open)}`,
                           `Máximo: ${fmtUsd(p.high)}`,
                           `Mínimo: ${fmtUsd(p.low)}`,
                           `Cierre: ${fmtUsd(p.close)}`,
                         ]
+                        const bought = buyByIndex.get(ctx.dataIndex)
+                        if (bought) lines.push(`Compra: ${bought.quantity} BTC`)
+                        return lines
                       },
                     },
                   },
@@ -484,6 +557,25 @@ export default function BtcHistogram() {
         >
           <SaveViewForm key={saveViewFormKey} onSave={saveView} />
           <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+        </AppModal>
+      )}
+
+      {selectedPurchase && (
+        <AppModal
+          visible
+          onClose={() => setSelectedPurchase(null)}
+          variant="center"
+          size="sm"
+          title="Compra"
+        >
+          <p>
+            Fecha:{' '}
+            {fmtBucketLabel(new Date(`${selectedPurchase.date}T00:00:00.000Z`).getTime(), '1d')}
+          </p>
+          <p>Cantidad: {selectedPurchase.quantity} BTC</p>
+          <p>Precio: {fmtUsd(selectedPurchase.price)}</p>
+          <p>Costo: {fmtUsd(selectedPurchase.quantity * selectedPurchase.price)}</p>
+          {selectedPurchase.trm != null && <p>TRM (USD/COP): {selectedPurchase.trm}</p>}
         </AppModal>
       )}
     </div>
