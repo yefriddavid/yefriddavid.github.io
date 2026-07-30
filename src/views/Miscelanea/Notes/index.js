@@ -1391,6 +1391,7 @@ const Notes = () => {
         content: note.content,
         color: note.color,
         mode: note.mode,
+        category: note.category,
         private: note.private,
         ...(note.mode === 'table' ? { body: note.body } : {}),
       }),
