@@ -108,6 +108,28 @@
     margin-top: 1.25rem;
   }
 
+  &__mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__mode-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: none;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--cui-tertiary-bg);
+    color: var(--cui-secondary-color);
+
+    &--active {
+      background: var(--cui-primary);
+      color: #fff;
+    }
+  }
+
   &__histogram-filters {
     display: flex;
     flex-wrap: wrap;

@@ -10,6 +10,7 @@ import AppModal from 'src/components/shared/AppModal'
 import moment from 'src/utils/moment'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import useLocaleData from 'src/hooks/useLocaleData'
+import useMultiParam from 'src/hooks/useMultiParam'
 import { useCryptoPrices } from 'src/views/Finance/trade/Prices/useCryptoPrices'
 import * as actions from 'src/actions/finance/cryptoPurchaseActions'
 import {
@@ -33,7 +34,6 @@ const fmtDateLong = (date) => (date ? moment(date).format('D [de] MMMM [de] YYYY
 const fmtDateTime = (p) =>
   p.purchaseTime ? `${fmtDateLong(p.purchaseDate)} ${p.purchaseTime}` : fmtDateLong(p.purchaseDate)
 const monthOf = (dateStr) => Number((dateStr || '').slice(5, 7)) || null
-const identity = (v) => v
 
 const sortBySpec = (list, sort) => {
   const compare = (a, b, key) =>
@@ -119,38 +119,6 @@ const parseSort = (raw) => {
   return parsed.length > 0 ? parsed : DEFAULT_SORT
 }
 const serializeSort = (sort) => sort.map((s) => `${s.key}:${s.dir}`).join(',')
-
-// MultiSelectDropdown represents "Todos unchecked to none" with an internal Symbol
-// added to the Set — fine for plain useState, but Array#join throws on a Symbol,
-// so a URL-backed Set needs its own URL-safe stand-in for that "none" state.
-const NONE_MARKER = 'crypto-query:none'
-
-const parseMultiParam = (raw, parse) =>
-  raw === NONE_MARKER
-    ? new Set([NONE_MARKER])
-    : new Set((raw || '').split(',').filter(Boolean).map(parse))
-
-// Backs a MultiSelectDropdown filter with a comma-joined URL param instead of useState.
-// `parse` converts each raw string back to its real type (e.g. Number for months).
-const useMultiParam = (searchParams, setSearchParams, key, parse = identity) => {
-  const selected = useMemo(
-    () => parseMultiParam(searchParams.get(key), parse),
-    [searchParams, key, parse],
-  )
-
-  const setSelected = (updater) =>
-    setSearchParams((prev) => {
-      const current = parseMultiParam(prev.get(key), parse)
-      const updated = typeof updater === 'function' ? updater(current) : updater
-      const next = new URLSearchParams(prev)
-      const realValues = [...updated].filter((v) => typeof v !== 'symbol')
-      if (realValues.length !== updated.size) next.set(key, NONE_MARKER)
-      else if (updated.size === 0) next.delete(key)
-      else next.set(key, realValues.join(','))
-      return next
-    })
-  return [selected, setSelected]
-}
 
 const FILTER_PARAM_KEYS = [
   'symbol',

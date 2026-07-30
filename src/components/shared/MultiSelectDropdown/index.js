@@ -18,8 +18,8 @@ import './MultiSelectDropdown.scss'
 //   const toStore = hasNone ? 'YOUR_OWN_NONE_MARKER' : [...updated].join(',')
 //
 // and translate 'YOUR_OWN_NONE_MARKER' back into a one-element Set (any non-matching
-// placeholder value) on read. See src/views/reports/CryptoQuery.js's `useMultiParam`
-// for a working example (bug fixed there on 2026-07-27, filters were un-clearable
+// placeholder value) on read. See src/hooks/useMultiParam.js for a working
+// implementation (bug fixed there on 2026-07-27, filters were un-clearable
 // because of exactly this).
 const NONE = Symbol('multi-select-none')
 

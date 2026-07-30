@@ -11,7 +11,7 @@ export const getStartTime = (interval, customDate) => {
   return intervalMs[interval] ? Date.now() - intervalMs[interval] : null
 }
 
-// Daily/weekly/monthly close price series between startTime and endTime (ms).
+// Daily/weekly/monthly OHLC series between startTime and endTime (ms).
 // Paginates via the candle's own close time since a single call caps at 1000 rows.
 export const fetchPriceSeries = async (symbol, interval, startTime, endTime) => {
   const series = []
@@ -22,8 +22,14 @@ export const fetchPriceSeries = async (symbol, interval, startTime, endTime) => 
     if (!res.ok) throw new Error(`Binance klines error: ${res.status}`)
     const candles = await res.json()
     if (!candles.length) break
-    candles.forEach(([openTime, , , , close]) => {
-      series.push({ time: openTime, price: parseFloat(close) })
+    candles.forEach(([openTime, open, high, low, close]) => {
+      series.push({
+        time: openTime,
+        open: parseFloat(open),
+        high: parseFloat(high),
+        low: parseFloat(low),
+        close: parseFloat(close),
+      })
     })
     if (candles.length < 1000) break
     cursor = candles[candles.length - 1][0] + 1
