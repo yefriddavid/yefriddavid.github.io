@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import { CCollapse } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import { fmtUsd as fmt } from '../tradeUtils'
 import BtcHistogram from './BtcHistogram'
 import './Tools.scss'
@@ -156,13 +159,24 @@ function PositionCalculator() {
 }
 
 export default function Tools() {
+  const [calcOpen, setCalcOpen] = useState(false)
+
   return (
     <div className="trade-tools">
       <h5 className="trade-tools__title">Trade Tools</h5>
-      <div className="trade-tools__grid">
-        <GridCalculator />
-        <PositionCalculator />
+
+      <div className="trade-tools__section-header" onClick={() => setCalcOpen((o) => !o)}>
+        <span className="trade-tools__section-title">Calculadoras</span>
+        <CIcon icon={calcOpen ? cilChevronBottom : cilChevronRight} size="sm" />
       </div>
+
+      <CCollapse visible={calcOpen}>
+        <div className="trade-tools__grid">
+          <GridCalculator />
+          <PositionCalculator />
+        </div>
+      </CCollapse>
+
       <BtcHistogram />
     </div>
   )

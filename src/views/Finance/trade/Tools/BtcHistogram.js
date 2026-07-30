@@ -23,6 +23,8 @@ const YEARS = Array.from(
   (_, i) => CURRENT_YEAR - i,
 )
 
+const HALVING_DATES = ['2012-11-28', '2016-07-09', '2020-05-11', '2024-04-20']
+
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const monthsAgoStr = (n) => {
   const d = new Date()
@@ -55,7 +57,8 @@ const computeMonthGroups = (points) => {
         key,
         startIndex: i,
         endIndex: i,
-        label: capitalize(d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })),
+        monthLabel: capitalize(d.toLocaleDateString('es-CO', { month: 'long' })),
+        year: d.getFullYear(),
       })
     }
   })
@@ -94,9 +97,67 @@ const monthGroupPlugin = {
     ctx.font = '11px sans-serif'
     ctx.fillStyle = '#888'
     ctx.textAlign = 'center'
+    let lastRight = -Infinity
     groups.forEach((g) => {
       const center = (x.getPixelForValue(g.startIndex) + x.getPixelForValue(g.endIndex)) / 2
-      ctx.fillText(g.label, center, chartArea.top - 6)
+      const yearText = String(g.year)
+      const width = Math.max(ctx.measureText(g.monthLabel).width, ctx.measureText(yearText).width)
+      const left = center - width / 2
+      if (left < lastRight + 4) return // would overlap the previous label
+      ctx.fillText(g.monthLabel, center, chartArea.top - 19)
+      ctx.fillText(yearText, center, chartArea.top - 6)
+      lastRight = center + width / 2
+    })
+    ctx.restore()
+  },
+}
+
+// Finds each halving date that falls within the queried series and maps it to
+// the index of its closest point, so it can be positioned on the category axis.
+const computeHalvingMarkers = (points) => {
+  if (!points.length) return []
+  const from = points[0].time
+  const to = points[points.length - 1].time
+  return HALVING_DATES.map((dateStr) => {
+    const t = new Date(`${dateStr}T00:00:00.000Z`).getTime()
+    if (t < from || t > to) return null
+    let closest = 0
+    let minDiff = Infinity
+    points.forEach((p, i) => {
+      const diff = Math.abs(p.time - t)
+      if (diff < minDiff) {
+        minDiff = diff
+        closest = i
+      }
+    })
+    return { index: closest, label: 'Halving' }
+  }).filter(Boolean)
+}
+
+// Chart.js plugin: draws a dashed vertical line + small flag label at each
+// halving date that falls inside the current series.
+const halvingLinePlugin = {
+  id: 'halvingLines',
+  afterDraw(chart) {
+    const markers = chart.config.options?.plugins?.halvingLines?.markers
+    if (!markers?.length) return
+    const { ctx, chartArea, scales } = chart
+    const x = scales.x
+    ctx.save()
+    markers.forEach((m) => {
+      const px = x.getPixelForValue(m.index)
+      ctx.strokeStyle = '#f7931a'
+      ctx.setLineDash([4, 3])
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(px, chartArea.top)
+      ctx.lineTo(px, chartArea.bottom)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.fillStyle = '#f7931a'
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(m.label, px + 4, chartArea.top + 12)
     })
     ctx.restore()
   },
@@ -122,8 +183,12 @@ export default function BtcHistogram() {
   const setRangeFrom = (v) => setParam('from', v)
   const rangeTo = searchParams.get('to') || todayStr()
   const setRangeTo = (v) => setParam('to', v)
-  const year = Number(searchParams.get('year')) || CURRENT_YEAR
-  const setYear = (v) => setParam('year', v)
+  const [selectedYears, setSelectedYears] = useMultiParam(
+    searchParams,
+    setSearchParams,
+    'years',
+    Number,
+  )
   const [selectedMonths, setSelectedMonths] = useMultiParam(
     searchParams,
     setSearchParams,
@@ -138,12 +203,22 @@ export default function BtcHistogram() {
   const [error, setError] = useState(null)
   const [queried, setQueried] = useState(false)
 
-  // 'month' mode bounds the year like 'year' mode does, then narrows further by
-  // the selected months after fetching — a multiselect can't collapse to one
-  // contiguous date range the way a single month picker could.
+  // 'month'/'year' modes fetch the envelope spanning every selected year, then
+  // narrow further by the selected years/months after fetching — a multiselect
+  // can't collapse to one contiguous date range the way a single picker could.
+  const realSelectedYears = [...selectedYears].filter(
+    (y) => typeof y === 'number' && !Number.isNaN(y),
+  )
+  const yearsInScope = realSelectedYears.length > 0 ? realSelectedYears : YEARS
+  const minYear = Math.min(...yearsInScope)
+  const maxYear = Math.max(...yearsInScope)
+
   const { dateFrom, dateTo } =
     dateMode === 'year' || dateMode === 'month'
-      ? { dateFrom: `${year}-01-01`, dateTo: year === CURRENT_YEAR ? todayStr() : `${year}-12-31` }
+      ? {
+          dateFrom: `${minYear}-01-01`,
+          dateTo: maxYear === CURRENT_YEAR ? todayStr() : `${maxYear}-12-31`,
+        }
       : { dateFrom: rangeFrom, dateTo: rangeTo }
 
   const invalid = !dateFrom || !dateTo || dateFrom > dateTo
@@ -157,9 +232,17 @@ export default function BtcHistogram() {
       const endTime = new Date(`${dateTo}T23:59:59.999Z`).getTime()
       const data = await fetchPriceSeries('BTCUSDT', granularity, startTime, endTime)
       const filtered =
-        dateMode === 'month' && selectedMonths.size > 0
-          ? data.filter((p) => selectedMonths.has(new Date(p.time).getMonth() + 1))
-          : data
+        dateMode === 'range'
+          ? data
+          : data.filter((p) => {
+              const d = new Date(p.time)
+              const yearOk = selectedYears.size === 0 || selectedYears.has(d.getFullYear())
+              const monthOk =
+                dateMode !== 'month' ||
+                selectedMonths.size === 0 ||
+                selectedMonths.has(d.getMonth() + 1)
+              return yearOk && monthOk
+            })
       setSeries(filtered)
       setQueried(true)
     } catch (e) {
@@ -171,6 +254,7 @@ export default function BtcHistogram() {
 
   const colors = series.map((p) => (p.close >= p.open ? UP_COLOR : DOWN_COLOR))
   const monthGroups = granularity === '1d' ? computeMonthGroups(series) : []
+  const halvingMarkers = computeHalvingMarkers(series)
 
   // Candlestick faked with two overlaid floating-bar datasets (Chart.js supports
   // [min, max] data points natively): a thin wick (low-high) under a wide body (open-close).
@@ -197,6 +281,25 @@ export default function BtcHistogram() {
       },
     ],
   }
+
+  const yearField = (
+    <div className="trade-tools__field">
+      <label className="trade-tools__label">Año</label>
+      <MultiSelectDropdown
+        label={(size) => (size > 0 ? `Año (${size})` : 'Año: Todos')}
+        options={YEARS.map((y) => ({ value: y, label: String(y) }))}
+        selected={selectedYears}
+        onToggle={(value) =>
+          setSelectedYears((prev) => {
+            const next = new Set(prev)
+            next.has(value) ? next.delete(value) : next.add(value)
+            return next
+          })
+        }
+        onClearAll={() => setSelectedYears(new Set())}
+      />
+    </div>
+  )
 
   return (
     <div className="trade-tools__card trade-tools__card--wide">
@@ -253,20 +356,7 @@ export default function BtcHistogram() {
           </>
         ) : dateMode === 'month' ? (
           <>
-            <div className="trade-tools__field">
-              <label className="trade-tools__label">Año</label>
-              <select
-                className="trade-tools__input"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-              >
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {yearField}
             <div className="trade-tools__field">
               <label className="trade-tools__label">Mes</label>
               <MultiSelectDropdown
@@ -285,20 +375,7 @@ export default function BtcHistogram() {
             </div>
           </>
         ) : (
-          <div className="trade-tools__field">
-            <label className="trade-tools__label">Año</label>
-            <select
-              className="trade-tools__input"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+          yearField
         )}
         <div className="trade-tools__field">
           <label className="trade-tools__label">Comparación</label>
@@ -336,14 +413,15 @@ export default function BtcHistogram() {
             <CChartBar
               style={{ height: 320 }}
               data={chartData}
-              plugins={[monthGroupPlugin]}
+              plugins={[monthGroupPlugin, halvingLinePlugin]}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: { padding: { top: monthGroups.length ? 18 : 0 } },
+                layout: { padding: { top: monthGroups.length ? 30 : 0 } },
                 plugins: {
                   legend: { display: false },
                   monthGroups: { groups: monthGroups },
+                  halvingLines: { markers: halvingMarkers },
                   tooltip: {
                     filter: (ctx) => ctx.datasetIndex === 1,
                     callbacks: {
