@@ -294,6 +294,8 @@ const BtcLosses2025 = () => {
         <div className="btcl__note">
           🏦 En billetera: mantener todo · en Binance ARG: dejar {fmtUSD(10000)} para trade
         </div>
+        <div className="btcl__note">🎯 Llegar a 1 BTC</div>
+        <div className="btcl__note">💳 Después de haber llegado a 1 BTC, pagar deuda</div>
       </div>
 
       <div className="btcl__kpi-row">
