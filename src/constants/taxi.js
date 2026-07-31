@@ -15,6 +15,7 @@ export const TAXI_EXPENSE_CATEGORIES = [
   'Mantenimiento',
   'Préstamos',
   'Repuestos',
+  'Mano de obra',
   'Lavado',
   'Cambio Aceite',
   'Cambio de Correa Dentada',
