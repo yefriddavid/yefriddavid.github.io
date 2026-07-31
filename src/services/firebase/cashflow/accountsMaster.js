@@ -29,6 +29,7 @@ export const getAccountsMaster = async () => {
       return {
         id: d.id,
         name: data.name ?? null,
+        division: data.division ?? null,
         type: data.type ?? null,
         code: data.code ?? null,
         period: data.period ?? null,

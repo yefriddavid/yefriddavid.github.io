@@ -9,6 +9,8 @@ export default function AdHocSection({
   onDelete,
   onViewAttachment,
   onTogglePaid,
+  onMoveDivision,
+  moveDivisionLabel,
 }) {
   const adHocFiltered = adHocTransactions.filter(
     (t) => t.type === (typeTab === 'Incoming' ? 'income' : 'expense'),
@@ -35,7 +37,9 @@ export default function AdHocSection({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 'var(--fs-lg)' }}>💸</span>
-          <span style={{ fontSize: 'var(--fs-md)', fontWeight: 600, color: '#1a1a2e' }}>Otras cuentas</span>
+          <span style={{ fontSize: 'var(--fs-md)', fontWeight: 600, color: '#1a1a2e' }}>
+            Otras cuentas
+          </span>
           {adHocFiltered.length > 0 && (
             <span
               style={{
@@ -142,7 +146,26 @@ export default function AdHocSection({
                       {t.note}
                     </span>
                   )}
-                  {t.date && <span style={{ fontSize: 'var(--fs-xs)', color: '#6c757d' }}>{t.date}</span>}
+                  {t.date && (
+                    <span style={{ fontSize: 'var(--fs-xs)', color: '#6c757d' }}>{t.date}</span>
+                  )}
+                  {onMoveDivision && (
+                    <button
+                      onClick={() => onMoveDivision(t)}
+                      title={`Mover a ${moveDivisionLabel}`}
+                      style={{
+                        fontSize: 'var(--fs-2xs)',
+                        color: '#6c757d',
+                        background: '#f1f5f9',
+                        border: 'none',
+                        borderRadius: 4,
+                        padding: '1px 6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      → {moveDivisionLabel}
+                    </button>
+                  )}
                 </div>
               </div>
               <div

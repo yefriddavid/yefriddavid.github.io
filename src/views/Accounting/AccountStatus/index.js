@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { cilCalendar } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
@@ -37,6 +37,7 @@ export { fmt, isApplicableToMonth, getStatus }
 export default function AccountStatus() {
   const { monthLabels } = useLocaleData()
   const dispatch = useDispatch()
+  const division = useLocation().pathname.startsWith('/inmobiliaria/') ? 'inmobiliaria' : 'personal'
   const { data: transactions, fetching, saving } = useSelector((s) => s.transaction)
   const {
     data: masters,
@@ -115,13 +116,14 @@ export default function AccountStatus() {
   const applicable = useMemo(() => {
     if (!masters) return []
     return masters.filter((a) => {
+      if ((a.division ?? 'personal') !== division) return false
       if (a.type !== typeTab || !a.active) return false
       if (a.targetAmount > 0) {
         return (cumulativePaymentsMap[a.id] ?? 0) < a.targetAmount
       }
       return isApplicableToMonth(a, month)
     })
-  }, [masters, month, typeTab, cumulativePaymentsMap])
+  }, [masters, month, typeTab, cumulativePaymentsMap, division])
 
   const masterPaymentsMap = useMemo(() => {
     if (!transactions) return {}
@@ -139,9 +141,12 @@ export default function AccountStatus() {
   const adHocTransactions = useMemo(() => {
     if (!transactions) return []
     return transactions.filter(
-      (t) => !t.accountMasterId && (t.accountMonth ?? t.date?.slice(0, 7)) === monthStr,
+      (t) =>
+        !t.accountMasterId &&
+        (t.accountMonth ?? t.date?.slice(0, 7)) === monthStr &&
+        (t.division ?? 'personal') === division,
     )
-  }, [transactions, monthStr])
+  }, [transactions, monthStr, division])
 
   const { paid, pending, overdue, totalPending, totalOverdue } = useMemo(() => {
     let p = 0,
@@ -185,7 +190,7 @@ export default function AccountStatus() {
     let income = 0
     let expenses = 0
     masters
-      .filter((a) => isApplicableToMonth(a, month))
+      .filter((a) => (a.division ?? 'personal') === division && isApplicableToMonth(a, month))
       .forEach((a) => {
         const payments = masterPaymentsMap[a.id] ?? []
         const paidAmt = payments.reduce((s, t) => s + (Number(t.amount) || 0), 0)
@@ -196,7 +201,7 @@ export default function AccountStatus() {
         }
       })
     return { totalIncome: income, totalExpenses: expenses }
-  }, [masters, month, masterPaymentsMap])
+  }, [masters, month, masterPaymentsMap, division])
 
   const filtered = useMemo(() => {
     return applicable
@@ -243,12 +248,12 @@ export default function AccountStatus() {
   }
 
   const handleSavePayment = (payload) => {
-    dispatch(transactionActions.createRequest(payload))
+    dispatch(transactionActions.createRequest({ ...payload, division }))
     dispatch(pushNotification({ type: 'success', message: 'Pago registrado correctamente.' }))
   }
 
   const handleSaveAdHoc = (payload) => {
-    dispatch(transactionActions.createRequest(payload))
+    dispatch(transactionActions.createRequest({ ...payload, division }))
     dispatch(pushNotification({ type: 'success', message: 'Transacción creada correctamente.' }))
   }
 
@@ -275,6 +280,23 @@ export default function AccountStatus() {
     }
   }
 
+  const otherDivision = division === 'inmobiliaria' ? 'personal' : 'inmobiliaria'
+  const otherDivisionLabel = otherDivision === 'inmobiliaria' ? 'Inmobiliaria' : 'Personal'
+
+  const handleMoveAccountDivision = (account) => {
+    dispatch(accountsMasterActions.updateRequest({ id: account.id, division: otherDivision }))
+    dispatch(
+      pushNotification({ type: 'success', message: `Cuenta movida a ${otherDivisionLabel}.` }),
+    )
+  }
+
+  const handleMoveTransactionDivision = (transaction) => {
+    dispatch(transactionActions.updateRequest({ id: transaction.id, division: otherDivision }))
+    dispatch(
+      pushNotification({ type: 'success', message: `Transacción movida a ${otherDivisionLabel}.` }),
+    )
+  }
+
   const handleClone = (account) => {
     const { id: _id, ...fields } = account
     dispatch(
@@ -289,7 +311,7 @@ export default function AccountStatus() {
   }
 
   const handleAddNote = (text) => {
-    dispatch(accountStatusNoteActions.createRequest({ period: monthStr, text }))
+    dispatch(accountStatusNoteActions.createRequest({ period: monthStr, text, division }))
     dispatch(pushNotification({ type: 'success', message: 'Nota agregada.' }))
   }
 
@@ -412,7 +434,7 @@ export default function AccountStatus() {
         {!fetching && (
           <PeriodNotes
             period={monthStr}
-            notes={periodNotes}
+            notes={periodNotes?.filter((n) => (n.division ?? 'personal') === division)}
             fetching={fetchingNotes}
             saving={savingNotes}
             onAdd={handleAddNote}
@@ -534,6 +556,8 @@ export default function AccountStatus() {
                 attachingId={attachingTx && (attachProcessing || saving) ? attachingTx.id : null}
                 attachedId={attachedDoneId}
                 savingId={saving ? paying?.id : null}
+                onMoveDivision={handleMoveAccountDivision}
+                moveDivisionLabel={otherDivisionLabel}
               />
             ))
         )}
@@ -547,6 +571,8 @@ export default function AccountStatus() {
           onDelete={handleDelete}
           onViewAttachment={(src, filename) => setViewer({ src, filename })}
           onTogglePaid={handleToggleAdHocPaid}
+          onMoveDivision={handleMoveTransactionDivision}
+          moveDivisionLabel={otherDivisionLabel}
         />
       </div>
 

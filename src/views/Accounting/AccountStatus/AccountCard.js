@@ -17,6 +17,8 @@ export default function AccountCard({
   attachingId,
   attachedId,
   savingId,
+  onMoveDivision,
+  moveDivisionLabel,
 }) {
   const isDebt = account.targetAmount > 0
   const status = getStatus(account, payments, monthStr, isDebt ? cumulativePaid : null)
@@ -139,6 +141,23 @@ export default function AccountCard({
               </span>
             )}
             <InlinePaymentMethod account={account} />
+            {onMoveDivision && (
+              <button
+                onClick={() => onMoveDivision(account)}
+                title={`Mover a ${moveDivisionLabel}`}
+                style={{
+                  fontSize: 'var(--fs-2xs)',
+                  color: '#6c757d',
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  cursor: 'pointer',
+                }}
+              >
+                → {moveDivisionLabel}
+              </button>
+            )}
           </div>
         </div>
 

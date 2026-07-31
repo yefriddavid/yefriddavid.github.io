@@ -320,6 +320,12 @@ const getNav = (t, role) => {
         to: '/inmobiliaria/planos',
         icon: <CIcon icon={cilFolder} customClassName="nav-icon" />,
       },
+      {
+        component: CNavItem,
+        name: 'Estado de Cuentas',
+        to: '/inmobiliaria/account-status',
+        icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
+      },
     ],
   })
 

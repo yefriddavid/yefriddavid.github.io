@@ -117,7 +117,7 @@
 
 | Ruta (`src/`) | Componente | URL | Descripción |
 |---|---|---|---|
-| `views/Accounting/AccountStatus/index.js` | `AccountStatus` | `/cash_flow/management/account-status` | Estado de cuentas con importación OCR de recibos |
+| `views/Accounting/AccountStatus/index.js` | `AccountStatus` | `/cash_flow/management/account-status` y `/inmobiliaria/account-status` | Estado de cuentas con importación OCR de recibos. Mismo componente para ambas divisiones — ver [`docs/division-gastos.md`](./division-gastos.md) |
 | `views/Accounting/AccountStatus/AccountCard.js` | `AccountCard` | _(tarjeta)_ | Tarjeta de resumen por cuenta |
 | `views/Accounting/AccountStatus/DetailModal.js` | `DetailModal` | _(modal)_ | Detalles de una transacción |
 | `views/Accounting/AccountStatus/PayModal.js` | `PayModal` | _(modal)_ | Registro de pago |

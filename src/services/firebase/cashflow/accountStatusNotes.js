@@ -27,6 +27,7 @@ export const fetchPeriodNotes = async (period) => {
       return {
         id: d.id,
         period: data.period,
+        division: data.division ?? null,
         text: data.text,
         checked: data.checked ?? false,
         createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
@@ -36,11 +37,12 @@ export const fetchPeriodNotes = async (period) => {
     .sort((a, b) => (a.createdAt ?? '').localeCompare(b.createdAt ?? ''))
 }
 
-export const createPeriodNote = async ({ period, text }) => {
+export const createPeriodNote = async ({ period, text, division }) => {
   const ref = await firestoreCall(() =>
     addDoc(collection(db, COL), {
       period,
       text,
+      division,
       checked: false,
       tenantId: getTenantId(),
       createdAt: serverTimestamp(),
