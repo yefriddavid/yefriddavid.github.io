@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { onAuthChange, signOut } from '../../services/firebase/auth'
 import { authStorage } from 'src/utils/storage'
 import { deleteSession } from '../../services/firebase/security/sessions'
@@ -128,9 +128,9 @@ const SelectApp = () => {
               Manage<span>ment</span>
             </h1>
             <p className="select-app__tagline">Management Suite</p>
-            <button className="select-app__about-link" onClick={() => navigate('/aboutMe')}>
+            <Link className="select-app__about-link" to="/aboutMe">
               about me
-            </button>
+            </Link>
           </div>
         </div>
         <span className="select-app__version">v3.0 · 2025</span>
