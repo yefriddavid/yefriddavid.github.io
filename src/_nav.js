@@ -326,6 +326,19 @@ const getNav = (t, role) => {
         to: '/inmobiliaria/account-status',
         icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
       },
+      {
+        component: CNavGroup,
+        name: 'Reportes',
+        icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+        items: [
+          {
+            component: CNavItem,
+            name: 'Estado de Resultados',
+            to: '/inmobiliaria/income-statement',
+            icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+          },
+        ],
+      },
     ],
   })
 

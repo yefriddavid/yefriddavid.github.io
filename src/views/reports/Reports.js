@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 import { CFormSelect } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPrint } from '@coreui/icons'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
+import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
 import useLocaleData from 'src/hooks/useLocaleData'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 import Spinner from 'src/components/shared/Spinner'
@@ -20,14 +22,25 @@ const sumAll = (matrix) => matrix.reduce((s, row) => s + row.reduce((a, v) => a 
 const Reports = () => {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
+  const division = useLocation().pathname.startsWith('/inmobiliaria/') ? 'inmobiliaria' : 'personal'
   const { monthLabels } = useLocaleData()
   const { data, fetching } = useSelector((s) => s.transaction)
+  const { data: masters } = useSelector((s) => s.accountsMaster)
   const [year, setYear] = useState(CURRENT_YEAR)
   const [expanded, setExpanded] = useState(() => new Set())
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
+    dispatch(accountsMasterActions.fetchRequest())
   }, [dispatch, activeTenantId])
+
+  const mastersById = useMemo(() => {
+    const map = {}
+    ;(masters ?? []).forEach((m) => {
+      map[m.id] = m
+    })
+    return map
+  }, [masters])
 
   const toggleExpanded = (key) =>
     setExpanded((prev) => {
@@ -37,7 +50,15 @@ const Reports = () => {
       return next
     })
 
-  const transactions = useMemo(() => data ?? [], [data])
+  const transactions = useMemo(() => {
+    const scoped = (data ?? []).filter((t) => (t.division ?? 'personal') === division)
+    if (division !== 'inmobiliaria') return scoped
+    // Inmobiliaria: agrupar por cuenta (apartamento) en vez de la categoría genérica.
+    return scoped.map((t) => {
+      const master = t.accountMasterId && mastersById[t.accountMasterId]
+      return master ? { ...t, category: master.name } : t
+    })
+  }, [data, division, mastersById])
   const monthLabelsShort = useMemo(() => monthLabels.map((m) => m.slice(0, 3)), [monthLabels])
   const years = useMemo(
     () => yearlyTotals(transactions, 'income', 'expense').map((t) => t.year),

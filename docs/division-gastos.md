@@ -48,8 +48,14 @@ los campos.
 | `src/views/Accounting/AccountStatus/index.js` | derivación de `division`, filtros client-side, `division` en payloads de creación, handlers de "mover" |
 | `src/views/Accounting/AccountStatus/AccountCard.js` | botón mover división |
 | `src/views/Accounting/AccountStatus/AdHocSection.js` | botón mover división |
-| `src/routes.js` | ruta `/inmobiliaria/account-status` → mismo lazy `AccountStatus` |
-| `src/_nav.js` | ítem "Estado de Cuentas" dentro del `CNavGroup` Inmobiliaria existente |
+| `src/views/reports/Reports.js` | derivación de `division`, filtra `transactions` antes de armar las matrices de `CategoryMonthStatement` |
+| `src/routes.js` | rutas `/inmobiliaria/account-status` y `/inmobiliaria/income-statement` → mismos componentes lazy que Personal |
+| `src/_nav.js` | ítems "Estado de Cuentas" y "Reportes" dentro del `CNavGroup` Inmobiliaria existente |
+
+`Reports.js` (Estado de Resultados por categoría/mes, componente `CategoryMonthStatement`)
+sigue exactamente el mismo patrón que `AccountStatus`: mismo componente, misma división
+derivada de la ruta, filtro client-side sobre `transaction.data` antes de calcular
+`categoryMonthMatrix`.
 
 No se tocó: `combineReducers.js`, `sagas/index.js`, `settings.js` (sin colecciones
 nuevas), ningún slice/reducer/saga nuevo, ninguna vista forkeada.

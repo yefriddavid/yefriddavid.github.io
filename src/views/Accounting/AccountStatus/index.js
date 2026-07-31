@@ -285,6 +285,11 @@ export default function AccountStatus() {
 
   const handleMoveAccountDivision = (account) => {
     dispatch(accountsMasterActions.updateRequest({ id: account.id, division: otherDivision }))
+    ;(transactions ?? [])
+      .filter((t) => t.accountMasterId === account.id)
+      .forEach((payment) => {
+        dispatch(transactionActions.updateRequest({ id: payment.id, division: otherDivision }))
+      })
     dispatch(
       pushNotification({ type: 'success', message: `Cuenta movida a ${otherDivisionLabel}.` }),
     )

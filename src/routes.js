@@ -5,6 +5,7 @@ const Home = React.lazy(() => import('./views/Home'))
 const ContractsList = React.lazy(() => import('./views/Contratos/ContractsList'))
 
 const InmobiliariaAccountStatus = React.lazy(() => import('./views/Accounting/AccountStatus'))
+const InmobiliariaReports = React.lazy(() => import('./views/reports/Reports'))
 const InmobiliariaGallery = React.lazy(() => import('./views/Inmobiliaria/Gallery'))
 const InmobiliariaDesigns = React.lazy(() => import('./views/Inmobiliaria/Designs'))
 const InmobiliariaDesignEditor = React.lazy(() => import('./views/Inmobiliaria/DesignEditor'))
@@ -29,6 +30,14 @@ const routes = [
     longName: 'Estado de Cuentas — Inmobiliaria',
     tKey: 'nav.inmobiliariaAccountStatus',
     element: InmobiliariaAccountStatus,
+    landingPage: true,
+  },
+  {
+    path: '/inmobiliaria/income-statement',
+    name: 'Estado de Resultados',
+    longName: 'Estado de Resultados — Inmobiliaria',
+    tKey: 'nav.inmobiliariaReports',
+    element: InmobiliariaReports,
     landingPage: true,
   },
   {

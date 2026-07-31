@@ -107,6 +107,8 @@
     "system": "System",
     "transactions": "Transactions",
     "accountStatus": "Account Status",
+    "inmobiliariaAccountStatus": "Account Status",
+    "inmobiliariaReports": "Financial Statement",
     "accountsMaster": "Accounts Master",
     "eggs": "Eggs",
     "projects": "My Projects",
