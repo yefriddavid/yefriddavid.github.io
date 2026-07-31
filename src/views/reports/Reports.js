@@ -28,6 +28,7 @@ const Reports = () => {
   const { data: masters } = useSelector((s) => s.accountsMaster)
   const [year, setYear] = useState(CURRENT_YEAR)
   const [expanded, setExpanded] = useState(() => new Set())
+  const [includeInmobiliaria, setIncludeInmobiliaria] = useState(false)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
@@ -51,14 +52,19 @@ const Reports = () => {
     })
 
   const transactions = useMemo(() => {
-    const scoped = (data ?? []).filter((t) => (t.division ?? 'personal') === division)
-    if (division !== 'inmobiliaria') return scoped
-    // Inmobiliaria: agrupar por cuenta (apartamento) en vez de la categoría genérica.
+    const scoped =
+      division === 'inmobiliaria'
+        ? (data ?? []).filter((t) => (t.division ?? 'personal') === 'inmobiliaria')
+        : includeInmobiliaria
+          ? (data ?? [])
+          : (data ?? []).filter((t) => (t.division ?? 'personal') === 'personal')
+    // Transacciones de Inmobiliaria: agrupar por cuenta (apartamento) en vez de la categoría genérica.
     return scoped.map((t) => {
+      if ((t.division ?? 'personal') !== 'inmobiliaria') return t
       const master = t.accountMasterId && mastersById[t.accountMasterId]
       return master ? { ...t, category: master.name } : t
     })
-  }, [data, division, mastersById])
+  }, [data, division, includeInmobiliaria, mastersById])
   const monthLabelsShort = useMemo(() => monthLabels.map((m) => m.slice(0, 3)), [monthLabels])
   const years = useMemo(
     () => yearlyTotals(transactions, 'income', 'expense').map((t) => t.year),
@@ -97,6 +103,24 @@ const Reports = () => {
             </option>
           ))}
         </CFormSelect>
+        {division !== 'inmobiliaria' && (
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 'var(--fs-sm)',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={includeInmobiliaria}
+              onChange={(e) => setIncludeInmobiliaria(e.target.checked)}
+            />
+            Incluir Inmobiliaria
+          </label>
+        )}
         <button type="button" className="statement__print-btn" onClick={() => window.print()}>
           <CIcon icon={cilPrint} className="me-1" /> Imprimir
         </button>
