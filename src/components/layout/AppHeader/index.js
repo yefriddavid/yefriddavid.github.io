@@ -247,6 +247,32 @@ const AppHeader = () => {
             <span>Finanzas</span>
           </button>
         </div>
+        <div className="header__quick-access header__quick-access--compact d-flex d-md-none">
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--notes"
+            onClick={() => navigate('/miscelanea/notes')}
+            title="Notas"
+          >
+            <CIcon icon={cilNotes} size="lg" />
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--taxis"
+            onClick={() => navigate('/taxis/settlements')}
+            title="Liquidaciones"
+          >
+            <CIcon icon={cilTaxi} size="lg" />
+          </button>
+          <button
+            type="button"
+            className="header__quick-btn header__quick-btn--finance"
+            onClick={() => navigate('/finance/dashboard')}
+            title="Finanzas"
+          >
+            <CIcon icon={cilHome} size="lg" />
+          </button>
+        </div>
         <CHeaderNav className="ms-auto">
           <div className="d-none d-md-flex align-items-center">
             <CNavItem>
@@ -395,7 +421,7 @@ const AppHeader = () => {
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <LanguageSwitcher />
-          <li className="nav-item py-0">
+          <li className="nav-item py-0 d-none d-md-block">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <CurrentTenant />

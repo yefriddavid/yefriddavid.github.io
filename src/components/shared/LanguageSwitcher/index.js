@@ -17,7 +17,7 @@ const LanguageSwitcher = () => {
   }
 
   return (
-    <CDropdown variant="nav-item" placement="bottom-end">
+    <CDropdown variant="nav-item" placement="bottom-end" className="d-none d-md-flex">
       <CDropdownToggle caret={false} className="d-flex align-items-center gap-1 px-2">
         <span className="language-switcher__flag">{current.flag}</span>
         <span className="language-switcher__code">{current.code.toUpperCase()}</span>

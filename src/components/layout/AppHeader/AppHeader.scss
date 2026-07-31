@@ -58,6 +58,14 @@
     border-radius: 0;
   }
 
+  &__quick-access--compact {
+    margin-inline-start: 0.5rem;
+
+    .header__quick-btn {
+      padding: 6px 10px;
+    }
+  }
+
   &__quick-btn {
     display: flex;
     flex-direction: column;
