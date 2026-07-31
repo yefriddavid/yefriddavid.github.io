@@ -8,6 +8,34 @@
     margin-bottom: 16px;
   }
 
+  &__mode-group {
+    display: flex;
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__mode-btn {
+    padding: 4px 10px;
+    border: none;
+    border-right: 1px solid var(--cui-border-color, #dee2e6);
+    background: var(--cui-body-bg, #fff);
+    color: var(--cui-secondary-color, #6c757d);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &--active {
+      background: #343a40;
+      color: #fff;
+    }
+  }
+
   &__print-btn {
     display: inline-flex;
     align-items: center;

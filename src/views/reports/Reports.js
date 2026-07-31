@@ -28,7 +28,8 @@ const Reports = () => {
   const { data: masters } = useSelector((s) => s.accountsMaster)
   const [year, setYear] = useState(CURRENT_YEAR)
   const [expanded, setExpanded] = useState(() => new Set())
-  const [includeInmobiliaria, setIncludeInmobiliaria] = useState(false)
+  // Arranca en la división de la ruta por la que entraste; los botones permiten cambiarla.
+  const [mode, setMode] = useState(division)
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
@@ -52,19 +53,17 @@ const Reports = () => {
     })
 
   const transactions = useMemo(() => {
-    const scoped =
-      division === 'inmobiliaria'
-        ? (data ?? []).filter((t) => (t.division ?? 'personal') === 'inmobiliaria')
-        : includeInmobiliaria
-          ? (data ?? [])
-          : (data ?? []).filter((t) => (t.division ?? 'personal') === 'personal')
+    const scoped = (data ?? []).filter((t) => {
+      if (mode === 'ambos') return true
+      return (t.division ?? 'personal') === mode
+    })
     // Transacciones de Inmobiliaria: agrupar por cuenta (apartamento) en vez de la categoría genérica.
     return scoped.map((t) => {
       if ((t.division ?? 'personal') !== 'inmobiliaria') return t
       const master = t.accountMasterId && mastersById[t.accountMasterId]
       return master ? { ...t, category: master.name } : t
     })
-  }, [data, division, includeInmobiliaria, mastersById])
+  }, [data, mode, mastersById])
   const monthLabelsShort = useMemo(() => monthLabels.map((m) => m.slice(0, 3)), [monthLabels])
   const years = useMemo(
     () => yearlyTotals(transactions, 'income', 'expense').map((t) => t.year),
@@ -103,24 +102,22 @@ const Reports = () => {
             </option>
           ))}
         </CFormSelect>
-        {division !== 'inmobiliaria' && (
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: 'var(--fs-sm)',
-              cursor: 'pointer',
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={includeInmobiliaria}
-              onChange={(e) => setIncludeInmobiliaria(e.target.checked)}
-            />
-            Incluir Inmobiliaria
-          </label>
-        )}
+        <div className="statement__mode-group">
+          {[
+            { key: 'personal', label: 'Personal' },
+            { key: 'inmobiliaria', label: 'Inmobiliario' },
+            { key: 'ambos', label: 'Ambos' },
+          ].map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              className={`statement__mode-btn ${mode === m.key ? 'statement__mode-btn--active' : ''}`}
+              onClick={() => setMode(m.key)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
         <button type="button" className="statement__print-btn" onClick={() => window.print()}>
           <CIcon icon={cilPrint} className="me-1" /> Imprimir
         </button>
