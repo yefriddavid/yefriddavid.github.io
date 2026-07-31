@@ -141,10 +141,10 @@ const SelectApp = () => {
         <ul className="select-app__list" role="list">
           {visibleApps.map(({ id, name, description, path, accent, icon: Icon }) => (
             <li key={id}>
-              <button
+              <Link
                 className="select-app__card"
                 style={{ '--app-accent': accent }}
-                onClick={() => navigate(path)}
+                to={path}
                 aria-label={`Abrir ${name}`}
               >
                 <div className="select-app__card-icon">
@@ -157,7 +157,7 @@ const SelectApp = () => {
                 <span className="select-app__card-arrow">
                   <ArrowRight />
                 </span>
-              </button>
+              </Link>
               {id === 'shortcuts' && (
                 <div className="select-app__divider select-app__divider--label">
                   <span>Platforms</span>
