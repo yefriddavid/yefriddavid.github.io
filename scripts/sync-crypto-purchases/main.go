@@ -145,7 +145,7 @@ func main() {
 	defaultSA := filepath.Join("..", "..", "notifier", "service-account.json")
 	saPath := flag.String("sa", defaultSA, "path to Firebase service account JSON")
 	apply := flag.Bool("apply", false, "write changes to Firestore (default is dry run)")
-	since := flag.String("since", "2020-01-01", "only write trades from this date onward (YYYY-MM-DD)")
+	since := flag.String("since", "2026-07-01", "only write trades from this date onward (YYYY-MM-DD)")
 	onlyBase := flag.String("symbol", "", "sync only this base asset (e.g. BTC); omit for all configured bases")
 	tenant := flag.String("tenant", defaultTenantID, "tenant id to sync into (defaults to the primary tenant)")
 	platform := flag.String("platform", defaultPlatform, "platform value stored on each synced purchase")
