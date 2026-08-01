@@ -29,6 +29,7 @@ const CalcList = React.lazy(() => import('./views/Finance/trade/CalcList'))
 const LoanCalc = React.lazy(() => import('./views/Finance/trade/LoanCalc'))
 const CalcPercentage = React.lazy(() => import('./views/Finance/trade/CalcPercentage'))
 const CalcSheet = React.lazy(() => import('./views/Finance/trade/CalcSheet'))
+const Bounces = React.lazy(() => import('./views/Finance/trade/Bounces'))
 const IncreaseDecrease = React.lazy(
   () => import('./views/tools/increase-decrease/IncreaseDecrease'),
 )
@@ -69,6 +70,7 @@ const financeRoutes = [
   { path: '/trade/prices', element: TradePrices, landingPage: true },
   { path: '/trade/tools', element: TradeTools, landingPage: true },
   { path: '/trade/calc-list', element: CalcList, landingPage: true },
+  { path: '/trade/bounces', element: Bounces, landingPage: true },
   { path: '/tools/loan-calc', element: LoanCalc, landingPage: true },
   { path: '/tools/calc-percentage', element: CalcPercentage, landingPage: true },
   { path: '/tools/calc-sheet', element: CalcSheet, landingPage: true },

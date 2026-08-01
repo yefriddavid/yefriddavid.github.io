@@ -263,6 +263,12 @@ const getNav = (t, role) => {
             },
             {
               component: CNavItem,
+              name: 'Rebotes',
+              to: '/finance/trade/bounces',
+              icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
               name: 'Loan Calculator',
               to: '/finance/tools/loan-calc',
               icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
