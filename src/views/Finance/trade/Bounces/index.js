@@ -80,6 +80,7 @@ const computeMonthGroups = (points) => {
         key,
         startIndex: i,
         endIndex: i,
+        month: d.getMonth(),
         monthLabel: capitalize(d.toLocaleDateString('es-CO', { month: 'long' })),
         year: d.getFullYear(),
       })
@@ -106,7 +107,14 @@ const monthGroupPlugin = {
     groups.forEach((g, i) => {
       const left = x.getPixelForValue(g.startIndex) - bandWidth / 2
       const right = x.getPixelForValue(g.endIndex) + bandWidth / 2
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(128, 128, 128, 0.05)' : 'rgba(128, 128, 128, 0.13)'
+      // December gets a darker band regardless of the alternating pattern, so
+      // year boundaries stand out at a glance.
+      ctx.fillStyle =
+        g.month === 11
+          ? 'rgba(128, 128, 128, 0.28)'
+          : i % 2 === 0
+            ? 'rgba(128, 128, 128, 0.05)'
+            : 'rgba(128, 128, 128, 0.13)'
       ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top)
     })
     ctx.restore()
