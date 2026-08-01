@@ -25,6 +25,7 @@ export const TRADE_MARKET_EVENTS = [
     label: 'Halvings',
     dates: ['2012-11-28', '2016-07-09', '2020-05-11', '2024-04-20'],
   },
+  { key: 'etf-approval', label: 'Aprobación de ETFs', dates: ['2024-01-10'] },
 ]
 
 export const PICTURES_UNITS = [
