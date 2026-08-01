@@ -3,19 +3,21 @@
 
   &__top {
     display: grid;
-    grid-template-columns: 1fr 520px;
+    grid-template-columns: 1fr 820px;
     gap: 1.5rem;
     align-items: start;
   }
 
   &__right {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 1.5rem;
   }
 
   &__ranges,
   &__events {
+    flex: 1;
+    min-width: 0;
     border: 1px solid var(--cui-border-color);
     border-radius: 12px;
     padding: 1rem;
@@ -47,6 +49,12 @@
     letter-spacing: 0.06em;
     color: var(--cui-secondary-color);
     margin: 0 0 0.75rem;
+
+    &--sub {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--cui-border-color);
+    }
   }
 
   &__ranges-table {
@@ -295,6 +303,10 @@
 
     &__top {
       grid-template-columns: 1fr;
+    }
+
+    &__right {
+      flex-direction: column;
     }
 
     &__date-mode-group {

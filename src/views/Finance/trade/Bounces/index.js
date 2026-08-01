@@ -10,7 +10,11 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
 import useSavedViews from 'src/hooks/useSavedViews'
 import { fetchPriceSeries } from 'src/services/cryptoKlinesService'
-import { TRADE_PRICE_ASSETS, TRADE_MARKET_EVENTS } from 'src/constants/finance'
+import {
+  TRADE_PRICE_ASSETS,
+  TRADE_MARKET_EVENTS,
+  TRADE_PERSONAL_EVENTS,
+} from 'src/constants/finance'
 import { detectBounces } from './bounceUtils'
 import './Bounces.scss'
 
@@ -33,8 +37,15 @@ const monthsAgoStr = (n) => {
 }
 const fmtUsd = (v) =>
   `$${Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+// Candle timestamps are UTC midnight — format in UTC too, or the local
+// browser timezone (e.g. UTC-5) rolls the displayed date back by a day.
 const fmtDate = (ms) =>
-  new Date(ms).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: '2-digit' })
+  new Date(ms).toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
+    timeZone: 'UTC',
+  })
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
 
 // Manual bounces are persisted as "lowTime:highTime" pairs — re-match them to
@@ -71,7 +82,7 @@ const computeMonthGroups = (points) => {
   const groups = []
   points.forEach((p, i) => {
     const d = new Date(p.time)
-    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
     const current = groups[groups.length - 1]
     if (current && current.key === key) {
       current.endIndex = i
@@ -80,9 +91,9 @@ const computeMonthGroups = (points) => {
         key,
         startIndex: i,
         endIndex: i,
-        month: d.getMonth(),
-        monthLabel: capitalize(d.toLocaleDateString('es-CO', { month: 'long' })),
-        year: d.getFullYear(),
+        month: d.getUTCMonth(),
+        monthLabel: capitalize(d.toLocaleDateString('es-CO', { month: 'long', timeZone: 'UTC' })),
+        year: d.getUTCFullYear(),
       })
     }
   })
@@ -143,15 +154,17 @@ const monthGroupPlugin = {
   },
 }
 
-// Finds each date of every checked market event that falls within the queried
-// series and maps it to the index of its closest point, so it can be
-// positioned on the category (day-index) axis.
+const ALL_TRADE_EVENTS = [...TRADE_MARKET_EVENTS, ...TRADE_PERSONAL_EVENTS]
+
+// Finds each date of every checked event (market or personal) that falls
+// within the queried series and maps it to the index of its closest point,
+// so it can be positioned on the category (day-index) axis.
 const computeEventMarkers = (points, checkedKeys) => {
   if (!points.length || !checkedKeys?.size) return []
   const from = points[0].time
   const to = points[points.length - 1].time
   const markers = []
-  TRADE_MARKET_EVENTS.filter((event) => checkedKeys.has(event.key)).forEach((event) => {
+  ALL_TRADE_EVENTS.filter((event) => checkedKeys.has(event.key)).forEach((event) => {
     event.dates.forEach((dateStr) => {
       const t = new Date(`${dateStr}T00:00:00.000Z`).getTime()
       if (t < from || t > to) return
@@ -366,11 +379,11 @@ export default function Bounces() {
           ? data
           : data.filter((p) => {
               const d = new Date(p.time)
-              const yearOk = selectedYears.size === 0 || selectedYears.has(d.getFullYear())
+              const yearOk = selectedYears.size === 0 || selectedYears.has(d.getUTCFullYear())
               const monthOk =
                 dateMode !== 'month' ||
                 selectedMonths.size === 0 ||
-                selectedMonths.has(d.getMonth() + 1)
+                selectedMonths.has(d.getUTCMonth() + 1)
               return yearOk && monthOk
             })
       setSeries(filtered)
@@ -478,7 +491,7 @@ export default function Bounces() {
   const eventMarkers = computeEventMarkers(series, checkedEvents)
 
   const chartData = {
-    labels: series.map((p) => String(new Date(p.time).getDate())),
+    labels: series.map((p) => String(new Date(p.time).getUTCDate())),
     datasets: [
       {
         label: `${asset?.label || symbol}/USDT`,
@@ -677,6 +690,25 @@ export default function Bounces() {
           <div className="bounces-chart__events">
             <p className="bounces-chart__ranges-title">Eventos</p>
             {TRADE_MARKET_EVENTS.map((ev) => (
+              <label key={ev.key} className="bounces-chart__event-item">
+                <input
+                  type="checkbox"
+                  checked={checkedEvents.has(ev.key)}
+                  onChange={() => toggleEvent(ev.key)}
+                />
+                <span className="bounces-chart__event-label">{ev.label}</span>
+                <span className="bounces-chart__ranges-muted">
+                  {ev.dates
+                    .map((d) => fmtDate(new Date(`${d}T00:00:00.000Z`).getTime()))
+                    .join(', ')}
+                </span>
+              </label>
+            ))}
+
+            <p className="bounces-chart__ranges-title bounces-chart__ranges-title--sub">
+              Personales
+            </p>
+            {TRADE_PERSONAL_EVENTS.map((ev) => (
               <label key={ev.key} className="bounces-chart__event-item">
                 <input
                   type="checkbox"

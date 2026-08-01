@@ -28,6 +28,13 @@ export const TRADE_MARKET_EVENTS = [
   { key: 'etf-approval', label: 'Aprobación de ETFs', dates: ['2024-01-10'] },
 ]
 
+// Personal events (not market-wide) shown alongside TRADE_MARKET_EVENTS as a
+// separate "Personales" group of checkable vertical reference lines.
+export const TRADE_PERSONAL_EVENTS = [
+  { key: 'compra-403', label: 'Compra 403', dates: ['2025-03-05'] },
+  { key: 'compra-12000usd', label: 'Compras por 12000USD', dates: ['2025-10-15'] },
+]
+
 export const PICTURES_UNITS = [
   { key: 'px', label: 'Píxeles', pxPerUnit: 1 },
   { key: 'mm', label: 'Milímetros', pxPerUnit: 3.7795275591 },
