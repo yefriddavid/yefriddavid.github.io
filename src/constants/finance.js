@@ -15,6 +15,18 @@ export const TRADE_PRICE_ASSETS = [
   { label: 'Cosmos', symbol: 'ATOMUSDT', ticker: 'ATOM' },
 ]
 
+// Significant market events shown as optional vertical reference lines on
+// price charts (e.g. the Bounces screen). `dates` is always an array so a
+// single-date event and a multi-date one (like every halving) share the same shape.
+export const TRADE_MARKET_EVENTS = [
+  { key: 'ftx-collapse', label: 'Caída de FTX', dates: ['2022-11-11'] },
+  {
+    key: 'halvings',
+    label: 'Halvings',
+    dates: ['2012-11-28', '2016-07-09', '2020-05-11', '2024-04-20'],
+  },
+]
+
 export const PICTURES_UNITS = [
   { key: 'px', label: 'Píxeles', pxPerUnit: 1 },
   { key: 'mm', label: 'Milímetros', pxPerUnit: 3.7795275591 },

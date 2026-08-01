@@ -10,7 +10,7 @@ import useLocaleData from 'src/hooks/useLocaleData'
 import useMultiParam from 'src/hooks/useMultiParam'
 import useSavedViews from 'src/hooks/useSavedViews'
 import { fetchPriceSeries } from 'src/services/cryptoKlinesService'
-import { TRADE_PRICE_ASSETS } from 'src/constants/finance'
+import { TRADE_PRICE_ASSETS, TRADE_MARKET_EVENTS } from 'src/constants/finance'
 import { detectBounces } from './bounceUtils'
 import './Bounces.scss'
 
@@ -143,6 +143,62 @@ const monthGroupPlugin = {
   },
 }
 
+// Finds each date of every checked market event that falls within the queried
+// series and maps it to the index of its closest point, so it can be
+// positioned on the category (day-index) axis.
+const computeEventMarkers = (points, checkedKeys) => {
+  if (!points.length || !checkedKeys?.size) return []
+  const from = points[0].time
+  const to = points[points.length - 1].time
+  const markers = []
+  TRADE_MARKET_EVENTS.filter((event) => checkedKeys.has(event.key)).forEach((event) => {
+    event.dates.forEach((dateStr) => {
+      const t = new Date(`${dateStr}T00:00:00.000Z`).getTime()
+      if (t < from || t > to) return
+      let closest = 0
+      let minDiff = Infinity
+      points.forEach((p, i) => {
+        const diff = Math.abs(p.time - t)
+        if (diff < minDiff) {
+          minDiff = diff
+          closest = i
+        }
+      })
+      markers.push({ index: closest, label: event.label })
+    })
+  })
+  return markers
+}
+
+// Chart.js plugin: draws a dashed vertical line + label at each checked
+// market event date that falls inside the current series.
+const eventLinesPlugin = {
+  id: 'eventLines',
+  afterDraw(chart) {
+    const markers = chart.config.options?.plugins?.eventLines?.markers
+    if (!markers?.length) return
+    const { ctx, chartArea, scales } = chart
+    const x = scales.x
+    ctx.save()
+    markers.forEach((m) => {
+      const px = x.getPixelForValue(m.index)
+      ctx.strokeStyle = '#f7931a'
+      ctx.setLineDash([4, 3])
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(px, chartArea.top)
+      ctx.lineTo(px, chartArea.bottom)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.fillStyle = '#f7931a'
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(m.label, px + 4, chartArea.top + 12)
+    })
+    ctx.restore()
+  },
+}
+
 // Chart.js plugin: writes a "+X%" label above the high point of each detected bounce.
 const bounceLabelsPlugin = {
   id: 'bounceLabels',
@@ -245,6 +301,13 @@ export default function Bounces() {
   )
   const minPercent = searchParams.get('minPercent') || 10
   const setMinPercent = (v) => setParam('minPercent', v)
+  const [checkedEvents, setCheckedEvents] = useMultiParam(searchParams, setSearchParams, 'events')
+  const toggleEvent = (key) =>
+    setCheckedEvents((prev) => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
 
   // Manual picks are arbitrary clicks, not derivable from the other filters,
   // so they're persisted as low/high timestamps (stable across refetches,
@@ -412,6 +475,7 @@ export default function Bounces() {
   const monthGroups = computeMonthGroups(series)
   const maxPrice = series.length ? Math.max(...series.map((p) => p.high)) : null
   const minPrice = series.length ? Math.min(...series.map((p) => p.low)) : null
+  const eventMarkers = computeEventMarkers(series, checkedEvents)
 
   const chartData = {
     labels: series.map((p) => String(new Date(p.time).getDate())),
@@ -609,50 +673,71 @@ export default function Bounces() {
           )}
         </div>
 
-        {queried && (
-          <div className="bounces-chart__ranges">
-            <p className="bounces-chart__ranges-title">Rangos actuales</p>
-            {rangesData.length === 0 ? (
-              <p className="bounces-chart__empty">Sin rebotes en el rango actual.</p>
-            ) : (
-              <table className="bounces-chart__ranges-table">
-                <thead>
-                  <tr>
-                    <th>Inicio</th>
-                    <th>Fin</th>
-                    <th>%</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rangesData.map((r) => (
-                    <tr key={r.id}>
-                      <td>
-                        <div>{r.lowDate}</div>
-                        <div className="bounces-chart__ranges-muted">{fmtUsd(r.lowPrice)}</div>
-                      </td>
-                      <td>
-                        <div>{r.highDate}</div>
-                        <div className="bounces-chart__ranges-muted">{fmtUsd(r.highPrice)}</div>
-                      </td>
-                      <td className="bounces-chart__ranges-percent">+{r.percent.toFixed(1)}%</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="bounces-chart__ranges-delete"
-                          title="Eliminar rango"
-                          onClick={() => deleteRange(r.id)}
-                        >
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+        <div className="bounces-chart__right">
+          <div className="bounces-chart__events">
+            <p className="bounces-chart__ranges-title">Eventos</p>
+            {TRADE_MARKET_EVENTS.map((ev) => (
+              <label key={ev.key} className="bounces-chart__event-item">
+                <input
+                  type="checkbox"
+                  checked={checkedEvents.has(ev.key)}
+                  onChange={() => toggleEvent(ev.key)}
+                />
+                <span className="bounces-chart__event-label">{ev.label}</span>
+                <span className="bounces-chart__ranges-muted">
+                  {ev.dates
+                    .map((d) => fmtDate(new Date(`${d}T00:00:00.000Z`).getTime()))
+                    .join(', ')}
+                </span>
+              </label>
+            ))}
           </div>
-        )}
+
+          {queried && (
+            <div className="bounces-chart__ranges">
+              <p className="bounces-chart__ranges-title">Rangos actuales</p>
+              {rangesData.length === 0 ? (
+                <p className="bounces-chart__empty">Sin rebotes en el rango actual.</p>
+              ) : (
+                <table className="bounces-chart__ranges-table">
+                  <thead>
+                    <tr>
+                      <th>Inicio</th>
+                      <th>Fin</th>
+                      <th>%</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rangesData.map((r) => (
+                      <tr key={r.id}>
+                        <td>
+                          <div>{r.lowDate}</div>
+                          <div className="bounces-chart__ranges-muted">{fmtUsd(r.lowPrice)}</div>
+                        </td>
+                        <td>
+                          <div>{r.highDate}</div>
+                          <div className="bounces-chart__ranges-muted">{fmtUsd(r.highPrice)}</div>
+                        </td>
+                        <td className="bounces-chart__ranges-percent">+{r.percent.toFixed(1)}%</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="bounces-chart__ranges-delete"
+                            title="Eliminar rango"
+                            onClick={() => deleteRange(r.id)}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {error && <p className="bounces-chart__error">{error}</p>}
@@ -681,7 +766,12 @@ export default function Bounces() {
                   customTooltips={false}
                   style={{ height: 360, cursor: mode === 'manual' ? 'crosshair' : 'default' }}
                   data={chartData}
-                  plugins={[monthGroupPlugin, minMaxLinesPlugin, bounceLabelsPlugin]}
+                  plugins={[
+                    monthGroupPlugin,
+                    minMaxLinesPlugin,
+                    eventLinesPlugin,
+                    bounceLabelsPlugin,
+                  ]}
                   onClick={handleChartClick}
                   onMouseMove={handleChartHover}
                   onMouseLeave={() => setHoverInfo(null)}
@@ -695,6 +785,7 @@ export default function Bounces() {
                       legend: { display: false },
                       monthGroups: { groups: monthGroups },
                       minMaxLines: { max: maxPrice, min: minPrice },
+                      eventLines: { markers: eventMarkers },
                       bounceLabels: { markers: bounces },
                       tooltip: { enabled: false },
                     },

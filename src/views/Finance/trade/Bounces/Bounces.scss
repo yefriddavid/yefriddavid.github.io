@@ -8,11 +8,36 @@
     align-items: start;
   }
 
-  &__ranges {
+  &__right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__ranges,
+  &__events {
     border: 1px solid var(--cui-border-color);
     border-radius: 12px;
     padding: 1rem;
     background: var(--cui-body-bg);
+  }
+
+  &__event-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    cursor: pointer;
+    font-size: var(--fs-sm);
+    color: var(--cui-body-color);
+
+    input {
+      cursor: pointer;
+    }
+  }
+
+  &__event-label {
+    font-weight: 600;
   }
 
   &__ranges-title {
