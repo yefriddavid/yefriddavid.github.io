@@ -89,7 +89,10 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(isTest ? { babel: { presets: ['@babel/preset-react'] } } : {}),
       basicSsl(),
-      legacy({ targets: ['defaults', 'not IE 11'] }),
+      // modernTargets: RxDB's mingo dependency uses BigInt literals (0n) for hashing;
+      // plugin-legacy's builtin modern target (safari12/chrome64) predates BigInt support
+      // and esbuild refuses to emit them, so require it explicitly for the modern bundle.
+      legacy({ targets: ['defaults', 'not IE 11'], modernTargets: 'supports bigint' }),
       VitePWA({
         strategies: 'injectManifest',
         srcDir: 'src/sw',
