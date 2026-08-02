@@ -5,7 +5,7 @@ import { app, db as firestoreDb, COL_CASHFLOW_MY_PROJECTS } from '../../firebase
 import { getTenantId } from '../../tenantContext'
 
 const schema = {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -40,6 +40,7 @@ const schema = {
       },
     },
     sortOrder: { type: 'number' },
+    archived: { type: 'boolean' },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
   },
@@ -54,7 +55,11 @@ let replicatedTenantId = null
 function getCollection() {
   if (!collectionPromise) {
     collectionPromise = getRxDb().then((rxdb) =>
-      rxdb.addCollections({ myProjects: { schema } }).then((cols) => cols.myProjects),
+      rxdb
+        .addCollections({
+          myProjects: { schema, migrationStrategies: { 1: (doc) => doc } },
+        })
+        .then((cols) => cols.myProjects),
     )
   }
   return collectionPromise
@@ -85,6 +90,7 @@ async function ensureReplication(tenantId) {
     const inner = err.parameters?.errors?.[0] ?? err.parameters?.error
     console.error('myProjects replication error:', inner?.message || err.message)
   })
+  await replicationState.awaitInitialReplication()
   return replicationState
 }
 

@@ -13,6 +13,7 @@ export default function ProjectCardActions({
   onDelete,
   onClone,
   onMove,
+  onArchive,
   handleSaveCard,
 }) {
   return (
@@ -179,6 +180,21 @@ export default function ProjectCardActions({
           }}
         >
           🗑
+        </button>
+        <button
+          onClick={() => onArchive(project)}
+          title={project.archived ? 'Desarchivar' : 'Archivar'}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 8,
+            border: 'none',
+            background: '#f8f9fa',
+            fontSize: 13,
+            color: '#6c757d',
+            cursor: 'pointer',
+          }}
+        >
+          {project.archived ? '📤' : '📦'}
         </button>
         <button
           onClick={() => {

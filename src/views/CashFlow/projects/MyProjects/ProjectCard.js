@@ -34,6 +34,7 @@ export default function ProjectCard({
   onSave,
   onClone,
   onMove,
+  onArchive,
 }) {
   const state = useProjectCard(project, onSave)
 
@@ -182,6 +183,7 @@ export default function ProjectCard({
         onDelete={onDelete}
         onClone={onClone}
         onMove={onMove}
+        onArchive={onArchive}
         handleSaveCard={state.handleSaveCard}
       />
     </div>

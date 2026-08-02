@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as actions from 'src/actions/cashflow/myProjectActions'
-import { fmt, uid, now, totalOf } from './helpers'
+import { fmt, uid, now, totalOf, tabBtn } from './helpers'
 import ProjectSheet from './ProjectSheet'
 import ProjectCard from './ProjectCard'
 import Spinner from 'src/components/shared/Spinner'
@@ -13,6 +13,7 @@ export default function MyProjects() {
   const { projects, loading, saving } = useSelector((s) => s.myProject)
 
   const [sheet, setSheet] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     dispatch(actions.loadRequest())
@@ -49,9 +50,13 @@ export default function MyProjects() {
     dispatch(actions.saveRequest(clone))
   }
 
+  const handleArchive = (project) => {
+    dispatch(actions.saveRequest({ ...project, archived: !project.archived, updatedAt: now() }))
+  }
+
   const handleMove = (project, dir) => {
     const sorted = projects
-      .slice()
+      .filter((p) => !!p.archived === !!project.archived)
       .sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity))
     const idx = sorted.findIndex((p) => p.id === project.id)
     const targetIdx = idx + dir
@@ -62,11 +67,15 @@ export default function MyProjects() {
     dispatch(actions.saveRequest({ ...sorted[targetIdx], sortOrder: aOrder, updatedAt: now() }))
   }
 
-  const sortedProjects = projects
+  const activeProjects = projects.filter((p) => !p.archived)
+  const archivedProjects = projects.filter((p) => p.archived)
+  const visibleProjects = showArchived ? archivedProjects : activeProjects
+
+  const sortedProjects = visibleProjects
     .slice()
     .sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity))
 
-  const grandTotal = projects.reduce((s, p) => s + totalOf(p.items), 0)
+  const grandTotal = activeProjects.reduce((s, p) => s + totalOf(p.items), 0)
 
   return (
     <div
@@ -89,7 +98,7 @@ export default function MyProjects() {
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>My Projects</div>
           <div style={{ fontSize: 13, color: '#6c757d', marginTop: 2 }}>
-            {projects.length} proyecto{projects.length !== 1 ? 's' : ''}
+            {visibleProjects.length} proyecto{visibleProjects.length !== 1 ? 's' : ''}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -112,6 +121,16 @@ export default function MyProjects() {
             +
           </button>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #dee2e6', marginBottom: 16 }}>
+        <button style={tabBtn(!showArchived)} onClick={() => setShowArchived(false)}>
+          Activos ({activeProjects.length})
+        </button>
+        <button style={tabBtn(showArchived)} onClick={() => setShowArchived(true)}>
+          Archivados ({archivedProjects.length})
+        </button>
       </div>
 
       {/* Grand total */}
@@ -138,7 +157,7 @@ export default function MyProjects() {
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
           <Spinner color="primary" />
         </div>
-      ) : projects.length === 0 ? (
+      ) : sortedProjects.length === 0 ? (
         <div
           style={{
             textAlign: 'center',
@@ -147,9 +166,11 @@ export default function MyProjects() {
             fontSize: 14,
           }}
         >
-          <div style={{ fontSize: 40, marginBottom: 12 }}>💡</div>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Sin proyectos aún</div>
-          <div>Presiona + para crear tu primer proyecto</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>{showArchived ? '📦' : '💡'}</div>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+            {showArchived ? 'Sin proyectos archivados' : 'Sin proyectos aún'}
+          </div>
+          {!showArchived && <div>Presiona + para crear tu primer proyecto</div>}
         </div>
       ) : (
         sortedProjects.map((p, idx) => (
@@ -163,6 +184,7 @@ export default function MyProjects() {
             onSave={handleCardSave}
             onClone={handleClone}
             onMove={handleMove}
+            onArchive={handleArchive}
           />
         ))
       )}
