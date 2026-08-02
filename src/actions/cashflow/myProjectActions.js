@@ -11,3 +11,5 @@ export const saveError = createAction('save my project to idb error')
 export const deleteRequest = createAction('delete my project from idb')
 export const deleteSuccess = createAction('delete my project from idb success')
 export const deleteError = createAction('delete my project from idb error')
+
+export const syncStatusChanged = createAction('my projects sync status changed')

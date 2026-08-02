@@ -5,3 +5,4 @@ import * as rxdb from '../../rxdb/cashflow/myProjects'
 export const getAllProjects = rxdb.getAllProjects
 export const saveProject = rxdb.saveProject
 export const deleteProject = rxdb.deleteProject
+export const subscribeSyncStatus = rxdb.subscribeSyncStatus

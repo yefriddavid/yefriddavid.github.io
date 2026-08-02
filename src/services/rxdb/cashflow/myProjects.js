@@ -1,5 +1,7 @@
 import { collection as firestoreCollection, where } from 'firebase/firestore'
 import { replicateFirestore } from 'rxdb/plugins/replication-firestore'
+import { merge } from 'rxjs'
+import { map, startWith } from 'rxjs/operators'
 import { getRxDb } from '../db'
 import { app, db as firestoreDb, COL_CASHFLOW_MY_PROJECTS } from '../../firebase/settings'
 import { getTenantId } from '../../tenantContext'
@@ -92,6 +94,19 @@ async function ensureReplication(tenantId) {
   })
   await replicationState.awaitInitialReplication()
   return replicationState
+}
+
+// Emits 'syncing' | 'synced' | 'error' as the Firestore replication cycles run.
+// Returns an unsubscribe function.
+export async function subscribeSyncStatus(cb) {
+  const tenantId = getTenantId()
+  const state = await ensureReplication(tenantId)
+  const status$ = merge(
+    state.active$.pipe(map((active) => (active ? 'syncing' : 'synced'))),
+    state.error$.pipe(map(() => 'error')),
+  ).pipe(startWith('synced'))
+  const sub = status$.subscribe(cb)
+  return () => sub.unsubscribe()
 }
 
 export async function getAllProjects() {

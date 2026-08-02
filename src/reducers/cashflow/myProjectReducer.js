@@ -9,6 +9,7 @@ const myProjectSlice = createSlice({
     saving: false,
     isError: false,
     errorMessage: null,
+    syncStatus: 'synced',
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -53,6 +54,10 @@ const myProjectSlice = createSlice({
         state.saving = false
         state.isError = true
         state.errorMessage = payload
+      })
+
+      .addCase(actions.syncStatusChanged, (state, { payload }) => {
+        state.syncStatus = payload
       })
   },
 })

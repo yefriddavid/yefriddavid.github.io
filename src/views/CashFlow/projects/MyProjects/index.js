@@ -7,10 +7,31 @@ import ProjectCard from './ProjectCard'
 import Spinner from 'src/components/shared/Spinner'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
 
+const SYNC_LABEL = {
+  synced: {
+    label: '✅ Actualizado',
+    color: '#2f9e44',
+    bg: '#ebfbee',
+    title: 'Sincronizado con Firestore',
+  },
+  syncing: {
+    label: '🔄 Sincronizando…',
+    color: '#e67700',
+    bg: '#fff4e6',
+    title: 'Sincronizando con Firestore',
+  },
+  error: {
+    label: '⚠️ Error de sync',
+    color: '#e03131',
+    bg: '#fff5f5',
+    title: 'Revisa la consola para más detalles',
+  },
+}
+
 export default function MyProjects() {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
-  const { projects, loading, saving } = useSelector((s) => s.myProject)
+  const { projects, loading, saving, syncStatus } = useSelector((s) => s.myProject)
 
   const [sheet, setSheet] = useState(null)
   const [showArchived, setShowArchived] = useState(false)
@@ -96,7 +117,22 @@ export default function MyProjects() {
         }}
       >
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>My Projects</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>My Projects</div>
+            <span
+              title={SYNC_LABEL[syncStatus]?.title}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: SYNC_LABEL[syncStatus]?.color ?? '#6c757d',
+                background: SYNC_LABEL[syncStatus]?.bg ?? '#f8f9fa',
+                borderRadius: 20,
+                padding: '2px 8px',
+              }}
+            >
+              {SYNC_LABEL[syncStatus]?.label ?? SYNC_LABEL.synced.label}
+            </span>
+          </div>
           <div style={{ fontSize: 13, color: '#6c757d', marginTop: 2 }}>
             {visibleProjects.length} proyecto{visibleProjects.length !== 1 ? 's' : ''}
           </div>
