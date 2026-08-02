@@ -29,15 +29,12 @@ export default function ProjectCard({
   project,
   isFirst,
   isLast,
-  syncing,
   onEdit,
   onDelete,
-  onSync,
   onSave,
   onClone,
   onMove,
 }) {
-  const isSynced = !!project.syncedAt
   const state = useProjectCard(project, onSave)
 
   return (
@@ -48,7 +45,6 @@ export default function ProjectCard({
         padding: '14px 16px',
         marginBottom: 10,
         boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-        borderLeft: `4px solid ${isSynced ? '#86efac' : '#ffe066'}`,
       }}
     >
       {/* Header */}
@@ -125,9 +121,6 @@ export default function ProjectCard({
               {state.goal > 0 ? fmt(state.goal) : fmt(state.total)}
             </div>
           )}
-          <div style={{ fontSize: 10, fontWeight: 600, color: isSynced ? '#2f9e44' : '#f59f00', marginTop: 2 }}>
-            {isSynced ? '● Sincronizado' : '○ Local'}
-          </div>
         </div>
       </div>
 
@@ -180,7 +173,6 @@ export default function ProjectCard({
         project={project}
         isFirst={isFirst}
         isLast={isLast}
-        syncing={syncing}
         isDirty={state.isDirty}
         cloning={state.cloning}
         cloneName={state.cloneName}
@@ -188,7 +180,6 @@ export default function ProjectCard({
         setCloneName={state.setCloneName}
         onEdit={onEdit}
         onDelete={onDelete}
-        onSync={onSync}
         onClone={onClone}
         onMove={onMove}
         handleSaveCard={state.handleSaveCard}

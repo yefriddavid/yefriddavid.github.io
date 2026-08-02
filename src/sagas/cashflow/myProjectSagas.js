@@ -33,43 +33,10 @@ function* deleteProject({ payload }) {
   }
 }
 
-function* syncProject({ payload }) {
-  try {
-    const result = yield call(facade.syncProject, payload)
-    yield put(actions.syncSuccess(result))
-  } catch (e) {
-    yield put(actions.syncError(e.message))
-    yield put(push({ type: 'error', message: e.message }))
-  }
-}
-
-function* syncAllProjects({ payload }) {
-  try {
-    const result = yield call(facade.syncAll, payload)
-    yield put(actions.syncAllSuccess(result))
-  } catch (e) {
-    yield put(actions.syncAllError(e.message))
-    yield put(push({ type: 'error', message: e.message }))
-  }
-}
-
-function* importFromFirebase() {
-  try {
-    const projects = yield call(facade.importFromFirebase)
-    yield put(actions.importSuccess(projects))
-  } catch (e) {
-    yield put(actions.importError(e.message))
-    yield put(push({ type: 'error', message: e.message }))
-  }
-}
-
 export default function* rootSagas() {
   yield all([
     takeLatest(actions.loadRequest, loadProjects),
     takeEvery(actions.saveRequest, saveProject),
     takeLatest(actions.deleteRequest, deleteProject),
-    takeLatest(actions.syncRequest, syncProject),
-    takeLatest(actions.syncAllRequest, syncAllProjects),
-    takeLatest(actions.importRequest, importFromFirebase),
   ])
 }

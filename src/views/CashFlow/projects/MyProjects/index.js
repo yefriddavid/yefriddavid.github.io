@@ -10,9 +10,7 @@ import useActiveTenantId from 'src/hooks/useActiveTenantId'
 export default function MyProjects() {
   const dispatch = useDispatch()
   const activeTenantId = useActiveTenantId()
-  const { projects, loading, saving, syncing, syncingAll, importing } = useSelector(
-    (s) => s.myProject,
-  )
+  const { projects, loading, saving } = useSelector((s) => s.myProject)
 
   const [sheet, setSheet] = useState(null)
 
@@ -39,14 +37,6 @@ export default function MyProjects() {
     }
   }
 
-  const handleSync = (project) => {
-    dispatch(actions.syncRequest(project))
-  }
-
-  const handleSyncAll = () => {
-    dispatch(actions.syncAllRequest(projects))
-  }
-
   const handleClone = (project, name) => {
     const clone = {
       ...project,
@@ -54,7 +44,6 @@ export default function MyProjects() {
       description: name,
       createdAt: now(),
       updatedAt: now(),
-      syncedAt: null,
       sortOrder: projects.length,
     }
     dispatch(actions.saveRequest(clone))
@@ -69,24 +58,14 @@ export default function MyProjects() {
     if (targetIdx < 0 || targetIdx >= sorted.length) return
     const aOrder = idx
     const bOrder = targetIdx
-    dispatch(
-      actions.saveRequest({ ...sorted[idx], sortOrder: bOrder, updatedAt: now(), syncedAt: null }),
-    )
-    dispatch(
-      actions.saveRequest({
-        ...sorted[targetIdx],
-        sortOrder: aOrder,
-        updatedAt: now(),
-        syncedAt: null,
-      }),
-    )
+    dispatch(actions.saveRequest({ ...sorted[idx], sortOrder: bOrder, updatedAt: now() }))
+    dispatch(actions.saveRequest({ ...sorted[targetIdx], sortOrder: aOrder, updatedAt: now() }))
   }
 
   const sortedProjects = projects
     .slice()
     .sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity))
 
-  const unsyncedCount = projects.filter((p) => !p.syncedAt).length
   const grandTotal = projects.reduce((s, p) => s + totalOf(p.items), 0)
 
   return (
@@ -114,26 +93,6 @@ export default function MyProjects() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button
-            onClick={() => dispatch(actions.importRequest())}
-            disabled={importing}
-            title="Importar desde Firebase"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              border: '1px solid #dee2e6',
-              background: '#fff',
-              color: importing ? '#adb5bd' : '#1e3a5f',
-              fontSize: 18,
-              cursor: importing ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {importing ? <Spinner size="sm" /> : '☁️'}
-          </button>
           <button
             onClick={() => setSheet('new')}
             style={{
@@ -174,38 +133,6 @@ export default function MyProjects() {
         </div>
       )}
 
-      {/* Sync all button */}
-      {unsyncedCount > 0 && (
-        <button
-          onClick={handleSyncAll}
-          disabled={syncingAll}
-          style={{
-            width: '100%',
-            padding: '11px',
-            borderRadius: 12,
-            background: syncingAll ? '#e9ecef' : '#f0fdf4',
-            color: syncingAll ? '#adb5bd' : '#2f9e44',
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: syncingAll ? 'not-allowed' : 'pointer',
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            border: syncingAll ? '1px solid #dee2e6' : '1px solid #86efac',
-          }}
-        >
-          {syncingAll ? (
-            <>
-              <Spinner size="sm" /> Sincronizando…
-            </>
-          ) : (
-            `☁️ Sincronizar todo (${unsyncedCount} pendiente${unsyncedCount !== 1 ? 's' : ''})`
-          )}
-        </button>
-      )}
-
       {/* List */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
@@ -231,10 +158,8 @@ export default function MyProjects() {
             project={p}
             isFirst={idx === 0}
             isLast={idx === sortedProjects.length - 1}
-            syncing={syncing}
             onEdit={setSheet}
             onDelete={handleDelete}
-            onSync={handleSync}
             onSave={handleCardSave}
             onClone={handleClone}
             onMove={handleMove}

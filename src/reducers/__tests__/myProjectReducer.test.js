@@ -7,9 +7,6 @@ const initial = {
   projects: [],
   loading: false,
   saving: false,
-  syncing: false,
-  syncingAll: false,
-  importing: false,
   isError: false,
   errorMessage: null,
 }
@@ -89,79 +86,6 @@ describe('myProjectReducer', () => {
     it('deleteError sets isError', () => {
       const s = reducer(initial, actions.deleteError('delete error'))
       expect(s.isError).toBe(true)
-    })
-  })
-
-  describe('sync', () => {
-    it('syncRequest sets syncing', () => {
-      expect(reducer(initial, actions.syncRequest()).syncing).toBe(true)
-    })
-
-    it('syncSuccess updates syncedAt for matching project', () => {
-      const p = makeProject({ id: 'proj-1', syncedAt: null })
-      const s = reducer(
-        { ...initial, projects: [p], syncing: true },
-        actions.syncSuccess({ id: 'proj-1', syncedAt: '2024-03-10T10:00:00Z' }),
-      )
-      expect(s.projects[0].syncedAt).toBe('2024-03-10T10:00:00Z')
-      expect(s.syncing).toBe(false)
-    })
-
-    it('syncError sets isError', () => {
-      const s = reducer(initial, actions.syncError('sync error'))
-      expect(s.isError).toBe(true)
-      expect(s.syncing).toBe(false)
-    })
-  })
-
-  describe('syncAll', () => {
-    it('syncAllRequest sets syncingAll', () => {
-      expect(reducer(initial, actions.syncAllRequest()).syncingAll).toBe(true)
-    })
-
-    it('syncAllSuccess updates syncedAt for each project', () => {
-      const p1 = makeProject({ id: 'proj-1', syncedAt: null })
-      const p2 = makeProject({ id: 'proj-2', syncedAt: null })
-      const s = reducer(
-        { ...initial, projects: [p1, p2], syncingAll: true },
-        actions.syncAllSuccess([
-          { id: 'proj-1', syncedAt: '2024-03-10T10:00:00Z' },
-          { id: 'proj-2', syncedAt: '2024-03-10T10:01:00Z' },
-        ]),
-      )
-      expect(s.projects[0].syncedAt).toBe('2024-03-10T10:00:00Z')
-      expect(s.projects[1].syncedAt).toBe('2024-03-10T10:01:00Z')
-      expect(s.syncingAll).toBe(false)
-    })
-
-    it('syncAllError sets isError', () => {
-      const s = reducer(initial, actions.syncAllError('sync all error'))
-      expect(s.isError).toBe(true)
-      expect(s.syncingAll).toBe(false)
-    })
-  })
-
-  describe('import', () => {
-    it('importRequest sets importing and clears isError', () => {
-      const s = reducer({ ...initial, isError: true }, actions.importRequest())
-      expect(s.importing).toBe(true)
-      expect(s.isError).toBe(false)
-    })
-
-    it('importSuccess replaces projects', () => {
-      const imported = [makeProject({ id: 'proj-new' })]
-      const s = reducer(
-        { ...initial, projects: [makeProject({ id: 'proj-old' })], importing: true },
-        actions.importSuccess(imported),
-      )
-      expect(s.projects).toEqual(imported)
-      expect(s.importing).toBe(false)
-    })
-
-    it('importError sets isError', () => {
-      const s = reducer(initial, actions.importError('import error'))
-      expect(s.isError).toBe(true)
-      expect(s.importing).toBe(false)
     })
   })
 })

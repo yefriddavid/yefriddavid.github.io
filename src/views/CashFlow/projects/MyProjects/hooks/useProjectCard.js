@@ -142,7 +142,6 @@ export function useProjectCard(project, onSave) {
       items: localItems,
       projectNotes: localProjectNotes,
       updatedAt: now(),
-      syncedAt: null,
     })
     setIsDirty(false)
   }

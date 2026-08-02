@@ -1,11 +1,9 @@
 import React from 'react'
-import Spinner from 'src/components/shared/Spinner'
 
 export default function ProjectCardActions({
   project,
   isFirst,
   isLast,
-  syncing,
   isDirty,
   cloning,
   cloneName,
@@ -13,7 +11,6 @@ export default function ProjectCardActions({
   setCloneName,
   onEdit,
   onDelete,
-  onSync,
   onClone,
   onMove,
   handleSaveCard,
@@ -169,27 +166,6 @@ export default function ProjectCardActions({
             ▼
           </button>
         </div>
-        <button
-          onClick={() => onSync(project)}
-          disabled={syncing}
-          style={{
-            flex: 1,
-            padding: '8px',
-            borderRadius: 8,
-            border: 'none',
-            background: syncing ? '#e9ecef' : '#eef4ff',
-            fontSize: 13,
-            fontWeight: 600,
-            color: syncing ? '#adb5bd' : '#1e3a5f',
-            cursor: syncing ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 4,
-          }}
-        >
-          {syncing ? <Spinner size="sm" /> : '☁️ Sync'}
-        </button>
         <button
           onClick={() => onDelete(project)}
           style={{

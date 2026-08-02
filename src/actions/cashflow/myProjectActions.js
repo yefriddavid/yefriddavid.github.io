@@ -11,15 +11,3 @@ export const saveError = createAction('save my project to idb error')
 export const deleteRequest = createAction('delete my project from idb')
 export const deleteSuccess = createAction('delete my project from idb success')
 export const deleteError = createAction('delete my project from idb error')
-
-export const syncRequest = createAction('sync my project to firebase')
-export const syncSuccess = createAction('sync my project to firebase success')
-export const syncError = createAction('sync my project to firebase error')
-
-export const syncAllRequest = createAction('sync all my projects to firebase')
-export const syncAllSuccess = createAction('sync all my projects to firebase success')
-export const syncAllError = createAction('sync all my projects to firebase error')
-
-export const importRequest = createAction('import my projects from firebase')
-export const importSuccess = createAction('import my projects from firebase success')
-export const importError = createAction('import my projects from firebase error')

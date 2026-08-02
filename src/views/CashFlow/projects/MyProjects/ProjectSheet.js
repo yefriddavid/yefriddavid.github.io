@@ -73,7 +73,6 @@ export default function ProjectSheet({ initial, saving, onSave, onClose }) {
       projectNotes,
       createdAt: initial?.createdAt ?? now(),
       updatedAt: now(),
-      syncedAt: initial?.syncedAt ?? null,
     }
     onSave(project)
   }
