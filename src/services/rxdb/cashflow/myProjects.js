@@ -123,7 +123,10 @@ async function ensureReplication(tenantId) {
     const inner = err.parameters?.errors?.[0] ?? err.parameters?.error
     console.error('myProjects replication error:', inner?.message || err.message)
   })
-  await replicationState.awaitInitialReplication()
+  // Not awaiting awaitInitialReplication() here on purpose: subscribeProjects() below
+  // is a reactive query, so it shows whatever's already cached locally instantly and
+  // re-emits on its own once the pull catches up — no need to block page load on a
+  // full Firestore round-trip just to show data that's already on disk.
   return replicationState
 }
 
