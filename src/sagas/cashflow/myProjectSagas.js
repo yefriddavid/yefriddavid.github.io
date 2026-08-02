@@ -4,6 +4,23 @@ import * as actions from '../../actions/cashflow/myProjectActions'
 import * as facade from '../../services/facade/cashflow/myProjectFacade'
 import { push } from '../../reducers/notificationsSlice'
 
+function createProjectsChannel() {
+  return eventChannel((emit) => {
+    let cancelled = false
+    let unsubscribe = () => {}
+    facade
+      .subscribeProjects((projects) => emit(projects))
+      .then((unsub) => {
+        if (cancelled) unsub()
+        else unsubscribe = unsub
+      })
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
+  })
+}
+
 function createSyncStatusChannel() {
   return eventChannel((emit) => {
     let cancelled = false
@@ -31,14 +48,22 @@ function* watchSyncStatus() {
 
 let syncStatusWatcherStarted = false
 
+// Runs for the lifetime of the tenant selection (takeLatest cancels + unsubscribes
+// this on the next loadRequest, e.g. on tenant switch). The live query re-emits the
+// full list on every local data change, whether from a local save or a remote pull
+// (another device, or a direct Firestore edit) — a one-shot query would only ever
+// reflect data as of the moment it ran, so the UI would never refresh on its own.
 function* loadProjects() {
   try {
-    const projects = yield call(facade.getAllProjects)
-    yield put(actions.loadSuccess(projects))
+    const channel = yield call(createProjectsChannel)
     // Started here (not from rootSagas) so getTenantId() is guaranteed resolved.
     if (!syncStatusWatcherStarted) {
       syncStatusWatcherStarted = true
       yield fork(watchSyncStatus)
+    }
+    while (true) {
+      const projects = yield take(channel)
+      yield put(actions.loadSuccess(projects))
     }
   } catch (e) {
     yield put(actions.loadError(e.message))

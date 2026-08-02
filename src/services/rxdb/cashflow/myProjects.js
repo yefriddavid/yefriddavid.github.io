@@ -140,12 +140,18 @@ export async function subscribeSyncStatus(cb) {
   return () => sub.unsubscribe()
 }
 
-export async function getAllProjects() {
+// Live query — re-emits the full project list whenever local data changes, whether
+// from a local save or a remote pull (another device, or Firestore edited directly).
+// A one-shot .exec() query would only ever reflect data as of the moment it ran, so
+// the UI would never update on its own after that. Returns an unsubscribe fn.
+export async function subscribeProjects(cb) {
   const tenantId = getTenantId()
   await ensureReplication(tenantId)
   const rxCollection = await getCollection()
-  const docs = await rxCollection.find({ selector: { tenantId } }).exec()
-  return docs.map((d) => d.toJSON())
+  const sub = rxCollection
+    .find({ selector: { tenantId } })
+    .$.subscribe((docs) => cb(docs.map((d) => d.toJSON())))
+  return () => sub.unsubscribe()
 }
 
 export async function saveProject(project) {
