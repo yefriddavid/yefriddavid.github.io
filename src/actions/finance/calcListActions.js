@@ -60,11 +60,6 @@ export const reorderRowsRequest = createAction('reorder calc list rows')
 export const reorderRowsSuccess = createAction('reorder calc list rows success')
 export const reorderRowsError   = createAction('reorder calc list rows error')
 
-// payload: group[] from remote peer — merge into local IDB
-export const mergeRequest = createAction('merge calc lists')
-export const mergeSuccess = createAction('merge calc lists success')
-export const mergeError   = createAction('merge calc lists error')
-
 // payload: group[] from JSON file — fully replaces local IDB
 export const importRequest = createAction('import calc lists')
 export const importSuccess = createAction('import calc lists success')

@@ -27,6 +27,14 @@ const COLUMNS = [
   },
 ]
 
+const SYNC_STATUS_LABEL = {
+  [STATUS.IDLE]:       { label: 'Sin peers',       title: 'No hay otros dispositivos en línea' },
+  [STATUS.CONNECTING]: { label: 'Conectando…',     title: 'Estableciendo conexión' },
+  [STATUS.CONNECTED]:  { label: 'Conectado',       title: 'Conectado' },
+  [STATUS.SYNCED]:     { label: '✅ Sincronizado', title: 'Sincronizando en vivo con otros dispositivos' },
+  [STATUS.ERROR]:      { label: '⚠️ Error',        title: 'Error de sincronización' },
+}
+
 function groupBy(rows, key, defs) {
   return defs.map((def) => {
     const matched = rows.filter((r) => (r[key] || defs[0].value) === def.value)
@@ -700,7 +708,14 @@ export default function CalcList() {
         </button>
         <button className="calc-list__sync-btn" onClick={() => setPresenceOpen(true)} title="Usuarios en línea">
           👥
+          {peers.length > 0 && <span className="calc-list__peer-count">{peers.length}</span>}
         </button>
+        <span
+          className={`calc-list__sync-status calc-list__sync-status--${status}`}
+          title={SYNC_STATUS_LABEL[status]?.title}
+        >
+          {SYNC_STATUS_LABEL[status]?.label}
+        </span>
       </div>
 
       <div className="calc-list__content">

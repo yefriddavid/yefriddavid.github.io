@@ -99,14 +99,7 @@ const calcListSlice = createSlice({
         if (list) list.rows = rows
       })
 
-      // Sync / import
-      .addCase(a.mergeSuccess, (state, { payload }) => {
-        state.groups = payload
-        if (payload.length && !payload.find((g) => g.id === state.activeGroupId)) {
-          state.activeGroupId = payload[0].id
-          state.activeListId  = sortedFirst(payload[0]?.items ?? [])
-        }
-      })
+      // Import
       .addCase(a.importSuccess, (state, { payload }) => {
         state.groups       = payload
         state.activeGroupId = payload[0]?.id ?? null
