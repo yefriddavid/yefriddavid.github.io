@@ -77,9 +77,9 @@ const CryptoActivityDashboard = () => {
     setPriceRangeStep(priceRangeDraft.step)
   }
   const [equilibriumAssetFilter, setEquilibriumAssetFilter] = useState(BTC_SYMBOL)
-  const [barFilter, setBarFilter] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [symbolFilter, setSymbolFilter] = useState('all')
   const [coinMonthModal, setCoinMonthModal] = useState(null) // { month: 'YYYY-MM', symbol, label }
+  const [monthBarModal, setMonthBarModal] = useState(null) // { month: 'YYYY-MM', type: 'buy' | 'sell' }
   const [priceBucketModal, setPriceBucketModal] = useState(null) // { from, to, type: 'buy' | 'sell' }
   const [priceBucketSort, setPriceBucketSort] = useState({ key: 'purchaseDate', dir: 'desc' })
 
@@ -182,7 +182,6 @@ const CryptoActivityDashboard = () => {
 
   const handleYearChange = (e) => {
     setYear(Number(e.target.value))
-    setBarFilter(null)
   }
   const buys = useMemo(() => activity.filter((p) => !isSale(p)), [activity])
   const sells = useMemo(() => activity.filter((p) => isSale(p)), [activity])
@@ -397,20 +396,14 @@ const CryptoActivityDashboard = () => {
 
   const recent = useMemo(() => {
     let base = activity
-    if (barFilter) {
-      base = base.filter(
-        (p) =>
-          monthKey(p.purchaseDate) === barFilter.month && isSale(p) === (barFilter.type === 'sell'),
-      )
-    }
     if (symbolFilter !== 'all') {
       base = base.filter((p) => p.symbol === symbolFilter)
     }
     const sorted = [...base].sort((a, b) =>
       (b.purchaseDate || '').localeCompare(a.purchaseDate || ''),
     )
-    return barFilter || symbolFilter !== 'all' ? sorted : sorted.slice(0, 10)
-  }, [activity, barFilter, symbolFilter])
+    return symbolFilter !== 'all' ? sorted : sorted.slice(0, 10)
+  }, [activity, symbolFilter])
 
   // Unrealized gain/loss per purchase vs the live price — only meaningful for
   // buys (a sell already realized its own price, no FIFO cost basis to compare against).
@@ -452,6 +445,17 @@ const CryptoActivityDashboard = () => {
       ),
     [monthlyByCoin],
   )
+
+  const monthBarRecords = useMemo(() => {
+    if (!monthBarModal) return []
+    return [...activity]
+      .filter(
+        (p) =>
+          monthKey(p.purchaseDate) === monthBarModal.month &&
+          isSale(p) === (monthBarModal.type === 'sell'),
+      )
+      .sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+  }, [activity, monthBarModal])
 
   const coinMonthRecords = useMemo(() => {
     if (!coinMonthModal) return []
@@ -661,11 +665,11 @@ const CryptoActivityDashboard = () => {
                           </div>
                         )}
                         <div
-                          className={`cad__bar cad__bar--buy${barFilter?.month === r.month && barFilter?.type === 'buy' ? ' cad__bar--active' : ''}`}
+                          className={`cad__bar cad__bar--buy${monthBarModal?.month === r.month && monthBarModal?.type === 'buy' ? ' cad__bar--active' : ''}`}
                           style={{ height: `${(r.buys / monthly.max) * BAR_MAX_PX}px` }}
                           title={`Compras ${r.month}: ${r.buys}`}
                           onClick={() =>
-                            r.buys > 0 && setBarFilter({ month: r.month, type: 'buy' })
+                            r.buys > 0 && setMonthBarModal({ month: r.month, type: 'buy' })
                           }
                         />
                       </div>
@@ -679,11 +683,11 @@ const CryptoActivityDashboard = () => {
                           </div>
                         )}
                         <div
-                          className={`cad__bar cad__bar--sell${barFilter?.month === r.month && barFilter?.type === 'sell' ? ' cad__bar--active' : ''}`}
+                          className={`cad__bar cad__bar--sell${monthBarModal?.month === r.month && monthBarModal?.type === 'sell' ? ' cad__bar--active' : ''}`}
                           style={{ height: `${(r.sells / monthly.max) * BAR_MAX_PX}px` }}
                           title={`Ventas ${r.month}: ${r.sells}`}
                           onClick={() =>
-                            r.sells > 0 && setBarFilter({ month: r.month, type: 'sell' })
+                            r.sells > 0 && setMonthBarModal({ month: r.month, type: 'sell' })
                           }
                         />
                       </div>
@@ -946,16 +950,7 @@ const CryptoActivityDashboard = () => {
 
       <div className="cad__ledger">
         <div className="cad__ledger-head">
-          <p className="cad__panel-title">
-            {barFilter
-              ? `${barFilter.type === 'sell' ? 'Ventas' : 'Compras'} — ${monthLabels[Number(barFilter.month.slice(5, 7)) - 1]} ${barFilter.month.slice(0, 4)}`
-              : 'Últimas operaciones'}
-          </p>
-          {barFilter && (
-            <button type="button" className="cad__clear-filter" onClick={() => setBarFilter(null)}>
-              ✕ Quitar filtro
-            </button>
-          )}
+          <p className="cad__panel-title">Últimas operaciones</p>
         </div>
         <div className="cad__coin-filters">
           <button
@@ -1241,6 +1236,63 @@ const CryptoActivityDashboard = () => {
                       </td>
                       <td className="num">
                         {p ? fmtUSD(p.low) : <span className="cad__muted">—</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </AppModal>
+      )}
+
+      {monthBarModal && (
+        <AppModal
+          visible
+          onClose={() => setMonthBarModal(null)}
+          variant="center"
+          size="md"
+          title={`${monthBarModal.type === 'sell' ? 'Ventas' : 'Compras'} — ${monthLabels[Number(monthBarModal.month.slice(5, 7)) - 1]} ${monthBarModal.month.slice(0, 4)}`}
+        >
+          <div className="cad__scroll">
+            <table className="cad__table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Moneda</th>
+                  <th className="num">Cantidad</th>
+                  <th className="num">Precio</th>
+                  <th className="num">Total</th>
+                  <th className="num">Ganancia / Pérdida</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthBarRecords.map((p) => {
+                  const total = (Number(p.quantity) || 0) * (Number(p.purchasePrice) || 0)
+                  const gainLoss = gainLossFor(p)
+                  return (
+                    <tr key={p.id}>
+                      <td>{p.purchaseDate}</td>
+                      <td>
+                        <span className="cad__sym">
+                          <i style={{ background: CRYPTO_PURCHASE_SYMBOL_COLORS[p.symbol] }} />
+                          {symbolLabel(p.symbol)}
+                        </span>
+                      </td>
+                      <td className="num">{p.quantity}</td>
+                      <td className="num">{fmtUSD(p.purchasePrice)}</td>
+                      <td className="num">{fmtUSD(total)}</td>
+                      <td className="num">
+                        {gainLoss == null ? (
+                          <span className="cad__muted">—</span>
+                        ) : (
+                          <span
+                            className={`cad__amount${gainLoss >= 0 ? ' cad__amount--positive' : ' cad__amount--negative'}`}
+                          >
+                            {gainLoss >= 0 ? '+' : ''}
+                            {fmtUSD(gainLoss)}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   )
