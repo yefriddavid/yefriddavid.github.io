@@ -58,7 +58,7 @@ const CryptoActivityDashboard = () => {
   const [priceOverrides, setPriceOverrides] = useState({})
   const [year, setYear] = useState(CURRENT_YEAR)
   const [platformFilter, setPlatformFilter] = useState('binance_arg')
-  const [monthlyAssetFilter, setMonthlyAssetFilter] = useState(BTC_SYMBOL)
+  const [monthlyAssetFilter, setMonthlyAssetFilter] = useState('all')
   const [priceAssetFilter, setPriceAssetFilter] = useState(BTC_SYMBOL)
   // Applied values drive priceBuckets; draft values track the inputs as the
   // user types. They only sync on "Aplicar" so every keystroke doesn't
@@ -256,8 +256,10 @@ const CryptoActivityDashboard = () => {
     // Counts (bar height) stay across all coins, but the USD/quantity labels
     // only make sense for one asset at a time — mixing BTC + ETH + LINK
     // quantities into a single number would be meaningless.
-    const assetBuys = buys.filter((p) => p.symbol === monthlyAssetFilter)
-    const assetSells = sells.filter((p) => p.symbol === monthlyAssetFilter)
+    const assetBuys =
+      monthlyAssetFilter === 'all' ? buys : buys.filter((p) => p.symbol === monthlyAssetFilter)
+    const assetSells =
+      monthlyAssetFilter === 'all' ? sells : sells.filter((p) => p.symbol === monthlyAssetFilter)
     const rows = months.map((m) => {
       const monthBuys = buys.filter((p) => monthKey(p.purchaseDate) === m)
       const monthSells = sells.filter((p) => monthKey(p.purchaseDate) === m)
@@ -631,6 +633,7 @@ const CryptoActivityDashboard = () => {
               value={monthlyAssetFilter}
               onChange={(e) => setMonthlyAssetFilter(e.target.value)}
             >
+              <option value="all">Todas</option>
               {CRYPTO_PURCHASE_SYMBOLS.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
@@ -651,9 +654,11 @@ const CryptoActivityDashboard = () => {
                         {r.buys > 0 && (
                           <div className="cad__price-values">
                             <span className="cad__price-value-usd">{fmtUSD(r.buysInvested)}</span>
-                            <span className="cad__price-value-qty">
-                              {qtyLabel(r.buysQty, monthlyAssetFilter)}
-                            </span>
+                            {monthlyAssetFilter !== 'all' && (
+                              <span className="cad__price-value-qty">
+                                {qtyLabel(r.buysQty, monthlyAssetFilter)}
+                              </span>
+                            )}
                             {buyGainLoss != null && (
                               <span
                                 className={`cad__price-value-gl${buyGainLoss >= 0 ? ' cad__price-value-gl--gain' : ' cad__price-value-gl--loss'}`}
@@ -677,9 +682,11 @@ const CryptoActivityDashboard = () => {
                         {r.sells > 0 && (
                           <div className="cad__price-values">
                             <span className="cad__price-value-usd">{fmtUSD(r.sellsProceeds)}</span>
-                            <span className="cad__price-value-qty">
-                              {qtyLabel(r.sellsQty, monthlyAssetFilter)}
-                            </span>
+                            {monthlyAssetFilter !== 'all' && (
+                              <span className="cad__price-value-qty">
+                                {qtyLabel(r.sellsQty, monthlyAssetFilter)}
+                              </span>
+                            )}
                           </div>
                         )}
                         <div
