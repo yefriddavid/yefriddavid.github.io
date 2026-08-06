@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "cashflow-9cbbc"
-  }
+  },
+  "targets": {
+    "cashflow-9cbbc": {
+      "hosting": {
+        "yefriddavid": [
+          "yefriddavid"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

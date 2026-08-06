@@ -64,6 +64,17 @@ jobs:
       with:
         path: ./build
 
+    - name: Deploy to Firebase Hosting (yefriddavid.web.app)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      continue-on-error: true
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: '${{ secrets.GITHUB_TOKEN }}'
+        firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CASHFLOW }}'
+        projectId: cashflow-9cbbc
+        target: yefriddavid
+        channelId: live
+
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build

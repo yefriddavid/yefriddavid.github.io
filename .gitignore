@@ -27,6 +27,7 @@ cypress/videos/
 
 # misc
 .eslintcache
+.firebase/
 **/service-account.json
 **/*-service-account.json
 .DS_Store

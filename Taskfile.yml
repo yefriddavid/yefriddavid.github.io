@@ -20,6 +20,12 @@ tasks:
     desc: Build and deploy to GitHub Pages
     cmd: npm run deploy
 
+  deploy:firebase:
+    desc: Build and deploy to Firebase Hosting (yefriddavid.web.app)
+    cmds:
+      - npm run build
+      - npx firebase deploy --only hosting:yefriddavid --project cashflow-9cbbc
+
   lint:
     desc: Run ESLint
     cmd: npm run lint
