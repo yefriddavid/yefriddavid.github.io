@@ -1,10 +1,11 @@
 name: Build and Deploy
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  # Disabled automatic triggers — the queued/stuck runs were never executing,
+  # so deploys now go through the local `pre-push` hook (task deploy:firebase)
+  # instead. Kept as workflow_dispatch so it can still be run manually from
+  # the Actions tab if the CI pipeline gets fixed later.
+  workflow_dispatch:
 
 permissions:
   contents: read
