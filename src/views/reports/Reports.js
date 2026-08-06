@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { CFormSelect } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPrint } from '@coreui/icons'
@@ -26,10 +26,21 @@ const Reports = () => {
   const { monthLabels } = useLocaleData()
   const { data, fetching } = useSelector((s) => s.transaction)
   const { data: masters } = useSelector((s) => s.accountsMaster)
-  const [year, setYear] = useState(CURRENT_YEAR)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const year = Number(searchParams.get('year')) || CURRENT_YEAR
+  const setYear = (value) =>
+    setSearchParams((prev) => {
+      prev.set('year', value)
+      return prev
+    })
   const [expanded, setExpanded] = useState(() => new Set())
   // Arranca en la división de la ruta por la que entraste; los botones permiten cambiarla.
-  const [mode, setMode] = useState(division)
+  const mode = searchParams.get('mode') || division
+  const setMode = (value) =>
+    setSearchParams((prev) => {
+      prev.set('mode', value)
+      return prev
+    })
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
