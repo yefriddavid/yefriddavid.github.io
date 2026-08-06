@@ -132,12 +132,6 @@ const getNav = (t, role) => {
           items: [
             {
               component: CNavItem,
-              name: 'Resumen',
-              to: '/finance/management/crypto-report',
-              icon: <CIcon icon={cibBitcoin} customClassName="nav-icon" />,
-            },
-            {
-              component: CNavItem,
               name: 'Compras y Ventas',
               to: '/finance/management/crypto-activity',
               icon: <CIcon icon={cilSwapVertical} customClassName="nav-icon" />,
@@ -159,6 +153,12 @@ const getNav = (t, role) => {
               name: 'Totales por Plataforma',
               to: '/finance/management/crypto-platforms',
               icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+            },
+            {
+              component: CNavItem,
+              name: 'Resumen',
+              to: '/finance/management/crypto-report',
+              icon: <CIcon icon={cibBitcoin} customClassName="nav-icon" />,
             },
             {
               component: CNavItem,
