@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { CFormSelect } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPrint } from '@coreui/icons'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
@@ -27,10 +26,30 @@ const Reports = () => {
   const { data, fetching } = useSelector((s) => s.transaction)
   const { data: masters } = useSelector((s) => s.accountsMaster)
   const [searchParams, setSearchParams] = useSearchParams()
-  const year = Number(searchParams.get('year')) || CURRENT_YEAR
-  const setYear = (value) =>
+  const yearParam = searchParams.get('year')
+  const selectedYears = useMemo(
+    () =>
+      yearParam
+        ? yearParam
+            .split(',')
+            .map(Number)
+            .filter((n) => !Number.isNaN(n))
+        : [CURRENT_YEAR],
+    [yearParam],
+  )
+  const toggleYear = (y) =>
     setSearchParams((prev) => {
-      prev.set('year', value)
+      const current = (prev.get('year') || String(CURRENT_YEAR))
+        .split(',')
+        .map(Number)
+        .filter((n) => !Number.isNaN(n))
+      const next = current.includes(y)
+        ? current.length > 1
+          ? current.filter((v) => v !== y)
+          : current
+        : [...current, y]
+      next.sort((a, b) => a - b)
+      prev.set('year', next.join(','))
       return prev
     })
   const [expanded, setExpanded] = useState(() => new Set())
@@ -82,12 +101,12 @@ const Reports = () => {
   )
 
   const income = useMemo(
-    () => categoryMonthMatrix(transactions, 'income', year),
-    [transactions, year],
+    () => categoryMonthMatrix(transactions, 'income', selectedYears),
+    [transactions, selectedYears],
   )
   const expense = useMemo(
-    () => categoryMonthMatrix(transactions, 'expense', year),
-    [transactions, year],
+    () => categoryMonthMatrix(transactions, 'expense', selectedYears),
+    [transactions, selectedYears],
   )
 
   const netMonthTotals = monthLabelsShort.map(
@@ -101,18 +120,18 @@ const Reports = () => {
   return (
     <div className="statement">
       <div className="statement__toolbar">
-        <CFormSelect
-          size="sm"
-          style={{ width: 110 }}
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-        >
+        <div className="statement__mode-group">
           {years.map((y) => (
-            <option key={y} value={y}>
+            <button
+              key={y}
+              type="button"
+              className={`statement__mode-btn ${selectedYears.includes(y) ? 'statement__mode-btn--active' : ''}`}
+              onClick={() => toggleYear(y)}
+            >
               {y}
-            </option>
+            </button>
           ))}
-        </CFormSelect>
+        </div>
         <div className="statement__mode-group">
           {[
             { key: 'personal', label: 'Personal' },
@@ -136,7 +155,9 @@ const Reports = () => {
 
       <div className="statement__sheet">
         <h1 className="statement__title">Estado de Resultados</h1>
-        <div className="statement__subtitle">Año {year}</div>
+        <div className="statement__subtitle">
+          {selectedYears.length > 1 ? 'Años' : 'Año'} {selectedYears.join(', ')}
+        </div>
 
         <div className="statement__scroll">
           <CategoryMonthStatement
@@ -160,7 +181,7 @@ const Reports = () => {
               },
             ]}
             records={transactions}
-            year={year}
+            year={selectedYears}
             expanded={expanded}
             onToggle={toggleExpanded}
             netLabel="Utilidad neta"

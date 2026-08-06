@@ -33,11 +33,13 @@ export const yearlyTotals = (records, positiveType, negativeType) => {
 }
 
 /**
- * Category × month breakdown for a single year and type, keeping the top
- * `maxCategories` (by yearly total) and folding the rest into "Otros".
+ * Category × month breakdown for one or more years and a type, keeping the
+ * top `maxCategories` (by total) and folding the rest into "Otros". When
+ * several years are passed, matching months are summed together.
  */
 export const categoryMonthMatrix = (records, type, year, maxCategories = 5) => {
-  const scoped = records.filter((r) => r.type === type && r.date?.slice(0, 4) === String(year))
+  const years = (Array.isArray(year) ? year : [year]).map(String)
+  const scoped = records.filter((r) => r.type === type && years.includes(r.date?.slice(0, 4)))
   const byCategory = {}
   scoped.forEach((r) => {
     const cat = r.category || 'Otros'

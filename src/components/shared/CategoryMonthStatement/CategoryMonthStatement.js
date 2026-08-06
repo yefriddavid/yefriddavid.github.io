@@ -6,6 +6,7 @@ const sumMonth = (matrix, m) => matrix.reduce((s, row) => s + row[m], 0)
 
 const CategoryDetailRow = ({ months, records, type, category, categoryGroups, year }) => {
   const members = categoryGroups[category] || [category]
+  const years = (Array.isArray(year) ? year : [year]).map(String)
 
   return (
     <tr className="cms__detail-row">
@@ -15,7 +16,7 @@ const CategoryDetailRow = ({ months, records, type, category, categoryGroups, ye
           (r) =>
             r.type === type &&
             members.includes(r.category || 'Otros') &&
-            r.date?.slice(0, 4) === String(year) &&
+            years.includes(r.date?.slice(0, 4)) &&
             Number(r.date.slice(5, 7)) - 1 === m,
         )
         return (
@@ -108,7 +109,7 @@ const StatementSection = ({
  * @param {string[]} months - short month labels (e.g. ['ene','feb',...])
  * @param {{title, modifier, type, categories, matrix, categoryGroups}[]} sections
  * @param {object[]} records - normalized records, used for the drill-down rows
- * @param {number} year
+ * @param {number|number[]} year
  * @param {Set<string>} expanded - keys of currently expanded "type:category" rows
  * @param {(key: string) => void} onToggle
  * @param {string} netLabel
