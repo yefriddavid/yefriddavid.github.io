@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams, useLocation } from 'react-router-dom'
-import { cilCalendar } from '@coreui/icons'
+import { CCollapse } from '@coreui/react'
+import { cilCalendar, cilChevronBottom, cilChevronRight } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import * as transactionActions from 'src/actions/cashflow/transactionActions'
 import * as accountsMasterActions from 'src/actions/cashflow/accountsMasterActions'
@@ -75,6 +76,7 @@ export default function AccountStatus() {
   const [addingAdHoc, setAddingAdHoc] = useState(false)
   const [editingAdHoc, setEditingAdHoc] = useState(null)
   const [sharedFile, setSharedFile] = useState(null)
+  const [panelExpanded, setPanelExpanded] = useState(false)
   const attachRef = useRef()
 
   const shareToken = searchParams.get('share')
@@ -399,91 +401,103 @@ export default function AccountStatus() {
           </button>
         </div>
 
-        {/* Summary strip */}
-        <div className="as-summary-strip">
-          {[
-            {
-              label: 'Pagadas',
-              value: paid,
-              total: totalPaid,
-              type: 'paid',
-            },
-            {
-              label: 'Pendientes',
-              value: pending,
-              total: totalPending,
-              type: 'pending',
-            },
-            {
-              label: 'Vencidas',
-              value: overdue,
-              total: totalOverdue,
-              type: 'overdue',
-            },
-          ].map((s) => (
-            <div key={s.label} className={`summary-card summary-card--${s.type}`}>
-              <div className="summary-value">{s.value}</div>
-              <div className="summary-label">{s.label}</div>
-              {s.total > 0 && <div className="summary-total">{fmt(s.total)}</div>}
-            </div>
-          ))}
-        </div>
-
-        {/* Total */}
-        <div className="as-total-strip">
-          <span className="total-label">Total:</span>
-          <span className="total-value">{fmt(totalPaid + totalPending + totalOverdue)}</span>
-        </div>
-
-        {/* Period notes */}
-        {!fetching && (
-          <PeriodNotes
-            period={monthStr}
-            notes={periodNotes?.filter((n) => (n.division ?? 'personal') === division)}
-            fetching={fetchingNotes}
-            saving={savingNotes}
-            onAdd={handleAddNote}
-            onToggle={handleToggleNote}
-            onDelete={handleDeleteNote}
-          />
-        )}
-        {/* OCR importer  */}
-        <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
-          <OcrReceiptImporter
-            masters={masters}
-            monthStr={monthStr}
-            transactions={transactions}
-            onConfirm={handleSavePayment}
-            initialFile={sharedFile}
+        {/* Panel toggle */}
+        <div className="as-panel-toggle" onClick={() => setPanelExpanded((v) => !v)}>
+          <span className="as-panel-toggle-label">Resumen del período</span>
+          <CIcon
+            icon={panelExpanded ? cilChevronBottom : cilChevronRight}
+            size="sm"
+            className="as-panel-toggle-icon"
           />
         </div>
+
+        <CCollapse visible={panelExpanded}>
+          {/* Summary strip */}
+          <div className="as-summary-strip">
+            {[
+              {
+                label: 'Pagadas',
+                value: paid,
+                total: totalPaid,
+                type: 'paid',
+              },
+              {
+                label: 'Pendientes',
+                value: pending,
+                total: totalPending,
+                type: 'pending',
+              },
+              {
+                label: 'Vencidas',
+                value: overdue,
+                total: totalOverdue,
+                type: 'overdue',
+              },
+            ].map((s) => (
+              <div key={s.label} className={`summary-card summary-card--${s.type}`}>
+                <div className="summary-value">{s.value}</div>
+                <div className="summary-label">{s.label}</div>
+                {s.total > 0 && <div className="summary-total">{fmt(s.total)}</div>}
+              </div>
+            ))}
+          </div>
+
+          {/* Total */}
+          <div className="as-total-strip">
+            <span className="total-label">Total:</span>
+            <span className="total-value">{fmt(totalPaid + totalPending + totalOverdue)}</span>
+          </div>
+
+          {/* Period notes */}
+          {!fetching && (
+            <PeriodNotes
+              period={monthStr}
+              notes={periodNotes?.filter((n) => (n.division ?? 'personal') === division)}
+              fetching={fetchingNotes}
+              saving={savingNotes}
+              onAdd={handleAddNote}
+              onToggle={handleToggleNote}
+              onDelete={handleDeleteNote}
+            />
+          )}
+          {/* OCR importer  */}
+          <div style={{ /*display: 'flex',*/ justifyContent: 'flex-end', marginBottom: 8 }}>
+            <OcrReceiptImporter
+              masters={masters}
+              monthStr={monthStr}
+              transactions={transactions}
+              onConfirm={handleSavePayment}
+              initialFile={sharedFile}
+            />
+          </div>
+
+          {/* Balance strip */}
+          {(totalIncome > 0 || totalExpenses > 0) &&
+            (() => {
+              const balance = totalIncome - totalExpenses
+              const isPositive = balance >= 0
+              return (
+                <div
+                  className={`as-balance-strip as-balance-strip--${isPositive ? 'positive' : 'negative'}`}
+                >
+                  <div className="balance-info">
+                    <span className="balance-label">Ingresos − Egresos</span>
+                    <span className="balance-formula">
+                      {fmt(totalIncome)} − {fmt(totalExpenses)}
+                    </span>
+                  </div>
+                  <span className="balance-value">
+                    {isPositive ? '+' : ''}
+                    {fmt(balance)}
+                  </span>
+                </div>
+              )
+            })()}
+        </CCollapse>
       </div>
 
       {/* ── RIGHT PANEL ────────────────────────────────────────────── */}
       <div className="as-right-panel">
-        {/* Balance strip */}
-        {(totalIncome > 0 || totalExpenses > 0) &&
-          (() => {
-            const balance = totalIncome - totalExpenses
-            const isPositive = balance >= 0
-            return (
-              <div
-                className={`as-balance-strip as-balance-strip--${isPositive ? 'positive' : 'negative'}`}
-              >
-                <div className="balance-info">
-                  <span className="balance-label">Ingresos − Egresos</span>
-                  <span className="balance-formula">
-                    {fmt(totalIncome)} − {fmt(totalExpenses)}
-                  </span>
-                </div>
-                <span className="balance-value">
-                  {isPositive ? '+' : ''}
-                  {fmt(balance)}
-                </span>
-              </div>
-            )
-          })()}
-
         {/* Type tabs */}
         <div className="as-type-tabs">
           {[

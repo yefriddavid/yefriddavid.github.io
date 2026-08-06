@@ -64,6 +64,28 @@
     }
   }
 
+  .as-panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 6px 4px;
+    margin-bottom: 8px;
+    user-select: none;
+  }
+
+  .as-panel-toggle-label {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: var(--cui-secondary-color, #6c757d);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .as-panel-toggle-icon {
+    color: var(--cui-secondary-color, #6c757d);
+  }
+
   .as-summary-strip {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
