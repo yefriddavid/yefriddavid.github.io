@@ -43,7 +43,15 @@
     }
 
     .current-period {
+      position: relative;
       text-align: center;
+
+      .current-period__toggle {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
 
       .month-name {
         font-size: var(--fs-3xl);
@@ -60,6 +68,86 @@
         font-size: var(--fs-sm);
         color: #adb5bd;
         margin-top: 2px;
+      }
+    }
+
+    .nav-btn--sm {
+      width: 28px;
+      height: 28px;
+      font-size: var(--fs-lg);
+    }
+  }
+
+  .as-period-picker-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+  }
+
+  .as-period-picker {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 10px;
+    min-width: 240px;
+
+    &__year-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    &__year {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      color: #1a1a2e;
+      width: 64px;
+      text-align: center;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 2px 0;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      -moz-appearance: textfield;
+    }
+
+    &__months {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    &__month {
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: none;
+      padding: 6px 0;
+      font-size: var(--fs-sm);
+      text-transform: capitalize;
+      color: #1a1a2e;
+      cursor: pointer;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+
+      &--active {
+        background: #343a40;
+        color: #fff;
       }
     }
   }

@@ -25,6 +25,7 @@ const routes = [
     element: ContractsList,
   },
   {
+    // path: '/inmobiliaria/account-status',
     path: '/inmobiliaria/account-status',
     name: 'Estado de Cuentas',
     longName: 'Estado de Cuentas — Inmobiliaria',

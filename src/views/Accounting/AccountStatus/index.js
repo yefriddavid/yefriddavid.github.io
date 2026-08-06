@@ -77,6 +77,8 @@ export default function AccountStatus() {
   const [editingAdHoc, setEditingAdHoc] = useState(null)
   const [sharedFile, setSharedFile] = useState(null)
   const [panelExpanded, setPanelExpanded] = useState(false)
+  const [periodPickerOpen, setPeriodPickerOpen] = useState(false)
+  const [pickerYear, setPickerYear] = useState(year)
   const attachRef = useRef()
 
   const shareToken = searchParams.get('share')
@@ -386,14 +388,83 @@ export default function AccountStatus() {
           </button>
 
           <div className="current-period">
-            <div className="month-name">{monthLabels[month - 1]}</div>
-            <div className="year-name">{year}</div>
-            <div className="current-day">
-              <CIcon icon={cilCalendar} size="sm" />{' '}
-              {now
-                .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
-                .replace(/^\w/, (c) => c.toUpperCase())}
-            </div>
+            <button
+              type="button"
+              className="current-period__toggle"
+              aria-label="Seleccionar mes y año"
+              onClick={() => {
+                setPickerYear(year)
+                setPeriodPickerOpen(true)
+              }}
+            >
+              <div className="month-name">{monthLabels[month - 1]}</div>
+              <div className="year-name">{year}</div>
+              <div className="current-day">
+                <CIcon icon={cilCalendar} size="sm" />{' '}
+                {now
+                  .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
+                  .replace(/^\w/, (c) => c.toUpperCase())}
+              </div>
+            </button>
+
+            {periodPickerOpen && (
+              <>
+                <div
+                  className="as-period-picker-backdrop"
+                  onClick={() => setPeriodPickerOpen(false)}
+                />
+                <div className="as-period-picker" onClick={(e) => e.stopPropagation()}>
+                  <div className="as-period-picker__year-row">
+                    <button
+                      type="button"
+                      className="nav-btn nav-btn--sm"
+                      onClick={() => setPickerYear((y) => y - 1)}
+                    >
+                      ‹
+                    </button>
+                    <input
+                      type="number"
+                      className="as-period-picker__year"
+                      value={pickerYear}
+                      onChange={(e) => {
+                        const v = Number(e.target.value)
+                        if (e.target.value !== '' && !Number.isNaN(v)) setPickerYear(v)
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="nav-btn nav-btn--sm"
+                      onClick={() => setPickerYear((y) => y + 1)}
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <div className="as-period-picker__months">
+                    {monthLabels.map((label, i) => (
+                      <button
+                        key={label}
+                        type="button"
+                        className={`as-period-picker__month ${
+                          pickerYear === year && i + 1 === month
+                            ? 'as-period-picker__month--active'
+                            : ''
+                        }`}
+                        onClick={() => {
+                          setSearchParams((prev) => {
+                            prev.set('year', pickerYear)
+                            prev.set('month', i + 1)
+                            return prev
+                          })
+                          setPeriodPickerOpen(false)
+                        }}
+                      >
+                        {label.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <button onClick={nextMonth} className="nav-btn">

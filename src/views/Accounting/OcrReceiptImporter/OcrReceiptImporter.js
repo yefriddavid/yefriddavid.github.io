@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CModal, CModalHeader, CModalTitle, CModalBody } from '@coreui/react'
 import { analyzeReceipt } from 'src/utils/receiptAnalyzer'
+import { uploadImage } from 'src/services/facade/imageFacade'
 import './OcrReceiptImporter.scss'
 
 const STEPS = ['capture', 'processing', 'confirm']
@@ -347,8 +348,8 @@ export default function OcrReceiptImporter({ masters, monthStr, transactions, on
     setStep('confirm')
   }
 
-  const handleConfirm = ({ account, amount, date }) => {
-    onConfirm({
+  const handleConfirm = async ({ account, amount, date }) => {
+    const payload = {
       accountMasterId: account.id,
       accountMasterName: account.name,
       accountMasterImportant: account.important ?? false,
@@ -358,7 +359,16 @@ export default function OcrReceiptImporter({ masters, monthStr, transactions, on
       amount,
       date,
       accountMonth: monthStr,
-    })
+    }
+    if (file) {
+      try {
+        payload.attachment = await uploadImage(file)
+        payload.attachmentName = file.name
+      } catch (err) {
+        alert(err.message)
+      }
+    }
+    onConfirm(payload)
     handleClose()
   }
 

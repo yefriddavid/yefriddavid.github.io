@@ -329,7 +329,7 @@ const getNav = (t, role) => {
       {
         component: CNavItem,
         name: 'Estado de Cuentas',
-        to: '/inmobiliaria/account-status',
+        to: '/inmobiliaria/account-status?tab=Incoming',
         icon: <CIcon icon={cilWallet} customClassName="nav-icon" />,
       },
       {
