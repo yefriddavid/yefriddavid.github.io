@@ -1,0 +1,1 @@
+import{r}from"./index-BC34lrZ1.js";import{f as n}from"./exchangeRateService-COdd6GQl.js";const l=30*60*1e3;function p(){const[a,s]=r.useState(null);return r.useEffect(()=>{let t=!1;const e=()=>{n().then(c=>{t||s(c)}).catch(()=>{})};e();const o=setInterval(e,l);return()=>{t=!0,clearInterval(o)}},[]),{rate:a}}export{p as u};

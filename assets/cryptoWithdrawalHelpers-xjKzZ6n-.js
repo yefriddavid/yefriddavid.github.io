@@ -1,0 +1,1 @@
+import{e as A}from"./formatters-yL5gytsT.js";import{e as a,f as n}from"./finance-Xc_-zMz3.js";const f=(t,s)=>`${A(t,8)} ${s}`,u=t=>{var s;return(s=a[t])!=null?s:"Desconocido"},S=t=>{var s;return(s=n[t])!=null?s:"default"},T=t=>{const[s,o]=(t!=null?t:"").split(" ");return{date:s!=null?s:"",time:o!=null?o:""}};export{u as a,S as b,f,T as s};

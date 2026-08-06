@@ -1,0 +1,1 @@
+System.register(["./formatters-legacy-QWpCsXFC.js","./finance-legacy-BNb0rDcx.js"],function(e,t){"use strict";var s,r,c;return{setters:[e=>{s=e.e},e=>{r=e.e,c=e.f}],execute:function(){e("f",(e,t)=>`${s(e,8)} ${t}`),e("a",e=>r[e]??"Desconocido"),e("b",e=>c[e]??"default"),e("s",e=>{const[t,s]=(e??"").split(" ");return{date:t??"",time:s??""}})}}});

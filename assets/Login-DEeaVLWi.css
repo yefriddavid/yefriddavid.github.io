@@ -1,0 +1,1 @@
+@keyframes login-spinner-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.login-spinner__ring{transform-origin:20px 20px;animation:login-spinner-spin 1.4s linear infinite}
