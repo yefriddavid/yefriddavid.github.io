@@ -736,6 +736,7 @@ export default function CalcList() {
             rows={[...activeList.rows].sort((a, b) => (a.index ?? Infinity) - (b.index ?? Infinity))}
             keyExpr="id"
             totalColumn="total"
+            markableTotal
             onRowChange={handleRowChange}
             onRowAdd={handleRowAdd}
             onRowDelete={handleRowDelete}

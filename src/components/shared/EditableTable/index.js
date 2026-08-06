@@ -67,12 +67,23 @@ export default function EditableTable({
   onRowNote,
   onRowReorder,
   totalColumn,
+  markableTotal = false,
   budget,
   onBudgetChange,
   emptyText = 'No hay filas.',
 }) {
   const [dragId, setDragId]         = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
+  const [markedIds, setMarkedIds]   = useState(() => new Set())
+
+  const toggleMarked = (id) => {
+    setMarkedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const handleDrop = (toId) => {
     if (!dragId || dragId === toId) return
@@ -94,6 +105,13 @@ export default function EditableTable({
 
   const grandTotal =
     totalColumn != null ? rows.reduce((sum, r) => sum + (calcTotalValue(r) ?? 0), 0) : null
+
+  const markedTotal =
+    markableTotal && totalColumn != null
+      ? rows
+          .filter((r) => markedIds.has(r[keyExpr]))
+          .reduce((sum, r) => sum + (calcTotalValue(r) ?? 0), 0)
+      : null
 
   const displayValue = (col, row) => {
     const raw = col.type === 'calc' ? col.calc(row) : row[col.key]
@@ -164,7 +182,20 @@ export default function EditableTable({
                       {row[col.key] ?? '—'}
                     </span>
                   ) : col.type === 'calc' ? (
-                    <span className="editable-table__calc-cell">
+                    <span
+                      className={[
+                        'editable-table__calc-cell',
+                        markableTotal && col.key === totalColumn ? 'editable-table__calc-cell--markable' : '',
+                        markableTotal && col.key === totalColumn && markedIds.has(row[keyExpr])
+                          ? 'editable-table__calc-cell--marked'
+                          : '',
+                      ].filter(Boolean).join(' ')}
+                      onClick={
+                        markableTotal && col.key === totalColumn
+                          ? () => toggleMarked(row[keyExpr])
+                          : undefined
+                      }
+                    >
                       {displayValue(col, row) ?? '—'}
                     </span>
                   ) : col.type === 'select' ? (
@@ -239,6 +270,24 @@ export default function EditableTable({
               ))}
               <td />
             </tr>
+            {markableTotal && (
+              <tr className="editable-table__marked-row">
+                {columns.map((col, i) => (
+                  <td key={col.key} className={col.key === totalColumn ? 'editable-table__td--calc' : ''}>
+                    {i === 0 ? (
+                      <span className="editable-table__total-label">Marcado</span>
+                    ) : col.key === totalColumn ? (
+                      <span className="editable-table__total-value">
+                        {columns.find((c) => c.key === totalColumn)?.format
+                          ? columns.find((c) => c.key === totalColumn).format(markedTotal)
+                          : markedTotal}
+                      </span>
+                    ) : null}
+                  </td>
+                ))}
+                <td />
+              </tr>
+            )}
             {onBudgetChange != null && (
               <BudgetRow
                 columns={columns}

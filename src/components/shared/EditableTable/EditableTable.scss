@@ -142,6 +142,24 @@
     font-variant-numeric: tabular-nums;
     text-align: right;
     color: color-mix(in srgb, var(--cui-primary) 85%, var(--cui-body-color));
+
+    &--markable {
+      cursor: pointer;
+      border-radius: 6px;
+
+      &:hover {
+        background: color-mix(in srgb, var(--cui-primary) 10%, transparent);
+      }
+    }
+
+    &--marked {
+      background: color-mix(in srgb, var(--cui-warning, #f0ad4e) 22%, transparent);
+      color: var(--cui-warning, #b8860b);
+
+      &:hover {
+        background: color-mix(in srgb, var(--cui-warning, #f0ad4e) 30%, transparent);
+      }
+    }
   }
 
   &__select {
@@ -248,6 +266,15 @@
     color: var(--cui-primary);
     background: color-mix(in srgb, var(--cui-primary) 8%, transparent);
     border-left: 1px solid var(--cui-border-color-translucent);
+  }
+
+  &__marked-row {
+    border-top: 1px dashed var(--cui-border-color);
+
+    .editable-table__total-value {
+      color: var(--cui-warning, #b8860b);
+      background: color-mix(in srgb, var(--cui-warning, #f0ad4e) 12%, transparent);
+    }
   }
 
   &__budget-row {
