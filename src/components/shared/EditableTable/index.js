@@ -5,7 +5,7 @@ import './EditableTable.scss'
  * columns: Array<{
  *   key: string,
  *   label: string,
- *   type: 'text' | 'number' | 'calc' | 'select',
+ *   type: 'text' | 'number' | 'calc' | 'select' | 'checkbox',
  *   calc?: (row) => number,                        // required when type === 'calc'
  *   options?: Array<{ value: string, label: string }>, // required when type === 'select'
  *   width?: number | string,
@@ -101,7 +101,8 @@ export default function EditableTable({
   }
 
   const alignClass = (col) => {
-    if (col.align) return col.align === 'right' ? '--right' : ''
+    if (col.align) return col.align === 'right' ? '--right' : col.align === 'center' ? '--center' : ''
+    if (col.type === 'checkbox') return '--center'
     return col.type === 'number' || col.type === 'calc' ? '--right' : ''
   }
 
@@ -176,6 +177,13 @@ export default function EditableTable({
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
+                  ) : col.type === 'checkbox' ? (
+                    <input
+                      className="editable-table__checkbox"
+                      type="checkbox"
+                      checked={!!row[col.key]}
+                      onChange={(e) => onRowChange?.(row[keyExpr], col.key, e.target.checked)}
+                    />
                   ) : (
                     <input
                       className={`editable-table__input${alignClass(col) ? ` editable-table__input${alignClass(col)}` : ''}`}
