@@ -25,6 +25,7 @@ tasks:
     cmds:
       - npm run build
       - npx firebase deploy --only hosting:yefriddavid --project cashflow-9cbbc
+      - node scripts/publish-version.mjs
 
   lint:
     desc: Run ESLint

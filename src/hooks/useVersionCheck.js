@@ -1,33 +1,30 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db, COL_SYSTEM_APP_VERSION } from 'src/services/firebase/settings'
 
-const CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutos
+/* eslint-disable no-undef */
+const LOCAL_HASH = __COMMIT_HASH__
+/* eslint-enable no-undef */
 
 const useVersionCheck = () => {
   const [hasUpdate, setHasUpdate] = useState(false)
   const [commitMessage, setCommitMessage] = useState('')
-  const currentVersion = useRef(null)
 
   useEffect(() => {
     if (import.meta.env.DEV) return
 
-    const check = async () => {
-      try {
-        // const res = await fetch('./version.json?t=' + Date.now())
-        const res = await fetch('/version.json?t=' + Date.now())
-        if (!res.ok) return
-        const { hash, commitMessage: msg } = await res.json()
-        if (currentVersion.current === null) {
-          currentVersion.current = hash
-        } else if (hash !== currentVersion.current) {
-          setHasUpdate(true)
-          setCommitMessage(msg ?? '')
-        }
-      } catch {}
-    }
+    const unsubscribe = onSnapshot(
+      doc(db, COL_SYSTEM_APP_VERSION, 'current'),
+      (snap) => {
+        const data = snap.data()
+        if (!data?.hash || data.hash === LOCAL_HASH) return
+        setHasUpdate(true)
+        setCommitMessage(data.commitMessage ?? '')
+      },
+      () => {},
+    )
 
-    check()
-    const id = setInterval(check, CHECK_INTERVAL)
-    return () => clearInterval(id)
+    return () => unsubscribe()
   }, [])
 
   return { hasUpdate, commitMessage }
