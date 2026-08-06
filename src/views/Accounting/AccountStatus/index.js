@@ -117,18 +117,6 @@ export default function AccountStatus() {
 
   const cumulativePaymentsMap = useSelector(selectCumulativePaymentsMap)
 
-  const applicable = useMemo(() => {
-    if (!masters) return []
-    return masters.filter((a) => {
-      if ((a.division ?? 'personal') !== division) return false
-      if (a.type !== typeTab || !a.active) return false
-      if (a.targetAmount > 0) {
-        return (cumulativePaymentsMap[a.id] ?? 0) < a.targetAmount
-      }
-      return isApplicableToMonth(a, month)
-    })
-  }, [masters, month, typeTab, cumulativePaymentsMap, division])
-
   const masterPaymentsMap = useMemo(() => {
     if (!transactions) return {}
     const map = {}
@@ -141,6 +129,21 @@ export default function AccountStatus() {
     })
     return map
   }, [transactions, monthStr])
+
+  const applicable = useMemo(() => {
+    if (!masters) return []
+    return masters.filter((a) => {
+      if ((a.division ?? 'personal') !== division) return false
+      if (a.type !== typeTab || !a.active) return false
+      if (a.targetAmount > 0) {
+        // Still owed → show. Fully paid → keep showing only in the month(s) where a
+        // payment actually landed, so it doesn't vanish before you can see it as "Pagado".
+        if ((cumulativePaymentsMap[a.id] ?? 0) < a.targetAmount) return true
+        return (masterPaymentsMap[a.id]?.length ?? 0) > 0
+      }
+      return isApplicableToMonth(a, month)
+    })
+  }, [masters, month, typeTab, cumulativePaymentsMap, division, masterPaymentsMap])
 
   const adHocTransactions = useMemo(() => {
     if (!transactions) return []

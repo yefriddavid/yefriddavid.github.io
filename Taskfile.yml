@@ -16,7 +16,7 @@ tasks:
     desc: Preview production build
     cmd: npm run serve
 
-  deploy:
+  deploy:github:
     desc: Build and deploy to GitHub Pages
     cmd: npm run deploy
 
