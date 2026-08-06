@@ -3,6 +3,7 @@
 
   &__toolbar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     margin-bottom: 16px;
@@ -13,6 +14,17 @@
     border: 1px solid var(--cui-border-color, #dee2e6);
     border-radius: 8px;
     overflow: hidden;
+
+    &--years {
+      flex: 1 1 100%;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
   }
 
   &__mode-btn {

@@ -120,7 +120,7 @@ const Reports = () => {
   return (
     <div className="statement">
       <div className="statement__toolbar">
-        <div className="statement__mode-group">
+        <div className="statement__mode-group statement__mode-group--years">
           {years.map((y) => (
             <button
               key={y}
