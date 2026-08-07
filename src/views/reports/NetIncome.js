@@ -127,6 +127,11 @@ const NetIncome = () => {
       prev.set('year', next.join(','))
       return prev
     })
+  const selectOnlyYear = (y) =>
+    setSearchParams((prev) => {
+      prev.set('year', String(y))
+      return prev
+    })
 
   useEffect(() => {
     dispatch(transactionActions.fetchRequest({}))
@@ -199,6 +204,7 @@ const NetIncome = () => {
               type="button"
               className={`statement__mode-btn ${selectedYears.includes(y) ? 'statement__mode-btn--active' : ''}`}
               onClick={() => toggleYear(y)}
+              onDoubleClick={() => selectOnlyYear(y)}
             >
               {y}
             </button>

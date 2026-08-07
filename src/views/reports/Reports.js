@@ -52,6 +52,11 @@ const Reports = () => {
       prev.set('year', next.join(','))
       return prev
     })
+  const selectOnlyYear = (y) =>
+    setSearchParams((prev) => {
+      prev.set('year', String(y))
+      return prev
+    })
   const [expanded, setExpanded] = useState(() => new Set())
   // Arranca en la división de la ruta por la que entraste; los botones permiten cambiarla.
   const mode = searchParams.get('mode') || division
@@ -127,6 +132,7 @@ const Reports = () => {
               type="button"
               className={`statement__mode-btn ${selectedYears.includes(y) ? 'statement__mode-btn--active' : ''}`}
               onClick={() => toggleYear(y)}
+              onDoubleClick={() => selectOnlyYear(y)}
             >
               {y}
             </button>
