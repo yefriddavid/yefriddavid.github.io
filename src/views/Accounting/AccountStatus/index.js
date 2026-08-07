@@ -669,6 +669,7 @@ export default function AccountStatus() {
                 monthStr={monthStr}
                 cumulativePaid={cumulativePaymentsMap[account.id] ?? 0}
                 onPay={setPaying}
+                onQuickPay={handleSavePayment}
                 onDetail={setDetail}
                 onDelete={handleDelete}
                 onUpdate={handleUpdate}

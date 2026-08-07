@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import CIcon from '@coreui/icons-react'
+import { cilBolt } from '@coreui/icons'
 import InlinePaymentMethod from '../InlinePaymentMethod'
 import { fmt, getStatus, resolveMaxDatePay } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
@@ -9,6 +11,7 @@ export default function AccountCard({
   monthStr,
   cumulativePaid,
   onPay,
+  onQuickPay,
   onDetail,
   onDelete,
   onUpdate,
@@ -45,6 +48,22 @@ export default function AccountCard({
     (Number(String(editing.amount).replace(/\D/g, '')) !== p.amount ||
       editing.date !== (p.date ?? '') ||
       editing.note.trim() !== (p.note ?? ''))
+
+  const handleQuickPay = () => {
+    if (isSaving) return
+    const pendingAmount = isDebt
+      ? status.remaining
+      : Math.max((account.defaultValue || 0) - (status.paid || 0), 0)
+    onQuickPay({
+      type: account.type === 'Outcoming' ? 'expense' : 'income',
+      category: account.category || '',
+      description: account.name,
+      amount: pendingAmount > 0 ? pendingAmount : account.defaultValue || 0,
+      date: new Date().toISOString().slice(0, 10),
+      accountMonth: monthStr,
+      accountMasterId: account.id,
+    })
+  }
 
   return (
     <div
@@ -182,40 +201,62 @@ export default function AccountCard({
           >
             {status.label}
           </span>
-          <button
-            onClick={() => !isSaving && onPay(account)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 20,
-              border: 'none',
-              background: '#1e3a5f',
-              color: '#fff',
-              fontSize: 'var(--fs-xs)',
-              fontWeight: 700,
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              whiteSpace: 'nowrap',
-              minWidth: 60,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {isSaving ? (
-              <Spinner
-                size="sm"
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={() => !isSaving && onPay(account)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                border: 'none',
+                background: '#1e3a5f',
+                color: '#fff',
+                fontSize: 'var(--fs-xs)',
+                fontWeight: 700,
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+                minWidth: 60,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isSaving ? (
+                <Spinner
+                  size="sm"
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderColor: '#fff',
+                    borderRightColor: 'transparent',
+                  }}
+                />
+              ) : status.label === 'Pagado' ? (
+                '+ Pago'
+              ) : (
+                'Pagar'
+              )}
+            </button>
+            {status.label !== 'Pagado' && status.label !== 'Parcial' && (
+              <button
+                onClick={handleQuickPay}
+                disabled={isSaving}
+                title="Pago rápido: monto total, fecha de hoy"
                 style={{
-                  width: 14,
-                  height: 14,
-                  borderColor: '#fff',
-                  borderRightColor: 'transparent',
+                  padding: '6px 10px',
+                  borderRadius: 20,
+                  border: 'none',
+                  background: '#f59f00',
+                  color: '#fff',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-              />
-            ) : status.label === 'Pagado' ? (
-              '+ Pago'
-            ) : (
-              'Pagar'
+              >
+                <CIcon icon={cilBolt} size="sm" />
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
