@@ -7,6 +7,16 @@ export const PERIOD_OPTIONS = [
   'N/A',
 ]
 
+// Divisor to prorate a period's real amount into a monthly equivalent. null = not recurring.
+export const PERIOD_MONTH_DIVISOR = {
+  Mensuales: 1,
+  Trimestrales: 3,
+  Cuatrimestrales: 4,
+  Semestrales: 6,
+  Anuales: 12,
+  'N/A': null,
+}
+
 export const TYPE_OPTIONS = ['Outcoming', 'Incoming']
 
 export const ACCOUNT_MASTER_TYPES = ['Incoming', 'Outcoming', 'Activo', 'Pasivo']

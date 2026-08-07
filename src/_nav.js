@@ -343,6 +343,12 @@ const getNav = (t, role) => {
             to: '/inmobiliaria/income-statement',
             icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
           },
+          {
+            component: CNavItem,
+            name: 'Ingresos netos',
+            to: '/inmobiliaria/net-income',
+            icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
+          },
         ],
       },
     ],

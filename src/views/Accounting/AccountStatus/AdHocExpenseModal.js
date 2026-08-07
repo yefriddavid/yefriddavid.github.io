@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import { useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { ACCOUNT_CATEGORIES, INCOME_CATEGORIES } from 'src/constants/cashFlow'
 import { uploadImage } from 'src/services/facade/imageFacade'
@@ -23,8 +24,9 @@ export default function AdHocExpenseModal({
   initialData,
 }) {
   const isEditing = !!initialData
-  const monthStr = `${year}-${String(month).padStart(2, '0')}`
   const defaultDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const { data: masters } = useSelector((s) => s.accountsMaster)
+  const incomeAccounts = (masters ?? []).filter((a) => a.type === 'Incoming' && a.active)
 
   const {
     register,
@@ -41,6 +43,7 @@ export default function AdHocExpenseModal({
       note: initialData?.note ?? '',
       type: initialData?.type ?? (defaultType === 'Incoming' ? 'income' : 'expense'),
       paid: initialData ? (initialData?.paid ?? true) : false,
+      fundingAccountId: initialData?.fundingAccountId ?? '',
     },
   })
 
@@ -84,7 +87,16 @@ export default function AdHocExpenseModal({
 
   const removeAttachment = (index) => setAttachments((prev) => prev.filter((_, i) => i !== index))
 
-  const onSubmit = ({ description, amount, date, category, note, type: t, paid: p }) => {
+  const onSubmit = ({
+    description,
+    amount,
+    date,
+    category,
+    note,
+    type: t,
+    paid: p,
+    fundingAccountId,
+  }) => {
     const payload = {
       ...(isEditing && { id: initialData.id }),
       type: t,
@@ -93,8 +105,9 @@ export default function AdHocExpenseModal({
       description: description.trim(),
       amount: Number(String(amount).replace(/\D/g, '')),
       date,
-      accountMonth: isEditing ? initialData.accountMonth : monthStr,
+      accountMonth: date.slice(0, 7),
       note: note.trim() || null,
+      fundingAccountId: t === 'expense' && fundingAccountId ? fundingAccountId : null,
       // legacy single-attachment fields kept in sync (first attachment) so other
       // views reading account.attachment (e.g. Transactions grid) keep working
       attachment: attachments[0]?.data || null,
@@ -140,7 +153,9 @@ export default function AdHocExpenseModal({
           }}
         />
 
-        <div style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+        <div
+          style={{ fontSize: 'var(--fs-2xl)', fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}
+        >
           {isEditing ? 'Editar movimiento' : 'Agregar movimiento del período'}
         </div>
         <div style={{ fontSize: 'var(--fs-base)', color: '#6c757d', marginBottom: 24 }}>
@@ -259,6 +274,24 @@ export default function AdHocExpenseModal({
           ))}
         </select>
 
+        {/* Financiado por (solo Gastos) */}
+        {type === 'expense' && (
+          <>
+            <label style={fieldLabel}>FINANCIADO POR (opcional)</label>
+            <select
+              style={{ ...fieldInput, fontSize: 'var(--fs-md)', marginBottom: 20 }}
+              {...register('fundingAccountId')}
+            >
+              <option value="">Sin ingreso asociado</option>
+              {incomeAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+
         {/* Note */}
         <label style={fieldLabel}>NOTA (opcional)</label>
         <textarea
@@ -363,11 +396,15 @@ export default function AdHocExpenseModal({
             }}
           >
             <Spinner size="sm" />
-            <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d' }}>Procesando archivo…</span>
+            <span style={{ fontSize: 'var(--fs-base)', color: '#6c757d' }}>
+              Procesando archivo…
+            </span>
           </div>
         )}
         {fileError && (
-          <div style={{ fontSize: 'var(--fs-sm)', color: '#e03131', marginBottom: 8 }}>{fileError}</div>
+          <div style={{ fontSize: 'var(--fs-sm)', color: '#e03131', marginBottom: 8 }}>
+            {fileError}
+          </div>
         )}
 
         <button
@@ -440,10 +477,7 @@ export default function AdHocExpenseModal({
             }}
           >
             {saving ? (
-              <Spinner
-                size="sm"
-                style={{ borderColor: '#fff', borderRightColor: 'transparent' }}
-              />
+              <Spinner size="sm" style={{ borderColor: '#fff', borderRightColor: 'transparent' }} />
             ) : (
               'Guardar'
             )}
