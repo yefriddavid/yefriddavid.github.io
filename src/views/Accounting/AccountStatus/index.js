@@ -27,11 +27,11 @@ import {
 import DetailModal from './DetailModal'
 import PayModal from './PayModal'
 import AccountCard from './AccountCard'
+import AccountCardSkeleton from './AccountCardSkeleton'
 import AdHocExpenseModal from './AdHocExpenseModal'
 import AdHocSection from './AdHocSection'
 import PeriodNotes from './PeriodNotes'
 import './AccountStatus.scss'
-import Spinner from 'src/components/shared/Spinner'
 
 export { fmt, isApplicableToMonth, getStatus }
 
@@ -102,14 +102,20 @@ export default function AccountStatus() {
   const activeTenantId = useActiveTenantId()
 
   useEffect(() => {
-    dispatch(transactionActions.fetchRequest({ year }))
-  }, [dispatch, year, activeTenantId])
-
-  useEffect(() => {
     dispatch(accountsMasterActions.fetchRequest())
   }, [dispatch, activeTenantId])
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
+
+  const debtAccountIds = useMemo(
+    () => (masters ?? []).filter((a) => a.targetAmount > 0).map((a) => a.id),
+    [masters],
+  )
+
+  useEffect(() => {
+    if (!masters) return
+    dispatch(transactionActions.fetchRequest({ month: monthStr, debtAccountIds }))
+  }, [dispatch, monthStr, activeTenantId, masters, debtAccountIds])
 
   useEffect(() => {
     dispatch(accountStatusNoteActions.fetchRequest({ period: monthStr }))
@@ -378,7 +384,7 @@ export default function AccountStatus() {
     prevSaving.current = saving
   }, [saving, attachingTx])
 
-  const loading = (fetching && !transactions) || (fetchingMasters && !masters)
+  const loading = fetching || (fetchingMasters && !masters)
 
   return (
     <div className="account-status-page">
@@ -616,9 +622,12 @@ export default function AccountStatus() {
 
         {/* List */}
         {loading ? (
-          <div className="as-loading-container">
-            <Spinner color="primary" />
-          </div>
+          <>
+            <AccountCardSkeleton />
+            <AccountCardSkeleton />
+            <AccountCardSkeleton />
+            <AccountCardSkeleton />
+          </>
         ) : filtered.length === 0 ? (
           <div className="as-empty-container">
             {applicable.length === 0
