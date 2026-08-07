@@ -51,14 +51,11 @@ export default function AccountCard({
 
   const handleQuickPay = () => {
     if (isSaving) return
-    const pendingAmount = isDebt
-      ? status.remaining
-      : Math.max((account.defaultValue || 0) - (status.paid || 0), 0)
     onQuickPay({
       type: account.type === 'Outcoming' ? 'expense' : 'income',
       category: account.category || '',
       description: account.name,
-      amount: pendingAmount > 0 ? pendingAmount : account.defaultValue || 0,
+      amount: account.defaultValue || 0,
       date: new Date().toISOString().slice(0, 10),
       accountMonth: monthStr,
       accountMasterId: account.id,
@@ -236,7 +233,9 @@ export default function AccountCard({
                 'Pagar'
               )}
             </button>
-            {status.label !== 'Pagado' && status.label !== 'Parcial' && (
+            {(isDebt
+              ? status.remaining > 0 && payments.length === 0
+              : status.label !== 'Pagado' && status.label !== 'Parcial') && (
               <button
                 onClick={handleQuickPay}
                 disabled={isSaving}
