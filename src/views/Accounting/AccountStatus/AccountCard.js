@@ -22,7 +22,6 @@ export default function AccountCard({
 }) {
   const isDebt = account.targetAmount > 0
   const status = getStatus(account, payments, monthStr, isDebt ? cumulativePaid : null)
-  const canPay = status.label !== 'Pagado'
   const isSaving = savingId === account.id
   const [editing, setEditing] = useState(null)
 
@@ -183,40 +182,40 @@ export default function AccountCard({
           >
             {status.label}
           </span>
-          {canPay && (
-            <button
-              onClick={() => !isSaving && onPay(account)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 20,
-                border: 'none',
-                background: '#1e3a5f',
-                color: '#fff',
-                fontSize: 'var(--fs-xs)',
-                fontWeight: 700,
-                cursor: isSaving ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap',
-                minWidth: 60,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {isSaving ? (
-                <Spinner
-                  size="sm"
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderColor: '#fff',
-                    borderRightColor: 'transparent',
-                  }}
-                />
-              ) : (
-                'Pagar'
-              )}
-            </button>
-          )}
+          <button
+            onClick={() => !isSaving && onPay(account)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              border: 'none',
+              background: '#1e3a5f',
+              color: '#fff',
+              fontSize: 'var(--fs-xs)',
+              fontWeight: 700,
+              cursor: isSaving ? 'not-allowed' : 'pointer',
+              whiteSpace: 'nowrap',
+              minWidth: 60,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {isSaving ? (
+              <Spinner
+                size="sm"
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderColor: '#fff',
+                  borderRightColor: 'transparent',
+                }}
+              />
+            ) : status.label === 'Pagado' ? (
+              '+ Pago'
+            ) : (
+              'Pagar'
+            )}
+          </button>
         </div>
       </div>
 
