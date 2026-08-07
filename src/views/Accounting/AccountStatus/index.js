@@ -397,24 +397,43 @@ export default function AccountStatus() {
           </button>
 
           <div className="current-period">
-            <button
-              type="button"
+            <div
               className="current-period__toggle"
+              role="button"
+              tabIndex={0}
               aria-label="Seleccionar mes y año"
               onClick={() => {
+                setPickerYear(year)
+                setPeriodPickerOpen(true)
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return
                 setPickerYear(year)
                 setPeriodPickerOpen(true)
               }}
             >
               <div className="month-name">{monthLabels[month - 1]}</div>
               <div className="year-name">{year}</div>
-              <div className="current-day">
+              <button
+                type="button"
+                className="current-day"
+                title="Ir al mes actual"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSearchParams((prev) => {
+                    prev.set('year', CURRENT_YEAR)
+                    prev.set('month', CURRENT_MONTH)
+                    return prev
+                  })
+                }}
+              >
                 <CIcon icon={cilCalendar} size="sm" />{' '}
                 {now
                   .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric' })
-                  .replace(/^\w/, (c) => c.toUpperCase())}
-              </div>
-            </button>
+                  .replace(/^\w/, (c) => c.toUpperCase())}{' '}
+                {now.getFullYear()}
+              </button>
+            </div>
 
             {periodPickerOpen && (
               <>
