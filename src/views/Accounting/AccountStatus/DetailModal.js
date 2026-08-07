@@ -18,7 +18,14 @@ import {
 } from './helpers'
 import Spinner from 'src/components/shared/Spinner'
 
-export default function DetailModal({ account, saving, onUpdate, onClone, onClose }) {
+export default function DetailModal({
+  account,
+  incomeAccounts,
+  saving,
+  onUpdate,
+  onClone,
+  onClose,
+}) {
   const [tab, setTab] = useState('info')
   const [form, setForm] = useState({ ...account })
   const [copied, setCopied] = useState(false)
@@ -317,6 +324,25 @@ export default function DetailModal({ account, saving, onUpdate, onClone, onClos
                 </select>
               </div>
             </div>
+
+            {/* Financiado por (solo Egresos) */}
+            {form.type === 'Outcoming' && (
+              <div style={{ marginBottom: 16 }}>
+                <label style={fieldLabel}>FINANCIADO POR (opcional)</label>
+                <select
+                  style={{ ...fieldInput, fontSize: 'var(--fs-md)' }}
+                  value={form.fundingAccountId ?? ''}
+                  onChange={set('fundingAccountId')}
+                >
+                  <option value="">Sin ingreso asociado</option>
+                  {incomeAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Mes inicio (solo períodos no mensuales) */}
             {['Trimestrales', 'Cuatrimestrales', 'Semestrales', 'Anuales', 'N/A'].includes(

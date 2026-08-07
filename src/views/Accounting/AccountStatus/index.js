@@ -711,6 +711,7 @@ export default function AccountStatus() {
       {detail && (
         <DetailModal
           account={detail}
+          incomeAccounts={(masters ?? []).filter((a) => a.type === 'Incoming' && a.active)}
           saving={savingMasters}
           onUpdate={(updated) => {
             dispatch(accountsMasterActions.updateRequest(updated))
