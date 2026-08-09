@@ -24,14 +24,13 @@ import {
   cilInfo,
 } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import { PROGRAM_HOOKS, getHookVars, PROGRAM_VAR_DESCRIPTIONS } from 'src/constants/programHooks'
 import { logRequest as auditLog } from 'src/actions/system/auditLogActions'
+import * as programActions from 'src/actions/system/programActions'
 import './Programs.scss'
-
-const STORAGE_KEY = 'localrunner_programs'
 
 const fieldError = (err) =>
   err ? (
@@ -40,17 +39,10 @@ const fieldError = (err) =>
     </span>
   ) : null
 
-const loadPrograms = () => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
 const Programs = () => {
   const dispatch = useDispatch()
-  const [programs, setPrograms] = useState(loadPrograms)
+  const programs = useSelector((s) => s.program.data) ?? []
+  const fetching = useSelector((s) => s.program.fetching)
   const [extId, setExtId] = useState(null)
   const [selected, setSelected] = useState(null)
   const [output, setOutput] = useState(null)
@@ -73,14 +65,13 @@ const Programs = () => {
   const hookVars = getHookVars(Array.isArray(selectedHooks) ? selectedHooks : [selectedHooks])
 
   useEffect(() => {
+    dispatch(programActions.fetchRequest())
+  }, [dispatch])
+
+  useEffect(() => {
     const id = sessionStorage.getItem('__localrunner_ext_id__')
     if (id) setExtId(id)
   }, [])
-
-  const persist = (next) => {
-    setPrograms(next)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-  }
 
   const openAdd = () => {
     reset({ name: '', binary: '', args: '', hooks: [] })
@@ -99,34 +90,42 @@ const Programs = () => {
     const args = data.args.trim() ? data.args.trim().split(/\s+/) : []
     const hooks = Array.isArray(data.hooks) ? data.hooks : data.hooks ? [data.hooks] : []
     if (editId) {
-      persist(
-        programs.map((p) =>
-          p.id === editId ? { ...p, name: data.name, binary: data.binary, args, hooks } : p,
-        ),
+      dispatch(
+        programActions.updateRequest({
+          id: editId,
+          name: data.name,
+          binary: data.binary,
+          args,
+          hooks,
+        }),
       )
     } else {
-      persist([
-        ...programs,
-        { id: Date.now().toString(), name: data.name, binary: data.binary, args, hooks },
-      ])
+      dispatch(programActions.createRequest({ name: data.name, binary: data.binary, args, hooks }))
     }
     setFormOpen(false)
   }
 
-  const toggleDisabled = (id, e) => {
+  const toggleDisabled = (p, e) => {
     e.stopPropagation()
-    persist(programs.map((p) => (p.id === id ? { ...p, disabled: !p.disabled } : p)))
+    dispatch(programActions.updateRequest({ id: p.id, disabled: !p.disabled }))
   }
 
   const cloneProgram = (p, e) => {
     e.stopPropagation()
-    persist([...programs, { ...p, id: Date.now().toString(), name: `${p.name} (copia)` }])
+    dispatch(
+      programActions.createRequest({
+        name: `${p.name} (copia)`,
+        binary: p.binary,
+        args: p.args,
+        hooks: p.hooks,
+      }),
+    )
   }
 
   const deleteProgram = (id, name, e) => {
     e.stopPropagation()
     if (!window.confirm(`¿Eliminar el programa "${name}"?`)) return
-    persist(programs.filter((p) => p.id !== id))
+    dispatch(programActions.deleteRequest({ id }))
     if (selected?.id === id) {
       setSelected(null)
       setOutput(null)
@@ -215,7 +214,10 @@ const Programs = () => {
             </CButton>
           </CCardHeader>
           <CCardBody className="lp-list-card__body">
-            {programs.length === 0 && <p className="lp-empty">No hay programas configurados.</p>}
+            {fetching && programs.length === 0 && <Spinner mode="section" />}
+            {!fetching && programs.length === 0 && (
+              <p className="lp-empty">No hay programas configurados.</p>
+            )}
             {programs.map((p) => (
               <div
                 key={p.id}
@@ -250,7 +252,7 @@ const Programs = () => {
                         ? 'Hooks deshabilitados (clic para habilitar)'
                         : 'Deshabilitar hooks'
                     }
-                    onClick={(e) => toggleDisabled(p.id, e)}
+                    onClick={(e) => toggleDisabled(p, e)}
                   >
                     <CIcon icon={cilBan} />
                   </CButton>

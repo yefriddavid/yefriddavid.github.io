@@ -67,6 +67,7 @@ import appSettings from './system/appSettingsReducer'
 import usageMetrics from './system/usageMetricsReducer'
 import contactMessage from './system/contactMessageReducer'
 import programHook from './system/programHookSlice'
+import program from './system/programReducer'
 
 const combinedReducers = combineReducers({
   payment,
@@ -137,6 +138,7 @@ const combinedReducers = combineReducers({
   usageMetrics,
   contactMessage,
   programHook,
+  program,
 })
 
 export default combinedReducers

@@ -7,6 +7,7 @@ import { getHookPrograms, resolveArgs } from '../utils/programRunner'
 
 export default function useProgramHooks() {
   const pending = useSelector((s) => s.programHook.pending)
+  const programs = useSelector((s) => s.program.data)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function useProgramHooks() {
     pending.forEach((hook) => {
       dispatch(resolveHook(hook.id))
 
-      const matches = getHookPrograms(hook.tag)
+      const matches = getHookPrograms(programs, hook.tag)
       matches.forEach((program) => {
         const args = resolveArgs(program.args, hook.context)
         // eslint-disable-next-line no-undef
@@ -55,5 +56,5 @@ export default function useProgramHooks() {
         })
       })
     })
-  }, [pending, dispatch])
+  }, [pending, programs, dispatch])
 }

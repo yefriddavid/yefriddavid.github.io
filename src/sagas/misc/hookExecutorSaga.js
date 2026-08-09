@@ -1,10 +1,11 @@
-import { call, put, takeEvery } from 'redux-saga/effects'
+import { call, put, select, takeEvery } from 'redux-saga/effects'
 import { triggerHook, resolveHook } from '../../reducers/system/programHookSlice'
 import { push as notify } from '../../reducers/notificationsSlice'
 import { getHookPrograms, runProgram, resolveArgs } from '../../utils/programRunner'
 
 function* executeHook({ payload: { id, tag, context } }) {
-  const programs = getHookPrograms(tag)
+  const allPrograms = yield select((s) => s.program.data)
+  const programs = getHookPrograms(allPrograms, tag)
   for (const program of programs) {
     const resolved = { ...program, args: resolveArgs(program.args, context) }
     const result = yield call(runProgram, resolved)

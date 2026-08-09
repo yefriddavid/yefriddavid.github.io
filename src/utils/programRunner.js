@@ -1,19 +1,9 @@
 import { authStorage } from './storage'
 import { getTenantId } from '../services/tenantContext'
 
-const STORAGE_KEY = 'localrunner_programs'
-
-const loadPrograms = () => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
-export const getHookPrograms = (hookKey) => {
+export const getHookPrograms = (programs, hookKey) => {
   if (authStorage.getRole() !== 'superAdmin') return []
-  return loadPrograms().filter((p) => !p.disabled && p.hooks?.includes(hookKey))
+  return (programs ?? []).filter((p) => !p.disabled && p.hooks?.includes(hookKey))
 }
 
 // Substitutes {{varName}} placeholders in a program's configured args with

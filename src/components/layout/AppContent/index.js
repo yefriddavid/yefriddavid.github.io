@@ -6,6 +6,7 @@ import Spinner from '../../shared/Spinner'
 import { useSelector, useDispatch } from 'react-redux'
 import { clearProfile } from '../../../actions/authActions'
 import * as contactMessageActions from '../../../actions/system/contactMessageActions'
+import * as programActions from '../../../actions/system/programActions'
 import { onAuthChange, signOut } from '../../../services/firebase/auth'
 import { onAuthSignedOut } from 'src/utils/broadcastChannel'
 import { authStorage } from 'src/utils/storage'
@@ -40,6 +41,7 @@ const AppContent = () => {
       setFirebaseUser(user)
       if (user) {
         dispatch(contactMessageActions.fetchRequest())
+        dispatch(programActions.fetchRequest())
       } else {
         dispatch(clearProfile())
         authStorage.clearSession()
