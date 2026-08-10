@@ -1,17 +1,17 @@
-import { replicateWebRTC } from 'rxdb/plugins/replication-webrtc'
+import { collection as firestoreCollection, where } from 'firebase/firestore'
+import { replicateFirestore } from 'rxdb/plugins/replication-firestore'
 import { deepEqual } from 'rxdb/plugins/utils'
 import { merge } from 'rxjs'
 import { map, startWith } from 'rxjs/operators'
 import { getRxDb } from '../db'
+import { app, db as firestoreDb, COL_FINANCE_CALC_LIST_GROUPS } from '../../firebase/settings'
+import { getTenantId } from '../../tenantContext'
 import {
-  createCalcListWebrtcHandler,
   subscribePeers as subscribeWebrtcPeers,
   connectTo as webrtcConnectTo,
   getMyId as getWebrtcMyId,
 } from './calcListWebrtcHandler'
 import * as idb from '../../indexeddb/finance/calcList'
-
-const TOPIC = 'finance-calc-list'
 
 // Same conflict-resolution shape as src/services/rxdb/cashflow/myProjects.js: JSON-
 // normalize before deepEqual (RxDB's internal "assumed master state" always carries
@@ -31,11 +31,12 @@ const conflictHandler = {
 }
 
 const schema = {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
     id: { type: 'string', maxLength: 128 },
+    tenantId: { type: 'string', maxLength: 128 },
     name: { type: 'string' },
     order: { type: 'number' },
     items: {
@@ -69,7 +70,8 @@ const schema = {
     },
     updatedAt: { type: 'string' },
   },
-  required: ['id'],
+  required: ['id', 'tenantId'],
+  indexes: ['tenantId'],
 }
 
 let collectionPromise = null
@@ -77,35 +79,49 @@ let collectionPromise = null
 function getCollection() {
   if (!collectionPromise) {
     collectionPromise = getRxDb().then((rxdb) =>
-      rxdb.addCollections({ calcList: { schema, conflictHandler } }).then((cols) => cols.calcList),
+      rxdb
+        .addCollections({
+          calcList: {
+            schema,
+            // v0 groups predate multi-tenant scoping — stamp them with whatever tenant
+            // is active on this device the first time the schema migration runs.
+            migrationStrategies: { 1: (doc) => ({ ...doc, tenantId: getTenantId() }) },
+            conflictHandler,
+          },
+        })
+        .then((cols) => cols.calcList),
     )
   }
   return collectionPromise
 }
 
-let replicationPoolPromise = null
+let replicationState = null
+let replicatedTenantId = null
 
-// Live, auto-discovering P2P replication over WebRTC — replaces the old one-shot
-// "send the whole groups blob once" hand-rolled sync.
-function ensureReplication() {
-  if (!replicationPoolPromise) {
-    replicationPoolPromise = getCollection().then((rxCollection) =>
-      replicateWebRTC({
-        collection: rxCollection,
-        topic: TOPIC,
-        connectionHandlerCreator: createCalcListWebrtcHandler,
-        pull: {},
-        push: {},
-        retryTime: 5000,
-      }).then((pool) => {
-        pool.error$.subscribe((err) =>
-          console.error('calcList replication error:', err?.message || err),
-        )
-        return pool
-      }),
-    )
-  }
-  return replicationPoolPromise
+// Live, retrying replication against Firestore — same pattern as myProjects.js.
+async function ensureReplication(tenantId) {
+  const rxCollection = await getCollection()
+  if (replicationState && replicatedTenantId === tenantId) return replicationState
+  if (replicationState) await replicationState.cancel()
+
+  replicatedTenantId = tenantId
+  replicationState = replicateFirestore({
+    collection: rxCollection,
+    firestore: {
+      projectId: app.options.projectId,
+      database: firestoreDb,
+      collection: firestoreCollection(firestoreDb, COL_FINANCE_CALC_LIST_GROUPS),
+    },
+    pull: { filter: where('tenantId', '==', tenantId) },
+    push: {},
+    live: true,
+    retryTime: 5000,
+  })
+  replicationState.error$.subscribe((err) => {
+    const inner = err.parameters?.errors?.[0] ?? err.parameters?.error
+    console.error('calcList replication error:', inner?.message || err.message)
+  })
+  return replicationState
 }
 
 // One-time: seed the RxDB collection from a device's existing raw-IndexedDB data.
@@ -120,16 +136,18 @@ export async function migrateFromIndexedDb() {
   const all = await idb.fetchAll()
   if (!all.length) return
 
+  const tenantId = getTenantId()
   const groups = []
   const oldLists = []
   for (const doc of all) {
-    if (Array.isArray(doc.items)) groups.push(doc)
+    if (Array.isArray(doc.items)) groups.push({ ...doc, tenantId })
     else if (Array.isArray(doc.rows)) oldLists.push(doc)
   }
   if (oldLists.length > 0) {
     const sorted = [...oldLists].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
     groups.push({
       id: crypto.randomUUID(),
+      tenantId,
       name: 'General',
       order: 0,
       items: sorted.map((l, i) => ({ ...l, order: i })),
@@ -139,27 +157,25 @@ export async function migrateFromIndexedDb() {
   if (groups.length) await rxCollection.bulkUpsert(groups)
 }
 
-// active$/error$ pair like replicateFirestore doesn't exist on the WebRTC pool (it
-// tracks a peerStates$ map instead, one per connected peer) — so this status is a
-// simplified 3-state read of "do we currently have any peer" rather than a true
-// per-cycle syncing/idle signal.
+// Emits 'syncing' | 'synced' | 'error' as the Firestore replication cycles run.
 export async function subscribeSyncStatus(cb) {
-  const pool = await ensureReplication()
+  const state = await ensureReplication(getTenantId())
   const status$ = merge(
-    pool.peerStates$.pipe(map((m) => (m.size > 0 ? 'synced' : 'no_peers'))),
-    pool.error$.pipe(map(() => 'error')),
-  ).pipe(startWith('no_peers'))
+    state.active$.pipe(map((active) => (active ? 'syncing' : 'synced'))),
+    state.error$.pipe(map(() => 'error')),
+  ).pipe(startWith('synced'))
   const sub = status$.subscribe(cb)
   return () => sub.unsubscribe()
 }
 
+// P2P WebRTC sync is superseded by Firestore replication above — left in place
+// (inert, no connectionHandlerCreator invokes it anymore) pending a decision on
+// whether to remove SyncModal/PresenceModal/usePeerSync.
 export async function subscribePeers(cb) {
-  await ensureReplication()
   return subscribeWebrtcPeers(cb)
 }
 
 export async function connectTo(remoteId) {
-  await ensureReplication()
   return webrtcConnectTo(remoteId)
 }
 
@@ -168,9 +184,10 @@ export function getMyId() {
 }
 
 export async function subscribeGroups(cb) {
-  await ensureReplication()
+  const tenantId = getTenantId()
+  await ensureReplication(tenantId)
   const rxCollection = await getCollection()
-  const sub = rxCollection.find().$.subscribe((docs) => {
+  const sub = rxCollection.find({ selector: { tenantId } }).$.subscribe((docs) => {
     const groups = docs
       .map((d) => d.toJSON())
       .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
@@ -181,7 +198,11 @@ export async function subscribeGroups(cb) {
 
 export async function saveGroup(group) {
   const rxCollection = await getCollection()
-  await rxCollection.upsert({ ...group, id: group.id || crypto.randomUUID() })
+  await rxCollection.upsert({
+    ...group,
+    id: group.id || crypto.randomUUID(),
+    tenantId: getTenantId(),
+  })
 }
 
 export async function deleteGroup(id) {

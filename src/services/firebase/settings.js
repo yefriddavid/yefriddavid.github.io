@@ -85,6 +85,7 @@ export const COL_FINANCE_INCREASE_DECREASE = 'Finance_Increase_Decrease'
 export const COL_FINANCE_CRYPTO_PURCHASES = 'Finance_Crypto_Purchases'
 export const COL_FINANCE_CRYPTO_WITHDRAWALS = 'Finance_Crypto_Withdrawals'
 export const COL_FINANCE_SAVINGS = 'Finance_Savings'
+export const COL_FINANCE_CALC_LIST_GROUPS = 'Finance_calc_list_groups'
 
 // Contratos
 export const COL_CONTRATOS = 'Contratos_Contratos'

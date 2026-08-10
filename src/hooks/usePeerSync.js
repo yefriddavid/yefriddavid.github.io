@@ -10,11 +10,10 @@ export const STATUS = {
   ERROR: 'error',
 }
 
-// The RxDB/WebRTC pool doesn't have a distinct "negotiating" vs "open" moment like the
-// old hand-rolled hook did (replication is continuous per-document once a peer's data
-// channel opens) — CONNECTING/CONNECTED stay defined for SyncModal's label map but are
-// no longer emitted; sync is either idle (no peers), synced (>=1 peer), or errored.
-const STATUS_MAP = { synced: STATUS.SYNCED, no_peers: STATUS.IDLE, error: STATUS.ERROR }
+// Sync now runs against Firestore (replicateFirestore), not the WebRTC peer pool —
+// CONNECTING/CONNECTED stay defined for SyncModal's label map but are no longer
+// emitted; sync is either syncing (push/pull in flight), synced (idle), or errored.
+const STATUS_MAP = { syncing: STATUS.CONNECTING, synced: STATUS.SYNCED, error: STATUS.ERROR }
 
 // Latest updatedAt across all groups — the "data version" shown in the presence table.
 const getDataVersion = (groups) =>
