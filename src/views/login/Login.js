@@ -368,7 +368,7 @@ const Login = ({ captcha: requireCaptcha = true }) => {
             Crear cuenta
           </Link>
           <span style={{ margin: '0 8px', opacity: 0.3 }}>·</span>
-          Powered by <Link to="https://yefriddavid.github.io">@yefriddavid</Link>
+          Powered by <Link to="https://yefriddavid.web.app">@yefriddavid</Link>
         </div>
       </div>
     </div>

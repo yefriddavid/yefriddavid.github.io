@@ -298,7 +298,7 @@ npm run cy:comp         # Pruebas de componente Cypress (headless)
 npm run cy:comp:open    # Pruebas de componente Cypress (panel interactivo)
 npm run cy:run          # Pruebas E2E headless (requiere build previo)
 npm run cy:open         # Panel interactivo Cypress (E2E)
-npm run deploy          # Build + deploy a GitHub Pages
+npm run deploy          # Build + deploy a Firebase Hosting
 ```
 
 ---
@@ -522,10 +522,10 @@ body[data-app-theme="blue"]   { @include app-theme(#1e3a5f, #10b981); } // Ocean
 git checkout main && git pull origin main
 npm run deploy
 # → vite build → /build
-# → gh-pages -d build → rama gh-pages
+# → firebase deploy --only hosting
 ```
 
-App publicada en: `https://yefriddavid.github.io/yefriddavid.github.io`
+App publicada en: `https://yefriddavid.web.app`
 
 > Verifica la versión desplegada revisando el hash del commit en la consola del navegador: `[app] commit: xxxxxxx`
 

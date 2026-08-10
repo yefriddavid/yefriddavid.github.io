@@ -373,7 +373,7 @@ const Register = () => {
         </div>
 
         <div className="login-page__footer">
-          Powered by <Link to="https://yefriddavid.github.io">@yefriddavid</Link>
+          Powered by <Link to="https://yefriddavid.web.app">@yefriddavid</Link>
         </div>
       </div>
     </div>

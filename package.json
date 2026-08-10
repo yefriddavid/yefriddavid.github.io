@@ -2,7 +2,7 @@
   "name": "@dave/MyAdmin",
   "version": "5.2.0",
   "description": "CoreUI Free React Admin Template",
-  "homepage": "https://yefriddavid.github.io/yefriddavid.github.io",
+  "homepage": "https://yefriddavid.web.app",
   "bugs": {
     "url": "https://github.com/coreui/coreui-free-react-admin-template/issues"
   },
@@ -16,7 +16,7 @@
     "sync-test-with-prod": "node scripts/reset-test-from-prod.mjs",
     "backup:prod": "node scripts/backup-prod.mjs",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "deploy": "firebase deploy --only hosting",
     "local:build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "prebuild": "npm run build:thumbs",
     "build:thumbs": "node scripts/generate-thumbs.mjs",
