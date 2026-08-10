@@ -78,19 +78,30 @@ let collectionPromise = null
 
 function getCollection() {
   if (!collectionPromise) {
-    collectionPromise = getRxDb().then((rxdb) =>
-      rxdb
-        .addCollections({
-          calcList: {
-            schema,
-            // v0 groups predate multi-tenant scoping — stamp them with whatever tenant
-            // is active on this device the first time the schema migration runs.
-            migrationStrategies: { 1: (doc) => ({ ...doc, tenantId: getTenantId() }) },
-            conflictHandler,
-          },
-        })
-        .then((cols) => cols.calcList),
-    )
+    collectionPromise = getRxDb()
+      .then((rxdb) =>
+        rxdb
+          .addCollections({
+            calcList: {
+              schema,
+              // v0 groups predate multi-tenant scoping — stamp them with whatever tenant
+              // is active on this device the first time the schema migration runs.
+              migrationStrategies: { 1: (doc) => ({ ...doc, tenantId: getTenantId() }) },
+              conflictHandler,
+            },
+          })
+          .then((cols) => cols.calcList),
+      )
+      .then(async (rxCollection) => {
+        // Declaring migrationStrategies doesn't run them by itself — RxDB blocks writes
+        // to the collection (migrationInProgress) until startMigration()/migratePromise()
+        // is called explicitly. Without this, devices with pre-existing v0 local data get
+        // stuck: old docs never gain `tenantId`, so the tenant-filtered query finds
+        // nothing and every save/delete throws.
+        if (await rxCollection.migrationNeeded())
+          await rxCollection.getMigrationState().migratePromise()
+        return rxCollection
+      })
   }
   return collectionPromise
 }
