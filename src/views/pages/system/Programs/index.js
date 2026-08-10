@@ -22,6 +22,8 @@ import {
   cilMediaPlay,
   cilBan,
   cilInfo,
+  cilChevronTop,
+  cilChevronBottom,
 } from '@coreui/icons'
 import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
@@ -52,6 +54,7 @@ const Programs = () => {
   const [promptProgram, setPromptProgram] = useState(null)
   const [promptValues, setPromptValues] = useState({})
   const [varsHelpOpen, setVarsHelpOpen] = useState(false)
+  const [installOpen, setInstallOpen] = useState(false)
 
   const {
     register,
@@ -456,6 +459,50 @@ const Programs = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+
+      <CCard className="lp-install-card">
+        <CCardHeader
+          className="lp-install-card__header"
+          onClick={() => setInstallOpen((v) => !v)}
+        >
+          <span>Cómo instalar la extensión</span>
+          <CIcon icon={installOpen ? cilChevronTop : cilChevronBottom} />
+        </CCardHeader>
+        {installOpen && (
+          <CCardBody className="lp-install-card__body">
+            <ol className="lp-install-steps">
+              <li>
+                Abre <code>chrome://extensions/</code> y activa{' '}
+                <strong>Modo de desarrollador</strong> (arriba a la derecha).
+              </li>
+              <li>
+                Clic en <strong>Cargar sin empaquetar</strong> → selecciona la carpeta{' '}
+                <code>extension/</code> del proyecto.
+              </li>
+              <li>
+                Copia el <strong>ID</strong> que aparece bajo el nombre de la extensión.
+              </li>
+              <li>
+                En una terminal, desde la raíz del proyecto:
+                <pre className="lp-install-steps__code">
+                  cd extension/native-host{'\n'}
+                  ./install.sh &lt;EXTENSION_ID&gt;
+                </pre>
+              </li>
+              <li>
+                En <code>chrome://extensions/</code> recarga la extensión (ícono 🔄) y luego
+                recarga esta página (<code>Ctrl+R</code>). El banner de "Extensión no detectada"
+                debe desaparecer.
+              </li>
+            </ol>
+            <p className="lp-install-note">
+              Si quitas y vuelves a cargar la extensión el ID cambia — hay que repetir el paso 4
+              con el nuevo ID. Error "Access to the specified native messaging host is forbidden"
+              = mismo problema, mismo fix.
+            </p>
+          </CCardBody>
+        )}
+      </CCard>
     </div>
   )
 }
