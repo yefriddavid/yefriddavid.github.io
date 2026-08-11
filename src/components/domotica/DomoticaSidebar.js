@@ -11,7 +11,7 @@ import logoDomotica from 'src/assets/images/domotica/logo-domotica.svg'
 import { AppSidebarNav } from '../layout/AppSidebarNav'
 import SidebarFooterActions from '../layout/SidebarFooterActions'
 import { sygnet } from 'src/assets/brand/sygnet'
-import getDomoticaNav from '../../_nav.domotica'
+import getDomoticaNav from '../../nav/_nav.domotica'
 import { setUi } from 'src/reducers/uiReducer'
 
 const DomoticaSidebar = () => {

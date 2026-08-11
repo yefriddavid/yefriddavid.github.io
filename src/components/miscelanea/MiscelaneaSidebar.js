@@ -11,7 +11,7 @@ import { MiscelaneaIcon } from 'src/components/AppIcons'
 import { AppSidebarNav } from '../layout/AppSidebarNav'
 import SidebarFooterActions from '../layout/SidebarFooterActions'
 import { sygnet } from 'src/assets/brand/sygnet'
-import getMiscelaneaNav from '../../_nav.miscelanea'
+import getMiscelaneaNav from '../../nav/_nav.miscelanea'
 import { setUi } from 'src/reducers/uiReducer'
 
 const MiscelaneaSidebar = () => {

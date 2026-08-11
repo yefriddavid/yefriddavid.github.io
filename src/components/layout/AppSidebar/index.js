@@ -19,7 +19,7 @@ import './AppSidebar.scss'
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
-import getNav from '../../../_nav'
+import getNav from '../../../nav/_nav'
 import { setUi } from 'src/reducers/uiReducer'
 
 const AppSidebar = () => {

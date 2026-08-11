@@ -12,7 +12,7 @@ import { TaxiIcon } from 'src/components/AppIcons'
 import { AppSidebarNav } from '../layout/AppSidebarNav'
 import SidebarFooterActions from '../layout/SidebarFooterActions'
 import { sygnet } from 'src/assets/brand/sygnet'
-import getTaxisNav from '../../_nav.taxis'
+import getTaxisNav from '../../nav/_nav.taxis'
 import { setUi } from 'src/reducers/uiReducer'
 
 const TaxisSidebar = () => {
