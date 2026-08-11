@@ -68,7 +68,8 @@ The only exception is `src/services/auth/firebaseAuth.js` used in `AppContent.js
 ### Routing & Auth
 - **HashRouter** — all URLs are hash-based (`#/path`)
 - **Auth guard** in `src/components/AppContent.js` — uses Firebase Auth `onAuthStateChanged`; shows spinner while resolving, redirects to `/login` when signed out
-- Route definitions in `src/routes.js`; sidebar nav config in `src/_nav.js`
+- Route definitions in `src/routes.js` (+ `src/routes.taxis.js`/`.domotica.js`/`.system.js`/`.finance.js`/`.miscelanea.js` per layout)
+- Sidebar nav config lives in `src/nav/`: each `_nav.*.js` is a thin loader (`buildNav(json, { t, role })` from `src/nav/renderNav.js`) over a matching `nav.*.json` data file — the JSON holds `{ type, name, tKey?, to?, icon?, items?, hideForRoles? }` per node, kept free of JSX so it can move to Firestore later without touching the render path
 
 #### Firebase Authentication (refresh token)
 Auth is handled by **Firebase Auth (email/password provider)** — no separate backend needed.
@@ -173,6 +174,18 @@ import NotificationToaster from '../components/shared/NotificationToaster'
 // inside return:
 <NotificationToaster />
 ```
+
+#### RULE: Every layout must call `usePageTitle`
+
+`src/hooks/usePageTitle.js` matches the current path against `routes.js`/`routes.taxis.js`/`routes.domotica.js`/`routes.system.js`/`routes.finance.js`/`routes.miscelanea.js` (via `matchPath`, so dynamic segments like `/notes/:noteId` resolve too) and sets `document.title` to `"<section> - <page name>"`. Each layout calls it once with its own section prefix — if a layout skips this, its tab title never updates when navigating.
+
+```js
+import usePageTitle from '../hooks/usePageTitle'
+// inside the layout component:
+usePageTitle('Domótica') // or APP_NAME for Default/Finance/Miscelanea
+```
+
+A route's page name comes from its `tKey` (translated) or its `name` field — routes in `routes.finance.js`/`routes.miscelanea.js` need a `name` (and ideally a `tKey`) for this to resolve; the same fields also feed `AppBreadcrumb`.
 
 #### RULE: Toast notifications must be dispatched from sagas, not from views
 
