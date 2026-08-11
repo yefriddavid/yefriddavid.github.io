@@ -26,7 +26,8 @@ const usePageTitle = (prefix) => {
 
   useEffect(() => {
     const route = ALL_ROUTES.find((r) => matchPath(r.path, pathname))
-    const pageName = route && (route.tKey ? t(route.tKey) : route.name)
+    const translated = route?.tKey && t(route.tKey)
+    const pageName = (translated !== route?.tKey && translated) || route?.name
     document.title = pageName ? `${prefix} - ${pageName}` : prefix
   }, [pathname, prefix, t])
 }
