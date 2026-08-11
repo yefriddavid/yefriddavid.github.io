@@ -17,6 +17,7 @@ const CryptoActivityDashboard = React.lazy(() => import('./views/reports/CryptoA
 const CryptoQuery = React.lazy(() => import('./views/reports/CryptoQuery'))
 const CryptoPlatforms = React.lazy(() => import('./views/reports/CryptoPlatforms'))
 const CryptoWithdrawalsReport = React.lazy(() => import('./views/reports/CryptoWithdrawalsReport'))
+const CryptoDcaReport = React.lazy(() => import('./views/reports/CryptoDcaReport'))
 const BtcLosses2025 = React.lazy(() => import('./views/reports/BtcLosses2025'))
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
@@ -102,6 +103,12 @@ const financeRoutes = [
     path: '/management/crypto-withdrawals-report',
     name: 'Retiros',
     element: CryptoWithdrawalsReport,
+    landingPage: true,
+  },
+  {
+    path: '/management/crypto-dca',
+    name: 'Costo Promedio (DCA)',
+    element: CryptoDcaReport,
     landingPage: true,
   },
   {
