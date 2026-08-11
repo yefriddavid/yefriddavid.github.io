@@ -4,9 +4,10 @@ import TaxisSidebar from '../components/taxis/TaxisSidebar'
 import TaxisContent from '../components/taxis/TaxisContent'
 import TaxiQuickAssistant from '../components/taxis/TaxiQuickAssistant/Index'
 import NotificationToaster from '../components/shared/NotificationToaster'
+import usePageTitle from '../hooks/usePageTitle'
 
 const TaxisLayout = () => {
-  document.title = 'Gestión de Taxis'
+  usePageTitle('Gestión de Taxis')
 
   return (
     <div className="app-layout app-layout--taxis">

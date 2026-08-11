@@ -11,15 +11,15 @@ const NoteFullPage = React.lazy(() => import('./views/Miscelanea/Notes/NoteFullP
 const DocumentTemplates = React.lazy(() => import('./views/Miscelanea/Documents/Templates'))
 // Paths are relative to the /miscelanea/* parent route (no /miscelanea prefix)
 const miscelaneaRoutes = [
-  { path: '/tasks', element: TasksPage, landingPage: true },
-  { path: '/bastidor', element: Bastidor },
-  { path: '/notes', element: Notes },
-  { path: '/notes/:noteId', element: NoteFullPage },
-  { path: '/pictures', element: Pictures, landingPage: true },
-  { path: '/pictures/:id', element: PicturesEditor },
-  { path: '/scenes3d', element: Scenes3D, landingPage: true },
-  { path: '/scenes3d/:id', element: Scenes3DEditor },
-  { path: '/documents/templates', element: DocumentTemplates },
+  { path: '/tasks', name: 'Tareas', element: TasksPage, landingPage: true },
+  { path: '/bastidor', name: 'Bastidor', element: Bastidor },
+  { path: '/notes', name: 'Notas', element: Notes },
+  { path: '/notes/:noteId', name: 'Nota', element: NoteFullPage },
+  { path: '/pictures', name: 'Pictures', element: Pictures, landingPage: true },
+  { path: '/pictures/:id', name: 'Editar Picture', element: PicturesEditor },
+  { path: '/scenes3d', name: 'Escenas 3D', element: Scenes3D, landingPage: true },
+  { path: '/scenes3d/:id', name: 'Editar Escena 3D', element: Scenes3DEditor },
+  { path: '/documents/templates', name: 'Templates', element: DocumentTemplates },
 ]
 
 export default miscelaneaRoutes

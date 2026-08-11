@@ -3,9 +3,10 @@ import { AppHeader, AppFooter } from '../components/index'
 import SystemSidebar from '../components/system/SystemSidebar'
 import SystemContent from '../components/system/SystemContent'
 import NotificationToaster from '../components/shared/NotificationToaster'
+import usePageTitle from '../hooks/usePageTitle'
 
 const SystemLayout = () => {
-  document.title = 'System'
+  usePageTitle('System')
 
   return (
     <div className="app-layout app-layout--system">

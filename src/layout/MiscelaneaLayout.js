@@ -8,9 +8,10 @@ import NotificationToaster from '../components/shared/NotificationToaster'
 import OfflineBanner from '../components/shared/OfflineBanner'
 import { APP_NAME } from '../components/BrandName'
 import { setUi } from 'src/reducers/uiReducer'
+import usePageTitle from '../hooks/usePageTitle'
 
 const MiscelaneaLayout = () => {
-  document.title = APP_NAME
+  usePageTitle(APP_NAME)
   const dispatch = useDispatch()
   const headerShow = useSelector((s) => s.ui.headerShow)
 

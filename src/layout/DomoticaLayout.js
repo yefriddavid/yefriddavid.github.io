@@ -3,9 +3,10 @@ import { AppHeader, AppFooter } from '../components/index'
 import DomoticaSidebar from '../components/domotica/DomoticaSidebar'
 import DomoticaContent from '../components/domotica/DomoticaContent'
 import NotificationToaster from '../components/shared/NotificationToaster'
+import usePageTitle from '../hooks/usePageTitle'
 
 const DomoticaLayout = () => {
-  document.title = 'Domótica'
+  usePageTitle('Domótica')
 
   return (
     <div className="app-layout app-layout--domotica">
