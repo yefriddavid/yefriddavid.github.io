@@ -44,6 +44,22 @@ Esto compila el binario Go y registra el host `com.myadmin.localrunner` en
 2. Recarga la página de la app (`Ctrl+R`)
 3. El banner "Extensión no detectada" debe desaparecer
 
+### Allowlist de binarios (`allowlist.json`)
+
+`background.js` solo reenvía al native host binarios que estén **exactamente**
+listados en `extension/allowlist.json`. Cualquier otro `binary` recibido por
+`onMessageExternal` se rechaza con `Binario no autorizado`, sin importar qué
+página lo haya mandado.
+
+Esto evita que una página comprometida (XSS, dependencia npm maliciosa) le
+pida al native host ejecutar cualquier binario arbitrario del sistema
+(`/bin/bash`, `curl`, etc.) — solo puede ejecutar lo que ya está en la lista.
+
+**Al agregar/quitar un programa en `/system/programs`, hay que reflejar el
+cambio a mano en `allowlist.json`** (agregar o borrar la ruta del binario) y
+recargar la extensión en `chrome://extensions`. Si no está en la lista, el
+programa configurado en la app no va a poder ejecutarse.
+
 ## Notas técnicas
 
 ### Detección desde la app (content script → página)

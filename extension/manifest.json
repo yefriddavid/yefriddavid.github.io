@@ -9,12 +9,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://yefriddavid.github.io/*", "https://yefriddavid.web.app/*", "https://localhost/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "matches": ["https://yefriddavid.github.io/*", "https://yefriddavid.web.app/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }
   ],
   "externally_connectable": {
-    "matches": ["https://yefriddavid.github.io/*", "https://yefriddavid.web.app/*", "https://localhost/*", "http://localhost/*", "http://127.0.0.1/*"]
+    "matches": ["https://yefriddavid.github.io/*", "https://yefriddavid.web.app/*"]
   }
 }
