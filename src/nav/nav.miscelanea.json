@@ -1,0 +1,24 @@
+[
+  { "type": "item", "name": "Tasks", "to": "/miscelanea/tasks", "icon": "cilListHighPriority" },
+  { "type": "item", "name": "Pictures", "to": "/miscelanea/pictures", "icon": "cilImage" },
+  { "type": "item", "name": "Escenas 3D", "to": "/miscelanea/scenes3d", "icon": "cil3d" },
+  { "type": "item", "name": "Bastidor", "to": "/miscelanea/bastidor", "icon": "cilCut" },
+  { "type": "item", "name": "Notas", "to": "/miscelanea/notes", "icon": "cilNotes" },
+  { "type": "item", "name": "Black Screen", "to": "/miscelanea/blackscreen", "icon": "cilMoon" },
+  {
+    "type": "group",
+    "name": "Documentos",
+    "icon": "cilFile",
+    "items": [
+      { "type": "item", "name": "Templates", "to": "/miscelanea/documents/templates", "icon": "cilNotes" }
+    ]
+  },
+  {
+    "type": "group",
+    "name": "Tools Online",
+    "icon": "cilCode",
+    "items": [
+      { "type": "item", "name": "Calc", "to": "/tools/calc", "icon": "cilCalculator" }
+    ]
+  }
+]

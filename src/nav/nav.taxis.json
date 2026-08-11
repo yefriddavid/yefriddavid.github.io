@@ -1,0 +1,23 @@
+[
+  { "type": "item", "name": "Home", "tKey": "nav.home", "to": "/taxis/home", "icon": "cilHome" },
+  { "type": "item", "name": "Liquidaciones", "tKey": "nav.liquidaciones", "to": "/taxis/settlements", "icon": "cilCalendarCheck" },
+  { "type": "item", "name": "Operaciones", "to": "/taxis/operations", "icon": "cilWarning" },
+  { "type": "item", "name": "Mapa/Ubicación", "to": "/taxis/map", "icon": "cilLocationPin" },
+  { "type": "item", "name": "Ruta de Vehículo", "to": "/taxis/route-history", "icon": "cilLocationPin" },
+  {
+    "type": "group",
+    "name": "Conductores",
+    "tKey": "nav.conductores",
+    "icon": "cilUser",
+    "items": [
+      { "type": "item", "name": "Conductores", "tKey": "nav.conductores", "to": "/taxis/drivers" },
+      { "type": "item", "name": "Documents", "to": "/taxis/driver-documents" }
+    ]
+  },
+  { "type": "item", "name": "Vehículos", "tKey": "nav.vehiculos", "to": "/taxis/vehicles", "icon": "cilCarAlt" },
+  { "type": "item", "name": "Gastos Taxis", "tKey": "nav.taxiExpenses", "to": "/taxis/expenses", "icon": "cilCash" },
+  { "type": "item", "name": "Resumen Taxis", "tKey": "nav.taxiResumen", "to": "/taxis/summary", "icon": "cilBarChart" },
+  { "type": "item", "name": "Resumen Anual", "tKey": "nav.taxiAnnualSummary", "to": "/taxis/annual-summary", "icon": "cilChartLine" },
+  { "type": "item", "name": "Socios", "tKey": "nav.partners", "to": "/taxis/partners", "icon": "cilPeople" },
+  { "type": "item", "name": "Repartición", "tKey": "nav.distributions", "to": "/taxis/profit-sharing", "icon": "cilTransfer" }
+]

@@ -1,0 +1,13 @@
+[
+  { "type": "item", "name": "Usuarios", "to": "/system/users", "icon": "cilPeople" },
+  { "type": "item", "name": "Tenants", "to": "/system/tenants", "icon": "cilGroup" },
+  { "type": "item", "name": "Push Notifications", "to": "/system/push-subscribers", "icon": "cilBell" },
+  { "type": "item", "name": "Visitas", "to": "/system/visits", "icon": "cilPeople" },
+  { "type": "item", "name": "Mensajes", "to": "/system/messages", "icon": "cilEnvelopeClosed" },
+  { "type": "item", "name": "Configuración", "to": "/system/settings", "icon": "cilSettings" },
+  { "type": "item", "name": "Error Monitor", "to": "/system/error-logs", "icon": "cilBug" },
+  { "type": "item", "name": "Audit Log", "to": "/system/audit-logs", "icon": "cilList" },
+  { "type": "item", "name": "Performance", "to": "/system/perf-logs", "icon": "cilSpeedometer" },
+  { "type": "item", "name": "Programas", "to": "/system/programs", "icon": "cilTerminal" },
+  { "type": "item", "name": "Share Debug", "to": "/system/share-debug", "icon": "cilShareBoxed" }
+]

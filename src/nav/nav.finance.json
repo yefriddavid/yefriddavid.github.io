@@ -1,0 +1,93 @@
+[
+  { "type": "item", "name": "Home", "to": "/home", "icon": "cilHome" },
+  { "type": "item", "name": "Dashboard", "tKey": "nav.dashboard", "to": "/finance/dashboard", "icon": "cilSpeedometer" },
+  {
+    "type": "group",
+    "name": "Contabilidad",
+    "icon": "cilFolder",
+    "hideForRoles": ["conductor"],
+    "items": [
+      { "type": "item", "name": "Transacciones", "to": "/finance/management/transactions", "icon": "cilSwapHorizontal" },
+      { "type": "item", "name": "Maestro de Cuentas", "to": "/finance/management/accounts-master", "icon": "cilBook" },
+      { "type": "item", "name": "Estado de Cuentas", "to": "/finance/management/account-status", "icon": "cilCheck" },
+      { "type": "item", "name": "Declaración de Renta", "to": "/finance/management/declaracion-renta", "icon": "cilFile" }
+    ]
+  },
+  {
+    "type": "group",
+    "name": "Reportes",
+    "icon": "cilChart",
+    "hideForRoles": ["conductor"],
+    "items": [
+      { "type": "item", "name": "Estado de Resultados", "to": "/finance/management/reports", "icon": "cilFile" },
+      { "type": "item", "name": "Análisis", "to": "/finance/management/analysis", "icon": "cilChartLine" },
+      {
+        "type": "group",
+        "name": "Cripto",
+        "icon": "cibBitcoin",
+        "items": [
+          { "type": "item", "name": "Compras y Ventas", "to": "/finance/management/crypto-activity", "icon": "cilSwapVertical" },
+          { "type": "item", "name": "Consulta de Compras/Ventas", "to": "/finance/management/crypto-query", "icon": "cilCalculator" },
+          { "type": "item", "name": "Retiros", "to": "/finance/management/crypto-withdrawals-report", "icon": "cilArrowThickFromBottom" },
+          { "type": "item", "name": "Totales por Plataforma", "to": "/finance/management/crypto-platforms", "icon": "cilLayers" },
+          { "type": "item", "name": "Resumen", "to": "/finance/management/crypto-report", "icon": "cibBitcoin" },
+          { "type": "item", "name": "BTC Pérdidas 2025", "to": "/finance/management/btc-perdidas-2025", "icon": "cilWarning" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "name": "Trade",
+    "icon": "cilSettings",
+    "hideForRoles": ["conductor"],
+    "items": [
+      { "type": "item", "name": "Aumento / Disminución", "tKey": "nav.increaseDecrease", "to": "/finance/tools/adjustments", "icon": "cilBalanceScale" },
+      { "type": "item", "name": "Crypto Purchases (v2)", "to": "/finance/tools/v2/adjustments", "icon": "cilWallet" },
+      { "type": "item", "name": "Crypto Withdrawals", "to": "/finance/tools/crypto-withdrawals", "icon": "cilExitToApp" },
+      { "type": "item", "name": "Ahorros", "to": "/finance/tools/savings", "icon": "cilBank" },
+      { "type": "item", "name": "Salary Distribution", "to": "/finance/tools/salary-distribution", "icon": "cilCash" },
+      { "type": "item", "name": "My Projects", "to": "/finance/projects", "icon": "cilLightbulb" },
+      { "type": "item", "name": "Assets", "to": "/finance/assets", "icon": "cilChart" },
+      { "type": "item", "name": "Eggs", "to": "/finance/eggs", "icon": "cilBasket" },
+      { "type": "item", "name": "Grid Trading", "to": "/finance/trade/grid", "icon": "cilBarChart" },
+      { "type": "item", "name": "Custom Grid Trades", "to": "/finance/trade/custom-grid", "icon": "cilBarChart" },
+      {
+        "type": "group",
+        "name": "Tools",
+        "icon": "cilSettings",
+        "items": [
+          { "type": "item", "name": "Btc Histograma", "to": "/finance/trade/tools", "icon": "cilSettings" },
+          { "type": "item", "name": "Prices", "to": "/finance/trade/prices", "icon": "cilDollar" },
+          { "type": "item", "name": "Calc List", "to": "/finance/trade/calc-list", "icon": "cilList" },
+          { "type": "item", "name": "Rebotes", "to": "/finance/trade/bounces", "icon": "cilChart" },
+          { "type": "item", "name": "Loan Calculator", "to": "/finance/tools/loan-calc", "icon": "cilDollar" },
+          { "type": "item", "name": "Calc Percentage", "to": "/finance/tools/calc-percentage", "icon": "cilCalculator" },
+          { "type": "item", "name": "Calc Sheet", "to": "/finance/tools/calc-sheet", "icon": "cilSpreadsheet" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "name": "Inmobiliaria",
+    "icon": "cilHome",
+    "items": [
+      { "type": "item", "name": "Galería", "to": "/inmobiliaria/gallery", "icon": "cilImage" },
+      { "type": "item", "name": "Contratos de alquiler", "to": "/contratos/generar", "icon": "cilFile" },
+      { "type": "item", "name": "Vencimientos canon", "to": "/contratos/list", "icon": "cilCalendarCheck" },
+      { "type": "item", "name": "Designs", "to": "/inmobiliaria/designs", "icon": "cilLocationPin" },
+      { "type": "item", "name": "Planos", "to": "/inmobiliaria/planos", "icon": "cilFolder" },
+      { "type": "item", "name": "Estado de Cuentas", "to": "/inmobiliaria/account-status?tab=Incoming", "icon": "cilWallet" },
+      {
+        "type": "group",
+        "name": "Reportes",
+        "icon": "cilChart",
+        "items": [
+          { "type": "item", "name": "Estado de Resultados", "to": "/inmobiliaria/income-statement", "icon": "cilFile" },
+          { "type": "item", "name": "Ingresos netos", "to": "/inmobiliaria/net-income", "icon": "cilFile" }
+        ]
+      }
+    ]
+  }
+]

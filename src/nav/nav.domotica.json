@@ -1,0 +1,9 @@
+[
+  { "type": "item", "name": "Home", "to": "/domotica/home", "icon": "cilHome" },
+  { "type": "item", "name": "Dispositivos", "to": "/domotica/devices", "icon": "cilLightbulb" },
+  { "type": "item", "name": "Panel Solar", "to": "/domotica/solar", "icon": "cilSun" },
+  { "type": "item", "name": "Consola Serial", "to": "/domotica/serial", "icon": "cilTerminal" },
+  { "type": "item", "name": "Diccionario AT", "to": "/domotica/commands", "icon": "cilBook" },
+  { "type": "item", "name": "Limpieza", "to": "/domotica/cleanup", "icon": "cilTrash" },
+  { "type": "item", "name": "Calc. Solar", "to": "/domotica/solar-calculator-configs", "icon": "cilChart" }
+]
