@@ -179,6 +179,55 @@
     }
   }
 
+  &__hypo {
+    width: 100%;
+    max-width: 340px;
+    margin-bottom: 1.5rem;
+  }
+
+  &__hypo-label {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cui-secondary-color);
+    margin-bottom: 0.4rem;
+  }
+
+  &__hypo-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  &__hypo-input {
+    flex: 1;
+    min-width: 120px;
+    font-size: var(--fs-lg);
+    font-variant-numeric: tabular-nums;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    background: var(--cui-body-bg);
+    color: var(--cui-body-color);
+  }
+
+  &__hypo-result {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--positive {
+      color: #22c55e;
+    }
+
+    &--negative {
+      color: #ef4444;
+    }
+  }
+
   &__stats {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -35,6 +35,7 @@ export default function Prices() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [interval, setInterval] = useState('24h')
   const [customDate, setCustomDate] = useState('')
+  const [hypoPrice, setHypoPrice] = useState('')
   const { prices, connected } = useCryptoPrices()
   const { changes, loading: histLoading } = useHistoricalChange(
     SYMBOLS,
@@ -64,6 +65,11 @@ export default function Prices() {
   const data = prices[selected]
   const change = changes[selected]
   const isPositive = change == null ? true : change >= 0
+
+  const hypoPct =
+    data?.price && hypoPrice !== '' && !Number.isNaN(Number(hypoPrice))
+      ? ((Number(hypoPrice) - data.price) / data.price) * 100
+      : null
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -170,6 +176,30 @@ export default function Prices() {
                 </span>
               </>
             )}
+          </div>
+
+          <div className="crypto-prices__hypo">
+            <label className="crypto-prices__hypo-label" htmlFor="hypo-price">
+              Precio hipotético
+            </label>
+            <div className="crypto-prices__hypo-row">
+              <input
+                id="hypo-price"
+                type="number"
+                step="any"
+                className="crypto-prices__hypo-input"
+                placeholder={fmt(data.price, asset?.decimals ?? 2)}
+                value={hypoPrice}
+                onChange={(e) => setHypoPrice(e.target.value)}
+              />
+              {hypoPct != null && (
+                <span
+                  className={`crypto-prices__hypo-result crypto-prices__hypo-result--${hypoPct >= 0 ? 'positive' : 'negative'}`}
+                >
+                  {hypoPct >= 0 ? '▲' : '▼'} {fmtChange(hypoPct)}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="crypto-prices__stats">
