@@ -79,6 +79,17 @@ const AppHeader = () => {
   const { hasUpdate, commitMessage } = useVersionCheck()
 
   useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const setHeaderHeightVar = () =>
+      document.documentElement.style.setProperty('--app-header-h', `${el.offsetHeight}px`)
+    setHeaderHeightVar()
+    const observer = new ResizeObserver(setHeaderHeightVar)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
     let lastScrollY = window.scrollY
     const onScroll = () => {
       const currentScrollY = document.documentElement.scrollTop

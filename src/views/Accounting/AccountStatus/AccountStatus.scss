@@ -13,7 +13,7 @@
 
     .as-left-panel {
       position: sticky;
-      top: 16px;
+      top: calc(var(--app-header-h, 90px) + 16px);
     }
   }
 
