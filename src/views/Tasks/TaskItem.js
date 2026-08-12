@@ -38,12 +38,28 @@ const TagPill = ({ tag, onRemove }) => (
   </span>
 )
 
-const ListModeView = ({ notes, onToggle }) => {
+const ListModeView = ({ notes, onToggle, onAdd, onEdit }) => {
   const lines = parseListItems(notes)
-  if (!lines.length)
-    return <div className="tk__list-empty">Sin ítems. Desactivá List mode para agregar notas.</div>
+  const [newItem, setNewItem] = useState('')
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [editValue, setEditValue] = useState('')
+
+  const submitNew = () => {
+    if (!newItem.trim()) return
+    onAdd(newItem)
+    setNewItem('')
+  }
+
+  const commitEdit = () => {
+    if (editValue.trim()) onEdit(editingIndex, editValue)
+    setEditingIndex(null)
+  }
+
   return (
     <div className="tk__list-view">
+      {!lines.length && (
+        <div className="tk__list-empty">Sin ítems. Agregá el primero abajo.</div>
+      )}
       {lines.map((line, i) => {
         const checked = line.startsWith('- ')
         const text = checked ? line.slice(2) : line
@@ -56,10 +72,42 @@ const ListModeView = ({ notes, onToggle }) => {
             <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
               {checked ? '✓' : ''}
             </span>
-            <span className="tk__list-text">{text}</span>
+            {editingIndex === i ? (
+              <input
+                className="tk__list-edit-input"
+                autoFocus
+                value={editValue}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={commitEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); commitEdit() }
+                  if (e.key === 'Escape') { e.preventDefault(); setEditingIndex(null) }
+                }}
+              />
+            ) : (
+              <span
+                className="tk__list-text"
+                onDoubleClick={(e) => { e.stopPropagation(); setEditingIndex(i); setEditValue(text) }}
+              >
+                {text}
+              </span>
+            )}
           </div>
         )
       })}
+      <div className="tk__list-add">
+        <input
+          className="tk__list-add-input"
+          placeholder="Nuevo ítem…"
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitNew() } }}
+        />
+        <button type="button" className="tk__list-add-btn" onClick={submitNew}>
+          + item
+        </button>
+      </div>
     </div>
   )
 }
@@ -105,6 +153,33 @@ const TaskItem = ({ task, onSave, onDelete }) => {
             allLines[i] = allLines[i].startsWith('- ')
               ? allLines[i].slice(2)
               : `- ${allLines[i]}`
+            break
+          }
+          count++
+        }
+      }
+      setValue('notes', allLines.join('\n'), { shouldDirty: true })
+    },
+    [notes, setValue],
+  )
+
+  const addListItem = useCallback(
+    (text) => {
+      const lines = parseListItems(notes)
+      setValue('notes', [...lines, text.trim()].join('\n'), { shouldDirty: true })
+    },
+    [notes, setValue],
+  )
+
+  const editListItem = useCallback(
+    (index, text) => {
+      const allLines = (notes ?? '').split('\n')
+      let count = 0
+      for (let i = 0; i < allLines.length; i++) {
+        if (allLines[i].trim() !== '') {
+          if (count === index) {
+            const checked = allLines[i].startsWith('- ')
+            allLines[i] = checked ? `- ${text.trim()}` : text.trim()
             break
           }
           count++
@@ -180,7 +255,7 @@ const TaskItem = ({ task, onSave, onDelete }) => {
           </div>
 
           {listMode ? (
-            <ListModeView notes={notes} onToggle={toggleListItem} />
+            <ListModeView notes={notes} onToggle={toggleListItem} onAdd={addListItem} onEdit={editListItem} />
           ) : (
             <textarea
               className="tk__edit-notes"

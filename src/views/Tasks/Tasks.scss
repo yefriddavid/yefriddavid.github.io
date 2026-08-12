@@ -651,6 +651,47 @@
     line-height: 1.5;
   }
 
+  &__list-edit-input {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--fs-md);
+    line-height: 1.5;
+    padding: 0 4px;
+    border: 1px solid var(--cui-primary);
+    border-radius: 4px;
+    background: var(--cui-body-bg);
+    color: var(--cui-body-color);
+  }
+
+  &__list-add {
+    display: flex;
+    gap: 8px;
+    padding: 6px 8px 2px;
+  }
+
+  &__list-add-input {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--fs-base);
+    padding: 6px 8px;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    background: var(--cui-body-bg);
+    color: var(--cui-body-color);
+  }
+
+  &__list-add-btn {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--cui-primary);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
   &__edit-actions {
     display: flex;
     justify-content: flex-end;
