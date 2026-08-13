@@ -32,7 +32,7 @@
     gap: 4px;
     min-width: 130px;
 
-    label {
+    > label:not(.gts__checkbox) {
       font-size: var(--fs-2xs);
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -49,6 +49,17 @@
     border-radius: 6px;
     background: var(--cui-body-bg);
     color: var(--cui-body-color);
+  }
+
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: calc(1.5em + 0.5rem + 2px);
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    color: var(--cui-body-color);
+    cursor: pointer;
   }
 
   &__price-row {

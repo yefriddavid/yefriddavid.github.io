@@ -19,6 +19,7 @@ const GridTradeSimulation = () => {
   const [investment, setInvestment] = useState(1000)
   const [rangePct, setRangePct] = useState(15)
   const [cycles, setCycles] = useState(1)
+  const [invert, setInvert] = useState(false)
 
   const fetchPrice = () => {
     setLoadingPrice(true)
@@ -82,9 +83,10 @@ const GridTradeSimulation = () => {
             lower: domain.lower,
             cycles: Math.max(1, Number(cycles) || 1),
             samples: Math.min(4000, 500 * Math.max(1, Number(cycles) || 1)),
+            invert,
           })
         : null,
-    [gridData, domain, levels, centerPrice, cycles],
+    [gridData, domain, levels, centerPrice, cycles, invert],
   )
 
   // The buy/sell markers on the wave are also draggable (both axes) — once
@@ -92,7 +94,7 @@ const GridTradeSimulation = () => {
   // and become freeform control points; the wave path is then redrawn as a
   // smooth curve through them instead of the plain sine.
   const [customMarkers, setCustomMarkers] = useState(null)
-  useEffect(() => setCustomMarkers(null), [centerPrice, gridCount, rangePct, cycles])
+  useEffect(() => setCustomMarkers(null), [centerPrice, gridCount, rangePct, cycles, invert])
 
   const markers = useMemo(() => {
     const base = customMarkers || wave?.markers.map((m) => ({ frac: m.frac, price: m.price })) || []
@@ -182,6 +184,14 @@ const GridTradeSimulation = () => {
             value={cycles}
             onChange={(e) => setCycles(e.target.value)}
           />
+        </div>
+
+        <div className="gts__field">
+          <label>Invert</label>
+          <label className="gts__checkbox">
+            <input type="checkbox" checked={invert} onChange={(e) => setInvert(e.target.checked)} />
+            Invertir curva
+          </label>
         </div>
 
         <div className="gts__field">

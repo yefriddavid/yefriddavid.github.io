@@ -39,8 +39,9 @@ export const buildWaveTrades = ({
   lower,
   cycles = 1,
   samples = 500,
+  invert = false,
 }) => {
-  const amplitude = (upper - lower) / 2
+  const amplitude = ((upper - lower) / 2) * (invert ? -1 : 1)
   const priceAt = (frac) => centerPrice - amplitude * Math.sin(frac * cycles * 2 * Math.PI)
 
   const points = Array.from({ length: samples + 1 }, (_, i) => {
