@@ -32,6 +32,7 @@
           { "type": "item", "name": "Totales por Plataforma", "to": "/finance/management/crypto-platforms", "icon": "cilLayers" },
           { "type": "item", "name": "Resumen", "to": "/finance/management/crypto-report", "icon": "cibBitcoin" },
           { "type": "item", "name": "Costo Promedio (DCA)", "to": "/finance/management/crypto-dca", "icon": "cilChartLine" },
+          { "type": "item", "name": "Simulación Grid Trading", "to": "/finance/management/grid-simulation", "icon": "cilBarChart" },
           { "type": "item", "name": "BTC Pérdidas 2025", "to": "/finance/management/btc-perdidas-2025", "icon": "cilWarning" }
         ]
       }

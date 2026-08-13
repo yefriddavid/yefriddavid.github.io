@@ -18,6 +18,7 @@ const CryptoQuery = React.lazy(() => import('./views/reports/CryptoQuery'))
 const CryptoPlatforms = React.lazy(() => import('./views/reports/CryptoPlatforms'))
 const CryptoWithdrawalsReport = React.lazy(() => import('./views/reports/CryptoWithdrawalsReport'))
 const CryptoDcaReport = React.lazy(() => import('./views/reports/CryptoDcaReport'))
+const GridTradeSimulation = React.lazy(() => import('./views/reports/GridTradeSimulation'))
 const BtcLosses2025 = React.lazy(() => import('./views/reports/BtcLosses2025'))
 const Eggs = React.lazy(() => import('./views/CashFlow/eggs/Eggs'))
 const MyProjects = React.lazy(() => import('./views/CashFlow/projects/MyProjects'))
@@ -109,6 +110,12 @@ const financeRoutes = [
     path: '/management/crypto-dca',
     name: 'Costo Promedio (DCA)',
     element: CryptoDcaReport,
+    landingPage: true,
+  },
+  {
+    path: '/management/grid-simulation',
+    name: 'Simulación Grid Trading',
+    element: GridTradeSimulation,
     landingPage: true,
   },
   {
