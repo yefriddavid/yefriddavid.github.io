@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { fmtPrice, fmtUSD } from './gridSimulationHelpers'
+import { fmtPrice, fmtUSD, levelStepPercents } from './gridSimulationHelpers'
 
 const ROW_H = 46
 const MARGIN_X = 92
@@ -96,6 +96,8 @@ const GridSimulationChart = ({
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(p.frac)},${toY(p.price)}`)
     .join(' ')
 
+  const stepPercents = levelStepPercents(levels)
+
   return (
     <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="gts-chart__svg">
       {levels.map((price, i) => {
@@ -147,6 +149,23 @@ const GridSimulationChart = ({
               onPointerUp={() => setDragLevelIndex(null)}
             />
           </g>
+        )
+      })}
+
+      {stepPercents.map((pct, i) => {
+        const midY = (toY(levels[i]) + toY(levels[i + 1])) / 2
+        return (
+          <text
+            key={i}
+            x={30}
+            y={midY + 3}
+            fontSize={9}
+            fontWeight={700}
+            fill="var(--gts-connector)"
+            textAnchor="middle"
+          >
+            +{pct.toFixed(2)}%
+          </text>
         )
       })}
 

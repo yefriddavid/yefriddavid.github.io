@@ -23,6 +23,10 @@ export const computeGridLevels = ({ centerPrice, gridCount, rangePct }) => {
   return { levels, upper, lower, step, gridCount: gc }
 }
 
+// % increase from each level to the next one above it, bottom to top.
+export const levelStepPercents = (levels) =>
+  levels.slice(1).map((price, i) => ((price - levels[i]) / levels[i]) * 100)
+
 // Illustrative price oscillation (a sine wave spanning the grid range) used to
 // show where a grid bot would fire: a falling crossing through a level below
 // centerPrice is a Buy, a rising crossing through a level above centerPrice is
