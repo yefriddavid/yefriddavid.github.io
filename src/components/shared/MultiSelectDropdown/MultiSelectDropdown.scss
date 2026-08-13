@@ -7,7 +7,7 @@
     padding: 4px 10px;
     border-radius: 6px;
     border: 1px solid var(--cui-secondary);
-    background: #fff;
+    background: var(--cui-body-bg);
     color: var(--cui-secondary);
     cursor: pointer;
     font-weight: 400;
@@ -16,6 +16,11 @@
       background: #e8f0fb;
       color: #1e3a5f;
       font-weight: 600;
+
+      :root[data-coreui-theme='dark'] & {
+        background: #2c3a4d;
+        color: #a8c7f0;
+      }
     }
   }
 
@@ -24,7 +29,7 @@
     top: calc(100% + 4px);
     left: 0;
     z-index: 1050;
-    background: #fff;
+    background: var(--cui-body-bg);
     border: 1px solid var(--cui-border-color);
     border-radius: 8px;
     padding: 8px 12px;
