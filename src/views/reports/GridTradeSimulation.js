@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { TRADE_PRICE_ASSETS } from 'src/constants/finance'
 import GridSimulationChart from './GridSimulationChart'
-import { computeGridLevels, buildWaveTrades, fmtPrice, fmtUSD } from './gridSimulationHelpers'
+import {
+  computeGridLevels,
+  buildWaveTrades,
+  pairMarkers,
+  fmtPrice,
+  fmtUSD,
+} from './gridSimulationHelpers'
 import './GridTradeSimulation.scss'
 
 const GridTradeSimulation = () => {
@@ -12,6 +18,7 @@ const GridTradeSimulation = () => {
   const [gridCount, setGridCount] = useState(8)
   const [investment, setInvestment] = useState(1000)
   const [rangePct, setRangePct] = useState(15)
+  const [cycles, setCycles] = useState(1)
 
   const fetchPrice = () => {
     setLoadingPrice(true)
@@ -39,18 +46,69 @@ const GridTradeSimulation = () => {
     [centerPrice, gridCount, rangePct],
   )
 
+  // Grid lines can be dragged individually (see GridSimulationChart), which
+  // overrides the evenly-spaced default — reset that override whenever the
+  // inputs that define the grid change.
+  const [customLevels, setCustomLevels] = useState(null)
+  useEffect(() => setCustomLevels(null), [centerPrice, gridCount, rangePct])
+  const levels = useMemo(() => customLevels || gridData?.levels || [], [customLevels, gridData])
+
+  const handleLevelChange = (index, newPrice) => {
+    setCustomLevels((prev) => {
+      const arr = [...(prev || gridData.levels)]
+      arr[index] = newPrice
+      return arr
+    })
+  }
+
+  // The chart's pixel scale is padded beyond the default range and kept
+  // fixed to the (un-dragged) gridData — if it tracked the live levels
+  // instead, the top/bottom dots (which define the scale's own edges) could
+  // never visibly move, since their value would always map to the same
+  // fixed edge pixel.
+  const domain = useMemo(() => {
+    if (!gridData) return null
+    const pad = gridData.step * 1.5
+    return { lower: gridData.lower - pad, upper: gridData.upper + pad }
+  }, [gridData])
+
   const wave = useMemo(
     () =>
-      gridData
+      gridData && domain
         ? buildWaveTrades({
-            levels: gridData.levels,
+            levels,
             centerPrice,
-            upper: gridData.upper,
-            lower: gridData.lower,
+            upper: domain.upper,
+            lower: domain.lower,
+            cycles: Math.max(1, Number(cycles) || 1),
+            samples: Math.min(4000, 500 * Math.max(1, Number(cycles) || 1)),
           })
         : null,
-    [gridData, centerPrice],
+    [gridData, domain, levels, centerPrice, cycles],
   )
+
+  // The buy/sell markers on the wave are also draggable (both axes) — once
+  // touched, they stop being crossing points derived from the generated sine
+  // and become freeform control points; the wave path is then redrawn as a
+  // smooth curve through them instead of the plain sine.
+  const [customMarkers, setCustomMarkers] = useState(null)
+  useEffect(() => setCustomMarkers(null), [centerPrice, gridCount, rangePct, cycles])
+
+  const markers = useMemo(() => {
+    const base = customMarkers || wave?.markers.map((m) => ({ frac: m.frac, price: m.price })) || []
+    return base.map((m) => ({ ...m, type: m.price > centerPrice ? 'sell' : 'buy' }))
+  }, [customMarkers, wave, centerPrice])
+
+  const pairs = useMemo(() => pairMarkers(markers), [markers])
+
+  const handleMarkerChange = (index, next) => {
+    setCustomMarkers((prev) => {
+      const base = prev || wave.markers.map((m) => ({ frac: m.frac, price: m.price }))
+      const arr = [...base]
+      arr[index] = next
+      return arr
+    })
+  }
 
   const perGrid = investment > 0 && gridData ? investment / gridData.gridCount : 0
   const ticker = TRADE_PRICE_ASSETS.find((a) => a.symbol === symbol)?.ticker || symbol
@@ -115,6 +173,18 @@ const GridTradeSimulation = () => {
         </div>
 
         <div className="gts__field">
+          <label>Número de curvas</label>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            className="gts__input"
+            value={cycles}
+            onChange={(e) => setCycles(e.target.value)}
+          />
+        </div>
+
+        <div className="gts__field">
           <label>Número de grids</label>
           <input
             type="number"
@@ -151,7 +221,7 @@ const GridTradeSimulation = () => {
             <div className="gts__kpi">
               <div className="gts__kpi-label">Rango de la grid</div>
               <div className="gts__kpi-value gts__kpi-value--sm">
-                {fmtPrice(gridData.lower)} – {fmtPrice(gridData.upper)}
+                {fmtPrice(levels[0])} – {fmtPrice(levels[levels.length - 1])}
               </div>
             </div>
             <div className="gts__kpi">
@@ -160,21 +230,27 @@ const GridTradeSimulation = () => {
             </div>
             <div className="gts__kpi">
               <div className="gts__kpi-label">Operaciones simuladas</div>
-              <div className="gts__kpi-value">{wave.markers.length}</div>
+              <div className="gts__kpi-value">{markers.length}</div>
             </div>
           </div>
 
           <div className="gts__chart">
+            <p className="gts__hint">
+              Arrastra los puntos de las líneas para moverlas, o los de compra/venta para
+              deslizarlos sobre la curva.
+            </p>
             <div className="gts__scroll">
               <GridSimulationChart
-                levels={gridData.levels}
-                upper={gridData.upper}
-                lower={gridData.lower}
+                levels={levels}
+                upper={domain.upper}
+                lower={domain.lower}
                 centerPrice={centerPrice}
                 points={wave.points}
-                markers={wave.markers}
-                pairs={wave.pairs}
+                markers={markers}
+                pairs={pairs}
                 perGrid={perGrid}
+                onLevelChange={handleLevelChange}
+                onMarkerChange={handleMarkerChange}
               />
             </div>
           </div>

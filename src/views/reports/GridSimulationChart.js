@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { fmtPrice, fmtUSD } from './gridSimulationHelpers'
 
 const ROW_H = 46
@@ -6,6 +6,9 @@ const MARGIN_X = 92
 const MARGIN_RIGHT = 78
 const MARGIN_Y = 34
 const W = 900
+// Clean gap left of the wave's start so it doesn't begin right on top of the
+// level dots/price labels at MARGIN_X.
+const WAVE_GAP = 60
 
 const GridSimulationChart = ({
   levels,
@@ -16,21 +19,85 @@ const GridSimulationChart = ({
   markers,
   pairs,
   perGrid,
+  onLevelChange,
+  onMarkerChange,
 }) => {
   const gridCount = levels.length - 1
   const H = gridCount * ROW_H + MARGIN_Y * 2
-  const plotW = W - MARGIN_X - MARGIN_RIGHT
+  const waveStartX = MARGIN_X + WAVE_GAP
+  const waveW = W - MARGIN_RIGHT - waveStartX
+  const svgRef = useRef(null)
+  const [dragLevelIndex, setDragLevelIndex] = useState(null)
+  const [dragMarkerIndex, setDragMarkerIndex] = useState(null)
 
   const toY = (price) =>
     MARGIN_Y + (H - 2 * MARGIN_Y) - ((price - lower) / (upper - lower)) * (H - 2 * MARGIN_Y)
-  const toX = (frac) => MARGIN_X + frac * plotW
+  // Only the wave path/markers/connectors use toX — the grid lines span the
+  // full width via MARGIN_X/MARGIN_RIGHT directly, so shifting this alone
+  // moves where the wave begins without touching anything else.
+  const toX = (frac) => waveStartX + frac * waveW
+
+  // Inverse of toY — maps a mouse clientY (via the SVG's rendered bounding
+  // box, since viewBox scaling differs from actual pixel size) back to price.
+  const clientYToPrice = (clientY) => {
+    const rect = svgRef.current.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * H
+    const frac = 1 - (svgY - MARGIN_Y) / (H - 2 * MARGIN_Y)
+    return lower + frac * (upper - lower)
+  }
+
+  // Markers only slide along the fixed wave — never off it — so a drag finds
+  // the closest sampled point on the curve to the cursor instead of placing
+  // the marker at the cursor's raw (frac, price).
+  const nearestOnCurve = (clientX, clientY) => {
+    const rect = svgRef.current.getBoundingClientRect()
+    const mx = ((clientX - rect.left) / rect.width) * W
+    const my = ((clientY - rect.top) / rect.height) * H
+    let best = points[0]
+    let bestDist = Infinity
+    for (const p of points) {
+      const dx = toX(p.frac) - mx
+      const dy = toY(p.price) - my
+      const dist = dx * dx + dy * dy
+      if (dist < bestDist) {
+        bestDist = dist
+        best = p
+      }
+    }
+    return best
+  }
+
+  const startLevelDrag = (index) => (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragLevelIndex(index)
+  }
+
+  const onLevelDrag = (index) => (e) => {
+    if (dragLevelIndex !== index) return
+    const lo = index > 0 ? levels[index - 1] : lower
+    const hi = index < levels.length - 1 ? levels[index + 1] : upper
+    const gap = (upper - lower) * 0.01
+    const price = Math.min(Math.max(clientYToPrice(e.clientY), lo + gap), hi - gap)
+    onLevelChange(index, price)
+  }
+
+  const startMarkerDrag = (index) => (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragMarkerIndex(index)
+  }
+
+  const onMarkerDrag = (index) => (e) => {
+    if (dragMarkerIndex !== index) return
+    const { frac, price } = nearestOnCurve(e.clientX, e.clientY)
+    onMarkerChange(index, { frac, price })
+  }
 
   const pathD = points
     .map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(p.frac)},${toY(p.price)}`)
     .join(' ')
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="gts-chart__svg">
+    <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="gts-chart__svg">
       {levels.map((price, i) => {
         const isSellLevel = price > centerPrice
         const color = isSellLevel ? 'var(--gts-sell)' : 'var(--gts-buy)'
@@ -47,9 +114,6 @@ const GridSimulationChart = ({
               strokeWidth={1.4}
               opacity={0.85}
             />
-            <text x={8} y={y - 4} fontSize={11} fontWeight={700} fill={color}>
-              {fmtPrice(price)}
-            </text>
             {i < gridCount && perGrid > 0 && (
               <text
                 x={W - MARGIN_RIGHT + 6}
@@ -60,6 +124,28 @@ const GridSimulationChart = ({
                 {fmtUSD(perGrid)}/grid
               </text>
             )}
+            <text
+              x={MARGIN_X}
+              y={y - 12}
+              fontSize={11}
+              fontWeight={700}
+              fill={color}
+              textAnchor="middle"
+            >
+              {fmtPrice(price)}
+            </text>
+            <circle
+              className="gts-chart__handle"
+              cx={MARGIN_X}
+              cy={y}
+              r={dragLevelIndex === i ? 8 : 6}
+              fill={color}
+              stroke="var(--cui-body-bg)"
+              strokeWidth={1.5}
+              onPointerDown={startLevelDrag(i)}
+              onPointerMove={onLevelDrag(i)}
+              onPointerUp={() => setDragLevelIndex(null)}
+            />
           </g>
         )
       })}
@@ -117,14 +203,6 @@ const GridSimulationChart = ({
         const color = isBuy ? 'var(--gts-buy)' : 'var(--gts-sell)'
         return (
           <g key={i}>
-            <circle
-              cx={x}
-              cy={y}
-              r={4.5}
-              fill={color}
-              stroke="var(--cui-body-bg)"
-              strokeWidth={1.5}
-            />
             <text
               x={x + (isBuy ? -8 : 8)}
               y={y + 3}
@@ -135,6 +213,24 @@ const GridSimulationChart = ({
             >
               {isBuy ? 'Buy' : 'Sell'}
             </text>
+            <circle
+              cx={x}
+              cy={y}
+              r={4.5}
+              fill={color}
+              stroke="var(--cui-body-bg)"
+              strokeWidth={1.5}
+            />
+            <circle
+              className="gts-chart__marker-handle"
+              cx={x}
+              cy={y}
+              r={dragMarkerIndex === i ? 12 : 9}
+              fill="transparent"
+              onPointerDown={startMarkerDrag(i)}
+              onPointerMove={onMarkerDrag(i)}
+              onPointerUp={() => setDragMarkerIndex(null)}
+            />
           </g>
         )
       })}

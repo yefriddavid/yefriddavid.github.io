@@ -116,6 +116,12 @@
     padding: 18px 20px;
   }
 
+  &__hint {
+    font-size: var(--fs-xs);
+    color: var(--cui-secondary-color);
+    margin: 0 0 10px;
+  }
+
   &__scroll {
     width: 100%;
     overflow-x: auto;
@@ -133,6 +139,16 @@
   min-width: 640px;
   height: auto;
   display: block;
+}
+
+.gts-chart__handle {
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.gts-chart__marker-handle {
+  cursor: move;
+  touch-action: none;
 }
 
 @media (max-width: 900px) {

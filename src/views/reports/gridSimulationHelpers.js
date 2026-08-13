@@ -33,7 +33,7 @@ export const buildWaveTrades = ({
   centerPrice,
   upper,
   lower,
-  cycles = 2,
+  cycles = 1,
   samples = 500,
 }) => {
   const amplitude = (upper - lower) / 2
@@ -60,14 +60,19 @@ export const buildWaveTrades = ({
   }
   markers.sort((m1, m2) => m1.frac - m2.frac)
 
-  // Pair each buy with the next unmatched sell chronologically, purely to
-  // draw the round-trip connector lines from the reference diagram.
+  return { points, markers, pairs: pairMarkers(markers) }
+}
+
+// Pairs each buy with the chronologically next unmatched sell — purely to
+// draw the round-trip connector lines from the reference diagram. Re-sorts
+// by frac first since draggable markers can end up out of order.
+export const pairMarkers = (markers) => {
+  const sorted = [...markers].sort((a, b) => a.frac - b.frac)
   const pairs = []
   const openBuys = []
-  markers.forEach((m) => {
+  sorted.forEach((m) => {
     if (m.type === 'buy') openBuys.push(m)
     else if (openBuys.length) pairs.push([openBuys.shift(), m])
   })
-
-  return { points, markers, pairs }
+  return pairs
 }
