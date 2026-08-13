@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
-import { CFormSelect } from '@coreui/react'
+import {
+  CAccordion,
+  CAccordionItem,
+  CAccordionHeader,
+  CAccordionBody,
+  CFormSelect,
+} from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
 import Spinner from 'src/components/shared/Spinner'
 import moment from 'src/utils/moment'
@@ -153,6 +159,94 @@ const CryptoDcaReport = () => {
       <p className="cdr__subtitle">
         Evolución del costo promedio ponderado de compra frente al precio en vivo.
       </p>
+
+      <CAccordion className="cdr__help">
+        <CAccordionItem itemKey="help">
+          <CAccordionHeader>ℹ️ ¿Qué muestra este reporte y para qué sirve?</CAccordionHeader>
+          <CAccordionBody>
+            <p className="cdr__help-p">
+              Este reporte responde una pregunta que ningún otro reporte de Cripto responde
+              directamente:{' '}
+              <strong>
+                ¿en promedio, a cuánto me está saliendo cada unidad del activo que tengo, tomando en
+                cuenta TODAS mis compras y ventas históricas?
+              </strong>{' '}
+              Y a partir de ahí, si el precio de hoy está por encima o por debajo de ese promedio.
+            </p>
+
+            <p className="cdr__help-title">Cómo se calcula el costo promedio</p>
+            <p className="cdr__help-p">
+              Se usa el método de <strong>costo promedio ponderado</strong> (el mismo que usan la
+              mayoría de exchanges y apps de portafolio): cada compra suma su costo total (cantidad
+              × precio) al costo acumulado y suma su cantidad a la posición. Cada venta{' '}
+              <strong>no cambia el costo promedio de lo que queda</strong> — solo reduce la cantidad
+              en posición, restando proporcionalmente el costo de lo vendido. El costo promedio en
+              cada punto es <code>costo acumulado ÷ cantidad en posición</code>.
+            </p>
+
+            <p className="cdr__help-title">El cálculo siempre usa TODO el historial</p>
+            <p className="cdr__help-p">
+              Los filtros de fecha (Rango / Año y mes / Año){' '}
+              <strong>solo recortan qué se muestra</strong> en el gráfico y la tabla — nunca
+              reinician el cálculo. Si el cálculo arrancara desde la ventana filtrada, el costo
+              promedio quedaría subestimado porque ignoraría compras anteriores que también forman
+              parte de tu posición actual. Por eso, aunque filtres “Año: 2026”, el costo promedio
+              que ves en cada fila de 2026 sigue reflejando compras de años anteriores si esas
+              unidades siguen en tu posición.
+            </p>
+
+            <p className="cdr__help-title">Qué significa cada KPI</p>
+            <ul className="cdr__help-list">
+              <li>
+                <strong>Costo promedio actual</strong>: el costo promedio ponderado al último
+                movimiento dentro del periodo filtrado (o de todo el historial si no hay movimientos
+                en el periodo).
+              </li>
+              <li>
+                <strong>Precio en vivo</strong>: precio actual del activo en Binance, obtenido con
+                una sola consulta al cargar la pantalla o al cambiar de Activo — a propósito no se
+                actualiza solo, para no distraer de la tendencia histórica.
+              </li>
+              <li>
+                <strong>Ganancia / Pérdida no realizada</strong>: cuánto por encima o por debajo
+                está el precio en vivo respecto al costo promedio actual, en porcentaje. Es “no
+                realizada” porque nada se ha vendido — es una foto de cómo estarías si vendieras
+                todo ahora mismo.
+              </li>
+              <li>
+                <strong>En posición</strong>: cantidad neta del activo que tienes ahora mismo
+                (compras acumuladas menos ventas acumuladas, de todo el historial).
+              </li>
+            </ul>
+
+            <p className="cdr__help-title">Qué muestran el gráfico y la tabla</p>
+            <p className="cdr__help-p">
+              La línea sólida es el costo promedio después de cada compra o venta; la línea punteada
+              gris es el precio en vivo (constante, como referencia). La tabla debajo lista cada
+              movimiento con su fecha, tipo, cantidad, precio, el costo promedio resultante y la
+              cantidad en posición en ese momento — es el detalle fila por fila detrás del gráfico.
+            </p>
+
+            <p className="cdr__help-title">Qué NO incluye</p>
+            <p className="cdr__help-p">
+              Se excluyen los ajustes de saldo (<code>isAdjustment</code>) — ventas ficticias usadas
+              para cuadrar la cantidad registrada contra el saldo real del exchange, sin precio de
+              mercado real. Incluirlas distorsionaría el costo promedio con un “precio” que nunca
+              existió. Es el mismo criterio que usan Consulta de Compras/Ventas y Totales por
+              Plataforma.
+            </p>
+
+            <p className="cdr__help-title">Para qué sirve en la práctica</p>
+            <p className="cdr__help-p">
+              Para saber si tus compras recientes están{' '}
+              <strong>subiendo o bajando tu promedio</strong> (comprar caro cuando ya vas verde te
+              sube el promedio; comprar barato cuando vas rojo te lo baja), y para decidir con datos
+              reales — no con la memoria de “a cuánto compré la última vez” — si conviene seguir
+              acumulando, esperar, o si ya estás por encima del punto de equilibrio.
+            </p>
+          </CAccordionBody>
+        </CAccordionItem>
+      </CAccordion>
 
       <div className="cdr__mode-toggle">
         <button

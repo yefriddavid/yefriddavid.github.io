@@ -19,6 +19,38 @@
     margin: 4px 0 20px;
   }
 
+  &__help {
+    margin-bottom: 20px;
+    font-size: var(--fs-sm);
+  }
+
+  &__help-title {
+    font-weight: 700;
+    color: var(--cui-body-color);
+    margin: 14px 0 4px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__help-p {
+    color: var(--cui-secondary-color);
+    line-height: 1.5;
+    margin: 0 0 4px;
+  }
+
+  &__help-list {
+    color: var(--cui-secondary-color);
+    line-height: 1.5;
+    margin: 0 0 4px;
+    padding-left: 20px;
+
+    li {
+      margin-bottom: 4px;
+    }
+  }
+
   &__mode-toggle {
     display: flex;
     gap: 8px;
