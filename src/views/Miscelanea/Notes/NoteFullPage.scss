@@ -4,6 +4,10 @@
   display: flex;
   flex-direction: column;
 
+  :root[data-coreui-theme='dark'] & {
+    background: var(--note-bg, var(--cui-tertiary-bg));
+  }
+
   &__bar {
     display: flex;
     align-items: center;
@@ -14,6 +18,10 @@
     position: sticky;
     top: 0;
     z-index: 10;
+
+    :root[data-coreui-theme='dark'] & {
+      background: var(--note-bg, var(--cui-tertiary-bg));
+    }
   }
 
   &__back,

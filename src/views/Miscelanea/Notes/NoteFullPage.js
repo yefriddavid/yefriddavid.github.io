@@ -6,6 +6,7 @@ import { cilArrowLeft, cilPencil, cilPlus, cilTrash } from '@coreui/icons'
 import * as actions from 'src/actions/misc/noteActions'
 import Spinner from 'src/components/shared/Spinner'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
+import { noteBgStyle } from 'src/constants/notes'
 import './NoteFullPage.scss'
 
 const toTableRows = (content) => {
@@ -106,7 +107,7 @@ const NoteFullPage = () => {
     )
 
   return (
-    <div className="nfp" style={{ '--note-bg': note.color || '#fff' }}>
+    <div className="nfp" style={noteBgStyle(note.color)}>
       <div className="nfp__bar">
         <button className="nfp__back" onClick={() => navigate(-1)}>
           <CIcon icon={cilArrowLeft} />

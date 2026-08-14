@@ -12,3 +12,9 @@ export const NOTE_COLORS = [
   { value: '#ffedd5', label: 'Naranja' },
   { value: '#f1f5f9', label: 'Gris' },
 ]
+
+// 'Blanco' is the default swatch and gets persisted on every note that never picked
+// a color — treat it as "no color" so the card falls back to the theme surface
+// instead of a hardcoded white that goes invisible in dark mode.
+export const noteBgStyle = (color) =>
+  color && color.toLowerCase() !== '#ffffff' ? { '--note-bg': color } : undefined

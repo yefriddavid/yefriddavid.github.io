@@ -27,7 +27,12 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as actions from 'src/actions/misc/noteActions'
-import { DEFAULT_NOTE_CATEGORY, NOTE_COLORS, PRIVATE_NOTES_PASSWORD } from 'src/constants/notes'
+import {
+  DEFAULT_NOTE_CATEGORY,
+  NOTE_COLORS,
+  PRIVATE_NOTES_PASSWORD,
+  noteBgStyle,
+} from 'src/constants/notes'
 import Spinner from 'src/components/shared/Spinner'
 import IconClone from 'src/components/shared/IconClone'
 import useActiveTenantId from 'src/hooks/useActiveTenantId'
@@ -837,7 +842,7 @@ const NoteCard = ({
   }
 
   return (
-    <div className="note-card" style={{ '--note-bg': note.color || '#fff' }}>
+    <div className="note-card" style={noteBgStyle(note.color)}>
       <div className="note-card__header">
         <h6 className="note-card__title">
           {editingTitle ? (
@@ -1259,7 +1264,7 @@ const NoteViewModal = ({ note, onClose, onEdit }) => {
     <div className="note-view-overlay" onClick={onClose}>
       <div
         className="note-view"
-        style={{ '--note-bg': note.color || '#fff' }}
+        style={noteBgStyle(note.color)}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="note-view__bar">
