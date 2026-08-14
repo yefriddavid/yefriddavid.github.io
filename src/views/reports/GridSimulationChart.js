@@ -201,19 +201,38 @@ const GridSimulationChart = ({
 
       <path d={pathD} fill="none" stroke="var(--gts-wave)" strokeWidth={2} opacity={0.9} />
 
-      {pairs.map(([buy, sell], i) => (
-        <line
-          key={i}
-          x1={toX(buy.frac)}
-          y1={toY(buy.price)}
-          x2={toX(sell.frac)}
-          y2={toY(sell.price)}
-          stroke="var(--gts-connector)"
-          strokeWidth={1}
-          strokeDasharray="3,3"
-          opacity={0.7}
-        />
-      ))}
+      {pairs.map(([buy, sell], i) => {
+        const pct = ((sell.price - buy.price) / buy.price) * 100
+        const profit = perGrid > 0 ? perGrid * (pct / 100) : 0
+        const midX = (toX(buy.frac) + toX(sell.frac)) / 2
+        const midY = (toY(buy.price) + toY(sell.price)) / 2
+        return (
+          <g key={i}>
+            <line
+              x1={toX(buy.frac)}
+              y1={toY(buy.price)}
+              x2={toX(sell.frac)}
+              y2={toY(sell.price)}
+              stroke="var(--gts-connector)"
+              strokeWidth={1}
+              strokeDasharray="3,3"
+              opacity={0.7}
+            />
+            <text
+              x={midX}
+              y={midY - 4}
+              fontSize={8}
+              fontWeight={700}
+              fill="var(--gts-connector)"
+              textAnchor="middle"
+            >
+              {fmtPrice(buy.price)} → +{pct.toFixed(2)}%{' '}
+              {profit > 0 && <tspan fill="var(--gts-sell)">({fmtUSD(profit)})</tspan>} →{' '}
+              {fmtPrice(sell.price)}
+            </text>
+          </g>
+        )
+      })}
 
       {markers.map((m, i) => {
         const x = toX(m.frac)
