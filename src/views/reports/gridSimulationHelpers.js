@@ -71,6 +71,10 @@ export const buildWaveTrades = ({
 // Pairs each buy with the chronologically next unmatched sell — purely to
 // draw the round-trip connector lines from the reference diagram. Re-sorts
 // by frac first since draggable markers can end up out of order.
+//
+// With multiple cycles or freely-dragged markers this can pair a buy with a
+// sell priced lower than another buy's sell, crossing the connector lines —
+// see pairMarkersByPrice for the alternative that avoids that.
 export const pairMarkers = (markers) => {
   const sorted = [...markers].sort((a, b) => a.frac - b.frac)
   const pairs = []
@@ -80,4 +84,15 @@ export const pairMarkers = (markers) => {
     else if (openBuys.length) pairs.push([openBuys.shift(), m])
   })
   return pairs
+}
+
+// Pairs buys and sells by price rank instead of by time: the lowest buy with
+// the lowest sell, the 2nd-lowest with the 2nd-lowest, and so on. Since every
+// sell is above centerPrice and every buy below it, this guarantees each pair
+// sells higher than it buys and the connector lines never cross.
+export const pairMarkersByPrice = (markers) => {
+  const buys = markers.filter((m) => m.type === 'buy').sort((a, b) => a.price - b.price)
+  const sells = markers.filter((m) => m.type === 'sell').sort((a, b) => a.price - b.price)
+  const count = Math.min(buys.length, sells.length)
+  return Array.from({ length: count }, (_, i) => [buys[i], sells[i]])
 }

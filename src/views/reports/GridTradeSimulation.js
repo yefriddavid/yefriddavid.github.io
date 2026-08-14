@@ -5,6 +5,7 @@ import {
   computeGridLevels,
   buildWaveTrades,
   pairMarkers,
+  pairMarkersByPrice,
   fmtPrice,
   fmtUSD,
 } from './gridSimulationHelpers'
@@ -20,6 +21,7 @@ const GridTradeSimulation = () => {
   const [rangePct, setRangePct] = useState(15)
   const [cycles, setCycles] = useState(1)
   const [invert, setInvert] = useState(false)
+  const [pairByPrice, setPairByPrice] = useState(true)
 
   const fetchPrice = () => {
     setLoadingPrice(true)
@@ -101,7 +103,10 @@ const GridTradeSimulation = () => {
     return base.map((m) => ({ ...m, type: m.price > centerPrice ? 'sell' : 'buy' }))
   }, [customMarkers, wave, centerPrice])
 
-  const pairs = useMemo(() => pairMarkers(markers), [markers])
+  const pairs = useMemo(
+    () => (pairByPrice ? pairMarkersByPrice(markers) : pairMarkers(markers)),
+    [markers, pairByPrice],
+  )
 
   const handleMarkerChange = (index, next) => {
     setCustomMarkers((prev) => {
@@ -191,6 +196,18 @@ const GridTradeSimulation = () => {
           <label className="gts__checkbox">
             <input type="checkbox" checked={invert} onChange={(e) => setInvert(e.target.checked)} />
             Invertir curva
+          </label>
+        </div>
+
+        <div className="gts__field">
+          <label>Emparejamiento</label>
+          <label className="gts__checkbox">
+            <input
+              type="checkbox"
+              checked={pairByPrice}
+              onChange={(e) => setPairByPrice(e.target.checked)}
+            />
+            Por precio (evita cruces)
           </label>
         </div>
 
