@@ -621,6 +621,28 @@
     }
   }
 
+  &__list-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--cui-tertiary-color);
+    font-size: 14px;
+    cursor: grab;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+    margin-top: 1px;
+    touch-action: none;
+
+    &:hover { color: var(--cui-secondary-color); }
+    &:active { cursor: grabbing; }
+  }
+
   &__list-check {
     width: 18px;
     height: 18px;

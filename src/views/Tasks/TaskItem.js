@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { PRIORITY, formatDue, isOverdue, isDueToday, parseListItems, getListProgress } from './taskUtils'
 
 const PriorityDot = ({ priority }) => {
@@ -38,11 +46,58 @@ const TagPill = ({ tag, onRemove }) => (
   </span>
 )
 
-const ListModeView = ({ notes, onToggle, onAdd, onEdit }) => {
+const SortableListRow = ({ id, checked, text, editing, editValue, setEditValue, onToggle, onCommitEdit, onStartEdit, onCancelEdit }) => {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id })
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      {...attributes}
+      className={`tk__list-row${checked ? ' tk__list-row--done' : ''}`}
+      onClick={onToggle}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        className="tk__list-drag-handle"
+        title="Mover"
+        onClick={(e) => e.stopPropagation()}
+        {...listeners}
+      >
+        ⠿
+      </button>
+      <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
+        {checked ? '✓' : ''}
+      </span>
+      {editing ? (
+        <input
+          className="tk__list-edit-input"
+          autoFocus
+          value={editValue}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={onCommitEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); onCommitEdit() }
+            if (e.key === 'Escape') { e.preventDefault(); onCancelEdit() }
+          }}
+        />
+      ) : (
+        <span className="tk__list-text" onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}>
+          {text}
+        </span>
+      )}
+    </div>
+  )
+}
+
+const ListModeView = ({ notes, onToggle, onAdd, onEdit, onReorder }) => {
   const lines = parseListItems(notes)
   const [newItem, setNewItem] = useState('')
   const [editingIndex, setEditingIndex] = useState(null)
   const [editValue, setEditValue] = useState('')
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const submitNew = () => {
     if (!newItem.trim()) return
@@ -55,47 +110,43 @@ const ListModeView = ({ notes, onToggle, onAdd, onEdit }) => {
     setEditingIndex(null)
   }
 
+  const rowIds = lines.map((_, i) => `item-${i}`)
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return
+    const oldIndex = rowIds.indexOf(active.id)
+    const newIndex = rowIds.indexOf(over.id)
+    onReorder(arrayMove(lines, oldIndex, newIndex))
+  }
+
   return (
     <div className="tk__list-view">
       {!lines.length && (
         <div className="tk__list-empty">Sin ítems. Agregá el primero abajo.</div>
       )}
-      {lines.map((line, i) => {
-        const checked = line.startsWith('- ')
-        const text = checked ? line.slice(2) : line
-        return (
-          <div
-            key={i}
-            className={`tk__list-row${checked ? ' tk__list-row--done' : ''}`}
-            onClick={() => onToggle(i)}
-          >
-            <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
-              {checked ? '✓' : ''}
-            </span>
-            {editingIndex === i ? (
-              <input
-                className="tk__list-edit-input"
-                autoFocus
-                value={editValue}
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => setEditValue(e.target.value)}
-                onBlur={commitEdit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); commitEdit() }
-                  if (e.key === 'Escape') { e.preventDefault(); setEditingIndex(null) }
-                }}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
+          {lines.map((line, i) => {
+            const checked = line.startsWith('- ')
+            const text = checked ? line.slice(2) : line
+            return (
+              <SortableListRow
+                key={rowIds[i]}
+                id={rowIds[i]}
+                checked={checked}
+                text={text}
+                editing={editingIndex === i}
+                editValue={editValue}
+                setEditValue={setEditValue}
+                onToggle={() => onToggle(i)}
+                onCommitEdit={commitEdit}
+                onStartEdit={() => { setEditingIndex(i); setEditValue(text) }}
+                onCancelEdit={() => setEditingIndex(null)}
               />
-            ) : (
-              <span
-                className="tk__list-text"
-                onDoubleClick={(e) => { e.stopPropagation(); setEditingIndex(i); setEditValue(text) }}
-              >
-                {text}
-              </span>
-            )}
-          </div>
-        )
-      })}
+            )
+          })}
+        </SortableContext>
+      </DndContext>
       <div className="tk__list-add">
         <input
           className="tk__list-add-input"
@@ -116,7 +167,7 @@ const TaskItem = ({ task, onSave, onDelete }) => {
   const [expanded, setExpanded] = useState(false)
   const [tagInput, setTagInput] = useState('')
 
-  const { register, handleSubmit, watch, setValue, formState: { isDirty } } = useForm({
+  const { register, handleSubmit, watch, setValue, getValues, formState: { isDirty } } = useForm({
     defaultValues: {
       title:    task.title,
       notes:    task.notes,
@@ -163,12 +214,23 @@ const TaskItem = ({ task, onSave, onDelete }) => {
     [notes, setValue],
   )
 
+  const reorderListItems = useCallback(
+    (newLines) => {
+      const newNotes = newLines.join('\n')
+      setValue('notes', newNotes, { shouldDirty: true })
+      onSave({ ...task, ...getValues(), notes: newNotes, dueDate: getValues('dueDate') || null })
+    },
+    [setValue, getValues, onSave, task],
+  )
+
   const addListItem = useCallback(
     (text) => {
       const lines = parseListItems(notes)
-      setValue('notes', [...lines, text.trim()].join('\n'), { shouldDirty: true })
+      const newNotes = [...lines, text.trim()].join('\n')
+      setValue('notes', newNotes, { shouldDirty: true })
+      onSave({ ...task, ...getValues(), notes: newNotes, dueDate: getValues('dueDate') || null })
     },
-    [notes, setValue],
+    [notes, setValue, getValues, onSave, task],
   )
 
   const editListItem = useCallback(
@@ -255,7 +317,13 @@ const TaskItem = ({ task, onSave, onDelete }) => {
           </div>
 
           {listMode ? (
-            <ListModeView notes={notes} onToggle={toggleListItem} onAdd={addListItem} onEdit={editListItem} />
+            <ListModeView
+              notes={notes}
+              onToggle={toggleListItem}
+              onAdd={addListItem}
+              onEdit={editListItem}
+              onReorder={reorderListItems}
+            />
           ) : (
             <textarea
               className="tk__edit-notes"
