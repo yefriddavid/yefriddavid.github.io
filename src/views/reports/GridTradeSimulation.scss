@@ -3,8 +3,17 @@
   --gts-sell: #2eb85c;
   --gts-wave: #5b8ab8;
   --gts-connector: #f5a623;
+  --gts-current: #a855f7;
 
   padding: 8px 4px 32px;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
 
   &__title {
     font-size: var(--fs-3xl);
@@ -17,6 +26,18 @@
     color: var(--cui-secondary-color);
     font-size: var(--fs-sm);
     margin: 4px 0 20px;
+  }
+
+  &__view-btn {
+    flex-shrink: 0;
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.75rem;
+    font-size: var(--fs-sm);
+    border: 1px solid var(--cui-border-color);
+    border-radius: 6px;
+    background: var(--cui-tertiary-bg);
+    color: var(--cui-body-color);
+    cursor: pointer;
   }
 
   &__filters {

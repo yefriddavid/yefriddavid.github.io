@@ -1,5 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TRADE_PRICE_ASSETS } from 'src/constants/finance'
+import AppModal from 'src/components/shared/AppModal'
+import SaveViewForm from 'src/components/shared/SaveViewForm'
+import SavedViewsList from 'src/components/shared/SavedViewsList'
+import useSavedViews from 'src/hooks/useSavedViews'
 import GridSimulationChart from './GridSimulationChart'
 import {
   computeGridLevels,
@@ -11,17 +16,50 @@ import {
 } from './gridSimulationHelpers'
 import './GridTradeSimulation.scss'
 
+const SAVED_VIEWS_KEY = 'gridSimulation.savedViews'
+
 const GridTradeSimulation = () => {
-  const [symbol, setSymbol] = useState(TRADE_PRICE_ASSETS[0].symbol)
+  const {
+    showViewModal,
+    setShowViewModal,
+    savedViews,
+    saveViewFormKey,
+    saveView,
+    deleteView,
+    loadView,
+  } = useSavedViews(SAVED_VIEWS_KEY)
+
+  // Filters live in the URL (not useState) so a page refresh — or a saved
+  // view, which is just a named URL snapshot — restores exactly what was set.
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const setParam = (key, value, opts) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (value === '' || value == null || value === false) next.delete(key)
+      else next.set(key, String(value))
+      return next
+    }, opts)
+
+  const symbol = searchParams.get('symbol') || TRADE_PRICE_ASSETS[0].symbol
+  const setSymbol = (v) => setParam('symbol', v)
+  const hypoPrice = searchParams.get('hypo') || ''
+  const setHypoPrice = (v) => setParam('hypo', v)
+  const gridCount = searchParams.get('grids') || '8'
+  const setGridCount = (v) => setParam('grids', v)
+  const investment = searchParams.get('invest') || '1000'
+  const setInvestment = (v) => setParam('invest', v)
+  const rangePct = searchParams.get('range') || '15'
+  const setRangePct = (v) => setParam('range', v)
+  const cycles = searchParams.get('cycles') || '1'
+  const setCycles = (v) => setParam('cycles', v)
+  const invert = searchParams.get('invert') === '1'
+  const setInvert = (v) => setParam('invert', v ? '1' : '')
+  const pairByPrice = searchParams.get('pair') !== '0'
+  const setPairByPrice = (v) => setParam('pair', v ? '' : '0')
+
   const [lastPrice, setLastPrice] = useState(null)
   const [loadingPrice, setLoadingPrice] = useState(false)
-  const [hypoPrice, setHypoPrice] = useState('')
-  const [gridCount, setGridCount] = useState(8)
-  const [investment, setInvestment] = useState(1000)
-  const [rangePct, setRangePct] = useState(15)
-  const [cycles, setCycles] = useState(1)
-  const [invert, setInvert] = useState(false)
-  const [pairByPrice, setPairByPrice] = useState(true)
 
   const fetchPrice = () => {
     setLoadingPrice(true)
@@ -50,18 +88,33 @@ const GridTradeSimulation = () => {
   )
 
   // Grid lines can be dragged individually (see GridSimulationChart), which
-  // overrides the evenly-spaced default — reset that override whenever the
-  // inputs that define the grid change.
-  const [customLevels, setCustomLevels] = useState(null)
-  useEffect(() => setCustomLevels(null), [centerPrice, gridCount, rangePct])
+  // overrides the evenly-spaced default — persisted in the URL so a saved
+  // view reproduces exactly how the lines were left. Reset whenever the
+  // inputs that define the grid change (but not on the initial load, so
+  // dragged levels coming from a saved view survive the first price fetch).
+  const customLevels = useMemo(() => {
+    const raw = searchParams.get('lvls')
+    return raw ? raw.split(',').map(Number) : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('lvls')])
+
+  const gridInitRef = useRef(false)
+  const gridKeyRef = useRef(null)
+  useEffect(() => {
+    if (!centerPrice) return
+    const key = `${centerPrice}|${gridCount}|${rangePct}`
+    if (gridInitRef.current && gridKeyRef.current !== key) setParam('lvls', '')
+    gridKeyRef.current = key
+    gridInitRef.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerPrice, gridCount, rangePct])
+
   const levels = useMemo(() => customLevels || gridData?.levels || [], [customLevels, gridData])
 
   const handleLevelChange = (index, newPrice) => {
-    setCustomLevels((prev) => {
-      const arr = [...(prev || gridData.levels)]
-      arr[index] = newPrice
-      return arr
-    })
+    const arr = [...(customLevels || gridData.levels)]
+    arr[index] = newPrice
+    setParam('lvls', arr.join(','), { replace: true })
   }
 
   // The chart's pixel scale is padded beyond the default range and kept
@@ -94,9 +147,28 @@ const GridTradeSimulation = () => {
   // The buy/sell markers on the wave are also draggable (both axes) — once
   // touched, they stop being crossing points derived from the generated sine
   // and become freeform control points; the wave path is then redrawn as a
-  // smooth curve through them instead of the plain sine.
-  const [customMarkers, setCustomMarkers] = useState(null)
-  useEffect(() => setCustomMarkers(null), [centerPrice, gridCount, rangePct, cycles, invert])
+  // smooth curve through them instead of the plain sine. Persisted in the
+  // URL like customLevels above, with the same "skip the initial load" guard.
+  const customMarkers = useMemo(() => {
+    const raw = searchParams.get('mkrs')
+    if (!raw) return null
+    return raw.split(',').map((pair) => {
+      const [frac, price] = pair.split(':').map(Number)
+      return { frac, price }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('mkrs')])
+
+  const markersInitRef = useRef(false)
+  const markersKeyRef = useRef(null)
+  useEffect(() => {
+    if (!centerPrice) return
+    const key = `${centerPrice}|${gridCount}|${rangePct}|${cycles}|${invert}`
+    if (markersInitRef.current && markersKeyRef.current !== key) setParam('mkrs', '')
+    markersKeyRef.current = key
+    markersInitRef.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerPrice, gridCount, rangePct, cycles, invert])
 
   const markers = useMemo(() => {
     const base = customMarkers || wave?.markers.map((m) => ({ frac: m.frac, price: m.price })) || []
@@ -109,12 +181,10 @@ const GridTradeSimulation = () => {
   )
 
   const handleMarkerChange = (index, next) => {
-    setCustomMarkers((prev) => {
-      const base = prev || wave.markers.map((m) => ({ frac: m.frac, price: m.price }))
-      const arr = [...base]
-      arr[index] = next
-      return arr
-    })
+    const base = customMarkers || wave.markers.map((m) => ({ frac: m.frac, price: m.price }))
+    const arr = [...base]
+    arr[index] = next
+    setParam('mkrs', arr.map((m) => `${m.frac}:${m.price}`).join(','), { replace: true })
   }
 
   const perGrid = investment > 0 && gridData ? investment / gridData.gridCount : 0
@@ -122,11 +192,19 @@ const GridTradeSimulation = () => {
 
   return (
     <div className="gts">
-      <h1 className="gts__title">Simulación Grid Trading</h1>
-      <p className="gts__subtitle">
-        Visualiza cómo se distribuyen las órdenes de compra/venta de una estrategia de grid trading
-        sobre un rango de precio hipotético — es ilustrativo, no un backtest contra precio real.
-      </p>
+      <div className="gts__header">
+        <div>
+          <h1 className="gts__title">Simulación Grid Trading</h1>
+          <p className="gts__subtitle">
+            Visualiza cómo se distribuyen las órdenes de compra/venta de una estrategia de grid
+            trading sobre un rango de precio hipotético — es ilustrativo, no un backtest contra
+            precio real.
+          </p>
+        </div>
+        <button type="button" className="gts__view-btn" onClick={() => setShowViewModal(true)}>
+          ⭐ Vista
+        </button>
+      </div>
 
       <div className="gts__filters">
         <div className="gts__field">
@@ -272,6 +350,7 @@ const GridTradeSimulation = () => {
                 upper={domain.upper}
                 lower={domain.lower}
                 centerPrice={centerPrice}
+                lastPrice={lastPrice}
                 points={wave.points}
                 markers={markers}
                 pairs={pairs}
@@ -282,6 +361,20 @@ const GridTradeSimulation = () => {
             </div>
           </div>
         </>
+      )}
+
+      {showViewModal && (
+        <AppModal
+          visible
+          onClose={() => setShowViewModal(false)}
+          variant="center"
+          size="md"
+          title="Vistas guardadas"
+          subtitle="Guardá los filtros actuales con un nombre, para volver a ellos después."
+        >
+          <SaveViewForm key={saveViewFormKey} onSave={saveView} />
+          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+        </AppModal>
       )}
     </div>
   )

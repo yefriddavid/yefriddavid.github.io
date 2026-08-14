@@ -19,6 +19,7 @@ const GridSimulationChart = ({
   upper,
   lower,
   centerPrice,
+  lastPrice,
   points,
   markers,
   pairs,
@@ -202,6 +203,40 @@ const GridSimulationChart = ({
         stroke="var(--cui-secondary-color)"
         strokeWidth={1.5}
       />
+
+      {lastPrice > 0 && lastPrice >= lower && lastPrice <= upper && (
+        <g>
+          <line
+            x1={0}
+            y1={toY(lastPrice)}
+            x2={MARGIN_X - 14}
+            y2={toY(lastPrice)}
+            stroke="var(--gts-current)"
+            strokeDasharray="2,3"
+            strokeWidth={1.2}
+            opacity={0.8}
+          />
+          <circle
+            cx={MARGIN_X - 14}
+            cy={toY(lastPrice)}
+            r={5}
+            fill="var(--gts-current)"
+            stroke="var(--cui-body-bg)"
+            strokeWidth={1.5}
+          >
+            <title>Precio actual: {fmtPrice(lastPrice)}</title>
+          </circle>
+          <text
+            x={0}
+            y={toY(lastPrice) - 6}
+            fontSize={10}
+            fontWeight={700}
+            fill="var(--gts-current)"
+          >
+            {fmtPrice(lastPrice)} (actual)
+          </text>
+        </g>
+      )}
 
       <path d={pathD} fill="none" stroke="var(--gts-wave)" strokeWidth={2} opacity={0.9} />
 
