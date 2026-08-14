@@ -8,7 +8,15 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { PRIORITY, formatDue, isOverdue, isDueToday, parseListItems, getListProgress } from './taskUtils'
+import {
+  PRIORITY,
+  formatDue,
+  isOverdue,
+  isDueToday,
+  parseListItems,
+  getListProgress,
+  isListHeader,
+} from './taskUtils'
 
 const PriorityDot = ({ priority }) => {
   const color = PRIORITY[priority]?.color ?? '#94a3b8'
@@ -46,7 +54,7 @@ const TagPill = ({ tag, onRemove }) => (
   </span>
 )
 
-const SortableListRow = ({ id, checked, text, editing, editValue, setEditValue, onToggle, onCommitEdit, onStartEdit, onCancelEdit }) => {
+const SortableListRow = ({ id, header, checked, text, editing, editValue, setEditValue, onToggle, onCommitEdit, onStartEdit, onCancelEdit }) => {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
     useSortable({ id })
   return (
@@ -54,8 +62,8 @@ const SortableListRow = ({ id, checked, text, editing, editValue, setEditValue, 
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       {...attributes}
-      className={`tk__list-row${checked ? ' tk__list-row--done' : ''}`}
-      onClick={onToggle}
+      className={`tk__list-row${checked ? ' tk__list-row--done' : ''}${header ? ' tk__list-row--header' : ''}`}
+      onClick={header ? undefined : onToggle}
     >
       <button
         type="button"
@@ -67,9 +75,11 @@ const SortableListRow = ({ id, checked, text, editing, editValue, setEditValue, 
       >
         ⠿
       </button>
-      <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
-        {checked ? '✓' : ''}
-      </span>
+      {!header && (
+        <span className={`tk__list-check${checked ? ' tk__list-check--done' : ''}`}>
+          {checked ? '✓' : ''}
+        </span>
+      )}
       {editing ? (
         <input
           className="tk__list-edit-input"
@@ -84,7 +94,10 @@ const SortableListRow = ({ id, checked, text, editing, editValue, setEditValue, 
           }}
         />
       ) : (
-        <span className="tk__list-text" onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}>
+        <span
+          className={`tk__list-text${header ? ' tk__list-text--header' : ''}`}
+          onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}
+        >
           {text}
         </span>
       )}
@@ -99,9 +112,9 @@ const ListModeView = ({ notes, onToggle, onAdd, onEdit, onReorder }) => {
   const [editValue, setEditValue] = useState('')
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
-  const submitNew = () => {
+  const submitNew = (asHeader) => {
     if (!newItem.trim()) return
-    onAdd(newItem)
+    onAdd(newItem, asHeader)
     setNewItem('')
   }
 
@@ -127,12 +140,14 @@ const ListModeView = ({ notes, onToggle, onAdd, onEdit, onReorder }) => {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
           {lines.map((line, i) => {
-            const checked = line.startsWith('- ')
-            const text = checked ? line.slice(2) : line
+            const header = isListHeader(line)
+            const checked = !header && line.startsWith('- ')
+            const text = header ? line.slice(3) : checked ? line.slice(2) : line
             return (
               <SortableListRow
                 key={rowIds[i]}
                 id={rowIds[i]}
+                header={header}
                 checked={checked}
                 text={text}
                 editing={editingIndex === i}
@@ -150,13 +165,20 @@ const ListModeView = ({ notes, onToggle, onAdd, onEdit, onReorder }) => {
       <div className="tk__list-add">
         <input
           className="tk__list-add-input"
-          placeholder="Nuevo ítem…"
+          placeholder="Nuevo ítem o título de sección…"
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitNew() } }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitNew(false) } }}
         />
-        <button type="button" className="tk__list-add-btn" onClick={submitNew}>
+        <button type="button" className="tk__list-add-btn" onClick={() => submitNew(false)}>
           + item
+        </button>
+        <button
+          type="button"
+          className="tk__list-add-btn tk__list-add-btn--header"
+          onClick={() => submitNew(true)}
+        >
+          + título
         </button>
       </div>
     </div>
@@ -224,9 +246,10 @@ const TaskItem = ({ task, onSave, onDelete }) => {
   )
 
   const addListItem = useCallback(
-    (text) => {
+    (text, asHeader) => {
       const lines = parseListItems(notes)
-      const newNotes = [...lines, text.trim()].join('\n')
+      const newLine = asHeader ? `## ${text.trim()}` : text.trim()
+      const newNotes = [...lines, newLine].join('\n')
       setValue('notes', newNotes, { shouldDirty: true })
       onSave({ ...task, ...getValues(), notes: newNotes, dueDate: getValues('dueDate') || null })
     },
@@ -240,8 +263,12 @@ const TaskItem = ({ task, onSave, onDelete }) => {
       for (let i = 0; i < allLines.length; i++) {
         if (allLines[i].trim() !== '') {
           if (count === index) {
-            const checked = allLines[i].startsWith('- ')
-            allLines[i] = checked ? `- ${text.trim()}` : text.trim()
+            if (isListHeader(allLines[i])) {
+              allLines[i] = `## ${text.trim()}`
+            } else {
+              const checked = allLines[i].startsWith('- ')
+              allLines[i] = checked ? `- ${text.trim()}` : text.trim()
+            }
             break
           }
           count++

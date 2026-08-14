@@ -619,6 +619,16 @@
       text-decoration: line-through;
       color: var(--cui-tertiary-color);
     }
+
+    &--header {
+      cursor: default;
+      margin-top: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--cui-border-color);
+
+      &:first-child { margin-top: 0; }
+      &:hover { background: transparent; }
+    }
   }
 
   &__list-drag-handle {
@@ -671,6 +681,14 @@
     font-size: var(--fs-md);
     color: var(--cui-body-color);
     line-height: 1.5;
+
+    &--header {
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--cui-secondary-color);
+    }
   }
 
   &__list-edit-input {
@@ -712,6 +730,12 @@
     color: #fff;
     cursor: pointer;
     white-space: nowrap;
+
+    &--header {
+      background: transparent;
+      border: 1px solid var(--cui-border-color);
+      color: var(--cui-secondary-color);
+    }
   }
 
   &__edit-actions {

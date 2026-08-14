@@ -70,9 +70,13 @@ export const newTask = (overrides = {}) => ({
 export const parseListItems = (notes) =>
   (notes ?? '').split('\n').filter((l) => l.trim() !== '')
 
+// A header line groups the checklist items below it under a title — it's
+// never checkable and excluded from progress counts.
+export const isListHeader = (line) => line.startsWith('## ')
+
 export const getListProgress = (task) => {
   if (!task.listMode || !task.notes) return null
-  const lines = parseListItems(task.notes)
+  const lines = parseListItems(task.notes).filter((l) => !isListHeader(l))
   if (!lines.length) return null
   return { done: lines.filter((l) => l.startsWith('- ')).length, total: lines.length }
 }
