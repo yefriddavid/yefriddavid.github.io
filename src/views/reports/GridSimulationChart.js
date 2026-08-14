@@ -6,6 +6,10 @@ const MARGIN_X = 92
 const MARGIN_RIGHT = 78
 const MARGIN_Y = 34
 const W = 900
+// With few grid levels (1-3), gridCount * ROW_H alone makes the chart so
+// short the wave's curvature reads as flat — floor the height so the sine
+// keeps a readable amplitude regardless of grid count.
+const MIN_H = 320
 // Clean gap left of the wave's start so it doesn't begin right on top of the
 // level dots/price labels at MARGIN_X.
 const WAVE_GAP = 60
@@ -23,7 +27,7 @@ const GridSimulationChart = ({
   onMarkerChange,
 }) => {
   const gridCount = levels.length - 1
-  const H = gridCount * ROW_H + MARGIN_Y * 2
+  const H = Math.max(MIN_H, gridCount * ROW_H + MARGIN_Y * 2)
   const waveStartX = MARGIN_X + WAVE_GAP
   const waveW = W - MARGIN_RIGHT - waveStartX
   const svgRef = useRef(null)
