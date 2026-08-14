@@ -232,6 +232,7 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
     saveViewFormKey,
     saveView,
     deleteView,
+    updateView,
     loadView,
   } = useSavedViews(SAVED_VIEWS_KEY)
 
@@ -576,7 +577,12 @@ export default function BtcHistogram({ purchaseMarkers: purchases = [] }) {
           subtitle="Guardá los filtros actuales del gráfico con un nombre, para volver a ellos después."
         >
           <SaveViewForm key={saveViewFormKey} onSave={saveView} />
-          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+          <SavedViewsList
+            views={savedViews}
+            onLoad={loadView}
+            onDelete={deleteView}
+            onUpdate={updateView}
+          />
         </AppModal>
       )}
 

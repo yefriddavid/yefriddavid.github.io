@@ -156,6 +156,7 @@ const CryptoQuery = () => {
     saveViewFormKey,
     saveView,
     deleteView,
+    updateView,
     loadView,
   } = useSavedViews(SAVED_VIEWS_KEY)
 
@@ -1372,7 +1373,12 @@ const CryptoQuery = () => {
           subtitle="Guardá los filtros y el orden actuales con un nombre, para volver a ellos después."
         >
           <SaveViewForm key={saveViewFormKey} onSave={saveView} />
-          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+          <SavedViewsList
+            views={savedViews}
+            onLoad={loadView}
+            onDelete={deleteView}
+            onUpdate={updateView}
+          />
         </AppModal>
       )}
     </div>

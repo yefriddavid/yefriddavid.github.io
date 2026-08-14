@@ -26,6 +26,7 @@ const GridTradeSimulation = () => {
     saveViewFormKey,
     saveView,
     deleteView,
+    updateView,
     loadView,
   } = useSavedViews(SAVED_VIEWS_KEY)
 
@@ -373,7 +374,12 @@ const GridTradeSimulation = () => {
           subtitle="Guardá los filtros actuales con un nombre, para volver a ellos después."
         >
           <SaveViewForm key={saveViewFormKey} onSave={saveView} />
-          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+          <SavedViewsList
+            views={savedViews}
+            onLoad={loadView}
+            onDelete={deleteView}
+            onUpdate={updateView}
+          />
         </AppModal>
       )}
     </div>

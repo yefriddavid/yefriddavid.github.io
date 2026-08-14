@@ -274,6 +274,7 @@ export default function Bounces() {
     saveViewFormKey,
     saveView,
     deleteView,
+    updateView,
     loadView,
   } = useSavedViews(SAVED_VIEWS_KEY)
 
@@ -851,7 +852,12 @@ export default function Bounces() {
           subtitle="Guardá los filtros actuales del gráfico con un nombre, para volver a ellos después."
         >
           <SaveViewForm key={saveViewFormKey} onSave={saveView} />
-          <SavedViewsList views={savedViews} onLoad={loadView} onDelete={deleteView} />
+          <SavedViewsList
+            views={savedViews}
+            onLoad={loadView}
+            onDelete={deleteView}
+            onUpdate={updateView}
+          />
         </AppModal>
       )}
     </div>

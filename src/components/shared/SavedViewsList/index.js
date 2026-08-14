@@ -5,6 +5,7 @@ const SavedViewsList = ({
   views,
   onLoad,
   onDelete,
+  onUpdate,
   emptyText = 'Todavía no guardaste ninguna vista.',
 }) => {
   if (views.length === 0) return <p className="saved-views-list__empty">{emptyText}</p>
@@ -16,6 +17,16 @@ const SavedViewsList = ({
           <button type="button" className="saved-views-list__link" onClick={() => onLoad(v)}>
             {v.name}
           </button>
+          {onUpdate && (
+            <button
+              type="button"
+              className="saved-views-list__edit"
+              title="Actualizar vista con los filtros actuales"
+              onClick={() => onUpdate(v.id)}
+            >
+              ✏️
+            </button>
+          )}
           <button
             type="button"
             className="saved-views-list__delete"
