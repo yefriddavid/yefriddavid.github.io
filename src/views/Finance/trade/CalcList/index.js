@@ -14,6 +14,7 @@ const COLUMNS = [
   { key: 'index', label: '#', type: 'readonly', width: 28, noMinWidth: true },
   { key: 'applied', label: 'Applyed', type: 'checkbox', width: 60, noMinWidth: true },
   { key: 'description', label: 'Description', type: 'text' },
+  { key: 'note', label: 'Comentario', type: 'text' },
   { key: 'category',       label: 'Category',       type: 'select', options: CALC_LIST_CATEGORIES,    width: 110 },
   { key: 'classification', label: 'Classification', type: 'select', options: CALC_LIST_CLASSIFICATIONS, width: 120 },
   { key: 'quantity', label: 'Qty', type: 'number', width: 90 },
