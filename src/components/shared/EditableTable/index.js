@@ -68,6 +68,7 @@ export default function EditableTable({
   onRowReorder,
   totalColumn,
   markableTotal = false,
+  appliedColumn,
   budget,
   onBudgetChange,
   emptyText = 'No hay filas.',
@@ -110,6 +111,13 @@ export default function EditableTable({
     markableTotal && totalColumn != null
       ? rows
           .filter((r) => markedIds.has(r[keyExpr]))
+          .reduce((sum, r) => sum + (calcTotalValue(r) ?? 0), 0)
+      : null
+
+  const balanceTotal =
+    appliedColumn != null && totalColumn != null
+      ? rows
+          .filter((r) => !r[appliedColumn])
           .reduce((sum, r) => sum + (calcTotalValue(r) ?? 0), 0)
       : null
 
@@ -281,6 +289,24 @@ export default function EditableTable({
                         {columns.find((c) => c.key === totalColumn)?.format
                           ? columns.find((c) => c.key === totalColumn).format(markedTotal)
                           : markedTotal}
+                      </span>
+                    ) : null}
+                  </td>
+                ))}
+                <td />
+              </tr>
+            )}
+            {balanceTotal != null && (
+              <tr className="editable-table__balance-row">
+                {columns.map((col, i) => (
+                  <td key={col.key} className={col.key === totalColumn ? 'editable-table__td--calc' : ''}>
+                    {i === 0 ? (
+                      <span className="editable-table__total-label">Saldo</span>
+                    ) : col.key === totalColumn ? (
+                      <span className="editable-table__total-value">
+                        {columns.find((c) => c.key === totalColumn)?.format
+                          ? columns.find((c) => c.key === totalColumn).format(balanceTotal)
+                          : balanceTotal}
                       </span>
                     ) : null}
                   </td>

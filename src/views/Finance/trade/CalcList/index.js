@@ -737,6 +737,7 @@ export default function CalcList() {
             keyExpr="id"
             totalColumn="total"
             markableTotal
+            appliedColumn="applied"
             onRowChange={handleRowChange}
             onRowAdd={handleRowAdd}
             onRowDelete={handleRowDelete}

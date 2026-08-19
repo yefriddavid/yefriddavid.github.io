@@ -277,6 +277,15 @@
     }
   }
 
+  &__balance-row {
+    border-top: 1px dashed var(--cui-border-color);
+
+    .editable-table__total-value {
+      color: var(--cui-success);
+      background: color-mix(in srgb, var(--cui-success) 12%, transparent);
+    }
+  }
+
   &__budget-row {
     border-top: 1px dashed var(--cui-border-color);
   }
