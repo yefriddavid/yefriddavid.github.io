@@ -28,6 +28,7 @@
         "items": [
           { "type": "item", "name": "Compras y Ventas", "to": "/finance/management/crypto-activity", "icon": "cilSwapVertical" },
           { "type": "item", "name": "Consulta de Compras/Ventas", "to": "/finance/management/crypto-query", "icon": "cilCalculator" },
+          { "type": "item", "name": "Compras/Ventas por Mes", "to": "/finance/management/crypto-monthly", "icon": "cilCalendar" },
           { "type": "item", "name": "Retiros", "to": "/finance/management/crypto-withdrawals-report", "icon": "cilArrowThickFromBottom" },
           { "type": "item", "name": "Totales por Plataforma", "to": "/finance/management/crypto-platforms", "icon": "cilLayers" },
           { "type": "item", "name": "Resumen", "to": "/finance/management/crypto-report", "icon": "cibBitcoin" },

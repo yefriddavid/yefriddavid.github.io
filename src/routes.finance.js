@@ -15,6 +15,7 @@ const Analysis = React.lazy(() => import('./views/Finance/Analysis'))
 const CryptoReport = React.lazy(() => import('./views/reports/CryptoReport'))
 const CryptoActivityDashboard = React.lazy(() => import('./views/reports/CryptoActivityDashboard'))
 const CryptoQuery = React.lazy(() => import('./views/reports/CryptoQuery'))
+const CryptoMonthly = React.lazy(() => import('./views/reports/CryptoMonthly'))
 const CryptoPlatforms = React.lazy(() => import('./views/reports/CryptoPlatforms'))
 const CryptoWithdrawalsReport = React.lazy(() => import('./views/reports/CryptoWithdrawalsReport'))
 const CryptoDcaReport = React.lazy(() => import('./views/reports/CryptoDcaReport'))
@@ -92,6 +93,12 @@ const financeRoutes = [
     path: '/management/crypto-query',
     name: 'Consulta de Compras/Ventas',
     element: CryptoQuery,
+    landingPage: true,
+  },
+  {
+    path: '/management/crypto-monthly',
+    name: 'Compras/Ventas por Mes',
+    element: CryptoMonthly,
     landingPage: true,
   },
   {
