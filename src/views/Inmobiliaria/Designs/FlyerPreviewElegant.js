@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
+import { formatServicesIncluded, isNoServicesIncluded } from 'src/constants/inmobiliaria'
 
 const FONT = 'Arial, Helvetica, sans-serif'
 const INDIGO = '#0e0c1e'
@@ -366,17 +367,16 @@ const FlyerPreviewElegant = forwardRef(({ values = {}, onPropertyDrag, onBuildin
               {rentAmount}
             </text>
             {servicesIncluded && (
-              <>
-                <text
-                  x="50"
-                  y={cy + 170}
-                  fill="rgba(255,255,255,0.6)"
-                  fontSize="23"
-                  fontFamily={FONT}
-                >
-                  Servicios incluidos: {servicesIncluded}
-                </text>
-              </>
+              <text
+                x="50"
+                y={cy + 200}
+                fill="rgba(255,255,255,0.6)"
+                fontSize={isNoServicesIncluded(servicesIncluded) ? '30' : '23'}
+                fontWeight={isNoServicesIncluded(servicesIncluded) ? 'bold' : 'normal'}
+                fontFamily={FONT}
+              >
+                {formatServicesIncluded(servicesIncluded)}
+              </text>
             )}
           </>
         )

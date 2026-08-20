@@ -90,3 +90,10 @@ export const DESIGN_TEMPLATE_DEFS = [
 ]
 
 export const DESIGN_TEMPLATE_MAP = Object.fromEntries(DESIGN_TEMPLATE_DEFS.map((d) => [d.key, d]))
+
+export const NO_SERVICES_INCLUDED_TEXT = 'NO INCLUYE SERVICIOS'
+
+export const isNoServicesIncluded = (value) => value?.trim().toLowerCase() === 'no'
+
+export const formatServicesIncluded = (value) =>
+  isNoServicesIncluded(value) ? NO_SERVICES_INCLUDED_TEXT : value
