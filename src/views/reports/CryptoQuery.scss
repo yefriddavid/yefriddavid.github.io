@@ -394,13 +394,17 @@
   }
 
   &__mark-col {
-    width: 48px;
+    width: 64px;
     text-align: center !important;
     padding-right: 0 !important;
 
     input {
       cursor: pointer;
     }
+  }
+
+  &__loan-checkbox {
+    margin-left: 4px;
   }
 
   &__edit-btn {

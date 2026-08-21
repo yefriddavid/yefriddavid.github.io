@@ -50,6 +50,15 @@ const fmtDateTime = (p) =>
   p.purchaseTime ? `${fmtDateLong(p.purchaseDate)} ${p.purchaseTime}` : fmtDateLong(p.purchaseDate)
 const monthOf = (dateStr) => Number((dateStr || '').slice(5, 7)) || null
 
+// EA = tasa efectiva anual (compound), not a simple/linear split — converts
+// the annual rate to whatever day-count sits between the two dates.
+export const loanCostBetween = (principal, fromDate, toDate, ratePct) => {
+  if (!fromDate || !toDate || !principal) return null
+  const days = moment(toDate).diff(moment(fromDate), 'days')
+  if (days <= 0) return 0
+  return principal * (Math.pow(1 + ratePct / 100, days / 365) - 1)
+}
+
 const LEDGER_COLUMNS = [
   { key: 'purchaseDate', label: 'Fecha' },
   { key: 'type', label: 'Tipo' },
@@ -230,6 +239,14 @@ const CryptoQuery = () => {
       return next
     })
   const hasFilters = FILTER_PARAM_KEYS.some((k) => searchParams.has(k))
+  const advancedFilterCount = [
+    priceMin !== '',
+    priceMax !== '',
+    totalMin !== '',
+    totalMax !== '',
+    selectedProfitStatus.size > 0,
+    selectedTypes.size > 0,
+  ].filter(Boolean).length
 
   const [expandedGroups, setExpandedGroups] = useState(new Set())
   const [expandedOrders, setExpandedOrders] = useState(new Set())
@@ -240,6 +257,11 @@ const CryptoQuery = () => {
       return next
     })
   const [selectedForLink, setSelectedForLink] = useState(null)
+
+  // Global, editable by hand — never persisted (not the URL, not Firestore).
+  const [loanRateEA, setLoanRateEA] = useState(4)
+
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
 
   // Hides a column across the whole table (thead + every row) via a <colgroup>
   // instead of conditionally not rendering cells — that would desync the
@@ -398,6 +420,26 @@ const CryptoQuery = () => {
     })
     return map
   }, [ledgerEntries])
+
+  // Same value on both sides of a linked pair: a loan-funded buy costs interest
+  // from its purchase date to whenever it was sold (or to today if still open);
+  // the paired sell just mirrors its buy partner's figure.
+  const todayStr = moment().format('YYYY-MM-DD')
+  const loanCostFor = (p) => {
+    if (isSale(p)) {
+      const buyPartner = linkedPartner.get(p.id)
+      if (!buyPartner || !buyPartner.records.some((r) => isLoanFunded(r))) return null
+      return loanCostBetween(buyPartner.total, buyPartner.purchaseDate, p.purchaseDate, loanRateEA)
+    }
+    if (!p.records.some((r) => isLoanFunded(r))) return null
+    const sellPartner = linkedPartner.get(p.id)
+    return loanCostBetween(
+      p.total,
+      p.purchaseDate,
+      sellPartner ? sellPartner.purchaseDate : todayStr,
+      loanRateEA,
+    )
+  }
 
   // Each marked row carries the sum of "total" for the segment since the
   // previous marked row (or since the top of the table for the first mark).
@@ -704,22 +746,6 @@ const CryptoQuery = () => {
           </CFormSelect>
         </div>
         <div className="cq__field">
-          <label>Tipo</label>
-          <MultiSelectDropdown
-            label={(size) => (size > 0 ? `Tipo (${size})` : 'Tipo: Todos')}
-            options={CRYPTO_PURCHASE_TYPES}
-            selected={selectedTypes}
-            onToggle={(value) =>
-              setSelectedTypes((prev) => {
-                const next = new Set(prev)
-                next.has(value) ? next.delete(value) : next.add(value)
-                return next
-              })
-            }
-            onClearAll={() => setSelectedTypes(new Set())}
-          />
-        </div>
-        <div className="cq__field">
           <label>Vínculo</label>
           <MultiSelectDropdown
             label={(size) => (size > 0 ? `Vínculo (${size})` : 'Vínculo: Todos')}
@@ -733,22 +759,6 @@ const CryptoQuery = () => {
               })
             }
             onClearAll={() => setSelectedLinkStatus(new Set())}
-          />
-        </div>
-        <div className="cq__field">
-          <label>Utilidad</label>
-          <MultiSelectDropdown
-            label={(size) => (size > 0 ? `Utilidad (${size})` : 'Utilidad: Todas')}
-            options={CRYPTO_PURCHASE_PROFIT_STATUS}
-            selected={selectedProfitStatus}
-            onToggle={(value) =>
-              setSelectedProfitStatus((prev) => {
-                const next = new Set(prev)
-                next.has(value) ? next.delete(value) : next.add(value)
-                return next
-              })
-            }
-            onClearAll={() => setSelectedProfitStatus(new Set())}
           />
         </div>
         <div className="cq__field">
@@ -830,47 +840,26 @@ const CryptoQuery = () => {
           </>
         )}
         <div className="cq__field">
-          <label>Precio mínimo</label>
-          <input
-            type="number"
-            step="any"
-            className="cq__input"
-            placeholder="0.00"
-            value={priceMin}
-            onChange={(e) => setPriceMin(e.target.value)}
-          />
+          <label>&nbsp;</label>
+          <button
+            type="button"
+            className="cq__export-btn"
+            onClick={() => setShowAdvancedFilters(true)}
+          >
+            🔧 Filtros avanzados{advancedFilterCount > 0 ? ` (${advancedFilterCount})` : ''}
+          </button>
         </div>
-        <div className="cq__field">
-          <label>Precio máximo</label>
+        <div
+          className="cq__field"
+          title="Tasa efectiva anual usada para estimar el costo de los préstamos (Binance Loans)"
+        >
+          <label>Tasa préstamo EA (%)</label>
           <input
             type="number"
             step="any"
             className="cq__input"
-            placeholder="0.00"
-            value={priceMax}
-            onChange={(e) => setPriceMax(e.target.value)}
-          />
-        </div>
-        <div className="cq__field">
-          <label>Total ≥</label>
-          <input
-            type="number"
-            step="any"
-            className="cq__input"
-            placeholder="0.00"
-            value={totalMin}
-            onChange={(e) => setTotalMin(e.target.value)}
-          />
-        </div>
-        <div className="cq__field">
-          <label>Total ≤</label>
-          <input
-            type="number"
-            step="any"
-            className="cq__input"
-            placeholder="0.00"
-            value={totalMax}
-            onChange={(e) => setTotalMax(e.target.value)}
+            value={loanRateEA}
+            onChange={(e) => setLoanRateEA(Number(e.target.value))}
           />
         </div>
         {hasFilters && (
@@ -993,6 +982,7 @@ const CryptoQuery = () => {
                       />
                     ))}
                     <col />
+                    <col />
                   </colgroup>
                 )}
                 {groupByQty ? (
@@ -1017,12 +1007,20 @@ const CryptoQuery = () => {
                       </>
                     }
                     trailing={
-                      <th
-                        className="num"
-                        title="Precio de la operación vinculada (compra ↔ venta)"
-                      >
-                        Precio vinculado
-                      </th>
+                      <>
+                        <th
+                          className="num"
+                          title="Precio de la operación vinculada (compra ↔ venta)"
+                        >
+                          Precio vinculado
+                        </th>
+                        <th
+                          className="num"
+                          title="Costo estimado del préstamo (Binance Loans) a la tasa EA de arriba, desde la compra hasta la venta vinculada (o hasta hoy si aún no se vendió)"
+                        >
+                          Costo préstamo
+                        </th>
+                      </>
                     }
                   />
                 )}
@@ -1113,6 +1111,7 @@ const CryptoQuery = () => {
                         // tracking the live price — it's no longer an open position.
                         const soldPartner = !isSale(p) ? linkedPartner.get(p.id) : null
                         const displayPnl = soldPartner ? soldPartner.total - p.total : p.pnl
+                        const loanCost = loanCostFor(p)
                         const rowClass = [
                           p.isGroup ? 'cq__group-row' : editMode && 'cq__row--editable',
                           selectedForLink?.id === p.id && 'cq__row--selected',
@@ -1131,35 +1130,61 @@ const CryptoQuery = () => {
                                   if (p.isGroup) toggleOrderExpand(p.key)
                                 }}
                               >
-                                {p.isGroup ? (
-                                  <span
-                                    className={`cq__chevron${expandedOrders.has(p.key) ? ' cq__chevron--open' : ''}`}
-                                  >
-                                    ▸
-                                  </span>
-                                ) : (
-                                  <>
+                                {(() => {
+                                  const loanFunded = p.records.some((r) => isLoanFunded(r))
+                                  const loanCheckbox = !isSale(p) && (
                                     <input
                                       type="checkbox"
-                                      checked={markedIds.has(p.id)}
-                                      onChange={() => toggleMarked(p.id)}
-                                    />
-                                    <button
-                                      type="button"
-                                      className="cq__edit-btn"
-                                      title="Editar este registro (pestaña nueva)"
-                                      onClick={() =>
-                                        window.open(
-                                          `/finance/tools/v2/adjustments?edit=${p.id}`,
-                                          '_blank',
-                                          'noopener,noreferrer',
+                                      className="cq__loan-checkbox"
+                                      checked={loanFunded}
+                                      title="Comprado con dinero prestado (Binance Loans)"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={() =>
+                                        p.records.forEach((r) =>
+                                          dispatch(
+                                            actions.updateRequest({
+                                              ...r,
+                                              fundedByLoan: !loanFunded,
+                                            }),
+                                          ),
                                         )
                                       }
-                                    >
-                                      ✎
-                                    </button>
-                                  </>
-                                )}
+                                    />
+                                  )
+                                  return p.isGroup ? (
+                                    <>
+                                      <span
+                                        className={`cq__chevron${expandedOrders.has(p.key) ? ' cq__chevron--open' : ''}`}
+                                      >
+                                        ▸
+                                      </span>
+                                      {loanCheckbox}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <input
+                                        type="checkbox"
+                                        checked={markedIds.has(p.id)}
+                                        onChange={() => toggleMarked(p.id)}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="cq__edit-btn"
+                                        title="Editar este registro (pestaña nueva)"
+                                        onClick={() =>
+                                          window.open(
+                                            `/finance/tools/v2/adjustments?edit=${p.id}`,
+                                            '_blank',
+                                            'noopener,noreferrer',
+                                          )
+                                        }
+                                      >
+                                        ✎
+                                      </button>
+                                      {loanCheckbox}
+                                    </>
+                                  )
+                                })()}
                               </td>
                               <td>{fmtDateTime(p)}</td>
                               <td>
@@ -1278,12 +1303,21 @@ const CryptoQuery = () => {
                                   <span className="cq__muted">—</span>
                                 )}
                               </td>
+                              <td className="num">
+                                {loanCost == null ? (
+                                  <span className="cq__muted">—</span>
+                                ) : (
+                                  <span className="cq__amount cq__amount--negative">
+                                    {fmtUSD(loanCost)}
+                                  </span>
+                                )}
+                              </td>
                             </tr>
                             {p.isGroup && expandedOrders.has(p.key) && (
                               <tr className="cq__detail-row">
                                 <td />
                                 <td />
-                                <td colSpan={8}>
+                                <td colSpan={9}>
                                   <table className="cq__detail-table">
                                     <thead>
                                       <tr>
@@ -1355,6 +1389,7 @@ const CryptoQuery = () => {
                                   <td />
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                                 <tr className="cq__subtotal-row cq__subtotal-row--buy">
                                   <td colSpan={4}>Subtotal compras</td>
@@ -1364,12 +1399,14 @@ const CryptoQuery = () => {
                                   <td />
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                                 <tr className="cq__subtotal-row cq__subtotal-row--sell">
                                   <td colSpan={4}>Subtotal ventas</td>
                                   <td className="num">{p.subtotalSells.qty}</td>
                                   <td className="num">—</td>
                                   <td className="num">{fmtUSD(p.subtotalSells.total)}</td>
+                                  <td />
                                   <td />
                                   <td />
                                   <td />
@@ -1387,6 +1424,7 @@ const CryptoQuery = () => {
                                   <td />
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                               </>
                             )}
@@ -1395,7 +1433,7 @@ const CryptoQuery = () => {
                       })}
                   {(groupByQty ? groupedRows.length === 0 : filtered.length === 0) && (
                     <tr>
-                      <td colSpan={groupByQty ? 5 : 10} className="cq__empty">
+                      <td colSpan={groupByQty ? 5 : 11} className="cq__empty">
                         Sin operaciones para los filtros seleccionados.
                       </td>
                     </tr>
@@ -1411,6 +1449,7 @@ const CryptoQuery = () => {
                       <td />
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={4}>Total ventas ({totals.sellsCount})</td>
@@ -1420,10 +1459,11 @@ const CryptoQuery = () => {
                       <td />
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row cq__total-row--net">
                       <td colSpan={6}>Neto (Ventas − Compras)</td>
-                      <td className="num" colSpan={4}>
+                      <td className="num" colSpan={5}>
                         <span className="cq__amount cq__amount--neutral">
                           {fmtUSD(Math.abs(totals.net))}
                         </span>
@@ -1438,6 +1478,7 @@ const CryptoQuery = () => {
                       </td>
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total ganancias (PnL)</td>
@@ -1447,6 +1488,7 @@ const CryptoQuery = () => {
                           {fmtUSD(totals.pnlGains)}
                         </span>
                       </td>
+                      <td />
                       <td />
                       <td />
                     </tr>
@@ -1465,6 +1507,7 @@ const CryptoQuery = () => {
                         </td>
                         <td />
                         <td />
+                        <td />
                       </tr>
                     )}
                     {pendingRepurchase.count > 0 && (
@@ -1476,11 +1519,13 @@ const CryptoQuery = () => {
                         <td />
                         <td />
                         <td />
+                        <td />
                       </tr>
                     )}
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total invertido</td>
                       <td className="num">{fmtUSD(totals.invested)}</td>
+                      <td />
                       <td />
                       <td />
                     </tr>
@@ -1493,6 +1538,7 @@ const CryptoQuery = () => {
                       </td>
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total invertido (ganando)</td>
@@ -1501,6 +1547,7 @@ const CryptoQuery = () => {
                           {fmtUSD(totals.investedGains)}
                         </span>
                       </td>
+                      <td />
                       <td />
                       <td />
                     </tr>
@@ -1514,6 +1561,7 @@ const CryptoQuery = () => {
                       <td />
                       <td />
                       <td />
+                      <td />
                     </tr>
                     {markedSummary.count > 0 && (
                       <tr className="cq__total-row cq__total-row--marked">
@@ -1521,6 +1569,7 @@ const CryptoQuery = () => {
                         <td className="num">{markedSummary.quantity}</td>
                         <td className="num">—</td>
                         <td className="num">{fmtUSD(markedSummary.total)}</td>
+                        <td />
                         <td />
                         <td />
                         <td />
@@ -1609,6 +1658,95 @@ const CryptoQuery = () => {
             onDelete={deleteView}
             onUpdate={updateView}
           />
+        </AppModal>
+      )}
+
+      {showAdvancedFilters && (
+        <AppModal
+          visible
+          onClose={() => setShowAdvancedFilters(false)}
+          variant="center"
+          size="md"
+          title="Filtros avanzados"
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="cq__field">
+              <label>Precio mínimo</label>
+              <input
+                type="number"
+                step="any"
+                className="cq__input"
+                placeholder="0.00"
+                value={priceMin}
+                onChange={(e) => setPriceMin(e.target.value)}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Precio máximo</label>
+              <input
+                type="number"
+                step="any"
+                className="cq__input"
+                placeholder="0.00"
+                value={priceMax}
+                onChange={(e) => setPriceMax(e.target.value)}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Total ≥</label>
+              <input
+                type="number"
+                step="any"
+                className="cq__input"
+                placeholder="0.00"
+                value={totalMin}
+                onChange={(e) => setTotalMin(e.target.value)}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Total ≤</label>
+              <input
+                type="number"
+                step="any"
+                className="cq__input"
+                placeholder="0.00"
+                value={totalMax}
+                onChange={(e) => setTotalMax(e.target.value)}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Utilidad</label>
+              <MultiSelectDropdown
+                label={(size) => (size > 0 ? `Utilidad (${size})` : 'Utilidad: Todas')}
+                options={CRYPTO_PURCHASE_PROFIT_STATUS}
+                selected={selectedProfitStatus}
+                onToggle={(value) =>
+                  setSelectedProfitStatus((prev) => {
+                    const next = new Set(prev)
+                    next.has(value) ? next.delete(value) : next.add(value)
+                    return next
+                  })
+                }
+                onClearAll={() => setSelectedProfitStatus(new Set())}
+              />
+            </div>
+            <div className="cq__field">
+              <label>Tipo</label>
+              <MultiSelectDropdown
+                label={(size) => (size > 0 ? `Tipo (${size})` : 'Tipo: Todos')}
+                options={CRYPTO_PURCHASE_TYPES}
+                selected={selectedTypes}
+                onToggle={(value) =>
+                  setSelectedTypes((prev) => {
+                    const next = new Set(prev)
+                    next.has(value) ? next.delete(value) : next.add(value)
+                    return next
+                  })
+                }
+                onClearAll={() => setSelectedTypes(new Set())}
+              />
+            </div>
+          </div>
         </AppModal>
       )}
     </div>
