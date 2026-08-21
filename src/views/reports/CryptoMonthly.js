@@ -195,7 +195,9 @@ const CryptoMonthly = () => {
       sellsQty,
       invested,
       proceeds,
-      net: proceeds - invested,
+      avgBuyPrice: buysQty ? invested / buysQty : 0,
+      avgSellPrice: sellsQty ? proceeds / sellsQty : 0,
+      net: invested - proceeds,
     }
   }, [filtered])
 
@@ -231,7 +233,12 @@ const CryptoMonthly = () => {
       map.set(key, g)
     })
     return [...map.values()]
-      .map((g) => ({ ...g, net: g.proceeds - g.invested }))
+      .map((g) => ({
+        ...g,
+        avgBuyPrice: g.buysQty ? g.invested / g.buysQty : 0,
+        avgSellPrice: g.sellsQty ? g.proceeds / g.sellsQty : 0,
+        net: g.invested - g.proceeds,
+      }))
       .sort((a, b) => b.key.localeCompare(a.key))
   }, [filtered])
 
@@ -244,9 +251,11 @@ const CryptoMonthly = () => {
         'Compras',
         'Cant. comprada',
         'Invertido',
+        'Precio prom. compra',
         'Ventas',
         'Cant. vendida',
         'Recibido',
+        'Precio prom. venta',
         'Neto',
       ],
       ...monthlyRows.map((r) => [
@@ -254,9 +263,11 @@ const CryptoMonthly = () => {
         r.buysCount,
         r.buysQty,
         r.invested,
+        r.avgBuyPrice,
         r.sellsCount,
         r.sellsQty,
         r.proceeds,
+        r.avgSellPrice,
         r.net,
       ]),
     ]
@@ -517,9 +528,11 @@ const CryptoMonthly = () => {
                     <th className="num">Compras</th>
                     <th className="num">Cant. comprada</th>
                     <th className="num">Invertido</th>
+                    <th className="num">Precio prom. compra</th>
                     <th className="num">Ventas</th>
                     <th className="num">Cant. vendida</th>
                     <th className="num">Recibido</th>
+                    <th className="num">Precio prom. venta</th>
                     <th className="num">Neto</th>
                   </tr>
                 </thead>
@@ -530,9 +543,11 @@ const CryptoMonthly = () => {
                       <td className="num">{r.buysCount}</td>
                       <td className="num">{r.buysQty.toFixed(8)}</td>
                       <td className="num">{fmtUSD(r.invested)}</td>
+                      <td className="num">{fmtUSD(r.avgBuyPrice)}</td>
                       <td className="num">{r.sellsCount}</td>
                       <td className="num">{r.sellsQty.toFixed(8)}</td>
                       <td className="num">{fmtUSD(r.proceeds)}</td>
+                      <td className="num">{fmtUSD(r.avgSellPrice)}</td>
                       <td
                         className={`num${r.net >= 0 ? ' cm__amount--positive' : ' cm__amount--negative'}`}
                       >
@@ -543,7 +558,7 @@ const CryptoMonthly = () => {
                   ))}
                   {monthlyRows.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="cm__empty">
+                      <td colSpan={10} className="cm__empty">
                         Sin operaciones para los filtros seleccionados.
                       </td>
                     </tr>
@@ -556,9 +571,11 @@ const CryptoMonthly = () => {
                       <td className="num">{totals.buysCount}</td>
                       <td className="num">{totals.buysQty.toFixed(8)}</td>
                       <td className="num">{fmtUSD(totals.invested)}</td>
+                      <td className="num">{fmtUSD(totals.avgBuyPrice)}</td>
                       <td className="num">{totals.sellsCount}</td>
                       <td className="num">{totals.sellsQty.toFixed(8)}</td>
                       <td className="num">{fmtUSD(totals.proceeds)}</td>
+                      <td className="num">{fmtUSD(totals.avgSellPrice)}</td>
                       <td
                         className={`num${totals.net >= 0 ? ' cm__amount--positive' : ' cm__amount--negative'}`}
                       >
