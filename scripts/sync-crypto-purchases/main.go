@@ -197,8 +197,16 @@ func main() {
 	defer fsClient.Close()
 
 	// Existing binanceTradeId values already stored, so re-runs don't duplicate.
+	// Scoped to --since/--platform (needs a composite index the first time you
+	// run this — Firestore prints a console link to create it) so re-runs only
+	// pay for reads in the window actually being synced, instead of re-reading
+	// the tenant's entire purchase history on every invocation.
 	existing := map[string]bool{}
-	iter := fsClient.Collection(collectionName).Where("tenantId", "==", *tenant).Documents(ctx)
+	iter := fsClient.Collection(collectionName).
+		Where("tenantId", "==", *tenant).
+		Where("platform", "==", *platform).
+		Where("purchaseDate", ">=", *since).
+		Documents(ctx)
 	for {
 		snap, err := iter.Next()
 		if err == iterator.Done {
