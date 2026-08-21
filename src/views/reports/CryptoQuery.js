@@ -349,6 +349,29 @@ const CryptoQuery = () => {
   const ledgerEntries = useMemo(() => buildLedgerEntries(filtered), [filtered])
   const sortedLedgerEntries = useMemo(() => sortBySpec(ledgerEntries, sort), [ledgerEntries, sort])
 
+  // For a linked buy/sell pair, lets each row show its counterpart's price
+  // directly (e.g. a buy row shows what it was later sold at) instead of
+  // making the user scroll down to "Pares vinculados" to compare them.
+  const linkedPartner = useMemo(() => {
+    const byGroup = new Map()
+    ledgerEntries.forEach((e) => {
+      if (!e.matchGroupId) return
+      const arr = byGroup.get(e.matchGroupId) || []
+      arr.push(e)
+      byGroup.set(e.matchGroupId, arr)
+    })
+    const map = new Map()
+    byGroup.forEach((entries) => {
+      const buy = entries.find((e) => !isSale(e))
+      const sell = entries.find((e) => isSale(e))
+      if (buy && sell) {
+        map.set(buy.id, sell)
+        map.set(sell.id, buy)
+      }
+    })
+    return map
+  }, [ledgerEntries])
+
   // Each marked row carries the sum of "total" for the segment since the
   // previous marked row (or since the top of the table for the first mark).
   const rowsWithSubtotals = useMemo(() => {
@@ -910,6 +933,12 @@ const CryptoQuery = () => {
                           </th>
                         )
                       })}
+                      <th
+                        className="num"
+                        title="Precio de la operación vinculada (compra ↔ venta)"
+                      >
+                        Precio vinculado
+                      </th>
                     </tr>
                   )}
                 </thead>
@@ -996,6 +1025,10 @@ const CryptoQuery = () => {
                       })
                     : rowsWithSubtotals.map((p, i) => {
                         const total = p.total
+                        // A sold buy's PnL is frozen at the realized sale price instead of
+                        // tracking the live price — it's no longer an open position.
+                        const soldPartner = !isSale(p) ? linkedPartner.get(p.id) : null
+                        const displayPnl = soldPartner ? soldPartner.total - p.total : p.pnl
                         const rowClass = [
                           p.isGroup ? 'cq__group-row' : editMode && 'cq__row--editable',
                           selectedForLink?.id === p.id && 'cq__row--selected',
@@ -1075,26 +1108,42 @@ const CryptoQuery = () => {
                               <td className="num">{fmtUSD(p.purchasePrice)}</td>
                               <td className="num">{fmtUSD(total)}</td>
                               <td className="num">
-                                {p.pnl == null ? (
+                                {displayPnl == null ? (
                                   <span className="cq__muted">—</span>
                                 ) : (
                                   <span
-                                    className={`cq__amount${p.pnl >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                                    className={`cq__amount${
+                                      soldPartner
+                                        ? ' cq__amount--realized'
+                                        : displayPnl >= 0
+                                          ? ' cq__amount--positive'
+                                          : ' cq__amount--negative'
+                                    }`}
+                                    title={
+                                      soldPartner ? 'Ganancia realizada (ya vendido)' : undefined
+                                    }
                                   >
-                                    {p.pnl >= 0 ? '+' : ''}
-                                    {fmtUSD(p.pnl)}
+                                    {displayPnl >= 0 ? '+' : ''}
+                                    {fmtUSD(displayPnl)}
                                   </span>
                                 )}
                               </td>
                               <td className="cq__notes-cell" title={p.notes || undefined}>
                                 {p.notes}
                               </td>
+                              <td className="num">
+                                {linkedPartner.has(p.id) ? (
+                                  fmtUSD(linkedPartner.get(p.id).purchasePrice)
+                                ) : (
+                                  <span className="cq__muted">—</span>
+                                )}
+                              </td>
                             </tr>
                             {p.isGroup && expandedOrders.has(p.key) && (
                               <tr className="cq__detail-row">
                                 <td />
                                 <td />
-                                <td colSpan={7}>
+                                <td colSpan={8}>
                                   <table className="cq__detail-table">
                                     <thead>
                                       <tr>
@@ -1165,6 +1214,7 @@ const CryptoQuery = () => {
                                   <td className="num">{fmtUSD(p.subtotal.total)}</td>
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                                 <tr className="cq__subtotal-row cq__subtotal-row--buy">
                                   <td colSpan={4}>Subtotal compras</td>
@@ -1173,12 +1223,14 @@ const CryptoQuery = () => {
                                   <td className="num">{fmtUSD(p.subtotalBuys.total)}</td>
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                                 <tr className="cq__subtotal-row cq__subtotal-row--sell">
                                   <td colSpan={4}>Subtotal ventas</td>
                                   <td className="num">{p.subtotalSells.qty}</td>
                                   <td className="num">—</td>
                                   <td className="num">{fmtUSD(p.subtotalSells.total)}</td>
+                                  <td />
                                   <td />
                                   <td />
                                 </tr>
@@ -1194,6 +1246,7 @@ const CryptoQuery = () => {
                                   </td>
                                   <td />
                                   <td />
+                                  <td />
                                 </tr>
                               </>
                             )}
@@ -1202,7 +1255,7 @@ const CryptoQuery = () => {
                       })}
                   {(groupByQty ? groupedRows.length === 0 : filtered.length === 0) && (
                     <tr>
-                      <td colSpan={groupByQty ? 5 : 9} className="cq__empty">
+                      <td colSpan={groupByQty ? 5 : 10} className="cq__empty">
                         Sin operaciones para los filtros seleccionados.
                       </td>
                     </tr>
@@ -1217,6 +1270,7 @@ const CryptoQuery = () => {
                       <td className="num">{fmtUSD(totals.invested)}</td>
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={4}>Total ventas ({totals.sellsCount})</td>
@@ -1225,10 +1279,11 @@ const CryptoQuery = () => {
                       <td className="num">{fmtUSD(totals.proceeds)}</td>
                       <td />
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row cq__total-row--net">
                       <td colSpan={6}>Neto (Ventas − Compras)</td>
-                      <td className="num" colSpan={3}>
+                      <td className="num" colSpan={4}>
                         <span className="cq__amount cq__amount--neutral">
                           {fmtUSD(Math.abs(totals.net))}
                         </span>
@@ -1242,6 +1297,7 @@ const CryptoQuery = () => {
                         </span>
                       </td>
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total ganancias (PnL)</td>
@@ -1252,10 +1308,12 @@ const CryptoQuery = () => {
                         </span>
                       </td>
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total invertido</td>
                       <td className="num">{fmtUSD(totals.invested)}</td>
+                      <td />
                       <td />
                     </tr>
                     <tr className="cq__total-row">
@@ -1266,6 +1324,7 @@ const CryptoQuery = () => {
                         </span>
                       </td>
                       <td />
+                      <td />
                     </tr>
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total invertido (ganando)</td>
@@ -1274,6 +1333,7 @@ const CryptoQuery = () => {
                           {fmtUSD(totals.investedGains)}
                         </span>
                       </td>
+                      <td />
                       <td />
                     </tr>
                     <tr className="cq__total-row">
@@ -1285,6 +1345,7 @@ const CryptoQuery = () => {
                       </td>
                       <td />
                       <td />
+                      <td />
                     </tr>
                     {markedSummary.count > 0 && (
                       <tr className="cq__total-row cq__total-row--marked">
@@ -1292,6 +1353,7 @@ const CryptoQuery = () => {
                         <td className="num">{markedSummary.quantity}</td>
                         <td className="num">—</td>
                         <td className="num">{fmtUSD(markedSummary.total)}</td>
+                        <td />
                         <td />
                         <td />
                       </tr>

@@ -488,6 +488,10 @@
     &--negative {
       color: var(--cq-sell);
     }
+
+    &--realized {
+      color: var(--cq-neutral);
+    }
   }
 }
 
