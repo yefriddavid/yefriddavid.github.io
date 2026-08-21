@@ -79,7 +79,7 @@ const (
 	pageLimit       = 1000
 )
 
-var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB", "PAXG", "XRP"}
+var defaultBases = []string{"BTC", "ETH", "SOL", "LINK", "BNB", "PAXG", "XRP", "PEPE"}
 var quotes = []string{"USDT", "USDC", "FDUSD"}
 
 type trmRow struct {

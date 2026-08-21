@@ -151,6 +151,7 @@ export const CRYPTO_PURCHASE_SYMBOLS = [
   { value: 'BNBUSDT', label: 'BNB' },
   { value: 'PAXGUSDT', label: 'PAXG' },
   { value: 'XRPUSDT', label: 'XRP' },
+  { value: 'PEPEUSDT', label: 'PEPE' },
 ]
 
 // Fixed categorical order (validated CVD-safe palette) — used for per-coin
@@ -163,6 +164,7 @@ export const CRYPTO_PURCHASE_SYMBOL_COLORS = {
   BNBUSDT: '#e87ba4',
   PAXGUSDT: '#a6842e',
   XRPUSDT: '#7c3aed',
+  PEPEUSDT: '#4c9a2a',
 }
 
 export const CRYPTO_PURCHASE_TYPES = [
