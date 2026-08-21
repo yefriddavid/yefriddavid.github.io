@@ -120,6 +120,7 @@ const buildLedgerEntries = (records) => {
       // Linking a group writes the same matchGroupId to every fill in it
       // (see handleRowClick), so any one fill's value represents the group.
       matchGroupId: recs[0].matchGroupId ?? null,
+      style: recs[0].style ?? null,
       records: recs,
     })
   })
@@ -1003,7 +1004,7 @@ const CryptoQuery = () => {
                     leading={
                       <>
                         <th className="cq__index-col">#</th>
-                        <th className="cq__mark-col" />
+                        <th className="cq__mark-col">Acciones</th>
                       </>
                     }
                     trailing={
@@ -1112,6 +1113,7 @@ const CryptoQuery = () => {
                         const soldPartner = !isSale(p) ? linkedPartner.get(p.id) : null
                         const displayPnl = soldPartner ? soldPartner.total - p.total : p.pnl
                         const loanCost = loanCostFor(p)
+                        const itemColor = p.style?.item?.background?.color
                         const rowClass = [
                           p.isGroup ? 'cq__group-row' : editMode && 'cq__row--editable',
                           selectedForLink?.id === p.id && 'cq__row--selected',
@@ -1121,7 +1123,11 @@ const CryptoQuery = () => {
                           .join(' ')
                         return (
                           <React.Fragment key={p.id}>
-                            <tr className={rowClass || undefined} onClick={() => handleRowClick(p)}>
+                            <tr
+                              className={rowClass || undefined}
+                              style={itemColor ? { backgroundColor: itemColor } : undefined}
+                              onClick={() => handleRowClick(p)}
+                            >
                               <td className="cq__index-col">{i + 1}</td>
                               <td
                                 className="cq__mark-col"
@@ -1133,13 +1139,12 @@ const CryptoQuery = () => {
                                 {(() => {
                                   const loanFunded = p.records.some((r) => isLoanFunded(r))
                                   const loanCheckbox = !isSale(p) && (
-                                    <input
-                                      type="checkbox"
-                                      className="cq__loan-checkbox"
-                                      checked={loanFunded}
+                                    <button
+                                      type="button"
+                                      className={`cq__loan-toggle${loanFunded ? ' cq__loan-toggle--active' : ''}`}
                                       title="Comprado con dinero prestado (Binance Loans)"
-                                      onClick={(e) => e.stopPropagation()}
-                                      onChange={() =>
+                                      onClick={(e) => {
+                                        e.stopPropagation()
                                         p.records.forEach((r) =>
                                           dispatch(
                                             actions.updateRequest({
@@ -1148,8 +1153,50 @@ const CryptoQuery = () => {
                                             }),
                                           ),
                                         )
-                                      }
-                                    />
+                                      }}
+                                    >
+                                      🏦
+                                    </button>
+                                  )
+                                  const colorPicker = (
+                                    <span
+                                      className="cq__color-picker"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <input
+                                        type="color"
+                                        className="cq__color-input"
+                                        value={itemColor || '#ffffff'}
+                                        title="Color de fondo de la fila"
+                                        onChange={(e) => {
+                                          const color = e.target.value
+                                          p.records.forEach((r) =>
+                                            dispatch(
+                                              actions.updateRequest({
+                                                ...r,
+                                                style: { item: { background: { color } } },
+                                              }),
+                                            ),
+                                          )
+                                        }}
+                                      />
+                                      {itemColor && (
+                                        <button
+                                          type="button"
+                                          className="cq__color-clear"
+                                          title="Quitar color"
+                                          onClick={() =>
+                                            p.records.forEach((r) =>
+                                              dispatch(
+                                                actions.updateRequest({ ...r, style: null }),
+                                              ),
+                                            )
+                                          }
+                                        >
+                                          ✕
+                                        </button>
+                                      )}
+                                    </span>
                                   )
                                   return p.isGroup ? (
                                     <>
@@ -1159,6 +1206,7 @@ const CryptoQuery = () => {
                                         ▸
                                       </span>
                                       {loanCheckbox}
+                                      {colorPicker}
                                     </>
                                   ) : (
                                     <>
@@ -1182,6 +1230,7 @@ const CryptoQuery = () => {
                                         ✎
                                       </button>
                                       {loanCheckbox}
+                                      {colorPicker}
                                     </>
                                   )
                                 })()}

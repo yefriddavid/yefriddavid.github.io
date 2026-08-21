@@ -394,17 +394,79 @@
   }
 
   &__mark-col {
-    width: 64px;
+    width: 110px;
     text-align: center !important;
     padding-right: 0 !important;
+    white-space: nowrap;
 
-    input {
+    input,
+    button {
       cursor: pointer;
+      vertical-align: middle;
     }
   }
 
-  &__loan-checkbox {
+  &__loan-toggle {
     margin-left: 4px;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: var(--fs-sm);
+    line-height: 1;
+    filter: grayscale(100%) brightness(0.75);
+    opacity: 0.55;
+
+    &--active {
+      filter: none;
+      opacity: 1;
+    }
+  }
+
+  &__color-picker {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  &__color-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: 1px solid var(--cui-border-color);
+    border-radius: 50%;
+
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    &::-webkit-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    &::-moz-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+  }
+
+  &__color-clear {
+    vertical-align: middle;
+    margin-left: 2px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: var(--fs-2xs);
+    color: var(--cui-secondary-color);
+    line-height: 1;
+
+    &:hover {
+      color: var(--cq-sell);
+    }
   }
 
   &__edit-btn {
