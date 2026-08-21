@@ -528,11 +528,16 @@ const CryptoQuery = () => {
   }, [filtered, markedIds])
 
   // Separate, read-only table — doesn't touch the main ledger's rows/logic.
-  // Pairs up each matchGroupId's buy+sell (from the already-filtered rows) and
-  // shows the realized PnL (actual sell price, not the live-price estimate).
+  // Pairs up each matchGroupId's buy+sell and shows the realized PnL (actual
+  // sell price, not the live-price estimate). Built from `ledgerEntries`
+  // (already aggregated per Binance order by buildLedgerEntries), not the raw
+  // `filtered` records — a linked buy or sell can itself be several partial
+  // fills sharing one matchGroupId, and pairing off the raw records would
+  // just overwrite g.buy/g.sell with whichever fill was seen last instead of
+  // summing the group's real quantity/total.
   const linkedPairs = useMemo(() => {
     const groups = {}
-    filtered.forEach((p) => {
+    ledgerEntries.forEach((p) => {
       if (!p.matchGroupId) return
       const g = groups[p.matchGroupId] || {}
       if (isSale(p)) g.sell = p
@@ -550,7 +555,7 @@ const CryptoQuery = () => {
         pnl: g.sell.total - g.buy.total,
       }))
       .sort((a, b) => (b.sell.purchaseDate || '').localeCompare(a.sell.purchaseDate || ''))
-  }, [filtered])
+  }, [ledgerEntries])
 
   const linkedPairsTotals = useMemo(
     () =>
@@ -1671,8 +1676,8 @@ const CryptoQuery = () => {
                   <thead>
                     <tr>
                       <th>Fecha compra</th>
-                      <th className="num">Precio compra</th>
                       <th>Fecha venta</th>
+                      <th className="num">Precio compra</th>
                       <th className="num">Precio venta</th>
                       <th className="num">Cantidad</th>
                       <th className="num">Invertido</th>
@@ -1684,8 +1689,8 @@ const CryptoQuery = () => {
                     {linkedPairs.map((pair) => (
                       <tr key={pair.id}>
                         <td>{fmtDateTime(pair.buy)}</td>
-                        <td className="num">{fmtUSD(pair.buy.purchasePrice)}</td>
                         <td>{fmtDateTime(pair.sell)}</td>
+                        <td className="num">{fmtUSD(pair.buy.purchasePrice)}</td>
                         <td className="num">{fmtUSD(pair.sell.purchasePrice)}</td>
                         <td className="num">{pair.buy.quantity}</td>
                         <td className="num">{fmtUSD(pair.invested)}</td>
