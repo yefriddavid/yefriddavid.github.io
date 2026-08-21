@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import * as XLSX from 'xlsx'
@@ -263,6 +263,11 @@ const CryptoQuery = () => {
   const [loanRateEA, setLoanRateEA] = useState(4)
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+
+  // Uncontrolled color <input> per row (keyed by row id) so the OS color
+  // panel's live drag never touches Redux/Firestore — "Aplicar" reads the
+  // current DOM value on demand instead.
+  const colorInputRefs = useRef(new Map())
 
   // Hides a column across the whole table (thead + every row) via a <colgroup>
   // instead of conditionally not rendering cells — that would desync the
@@ -1158,28 +1163,52 @@ const CryptoQuery = () => {
                                       🏦
                                     </button>
                                   )
+                                  const applyColor = () => {
+                                    const color = colorInputRefs.current.get(p.id)?.value
+                                    if (!color) return
+                                    p.records.forEach((r) =>
+                                      dispatch(
+                                        actions.updateRequest({
+                                          ...r,
+                                          style: { item: { background: { color } } },
+                                        }),
+                                      ),
+                                    )
+                                  }
                                   const colorPicker = (
                                     <span
                                       className="cq__color-picker"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       <input
+                                        // Remounts whenever the stored color changes (our own
+                                        // apply, the clear button, or another session's edit) so
+                                        // the swatch's defaultValue stays in sync — see the
+                                        // uncontrolled-input note below.
+                                        key={itemColor || 'none'}
                                         type="color"
                                         className="cq__color-input"
-                                        value={itemColor || '#ffffff'}
+                                        // Uncontrolled on purpose: the OS color panel fires
+                                        // input/onChange on every drag tick, not just on commit.
+                                        // A controlled value would either fight that (React
+                                        // reverting it) or, without onChange, lock the input
+                                        // entirely. "Aplicar" reads the live DOM value instead —
+                                        // nothing hits Firestore until the user clicks it.
+                                        defaultValue={itemColor || '#ffffff'}
                                         title="Color de fondo de la fila"
-                                        onChange={(e) => {
-                                          const color = e.target.value
-                                          p.records.forEach((r) =>
-                                            dispatch(
-                                              actions.updateRequest({
-                                                ...r,
-                                                style: { item: { background: { color } } },
-                                              }),
-                                            ),
-                                          )
+                                        ref={(el) => {
+                                          if (el) colorInputRefs.current.set(p.id, el)
+                                          else colorInputRefs.current.delete(p.id)
                                         }}
                                       />
+                                      <button
+                                        type="button"
+                                        className="cq__color-apply"
+                                        title="Aplicar color"
+                                        onClick={applyColor}
+                                      >
+                                        ✓
+                                      </button>
                                       {itemColor && (
                                         <button
                                           type="button"

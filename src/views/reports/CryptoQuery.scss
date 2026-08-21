@@ -394,7 +394,7 @@
   }
 
   &__mark-col {
-    width: 110px;
+    width: 150px;
     text-align: center !important;
     padding-right: 0 !important;
     white-space: nowrap;
@@ -451,6 +451,21 @@
     &::-moz-color-swatch {
       border: none;
       border-radius: 50%;
+    }
+  }
+
+  &__color-apply {
+    vertical-align: middle;
+    margin-left: 2px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: var(--fs-2xs);
+    color: var(--cui-secondary-color);
+    line-height: 1;
+
+    &:hover {
+      color: var(--cq-buy);
     }
   }
 
