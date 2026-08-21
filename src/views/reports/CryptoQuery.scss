@@ -210,6 +210,21 @@
     font-size: var(--fs-2xs);
   }
 
+  &__profit-badge {
+    margin-left: 6px;
+    font-size: var(--fs-2xs);
+    border: none;
+    background: none;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.3;
+
+    &--pending {
+      opacity: 1;
+    }
+  }
+
   &__notes-cell {
     max-width: 90px;
     overflow: hidden;

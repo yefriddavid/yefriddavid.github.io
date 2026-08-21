@@ -175,6 +175,21 @@ export const CRYPTO_PURCHASE_LINK_STATUS = [
   { value: 'unlinked', label: 'Sin vínculo' },
 ]
 
+// Applies only to 'sell' records — whether the realized profit was already
+// used (withdrawn/spent) or is still parked elsewhere (e.g. paid into a loan)
+// while its destination is undecided.
+export const CRYPTO_PURCHASE_PROFIT_STATUS = [
+  { value: 'pending', label: 'Utilidad pendiente' },
+  { value: 'used', label: 'Utilidad utilizada' },
+]
+
+// Applies only to 'sell' records — whether this sale is a temporary exit the
+// user still intends to buy back into, or a closed position.
+export const CRYPTO_PURCHASE_REPURCHASE_STATUS = [
+  { value: 'pending', label: 'Pendiente de recompra' },
+  { value: 'done', label: 'No pendiente' },
+]
+
 export const CRYPTO_PURCHASE_PLATFORMS = [
   { value: 'binance_arg', label: 'Binance ARG' },
   { value: 'binance_col', label: 'Binance COL' },

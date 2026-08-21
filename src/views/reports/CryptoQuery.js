@@ -20,11 +20,15 @@ import {
   CRYPTO_PURCHASE_PLATFORMS,
   CRYPTO_PURCHASE_TYPES,
   CRYPTO_PURCHASE_LINK_STATUS,
+  CRYPTO_PURCHASE_PROFIT_STATUS,
+  CRYPTO_PURCHASE_REPURCHASE_STATUS,
 } from 'src/constants/finance'
 import {
   isSale,
   isAdjustment,
   isLoanFunded,
+  isProfitPending,
+  isRepurchasePending,
   symbolLabel,
   platformLabel,
   fmtUSD,
@@ -127,6 +131,8 @@ const FILTER_PARAM_KEYS = [
   'platform',
   'types',
   'link',
+  'profit',
+  'repurchase',
   'dateMode',
   'from',
   'to',
@@ -206,6 +212,16 @@ const CryptoQuery = () => {
     searchParams,
     setSearchParams,
     'link',
+  )
+  const [selectedProfitStatus, setSelectedProfitStatus] = useMultiParam(
+    searchParams,
+    setSearchParams,
+    'profit',
+  )
+  const [selectedRepurchaseStatus, setSelectedRepurchaseStatus] = useMultiParam(
+    searchParams,
+    setSearchParams,
+    'repurchase',
   )
   const [selectedMonths, setSelectedMonths] = useMultiParam(
     searchParams,
@@ -310,6 +326,18 @@ const CryptoQuery = () => {
           selectedLinkStatus.size === 0 ||
           selectedLinkStatus.has(p.matchGroupId ? 'linked' : 'unlinked'),
       )
+      .filter(
+        (p) =>
+          selectedProfitStatus.size === 0 ||
+          !isSale(p) ||
+          selectedProfitStatus.has(isProfitPending(p) ? 'pending' : 'used'),
+      )
+      .filter(
+        (p) =>
+          selectedRepurchaseStatus.size === 0 ||
+          !isSale(p) ||
+          selectedRepurchaseStatus.has(isRepurchasePending(p) ? 'pending' : 'done'),
+      )
       .filter((p) => !dateFrom || (p.purchaseDate || '') >= dateFrom)
       .filter((p) => !dateTo || (p.purchaseDate || '') <= dateTo)
       .filter(
@@ -328,6 +356,8 @@ const CryptoQuery = () => {
     platform,
     selectedTypes,
     selectedLinkStatus,
+    selectedProfitStatus,
+    selectedRepurchaseStatus,
     dateMode,
     selectedMonths,
     dateFrom,
@@ -490,6 +520,22 @@ const CryptoQuery = () => {
       ),
     [linkedPairs],
   )
+
+  // Only linked pairs have a known realized PnL (unlinked sells have proceeds
+  // but no matched cost basis), so the "pending" total can only count those.
+  const pendingProfit = useMemo(() => {
+    const pending = linkedPairs.filter((pair) => isProfitPending(pair.sell))
+    return { count: pending.length, total: pending.reduce((s, pair) => s + pair.pnl, 0) }
+  }, [linkedPairs])
+
+  const pendingRepurchase = useMemo(() => {
+    const pending = filtered.filter((p) => isRepurchasePending(p))
+    return {
+      count: pending.length,
+      quantity: pending.reduce((s, p) => s + (Number(p.quantity) || 0), 0),
+      total: pending.reduce((s, p) => s + p.total, 0),
+    }
+  }, [filtered])
 
   const groupedRows = useMemo(() => {
     const map = new Map()
@@ -692,6 +738,38 @@ const CryptoQuery = () => {
             onClearAll={() => setSelectedLinkStatus(new Set())}
           />
         </div>
+        <div className="cq__field">
+          <label>Utilidad</label>
+          <MultiSelectDropdown
+            label={(size) => (size > 0 ? `Utilidad (${size})` : 'Utilidad: Todas')}
+            options={CRYPTO_PURCHASE_PROFIT_STATUS}
+            selected={selectedProfitStatus}
+            onToggle={(value) =>
+              setSelectedProfitStatus((prev) => {
+                const next = new Set(prev)
+                next.has(value) ? next.delete(value) : next.add(value)
+                return next
+              })
+            }
+            onClearAll={() => setSelectedProfitStatus(new Set())}
+          />
+        </div>
+        <div className="cq__field">
+          <label>Recompra</label>
+          <MultiSelectDropdown
+            label={(size) => (size > 0 ? `Recompra (${size})` : 'Recompra: Todas')}
+            options={CRYPTO_PURCHASE_REPURCHASE_STATUS}
+            selected={selectedRepurchaseStatus}
+            onToggle={(value) =>
+              setSelectedRepurchaseStatus((prev) => {
+                const next = new Set(prev)
+                next.has(value) ? next.delete(value) : next.add(value)
+                return next
+              })
+            }
+            onClearAll={() => setSelectedRepurchaseStatus(new Set())}
+          />
+        </div>
         {dateMode === 'range' ? (
           <>
             <div className="cq__field">
@@ -878,6 +956,13 @@ const CryptoQuery = () => {
                     />
                   </label>
                 )}
+                <button
+                  type="button"
+                  className="cq__export-btn"
+                  onClick={() => dispatch(actions.loadRequest())}
+                >
+                  ↻ Refrescar
+                </button>
                 <button type="button" className="cq__export-btn" onClick={exportToExcel}>
                   ↓ Excel
                 </button>
@@ -1103,6 +1188,62 @@ const CryptoQuery = () => {
                                     🏦
                                   </span>
                                 )}
+                                {isSale(p) &&
+                                  (() => {
+                                    const pending = p.records.some((r) => isProfitPending(r))
+                                    return (
+                                      <button
+                                        type="button"
+                                        className={`cq__profit-badge${pending ? ' cq__profit-badge--pending' : ''}`}
+                                        title={
+                                          pending
+                                            ? 'Utilidad pendiente de usar — clic para marcar como utilizada'
+                                            : 'Marcar utilidad como pendiente de usar'
+                                        }
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          p.records.forEach((r) =>
+                                            dispatch(
+                                              actions.updateRequest({
+                                                ...r,
+                                                profitPending: !pending,
+                                              }),
+                                            ),
+                                          )
+                                        }}
+                                      >
+                                        💰
+                                      </button>
+                                    )
+                                  })()}
+                                {isSale(p) &&
+                                  (() => {
+                                    const pending = p.records.some((r) => isRepurchasePending(r))
+                                    return (
+                                      <button
+                                        type="button"
+                                        className={`cq__profit-badge${pending ? ' cq__profit-badge--pending' : ''}`}
+                                        title={
+                                          pending
+                                            ? 'Pendiente de recompra — clic para desmarcar'
+                                            : 'Marcar como pendiente de recompra'
+                                        }
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          p.records.forEach((r) =>
+                                            dispatch(
+                                              actions.updateRequest({
+                                                ...r,
+                                                needsRepurchase: !pending,
+                                              }),
+                                            ),
+                                          )
+                                        }}
+                                      >
+                                        🔁
+                                      </button>
+                                    )
+                                  })()}
                               </td>
                               <td className="num">{p.quantity}</td>
                               <td className="num">{fmtUSD(p.purchasePrice)}</td>
@@ -1310,6 +1451,34 @@ const CryptoQuery = () => {
                       <td />
                       <td />
                     </tr>
+                    {pendingProfit.count > 0 && (
+                      <tr className="cq__total-row">
+                        <td colSpan={7}>
+                          Utilidad pendiente de usar (pares vinculados, {pendingProfit.count})
+                        </td>
+                        <td className="num">
+                          <span
+                            className={`cq__amount${pendingProfit.total >= 0 ? ' cq__amount--positive' : ' cq__amount--negative'}`}
+                          >
+                            {pendingProfit.total >= 0 ? '+' : ''}
+                            {fmtUSD(pendingProfit.total)}
+                          </span>
+                        </td>
+                        <td />
+                        <td />
+                      </tr>
+                    )}
+                    {pendingRepurchase.count > 0 && (
+                      <tr className="cq__total-row">
+                        <td colSpan={4}>Pendiente de recompra ({pendingRepurchase.count})</td>
+                        <td className="num">{pendingRepurchase.quantity.toFixed(8)}</td>
+                        <td className="num">—</td>
+                        <td className="num">{fmtUSD(pendingRepurchase.total)}</td>
+                        <td />
+                        <td />
+                        <td />
+                      </tr>
+                    )}
                     <tr className="cq__total-row">
                       <td colSpan={7}>Total invertido</td>
                       <td className="num">{fmtUSD(totals.invested)}</td>

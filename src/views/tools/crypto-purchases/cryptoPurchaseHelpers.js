@@ -26,6 +26,13 @@ export const isAdjustment = (purchase) => isSale(purchase) && !!purchase.isAdjus
 // A buy made with money borrowed via Binance Loans, rather than the user's own funds.
 export const isLoanFunded = (purchase) => !isSale(purchase) && !!purchase.fundedByLoan
 
+// A sell whose realized profit hasn't been used/withdrawn yet (e.g. paid into
+// a loan while the user decides what to do with it).
+export const isProfitPending = (purchase) => isSale(purchase) && !!purchase.profitPending
+
+// A sell that was a temporary exit — the user still intends to buy back in.
+export const isRepurchasePending = (purchase) => isSale(purchase) && !!purchase.needsRepurchase
+
 // purchase: { type, quantity, purchasePrice }, currentPrice: live price from useCryptoPrices (USD) or null
 // For 'sell' records there's no FIFO cost-basis matching yet, so only proceeds are known —
 // investedUSD/gainLoss don't apply and are returned as null.
