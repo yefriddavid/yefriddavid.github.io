@@ -5,6 +5,15 @@ import * as XLSX from 'xlsx'
 import { CFormSelect } from '@coreui/react'
 import Spinner from 'src/components/shared/Spinner'
 import MultiSelectDropdown from 'src/components/shared/MultiSelectDropdown'
+import {
+  FeatherSortHead,
+  FeatherColumnToggle,
+  useFeatherColumns,
+  parseFeatherSort,
+  serializeFeatherSort,
+  toggleFeatherSort,
+  sortFeatherRows,
+} from 'src/components/shared/FeatherGrid'
 import AppModal from 'src/components/shared/AppModal'
 import SaveViewForm from 'src/components/shared/SaveViewForm'
 import SavedViewsList from 'src/components/shared/SavedViewsList'
@@ -41,19 +50,15 @@ const fmtDateTime = (p) =>
   p.purchaseTime ? `${fmtDateLong(p.purchaseDate)} ${p.purchaseTime}` : fmtDateLong(p.purchaseDate)
 const monthOf = (dateStr) => Number((dateStr || '').slice(5, 7)) || null
 
-const sortBySpec = (list, sort) => {
-  const compare = (a, b, key) =>
-    key === 'purchaseDate' || key === 'type' || key === 'notes'
-      ? String(a[key] || '').localeCompare(String(b[key] || ''))
-      : (Number(a[key]) || 0) - (Number(b[key]) || 0)
-  return [...list].sort((a, b) => {
-    for (const { key, dir } of sort) {
-      const cmp = compare(a, b, key)
-      if (cmp !== 0) return dir === 'asc' ? cmp : -cmp
-    }
-    return 0
-  })
-}
+const LEDGER_COLUMNS = [
+  { key: 'purchaseDate', label: 'Fecha' },
+  { key: 'type', label: 'Tipo' },
+  { key: 'quantity', label: 'Cantidad', align: 'num' },
+  { key: 'purchasePrice', label: 'Precio', align: 'num' },
+  { key: 'total', label: 'Total', align: 'num' },
+  { key: 'pnl', label: 'PnL / P&L', align: 'num' },
+  { key: 'notes', label: 'Notas' },
+]
 
 // Binance splits some orders into several partial fills that share the same
 // orderId (e.g. "buy 5" executes as 1 + 2 + 1.5 + 0.5) — group those fills
@@ -113,18 +118,6 @@ const buildLedgerEntries = (records) => {
 }
 
 const DEFAULT_SORT = [{ key: 'purchaseDate', dir: 'desc' }]
-const parseSort = (raw) => {
-  if (!raw) return DEFAULT_SORT
-  const parsed = raw
-    .split(',')
-    .map((part) => {
-      const [key, dir] = part.split(':')
-      return key ? { key, dir: dir === 'asc' ? 'asc' : 'desc' } : null
-    })
-    .filter(Boolean)
-  return parsed.length > 0 ? parsed : DEFAULT_SORT
-}
-const serializeSort = (sort) => sort.map((s) => `${s.key}:${s.dir}`).join(',')
 
 const FILTER_PARAM_KEYS = [
   'symbol',
@@ -248,6 +241,17 @@ const CryptoQuery = () => {
     })
   const [selectedForLink, setSelectedForLink] = useState(null)
 
+  // Hides a column across the whole table (thead + every row) via a <colgroup>
+  // instead of conditionally not rendering cells — that would desync the
+  // column count between the header/body rows and the totals footer's
+  // colSpan-based rows, which assume the full fixed 10-column layout.
+  const {
+    isVisible: isLedgerColVisible,
+    selected: ledgerColSelected,
+    toggle: toggleLedgerCol,
+    clear: clearLedgerCols,
+  } = useFeatherColumns(LEDGER_COLUMNS)
+
   // Purely local scratch-marking of rows — not persisted anywhere (not the URL,
   // not Firestore), just a visual aid that resets on refresh.
   const [markedIds, setMarkedIds] = useState(new Set())
@@ -262,25 +266,15 @@ const CryptoQuery = () => {
   // alone; shift-click adds/toggles it as an extra tiebreaker level (like a
   // spreadsheet's multi-column sort) without discarding the earlier columns.
   // Persisted in the URL (like the other filters) so a refresh keeps the order.
-  const sort = useMemo(() => parseSort(searchParams.get('sort')), [searchParams])
+  const sort = useMemo(
+    () => parseFeatherSort(searchParams.get('sort'), DEFAULT_SORT),
+    [searchParams],
+  )
   const toggleSort = (key, additive) =>
     setSearchParams((prev) => {
-      const current = parseSort(prev.get('sort'))
-      const existing = current.find((s) => s.key === key)
-      let next
-      if (!additive) {
-        const dir =
-          current.length === 1 && existing ? (existing.dir === 'asc' ? 'desc' : 'asc') : 'asc'
-        next = [{ key, dir }]
-      } else if (existing) {
-        next = current.map((s) =>
-          s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : s,
-        )
-      } else {
-        next = [...current, { key, dir: 'asc' }]
-      }
+      const current = parseFeatherSort(prev.get('sort'), DEFAULT_SORT)
       const nextParams = new URLSearchParams(prev)
-      nextParams.set('sort', serializeSort(next))
+      nextParams.set('sort', serializeFeatherSort(toggleFeatherSort(current, key, additive)))
       return nextParams
     })
 
@@ -369,7 +363,7 @@ const CryptoQuery = () => {
     livePrice,
   ])
 
-  const sortedFiltered = useMemo(() => sortBySpec(filtered, sort), [filtered, sort])
+  const sortedFiltered = useMemo(() => sortFeatherRows(filtered, sort), [filtered, sort])
 
   // The main ledger renders one row per Binance order (see buildLedgerEntries)
   // instead of one row per raw purchase — built from `filtered` (not the
@@ -377,7 +371,10 @@ const CryptoQuery = () => {
   // sort is applied, then re-sorted the same way so grouped and single rows
   // interleave correctly regardless of which column is sorted.
   const ledgerEntries = useMemo(() => buildLedgerEntries(filtered), [filtered])
-  const sortedLedgerEntries = useMemo(() => sortBySpec(ledgerEntries, sort), [ledgerEntries, sort])
+  const sortedLedgerEntries = useMemo(
+    () => sortFeatherRows(ledgerEntries, sort),
+    [ledgerEntries, sort],
+  )
 
   // For a linked buy/sell pair, lets each row show its counterpart's price
   // directly (e.g. a buy row shows what it was later sold at) instead of
@@ -956,6 +953,14 @@ const CryptoQuery = () => {
                     />
                   </label>
                 )}
+                {!groupByQty && (
+                  <FeatherColumnToggle
+                    columns={LEDGER_COLUMNS}
+                    selected={ledgerColSelected}
+                    onToggle={toggleLedgerCol}
+                    onClearAll={clearLedgerCols}
+                  />
+                )}
                 <button
                   type="button"
                   className="cq__export-btn"
@@ -977,8 +982,21 @@ const CryptoQuery = () => {
             </div>
             <div className="cq__scroll">
               <table className="cq__table">
-                <thead>
-                  {groupByQty ? (
+                {!groupByQty && (
+                  <colgroup>
+                    <col />
+                    <col />
+                    {LEDGER_COLUMNS.map((col) => (
+                      <col
+                        key={col.key}
+                        style={{ visibility: isLedgerColVisible(col.key) ? undefined : 'collapse' }}
+                      />
+                    ))}
+                    <col />
+                  </colgroup>
+                )}
+                {groupByQty ? (
+                  <thead>
                     <tr>
                       <th className="cq__expand-col" />
                       <th className="num">Cantidad</th>
@@ -986,47 +1004,28 @@ const CryptoQuery = () => {
                       <th className="num">Operaciones</th>
                       <th className="num">Total</th>
                     </tr>
-                  ) : (
-                    <tr>
-                      <th className="cq__index-col">#</th>
-                      <th className="cq__mark-col" />
-                      {[
-                        { key: 'purchaseDate', label: 'Fecha' },
-                        { key: 'type', label: 'Tipo' },
-                        { key: 'quantity', label: 'Cantidad', num: true },
-                        { key: 'purchasePrice', label: 'Precio', num: true },
-                        { key: 'total', label: 'Total', num: true },
-                        { key: 'pnl', label: 'PnL / P&L', num: true },
-                        { key: 'notes', label: 'Notas' },
-                      ].map((col) => {
-                        const sortIndex = sort.findIndex((s) => s.key === col.key)
-                        const active = sortIndex !== -1
-                        return (
-                          <th
-                            key={col.key}
-                            className={`cq__th--sortable${col.num ? ' num' : ''}`}
-                            onClick={(e) => toggleSort(col.key, e.shiftKey)}
-                            title="Clic: ordenar por esta columna · Shift+clic: agregar como criterio adicional"
-                          >
-                            {col.label}
-                            {active && (
-                              <span className="cq__th-sort-arrow">
-                                {sort.length > 1 && <sup>{sortIndex + 1}</sup>}
-                                {sort[sortIndex].dir === 'asc' ? ' ▲' : ' ▼'}
-                              </span>
-                            )}
-                          </th>
-                        )
-                      })}
+                  </thead>
+                ) : (
+                  <FeatherSortHead
+                    columns={LEDGER_COLUMNS}
+                    sort={sort}
+                    onSort={toggleSort}
+                    leading={
+                      <>
+                        <th className="cq__index-col">#</th>
+                        <th className="cq__mark-col" />
+                      </>
+                    }
+                    trailing={
                       <th
                         className="num"
                         title="Precio de la operación vinculada (compra ↔ venta)"
                       >
                         Precio vinculado
                       </th>
-                    </tr>
-                  )}
-                </thead>
+                    }
+                  />
+                )}
                 <tbody>
                   {groupByQty
                     ? groupedRows.map((g) => {
