@@ -31,6 +31,8 @@ export const fetchAll = async () => {
       usdCopRate: data.usdCopRate ?? null,
       isAdjustment: data.isAdjustment ?? false,
       fundedByLoan: data.fundedByLoan ?? false,
+      profitPending: data.profitPending ?? false,
+      needsRepurchase: data.needsRepurchase ?? false,
       active: data.active ?? true,
       notes: data.notes ?? '',
       matchGroupId: data.matchGroupId ?? null,
