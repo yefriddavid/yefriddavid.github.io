@@ -597,18 +597,23 @@ const Taxis = () => {
   }
 
   const auditRowBg = (day) => {
-    if (day.isToday) return '#e8f0fb'
-    if (day.status === 'future') return '#f8fafc'
-    if (isAllResolved(day)) return '#f0fdf4'
-    if (day.status === 'none') return '#fff5f5'
-    if (day.status === 'partial') return '#fffbeb'
-    if (day.hasPicoPlaca) return '#faf5ff'
-    return '#f8fff8'
+    if (day.isToday) return 'rgba(var(--cui-primary-rgb), 0.08)'
+    if (day.status === 'future') return 'var(--cui-tertiary-bg)'
+    if (isAllResolved(day)) return 'rgba(var(--cui-success-rgb), 0.07)'
+    if (day.status === 'none') return 'rgba(var(--cui-danger-rgb), 0.07)'
+    if (day.status === 'partial') return 'rgba(var(--cui-warning-rgb), 0.08)'
+    if (day.hasPicoPlaca) return 'rgba(124, 58, 237, 0.07)'
+    return 'transparent'
   }
 
-  const auditAccentMap = { none: '#e03131', partial: '#e67700', full: '#2f9e44', future: '#cbd5e1' }
+  const auditAccentMap = {
+    none: 'var(--cui-danger)',
+    partial: 'var(--cui-warning)',
+    full: 'var(--cui-success)',
+    future: 'var(--cui-border-color)',
+  }
   const auditLeftBorder = (day) => {
-    if (isAllResolved(day)) return '#2f9e44'
+    if (isAllResolved(day)) return 'var(--cui-success)'
     if (day.hasPicoPlaca && day.status === 'full') return '#7c3aed'
     return auditAccentMap[day.status]
   }

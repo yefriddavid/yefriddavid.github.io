@@ -6,7 +6,7 @@
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 4px 16px rgba(30, 58, 95, 0.10),
     0 24px 48px rgba(30, 58, 95, 0.07);
-  border: 1px solid rgba(30, 58, 95, 0.13);
+  border: 1px solid var(--cui-border-color);
   // Gold accent bar at very top
   outline: none;
   position: relative;
@@ -26,11 +26,12 @@
   .dx-datagrid {
     font-family: inherit;
     font-size: var(--fs-base);
-    color: #1e293b;
-    background: #fff;
+    color: var(--cui-body-color);
+    background: var(--cui-card-bg);
   }
 
-  // ── Header ────────────────────────────────────────────────────────
+  // ── Header — fixed navy/gold brand band, intentionally the same in both
+  // themes (like the sidebar), not driven by --cui-* tokens ─────────────
   .dx-datagrid-headers {
     background: linear-gradient(160deg, #162d4a 0%, #1e3a5f 60%, #1a3558 100%);
     border-bottom: none;
@@ -87,26 +88,27 @@
   // ── Rows view — quita el border-top que DevExtreme pone entre header y filas
   .dx-datagrid-rowsview {
     border-top: none !important;
+    background: var(--cui-card-bg) !important;
   }
 
   // ── Data rows ─────────────────────────────────────────────────────
   .dx-data-row > td {
     padding: 1px 14px;
     font-size: var(--fs-base);
-    color: #1e293b;
-    border-color: #eef2f7 !important;
+    color: var(--cui-body-color);
+    border-color: var(--cui-border-color) !important;
     border-right: none !important;
     vertical-align: middle;
     transition: background 0.1s, color 0.1s, border-color 0.1s;
   }
 
   .dx-row-alt > td {
-    background-color: #f9fbfd !important;
+    background-color: var(--cui-tertiary-bg) !important;
   }
 
   .dx-state-hover > td {
-    background-color: #eff6ff !important;
-    color: #1e3a5f !important;
+    background-color: var(--cui-primary-bg-subtle, rgba(var(--cui-primary-rgb), 0.08)) !important;
+    color: var(--cui-body-color) !important;
     cursor: pointer;
   }
 
@@ -118,40 +120,40 @@
 
   .dx-selection > td,
   .dx-selection.dx-row-alt > td {
-    background-color: #dbeafe !important;
-    color: #1e3a5f !important;
-    border-color: #bfdbfe !important;
+    background-color: var(--cui-primary-bg-subtle, rgba(var(--cui-primary-rgb), 0.15)) !important;
+    color: var(--cui-body-color) !important;
+    border-color: var(--cui-primary-border-subtle, rgba(var(--cui-primary-rgb), 0.3)) !important;
   }
 
   .dx-data-row.dx-selection > td:first-child {
-    border-left: 3px solid #1e3a5f !important;
+    border-left: 3px solid var(--cui-primary) !important;
     padding-left: 11px;
   }
 
   // ── Master detail ──────────────────────────────────────────────────
   .dx-master-detail-row > td {
-    background: #fff !important;
+    background: var(--cui-card-bg) !important;
     padding: 0 !important;
   }
 
   // ── Group rows ─────────────────────────────────────────────────────
   .dx-group-row > td {
     padding: 6px 14px;
-    background: linear-gradient(90deg, #f0f5ff, #f8fafd) !important;
+    background: var(--cui-tertiary-bg) !important;
     font-weight: 700;
     font-size: var(--fs-sm);
-    color: #1e3a5f !important;
-    border-bottom: 1px solid #d0dff5 !important;
+    color: var(--cui-primary) !important;
+    border-bottom: 1px solid var(--cui-border-color) !important;
     letter-spacing: 0.02em;
   }
 
   // ── Pager ──────────────────────────────────────────────────────────
   .dx-datagrid-pager {
-    border-top: 1px solid #eef2f7;
+    border-top: 1px solid var(--cui-border-color);
     padding: 10px 16px;
-    background: #fafbfd;
+    background: var(--cui-tertiary-bg);
     font-size: var(--fs-sm);
-    color: #64748b;
+    color: var(--cui-secondary-color);
 
     .dx-page-size,
     .dx-page {
@@ -164,18 +166,18 @@
     }
 
     .dx-page.dx-selection {
-      background: #1e3a5f !important;
+      background: var(--cui-primary) !important;
       color: #fff !important;
       border-radius: 6px;
     }
 
     .dx-navigate-button {
-      color: #1e3a5f;
+      color: var(--cui-primary);
       font-weight: 700;
     }
   }
 
-  // ── Footer summary ─────────────────────────────────────────────────
+  // ── Footer summary — fixed navy band, matches the header brand block ──
   .dx-datagrid-total-footer > .dx-datagrid-content {
     background: linear-gradient(160deg, #162d4a 0%, #1e3a5f 100%);
     border-top: 2px solid #f5c842;
@@ -188,22 +190,29 @@
       border: none !important;
       padding: 10px 14px;
     }
+
+    // Scoped here (not globally) — .dx-datagrid-summary-item also renders
+    // inside .dx-group-row, which has a light tertiary-bg in dark mode too;
+    // a global white forced that group summary text to be unreadable.
+    .dx-datagrid-summary-item {
+      color: #fff;
+    }
   }
 
   // ── Search panel ───────────────────────────────────────────────────
   .dx-toolbar {
-    background: #f4f8ff;
-    border-bottom: 1px solid #eef2f7;
+    background: var(--cui-tertiary-bg);
+    border-bottom: 1px solid var(--cui-border-color);
     padding: 8px 12px;
 
     .dx-searchbox .dx-texteditor {
       border-radius: 8px;
-      border-color: #d0dff5;
+      border-color: var(--cui-border-color);
       font-size: var(--fs-base);
 
       &.dx-state-focused {
-        border-color: #1e3a5f;
-        box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.10);
+        border-color: var(--cui-primary);
+        box-shadow: 0 0 0 3px rgba(var(--cui-primary-rgb), 0.10);
       }
     }
 
@@ -216,9 +225,9 @@
 
   // ── Edit form ──────────────────────────────────────────────────────
   .dx-datagrid-edit-form {
-    background: #f0f6ff;
-    border-top: 3px solid #1e3a5f;
-    border-bottom: 3px solid #1e3a5f;
+    background: var(--cui-tertiary-bg);
+    border-top: 3px solid var(--cui-primary);
+    border-bottom: 3px solid var(--cui-primary);
     padding: 20px 24px 8px !important;
 
     .dx-form-group-with-caption > .dx-form-group-content {
@@ -231,28 +240,28 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
-      color: #1e3a5f;
+      color: var(--cui-primary);
       padding-bottom: 6px;
-      border-bottom: 1px solid #c7d8f0;
+      border-bottom: 1px solid var(--cui-border-color);
       margin-bottom: 10px;
     }
 
     .dx-field-item-label-text {
       font-size: var(--fs-xs);
       font-weight: 600;
-      color: #64748b;
+      color: var(--cui-secondary-color);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
     .dx-texteditor {
       border-radius: 7px;
-      border-color: #b0c4de;
-      background: #fff;
+      border-color: var(--cui-border-color);
+      background: var(--cui-card-bg);
 
       &.dx-state-focused {
-        border-color: #1e3a5f;
-        box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+        border-color: var(--cui-primary);
+        box-shadow: 0 0 0 3px rgba(var(--cui-primary-rgb), 0.12);
       }
     }
 
@@ -262,8 +271,8 @@
       font-weight: 600;
 
       &.dx-button-default {
-        background: #1e3a5f;
-        border-color: #1e3a5f;
+        background: var(--cui-primary);
+        border-color: var(--cui-primary);
         color: #fff;
       }
     }
@@ -273,45 +282,39 @@
   .dx-loadpanel-content {
     border-radius: 10px;
     box-shadow: 0 8px 32px rgba(30, 58, 95, 0.18);
-    border: 1px solid #d0dff5;
-    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--cui-border-color);
+    background: var(--cui-card-bg);
     backdrop-filter: blur(8px);
   }
 
   // ── Column chooser ─────────────────────────────────────────────────
   .dx-datagrid-column-chooser-item {
     font-size: var(--fs-base);
-    color: #334155;
+    color: var(--cui-body-color);
   }
 
   // ── No-data text ───────────────────────────────────────────────────
   .dx-datagrid-nodata {
     font-size: var(--fs-base);
-    color: #94a3b8;
+    color: var(--cui-secondary-color);
     font-style: italic;
   }
 
   // ── Sunday highlight ───────────────────────────────────────────────
   .dx-row-sunday > td {
-    background-color: #fffbeb !important;
-    color: #92400e !important;
+    background-color: var(--cui-warning-bg-subtle, rgba(var(--cui-warning-rgb), 0.15)) !important;
+    color: var(--cui-warning) !important;
   }
 
   .dx-data-row.dx-row-sunday.dx-state-hover > td:first-child {
-    border-left: 3px solid #f59e0b !important;
+    border-left: 3px solid var(--cui-warning) !important;
   }
 
   // ── Scrollbar ─────────────────────────────────────────────────────
   .dx-scrollable-scrollbar {
     .dx-scrollable-scroll-content {
-      background: rgba(30, 58, 95, 0.25);
+      background: rgba(var(--cui-primary-rgb), 0.25);
       border-radius: 4px;
     }
-  }
-
-
-  // Footer
-  .dx-datagrid-summary-item {
-    color: white;
   }
 }

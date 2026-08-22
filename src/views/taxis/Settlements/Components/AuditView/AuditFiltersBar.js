@@ -49,8 +49,8 @@ const AuditFiltersBar = ({
           padding: '4px 10px',
           borderRadius: 6,
           border: '1px solid var(--cui-secondary)',
-          background: auditPlateFilter ? '#e8f0fb' : '#fff',
-          color: auditPlateFilter ? '#1e3a5f' : 'var(--cui-secondary)',
+          background: auditPlateFilter ? 'rgba(var(--cui-primary-rgb), 0.1)' : 'var(--cui-card-bg)',
+          color: auditPlateFilter ? 'var(--cui-primary)' : 'var(--cui-secondary)',
           fontWeight: auditPlateFilter ? 600 : 400,
           cursor: 'pointer',
         }}
@@ -89,9 +89,9 @@ const AuditFiltersBar = ({
             fontSize: 11,
             padding: '4px 10px',
             borderRadius: 6,
-            border: '1px solid #e03131',
+            border: '1px solid var(--cui-danger)',
             background: 'none',
-            color: '#e03131',
+            color: 'var(--cui-danger)',
             cursor: 'pointer',
           }}
         >
@@ -102,8 +102,18 @@ const AuditFiltersBar = ({
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
         <span style={{ fontSize: 12, color: 'var(--cui-secondary-color)' }}>Mode:</span>
         {[
-          { value: 'edicion', label: 'Edición', active: '#2f9e44', activeBg: '#f0fdf4' },
-          { value: 'simulacro', label: 'Simulacro', active: '#e03131', activeBg: '#fff5f5' },
+          {
+            value: 'edicion',
+            label: 'Edición',
+            active: 'var(--cui-success)',
+            activeBg: 'rgba(var(--cui-success-rgb), 0.12)',
+          },
+          {
+            value: 'simulacro',
+            label: 'Simulacro',
+            active: 'var(--cui-danger)',
+            activeBg: 'rgba(var(--cui-danger-rgb), 0.12)',
+          },
         ].map(({ value, label, active, activeBg }) => (
           <button
             key={value}
@@ -113,7 +123,7 @@ const AuditFiltersBar = ({
               fontWeight: 600,
               padding: '3px 12px',
               borderRadius: 5,
-              border: `1.5px solid ${selected === value ? active : '#cbd5e1'}`,
+              border: `1.5px solid ${selected === value ? active : 'var(--cui-border-color)'}`,
               background: selected === value ? activeBg : 'transparent',
               color: selected === value ? active : 'var(--cui-secondary-color)',
               cursor: 'pointer',
@@ -157,9 +167,9 @@ const AuditFiltersBar = ({
               fontSize: 11,
               padding: '4px 10px',
               borderRadius: 6,
-              border: `1px solid ${showColMgr ? '#1e3a5f' : '#94a3b8'}`,
-              background: showColMgr ? '#eef4ff' : 'none',
-              color: showColMgr ? '#1e3a5f' : '#64748b',
+              border: `1px solid ${showColMgr ? 'var(--cui-primary)' : 'var(--cui-border-color)'}`,
+              background: showColMgr ? 'rgba(var(--cui-primary-rgb), 0.1)' : 'none',
+              color: showColMgr ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
               cursor: 'pointer',
             }}
             title="Mostrar/ocultar columnas"
@@ -172,8 +182,8 @@ const AuditFiltersBar = ({
                 position: 'fixed',
                 top: colMgrPos.top,
                 left: colMgrPos.left,
-                background: '#fff',
-                border: '1px solid #e2e8f0',
+                background: 'var(--cui-card-bg)',
+                border: '1px solid var(--cui-border-color)',
                 borderRadius: 8,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                 padding: '8px 4px',
@@ -200,11 +210,13 @@ const AuditFiltersBar = ({
                       gap: 6,
                       padding: '4px 10px 4px 6px',
                       borderRadius: 5,
-                      background: visibleCols[key] ? 'transparent' : '#f8fafc',
+                      background: visibleCols[key] ? 'transparent' : 'var(--cui-tertiary-bg)',
                       cursor: 'grab',
                     }}
                   >
-                    <span style={{ color: '#cbd5e1', fontSize: 14, flexShrink: 0 }}>⠿</span>
+                    <span style={{ color: 'var(--cui-secondary-color)', fontSize: 14, flexShrink: 0 }}>
+                      ⠿
+                    </span>
                     <label
                       style={{
                         display: 'flex',
@@ -212,7 +224,7 @@ const AuditFiltersBar = ({
                         gap: 7,
                         cursor: 'pointer',
                         flex: 1,
-                        color: visibleCols[key] ? '#1e3a5f' : '#94a3b8',
+                        color: visibleCols[key] ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
                         fontSize: 12,
                         fontWeight: visibleCols[key] ? 500 : 400,
                       }}
@@ -221,14 +233,14 @@ const AuditFiltersBar = ({
                         type="checkbox"
                         checked={!!visibleCols[key]}
                         onChange={() => toggleCol(key)}
-                        style={{ accentColor: '#1e3a5f', cursor: 'pointer' }}
+                        style={{ accentColor: 'var(--cui-primary)', cursor: 'pointer' }}
                       />
                       {def.label}
                     </label>
                   </div>
                 )
               })}
-              <div style={{ borderTop: '1px solid #f1f5f9', margin: '6px 12px 2px' }} />
+              <div style={{ borderTop: '1px solid var(--cui-border-color)', margin: '6px 12px 2px' }} />
               <button
                 onClick={resetCols}
                 style={{
@@ -236,7 +248,7 @@ const AuditFiltersBar = ({
                   padding: '3px 12px',
                   background: 'none',
                   border: 'none',
-                  color: '#64748b',
+                  color: 'var(--cui-secondary-color)',
                   cursor: 'pointer',
                   width: '100%',
                   textAlign: 'left',
@@ -255,9 +267,9 @@ const AuditFiltersBar = ({
             fontWeight: 600,
             padding: '4px 12px',
             borderRadius: 6,
-            border: '1.5px solid #1e3a5f',
-            background: '#eff6ff',
-            color: '#1e3a5f',
+            border: '1.5px solid var(--cui-primary)',
+            background: 'rgba(var(--cui-primary-rgb), 0.08)',
+            color: 'var(--cui-primary)',
             cursor: 'pointer',
           }}
           title="Instrucciones para llenar el libro contable"
@@ -272,7 +284,7 @@ const AuditFiltersBar = ({
             padding: '4px 12px',
             borderRadius: 6,
             border: '1.5px solid #7c3aed',
-            background: '#faf5ff',
+            background: 'rgba(124, 58, 237, 0.08)',
             color: '#7c3aed',
             cursor: 'pointer',
           }}
@@ -286,9 +298,9 @@ const AuditFiltersBar = ({
             fontSize: 11,
             padding: '4px 10px',
             borderRadius: 6,
-            border: '1px solid #2f9e44',
+            border: '1px solid var(--cui-success)',
             background: 'none',
-            color: '#2f9e44',
+            color: 'var(--cui-success)',
             cursor: 'pointer',
           }}
           title="Exportar auditoría a Excel"
@@ -301,9 +313,9 @@ const AuditFiltersBar = ({
             fontSize: 11,
             padding: '4px 10px',
             borderRadius: 6,
-            border: '1px solid #e03131',
+            border: '1px solid var(--cui-danger)',
             background: 'none',
-            color: '#e03131',
+            color: 'var(--cui-danger)',
             cursor: 'pointer',
           }}
           title="Exportar auditoría a PDF"
@@ -316,9 +328,9 @@ const AuditFiltersBar = ({
             fontSize: 11,
             padding: '4px 10px',
             borderRadius: 6,
-            border: `1px solid ${isFullscreen ? '#1e3a5f' : '#94a3b8'}`,
-            background: isFullscreen ? '#eef4ff' : 'none',
-            color: isFullscreen ? '#1e3a5f' : '#64748b',
+            border: `1px solid ${isFullscreen ? 'var(--cui-primary)' : 'var(--cui-border-color)'}`,
+            background: isFullscreen ? 'rgba(var(--cui-primary-rgb), 0.1)' : 'none',
+            color: isFullscreen ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
             cursor: 'pointer',
           }}
           title={isFullscreen ? 'Salir de pantalla completa' : 'Vista pantalla completa'}

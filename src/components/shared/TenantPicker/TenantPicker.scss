@@ -17,19 +17,19 @@
     justify-content: space-between;
     gap: 10px;
     padding: 12px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--cui-border-color);
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--cui-tertiary-bg);
     font-size: var(--fs-base);
     font-weight: 600;
-    color: #0f172a;
+    color: var(--cui-body-color);
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease;
     text-align: left;
 
     &:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
+      background: var(--cui-secondary-bg);
+      border-color: var(--cui-border-color-translucent, var(--cui-border-color));
     }
 
     &--active {

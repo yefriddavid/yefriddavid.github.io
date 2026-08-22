@@ -4,10 +4,30 @@ import { fmt } from '../utils'
 import Spinner from 'src/components/shared/Spinner'
 
 const LEVEL_STYLE = {
-  danger: { bg: '#fff5f5', border: '#fca5a5', color: '#b91c1c', icon: '🔴' },
-  warning: { bg: '#fffbeb', border: '#fcd34d', color: '#92400e', icon: '🟡' },
-  info: { bg: '#eff6ff', border: '#93c5fd', color: '#1e40af', icon: '🔵' },
-  success: { bg: '#f0fdf4', border: '#86efac', color: '#166534', icon: '✅' },
+  danger: {
+    bg: 'rgba(var(--cui-danger-rgb), 0.12)',
+    border: 'rgba(var(--cui-danger-rgb), 0.35)',
+    color: 'var(--cui-danger)',
+    icon: '🔴',
+  },
+  warning: {
+    bg: 'rgba(var(--cui-warning-rgb), 0.12)',
+    border: 'rgba(var(--cui-warning-rgb), 0.35)',
+    color: 'var(--cui-warning)',
+    icon: '🟡',
+  },
+  info: {
+    bg: 'rgba(var(--cui-info-rgb), 0.12)',
+    border: 'rgba(var(--cui-info-rgb), 0.35)',
+    color: 'var(--cui-info)',
+    icon: '🔵',
+  },
+  success: {
+    bg: 'rgba(var(--cui-success-rgb), 0.12)',
+    border: 'rgba(var(--cui-success-rgb), 0.35)',
+    color: 'var(--cui-success)',
+    icon: '✅',
+  },
 }
 
 export default function AnalysisModal({ visible, onClose, loading, result }) {
@@ -15,7 +35,12 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
 
   return (
     <CModal visible={visible} onClose={onClose} size="lg" fullscreen="sm">
-      <CModalHeader style={{ background: '#faf5ff', borderBottom: '1px solid #e9d5ff' }}>
+      <CModalHeader
+        style={{
+          background: 'rgba(124, 58, 237, 0.08)',
+          borderBottom: '1px solid rgba(124, 58, 237, 0.25)',
+        }}
+      >
         <CModalTitle style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>
           ✦ Análisis IA — Auditoría del período
         </CModalTitle>
@@ -29,7 +54,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
         )}
 
         {!loading && !result && (
-          <div style={{ textAlign: 'center', color: '#94a3b8', padding: 40 }}>
+          <div style={{ textAlign: 'center', color: 'var(--cui-secondary-color)', padding: 40 }}>
             Sin datos para analizar.
           </div>
         )}
@@ -55,22 +80,33 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                 <div
                   key={label}
                   style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8e0',
+                    background: 'var(--cui-tertiary-bg)',
+                    border: '1px solid var(--cui-border-color)',
                     borderRadius: 8,
                     padding: '10px 14px',
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#1e3a5f' }}>{value}</div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>{label}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--cui-primary)' }}>
+                    {value}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--cui-secondary-color)', marginTop: 2 }}>
+                    {label}
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Coverage bar */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'var(--cui-secondary-color)',
+                  marginBottom: 6,
+                  fontWeight: 600,
+                }}
+              >
                 Distribución del período
               </div>
               <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 20 }}>
@@ -78,7 +114,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   <div
                     style={{
                       width: `${summary.fullPercent}%`,
-                      background: '#2f9e44',
+                      background: 'var(--cui-success)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -94,7 +130,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   <div
                     style={{
                       width: `${summary.partialPercent}%`,
-                      background: '#f59e0b',
+                      background: 'var(--cui-warning)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -110,7 +146,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   <div
                     style={{
                       width: `${summary.nonePercent}%`,
-                      background: '#e03131',
+                      background: 'var(--cui-danger)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -125,13 +161,15 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                 {[
-                  { color: '#2f9e44', label: `Completo (${summary.fullCount})` },
-                  { color: '#f59e0b', label: `Parcial (${summary.partialCount})` },
-                  { color: '#e03131', label: `Sin liquidar (${summary.noneCount})` },
+                  { color: 'var(--cui-success)', label: `Completo (${summary.fullCount})` },
+                  { color: 'var(--cui-warning)', label: `Parcial (${summary.partialCount})` },
+                  { color: 'var(--cui-danger)', label: `Sin liquidar (${summary.noneCount})` },
                 ].map(({ color, label }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <div style={{ width: 10, height: 10, borderRadius: 2, background: color }} />
-                    <span style={{ fontSize: 11, color: '#64748b' }}>{label}</span>
+                    <span style={{ fontSize: 11, color: 'var(--cui-secondary-color)' }}>
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -144,21 +182,26 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   <div
                     style={{
                       flex: '1 1 140px',
-                      background: '#f0fdf4',
-                      border: '1px solid #86efac',
+                      background: 'rgba(var(--cui-success-rgb), 0.12)',
+                      border: '1px solid rgba(var(--cui-success-rgb), 0.35)',
                       borderRadius: 8,
                       padding: '10px 14px',
                     }}
                   >
                     <div
-                      style={{ fontSize: 11, color: '#166534', fontWeight: 600, marginBottom: 4 }}
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--cui-success)',
+                        fontWeight: 600,
+                        marginBottom: 4,
+                      }}
                     >
                       Mejor día
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#166534' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--cui-success)' }}>
                       {fmt(summary.bestDay.total)}
                     </div>
-                    <div style={{ fontSize: 11, color: '#166534', opacity: 0.8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--cui-success)', opacity: 0.8 }}>
                       {summary.bestDay.dateStr}
                     </div>
                   </div>
@@ -167,21 +210,26 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                   <div
                     style={{
                       flex: '1 1 140px',
-                      background: '#fff5f5',
-                      border: '1px solid #fca5a5',
+                      background: 'rgba(var(--cui-danger-rgb), 0.12)',
+                      border: '1px solid rgba(var(--cui-danger-rgb), 0.35)',
                       borderRadius: 8,
                       padding: '10px 14px',
                     }}
                   >
                     <div
-                      style={{ fontSize: 11, color: '#b91c1c', fontWeight: 600, marginBottom: 4 }}
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--cui-danger)',
+                        fontWeight: 600,
+                        marginBottom: 4,
+                      }}
                     >
                       Día más bajo
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#b91c1c' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--cui-danger)' }}>
                       {fmt(summary.worstDay.total)}
                     </div>
-                    <div style={{ fontSize: 11, color: '#b91c1c', opacity: 0.8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--cui-danger)', opacity: 0.8 }}>
                       {summary.worstDay.dateStr}
                     </div>
                   </div>
@@ -192,7 +240,14 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
             {/* Findings */}
             {findings.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--cui-secondary-color)',
+                    fontWeight: 600,
+                    marginBottom: 10,
+                  }}
+                >
                   Hallazgos ({findings.length})
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -225,24 +280,50 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
             {/* Driver ranking */}
             {driverRanking.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--cui-secondary-color)',
+                    fontWeight: 600,
+                    marginBottom: 10,
+                  }}
+                >
                   Conductores — días sin liquidar
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {driverRanking.map((dr) => {
                     const pct = summary.pastDays > 0 ? dr.missing / summary.pastDays : 0
-                    const barColor = pct > 0.5 ? '#e03131' : pct > 0.25 ? '#f59e0b' : '#94a3b8'
+                    const barColor =
+                      pct > 0.5
+                        ? 'var(--cui-danger)'
+                        : pct > 0.25
+                          ? 'var(--cui-warning)'
+                          : 'var(--cui-secondary-color)'
                     return (
-                      <div key={dr.name} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 10px' }}>
+                      <div
+                        key={dr.name}
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          alignItems: 'center',
+                          gap: '4px 10px',
+                        }}
+                      >
                         <span
-                          style={{ fontSize: 12, color: '#374151', minWidth: 100, fontWeight: 600, flex: '1 0 100px' }}
+                          style={{
+                            fontSize: 12,
+                            color: 'var(--cui-body-color)',
+                            minWidth: 100,
+                            fontWeight: 600,
+                            flex: '1 0 100px',
+                          }}
                         >
                           {dr.name}
                         </span>
                         <div
                           style={{
                             flex: '1 0 150px',
-                            background: '#f1f5f9',
+                            background: 'var(--cui-tertiary-bg)',
                             borderRadius: 4,
                             height: 8,
                             overflow: 'hidden',
@@ -281,13 +362,27 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
             {/* Driver payment summary */}
             {driverPayments.length > 0 && (
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--cui-secondary-color)',
+                    fontWeight: 600,
+                    marginBottom: 10,
+                  }}
+                >
                   Pagos por conductor
                 </div>
-                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                <div
+                  style={{
+                    overflowX: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    border: '1px solid var(--cui-border-color)',
+                    borderRadius: 8,
+                  }}
+                >
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 450 }}>
                     <thead>
-                      <tr style={{ background: '#f1f5f9' }}>
+                      <tr style={{ background: 'var(--cui-tertiary-bg)' }}>
                         {['Conductor', 'Esperado', 'Pagado', 'Saldo'].map((h) => (
                           <th
                             key={h}
@@ -295,8 +390,8 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                               padding: '8px 10px',
                               textAlign: h === 'Conductor' ? 'left' : 'right',
                               fontWeight: 700,
-                              color: '#475569',
-                              borderBottom: '1px solid #e2e8f0',
+                              color: 'var(--cui-secondary-color)',
+                              borderBottom: '1px solid var(--cui-border-color)',
                             }}
                           >
                             {h}
@@ -310,18 +405,25 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                         .sort((a, b) => b.debt - a.debt)
                         .map((dp, i) => {
                           const debtColor =
-                            dp.debt > 0 ? '#b91c1c' : dp.debt < 0 ? '#166534' : '#64748b'
+                            dp.debt > 0
+                              ? 'var(--cui-danger)'
+                              : dp.debt < 0
+                                ? 'var(--cui-success)'
+                                : 'var(--cui-secondary-color)'
                           return (
                             <tr
                               key={dp.name}
-                              style={{ background: i % 2 === 0 ? '#fff' : '#f8fafc' }}
+                              style={{
+                                background:
+                                  i % 2 === 0 ? 'var(--cui-card-bg)' : 'var(--cui-tertiary-bg)',
+                              }}
                             >
                               <td
                                 style={{
                                   padding: '8px 10px',
                                   fontWeight: 500,
-                                  color: '#1e3a5f',
-                                  borderBottom: '1px solid #f1f5f9',
+                                  color: 'var(--cui-primary)',
+                                  borderBottom: '1px solid var(--cui-border-color)',
                                 }}
                               >
                                 {dp.name}
@@ -330,8 +432,8 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                                 style={{
                                   padding: '8px 10px',
                                   textAlign: 'right',
-                                  color: '#374151',
-                                  borderBottom: '1px solid #f1f5f9',
+                                  color: 'var(--cui-body-color)',
+                                  borderBottom: '1px solid var(--cui-border-color)',
                                   fontVariantNumeric: 'tabular-nums',
                                 }}
                               >
@@ -341,8 +443,8 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                                 style={{
                                   padding: '8px 10px',
                                   textAlign: 'right',
-                                  color: '#374151',
-                                  borderBottom: '1px solid #f1f5f9',
+                                  color: 'var(--cui-body-color)',
+                                  borderBottom: '1px solid var(--cui-border-color)',
                                   fontVariantNumeric: 'tabular-nums',
                                 }}
                               >
@@ -354,7 +456,7 @@ export default function AnalysisModal({ visible, onClose, loading, result }) {
                                   textAlign: 'right',
                                   fontWeight: 700,
                                   color: debtColor,
-                                  borderBottom: '1px solid #f1f5f9',
+                                  borderBottom: '1px solid var(--cui-border-color)',
                                   fontVariantNumeric: 'tabular-nums',
                                 }}
                               >

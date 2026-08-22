@@ -236,13 +236,16 @@ const AuditTable = ({
                       onMouseEnter={() => setHoveredAuditDay(day.d)}
                       onMouseLeave={() => setHoveredAuditDay(null)}
                       style={{
-                        background: selectedAuditDay === day.d ? '#eef4ff' : auditRowBg(day),
-                        borderBottom: '1px solid #f1f5f9',
+                        background:
+                          selectedAuditDay === day.d
+                            ? 'rgba(var(--cui-primary-rgb), 0.12)'
+                            : auditRowBg(day),
+                        borderBottom: '1px solid var(--cui-border-color)',
                         borderLeft: `4px solid ${auditLeftBorder(day)}`,
                         cursor: 'pointer',
                         boxShadow:
                           hoveredAuditDay === day.d
-                            ? 'inset 0 0 0 9999px rgba(0,0,0,0.04)'
+                            ? 'inset 0 0 0 9999px rgba(var(--cui-body-color-rgb), 0.04)'
                             : 'none',
                         transition: 'box-shadow 0.1s',
                       }}
@@ -274,7 +277,7 @@ const AuditTable = ({
                           padding: '8px 12px',
                           fontWeight: 700,
                           fontVariantNumeric: 'tabular-nums',
-                          color: day.isFuture ? '#adb5bd' : '#1e3a5f',
+                          color: day.isFuture ? 'var(--cui-secondary-color)' : 'var(--cui-primary)',
                           whiteSpace: 'nowrap',
                           position: 'sticky',
                           left: 15,
@@ -303,9 +306,9 @@ const AuditTable = ({
                           <span
                             style={{
                               fontSize: 10,
-                              background: '#f3e8ff',
-                              color: '#6b21a8',
-                              border: '1px solid #d8b4fe',
+                              background: 'rgba(124, 58, 237, 0.15)',
+                              color: '#7c3aed',
+                              border: '1px solid rgba(124, 58, 237, 0.35)',
                               borderRadius: 4,
                               padding: '1px 5px',
                               marginLeft: 6,
@@ -326,10 +329,8 @@ const AuditTable = ({
                                   padding: '8px 12px',
                                   color:
                                     day.isSunday || day.isHoliday
-                                      ? '#7c5e00'
-                                      : day.isFuture
-                                        ? '#adb5bd'
-                                        : '#64748b',
+                                      ? 'var(--cui-warning)'
+                                      : 'var(--cui-secondary-color)',
                                   fontWeight: day.isSunday || day.isHoliday ? 700 : 400,
                                   position: 'sticky',
                                   left: 75,
@@ -344,9 +345,9 @@ const AuditTable = ({
                                   <span
                                     style={{
                                       fontSize: 10,
-                                      background: '#fff3cd',
-                                      color: '#7c5e00',
-                                      border: '1px solid #fcd34d',
+                                      background: 'rgba(var(--cui-warning-rgb), 0.18)',
+                                      color: 'var(--cui-warning)',
+                                      border: '1px solid rgba(var(--cui-warning-rgb), 0.4)',
                                       borderRadius: 4,
                                       padding: '1px 5px',
                                       marginLeft: 5,
@@ -372,9 +373,9 @@ const AuditTable = ({
                                     style={{
                                       fontSize: 11,
                                       fontWeight: 700,
-                                      color: '#e03131',
-                                      background: '#fff5f5',
-                                      border: '1px solid #fca5a5',
+                                      color: 'var(--cui-danger)',
+                                      background: 'rgba(var(--cui-danger-rgb), 0.12)',
+                                      border: '1px solid rgba(var(--cui-danger-rgb), 0.35)',
                                       borderRadius: 4,
                                       padding: '2px 8px',
                                     }}
@@ -387,9 +388,9 @@ const AuditTable = ({
                                     style={{
                                       fontSize: 11,
                                       fontWeight: 700,
-                                      color: '#e67700',
-                                      background: '#fffbeb',
-                                      border: '1px solid #fed7aa',
+                                      color: 'var(--cui-warning)',
+                                      background: 'rgba(var(--cui-warning-rgb), 0.12)',
+                                      border: '1px solid rgba(var(--cui-warning-rgb), 0.35)',
                                       borderRadius: 4,
                                       padding: '2px 8px',
                                     }}
@@ -402,9 +403,9 @@ const AuditTable = ({
                                     style={{
                                       fontSize: 11,
                                       fontWeight: 700,
-                                      color: '#2f9e44',
-                                      background: '#f0fdf4',
-                                      border: '1px solid #86efac',
+                                      color: 'var(--cui-success)',
+                                      background: 'rgba(var(--cui-success-rgb), 0.12)',
+                                      border: '1px solid rgba(var(--cui-success-rgb), 0.35)',
                                       borderRadius: 4,
                                       padding: '2px 8px',
                                     }}
@@ -416,9 +417,9 @@ const AuditTable = ({
                                   <span
                                     style={{
                                       fontSize: 11,
-                                      color: '#adb5bd',
-                                      background: '#f8fafc',
-                                      border: '1px solid #e2e8f0',
+                                      color: 'var(--cui-secondary-color)',
+                                      background: 'var(--cui-tertiary-bg)',
+                                      border: '1px solid var(--cui-border-color)',
                                       borderRadius: 4,
                                       padding: '2px 8px',
                                     }}
@@ -435,7 +436,11 @@ const AuditTable = ({
                                 style={{
                                   padding: '8px 12px',
                                   fontWeight: 600,
-                                  color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#334155',
+                                  color: sim
+                                    ? '#7c3aed'
+                                    : day.isFuture
+                                      ? 'var(--cui-secondary-color)'
+                                      : 'var(--cui-body-color)',
                                   fontStyle: sim ? 'italic' : 'normal',
                                   ...col('count'),
                                 }}
@@ -450,7 +455,11 @@ const AuditTable = ({
                                 style={{
                                   padding: '8px 12px',
                                   fontWeight: 700,
-                                  color: sim ? '#7c3aed' : day.isFuture ? '#adb5bd' : '#1e3a5f',
+                                  color: sim
+                                    ? '#7c3aed'
+                                    : day.isFuture
+                                      ? 'var(--cui-secondary-color)'
+                                      : 'var(--cui-primary)',
                                   whiteSpace: 'nowrap',
                                   fontStyle: sim ? 'italic' : 'normal',
                                   ...col('total'),
@@ -460,14 +469,14 @@ const AuditTable = ({
                                   sim.total > 0 ? (
                                     fmt(sim.total)
                                   ) : (
-                                    <span style={{ color: '#adb5bd' }}>—</span>
+                                    <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
                                   )
                                 ) : day.isFuture ? (
                                   '—'
                                 ) : filteredTotal > 0 ? (
                                   fmt(filteredTotal)
                                 ) : (
-                                  <span style={{ color: '#adb5bd' }}>—</span>
+                                  <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
                                 )}
                               </td>
                             )
@@ -478,15 +487,16 @@ const AuditTable = ({
                                 style={{
                                   padding: '8px 12px',
                                   fontWeight: 500,
-                                  color: day.isFuture ? '#cbd5e1' : '#64748b',
+                                  color: 'var(--cui-secondary-color)',
+                                  opacity: day.isFuture ? 0.55 : 1,
                                   whiteSpace: 'nowrap',
                                   fontVariantNumeric: 'tabular-nums',
-                                  borderLeft: '1px dashed #e2e8f0',
+                                  borderLeft: '1px dashed var(--cui-border-color)',
                                   ...col('cumul'),
                                 }}
                               >
                                 {day.isFuture && cumulativeTotals[dayIdx].actual === 0 ? (
-                                  <span style={{ color: '#cbd5e1' }}>—</span>
+                                  <span style={{ color: 'var(--cui-secondary-color)' }}>—</span>
                                 ) : (
                                   fmt(cumulativeTotals[dayIdx].actual)
                                 )}

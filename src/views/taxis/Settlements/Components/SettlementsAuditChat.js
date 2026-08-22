@@ -43,7 +43,13 @@ const markdownComponents = {
   li: ({ children }) => <li style={{ marginBottom: 2 }}>{children}</li>,
   strong: ({ children }) => <strong style={{ fontWeight: 700 }}>{children}</strong>,
   code: ({ children }) => (
-    <code style={{ background: 'rgba(0,0,0,0.06)', borderRadius: 3, padding: '1px 4px' }}>
+    <code
+      style={{
+        background: 'rgba(var(--cui-body-color-rgb), 0.08)',
+        borderRadius: 3,
+        padding: '1px 4px',
+      }}
+    >
       {children}
     </code>
   ),
@@ -65,8 +71,8 @@ const ChatMessage = ({ msg }) => {
           padding: '8px 12px',
           borderRadius: 10,
           fontSize: 13,
-          background: isUser ? '#1e3a5f' : '#f1f3f5',
-          color: isUser ? '#fff' : '#1e293b',
+          background: isUser ? 'rgba(var(--cui-primary-rgb), 0.16)' : 'var(--cui-tertiary-bg)',
+          color: 'var(--cui-body-color)',
         }}
       >
         <ReactMarkdown components={markdownComponents}>{msg.content}</ReactMarkdown>
@@ -206,9 +212,9 @@ const SettlementsAuditChat = ({ period, settlements, expenses, periodDrivers, au
                       fontSize: 12,
                       padding: '4px 10px',
                       borderRadius: 6,
-                      border: '1px solid #1e3a5f',
-                      background: '#eff6ff',
-                      color: '#1e3a5f',
+                      border: '1px solid var(--cui-primary)',
+                      background: 'rgba(var(--cui-primary-rgb), 0.08)',
+                      color: 'var(--cui-primary)',
                       cursor: 'pointer',
                     }}
                   >
@@ -227,7 +233,9 @@ const SettlementsAuditChat = ({ period, settlements, expenses, periodDrivers, au
           <div ref={bottomRef} />
         </div>
 
-        {error && <div style={{ fontSize: 12, color: '#e03131', marginBottom: 8 }}>{error}</div>}
+        {error && (
+          <div style={{ fontSize: 12, color: 'var(--cui-danger)', marginBottom: 8 }}>{error}</div>
+        )}
 
         <div style={{ display: 'flex', gap: 8 }}>
           <input
@@ -254,7 +262,7 @@ const SettlementsAuditChat = ({ period, settlements, expenses, periodDrivers, au
               padding: '6px 14px',
               borderRadius: 6,
               border: '1px solid #1e3a5f',
-              background: !input.trim() || loading ? '#cbd5e1' : '#1e3a5f',
+              background: !input.trim() || loading ? 'var(--cui-secondary-bg)' : '#1e3a5f',
               color: '#fff',
               cursor: !input.trim() || loading ? 'default' : 'pointer',
             }}

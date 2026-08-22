@@ -55,8 +55,8 @@ const TD = ({ children, right, mono, muted, bold, color }) => (
       fontSize: 12,
       fontFamily: mono ? 'monospace' : undefined,
       fontWeight: bold ? 700 : 400,
-      color: color ?? (muted ? '#94a3b8' : '#334155'),
-      borderBottom: '1px solid #f1f5f9',
+      color: color ?? (muted ? 'var(--cui-secondary-color)' : 'var(--cui-body-color)'),
+      borderBottom: '1px solid var(--cui-border-color)',
       fontVariantNumeric: mono ? 'tabular-nums' : undefined,
       whiteSpace: 'nowrap',
     }}
@@ -66,7 +66,14 @@ const TD = ({ children, right, mono, muted, bold, color }) => (
 )
 
 const SampleTable = ({ headers, rows, headerBg }) => (
-  <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 14 }}>
+  <div
+    style={{
+      overflowX: 'auto',
+      borderRadius: 8,
+      border: '1px solid var(--cui-border-color)',
+      marginTop: 14,
+    }}
+  >
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
       <thead>
         <tr style={{ background: headerBg }}>
@@ -79,7 +86,10 @@ const SampleTable = ({ headers, rows, headerBg }) => (
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f8fafc' }}>
+          <tr
+            key={i}
+            style={{ background: i % 2 === 0 ? 'var(--cui-card-bg)' : 'var(--cui-tertiary-bg)' }}
+          >
             {row.map((cell, j) => (
               <TD
                 key={j}
@@ -109,8 +119,13 @@ export default function InstructionsModal({ visible, onClose }) {
 
   return (
     <CModal visible={visible} onClose={onClose} size="lg" scrollable>
-      <CModalHeader style={{ background: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
-        <CModalTitle style={{ color: '#1e3a5f', fontWeight: 700, fontSize: 16 }}>
+      <CModalHeader
+        style={{
+          background: 'rgba(var(--cui-primary-rgb), 0.08)',
+          borderBottom: '1px solid rgba(var(--cui-primary-rgb), 0.25)',
+        }}
+      >
+        <CModalTitle style={{ color: 'var(--cui-primary)', fontWeight: 700, fontSize: 16 }}>
           📖 ¿Cómo llenar el libro contable?
         </CModalTitle>
       </CModalHeader>
@@ -119,8 +134,8 @@ export default function InstructionsModal({ visible, onClose }) {
         <div
           style={{
             display: 'flex',
-            borderBottom: '2px solid #e2e8f0',
-            background: '#f8fafc',
+            borderBottom: '2px solid var(--cui-border-color)',
+            background: 'var(--cui-tertiary-bg)',
           }}
         >
           {TABS.map(({ key, label }) => {
@@ -135,9 +150,11 @@ export default function InstructionsModal({ visible, onClose }) {
                   fontSize: 13,
                   fontWeight: active ? 700 : 500,
                   border: 'none',
-                  borderBottom: active ? '2px solid #1e3a5f' : '2px solid transparent',
-                  background: active ? '#fff' : 'transparent',
-                  color: active ? '#1e3a5f' : '#64748b',
+                  borderBottom: active
+                    ? '2px solid var(--cui-primary)'
+                    : '2px solid transparent',
+                  background: active ? 'var(--cui-card-bg)' : 'transparent',
+                  color: active ? 'var(--cui-primary)' : 'var(--cui-secondary-color)',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                   marginBottom: -2,
@@ -154,31 +171,45 @@ export default function InstructionsModal({ visible, onClose }) {
             <>
               <div
                 style={{
-                  background: '#eff6ff',
-                  border: '1px solid #93c5fd',
-                  borderLeft: '4px solid #1e3a5f',
+                  background: 'rgba(var(--cui-primary-rgb), 0.08)',
+                  border: '1px solid rgba(var(--cui-primary-rgb), 0.3)',
+                  borderLeft: '4px solid var(--cui-primary)',
                   borderRadius: 8,
                   padding: '12px 16px',
                   marginBottom: 16,
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e3a5f', marginBottom: 4 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--cui-primary)',
+                    marginBottom: 4,
+                  }}
+                >
                   ¿Cuándo usar este método?
                 </div>
-                <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: 'var(--cui-primary)', lineHeight: 1.6 }}>
                   Cuando el conductor <strong>no paga día a día</strong> sino que acumula varios
                   días y los cancela de una sola vez. Aquí cada registro representa un{' '}
                   <em>bloque de días</em>, no un día individual.
                 </div>
               </div>
 
-              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.7, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'var(--cui-body-color)',
+                  lineHeight: 1.7,
+                  marginBottom: 6,
+                }}
+              >
                 <strong>Reglas de oro:</strong>
               </div>
               <ul
                 style={{
                   fontSize: 13,
-                  color: '#374151',
+                  color: 'var(--cui-body-color)',
                   lineHeight: 1.8,
                   paddingLeft: 20,
                   marginBottom: 16,
@@ -211,7 +242,14 @@ export default function InstructionsModal({ visible, onClose }) {
                 </li>
               </ul>
 
-              <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginBottom: 2 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'var(--cui-secondary-color)',
+                  fontWeight: 600,
+                  marginBottom: 2,
+                }}
+              >
                 Ejemplo — Carlos Mora / valor diario $70.000:
               </div>
               <SampleTable
@@ -224,11 +262,23 @@ export default function InstructionsModal({ visible, onClose }) {
                   { label: 'Saldo' },
                 ]}
                 rows={[
-                  ['01', '', '', { label: '$0', color: '#1e40af' }, ''],
-                  ['02', '', '', { label: '$0', color: '#1e40af' }, ''],
-                  ['03', '1 y 2 de Abril', 'Carlos Mora', { label: '170.000', color: '#1e40af' }, ''],
-                  ['04', '', '', { label: '$0', color: '#1e40af' }, ''],
-                  ['05', '3 y 4 de Abril', 'Carlos Mora', { label: '170.000', color: '#1e40af' }, ''],
+                  ['01', '', '', { label: '$0', color: 'var(--cui-primary)' }, ''],
+                  ['02', '', '', { label: '$0', color: 'var(--cui-primary)' }, ''],
+                  [
+                    '03',
+                    '1 y 2 de Abril',
+                    'Carlos Mora',
+                    { label: '170.000', color: 'var(--cui-primary)' },
+                    '',
+                  ],
+                  ['04', '', '', { label: '$0', color: 'var(--cui-primary)' }, ''],
+                  [
+                    '05',
+                    '3 y 4 de Abril',
+                    'Carlos Mora',
+                    { label: '170.000', color: 'var(--cui-primary)' },
+                    '',
+                  ],
                 ]}
               />
 
@@ -236,11 +286,11 @@ export default function InstructionsModal({ visible, onClose }) {
                 style={{
                   marginTop: 14,
                   padding: '10px 14px',
-                  background: '#fffbeb',
-                  border: '1px solid #fcd34d',
+                  background: 'rgba(var(--cui-warning-rgb), 0.12)',
+                  border: '1px solid rgba(var(--cui-warning-rgb), 0.35)',
                   borderRadius: 8,
                   fontSize: 12,
-                  color: '#92400e',
+                  color: 'var(--cui-warning)',
                 }}
               >
                 <strong>Ojo:</strong> el total de las 5 filas suma $1.470.000, que es exactamente
@@ -254,31 +304,45 @@ export default function InstructionsModal({ visible, onClose }) {
             <>
               <div
                 style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #86efac',
-                  borderLeft: '4px solid #2f9e44',
+                  background: 'rgba(var(--cui-success-rgb), 0.12)',
+                  border: '1px solid rgba(var(--cui-success-rgb), 0.35)',
+                  borderLeft: '4px solid var(--cui-success)',
                   borderRadius: 8,
                   padding: '12px 16px',
                   marginBottom: 16,
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#166534', marginBottom: 4 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--cui-success)',
+                    marginBottom: 4,
+                  }}
+                >
                   ¿Cuándo usar este método?
                 </div>
-                <div style={{ fontSize: 13, color: '#166534', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: 'var(--cui-success)', lineHeight: 1.6 }}>
                   Cuando el conductor paga <strong>cada día que trabaja</strong>. Es el método más
                   transparente y fácil de verificar: cada fila = un día = un pago. No requiere
                   notas aclaratorias adicionales porque cada día queda registrado individualmente.
                 </div>
               </div>
 
-              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.7, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'var(--cui-body-color)',
+                  lineHeight: 1.7,
+                  marginBottom: 6,
+                }}
+              >
                 <strong>Reglas de oro:</strong>
               </div>
               <ul
                 style={{
                   fontSize: 13,
-                  color: '#374151',
+                  color: 'var(--cui-body-color)',
                   lineHeight: 1.8,
                   paddingLeft: 20,
                   marginBottom: 16,
@@ -310,7 +374,14 @@ export default function InstructionsModal({ visible, onClose }) {
                 </li>
               </ul>
 
-              <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginBottom: 2 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'var(--cui-secondary-color)',
+                  fontWeight: 600,
+                  marginBottom: 2,
+                }}
+              >
                 Ejemplo — Luis Peña / valor diario $80.000:
               </div>
               <SampleTable
@@ -323,11 +394,17 @@ export default function InstructionsModal({ visible, onClose }) {
                   { label: 'Saldo', right: true, bold: true },
                 ]}
                 rows={[
-                  ['01', '2 Abril', 'Luis Peña', { label: '$85.000', color: '#166534' },''],
-                  ['02', '3 Abril', 'Luis Peña', { label: '$85.000', color: '#166534' },''],
-                  ['03', 'No trabajó — cita médica EPS', 'Luis Peña', { label: '$0', color: '#94a3b8' }, ''],
-                  ['04', '-', '-', { label: '$40.000', color: '#e67700' }, ''],
-                  ['05', '4 Abril', 'Luis Peña', { label: '$85.000', color: '#166534' }, ''],
+                  ['01', '2 Abril', 'Luis Peña', { label: '$85.000', color: 'var(--cui-success)' }, ''],
+                  ['02', '3 Abril', 'Luis Peña', { label: '$85.000', color: 'var(--cui-success)' }, ''],
+                  [
+                    '03',
+                    'No trabajó — cita médica EPS',
+                    'Luis Peña',
+                    { label: '$0', color: 'var(--cui-secondary-color)' },
+                    '',
+                  ],
+                  ['04', '-', '-', { label: '$40.000', color: 'var(--cui-warning)' }, ''],
+                  ['05', '4 Abril', 'Luis Peña', { label: '$85.000', color: 'var(--cui-success)' }, ''],
                 ]}
               />
 
@@ -335,11 +412,11 @@ export default function InstructionsModal({ visible, onClose }) {
                 style={{
                   marginTop: 14,
                   padding: '10px 14px',
-                  background: '#f0fdf4',
-                  border: '1px solid #86efac',
+                  background: 'rgba(var(--cui-success-rgb), 0.12)',
+                  border: '1px solid rgba(var(--cui-success-rgb), 0.35)',
                   borderRadius: 8,
                   fontSize: 12,
-                  color: '#166534',
+                  color: 'var(--cui-success)',
                 }}
               >
                 <strong>Pro tip:</strong> el día 3 con $0 y la descripción de la causa deja

@@ -89,8 +89,8 @@ const AuditNotesCell = ({
             }}
             style={{
               background: 'none',
-              border: '1px dashed #93c5fd',
-              color: '#3b82f6',
+              border: '1px dashed rgba(var(--cui-info-rgb), 0.5)',
+              color: 'var(--cui-info)',
               borderRadius: 4,
               cursor: 'pointer',
               fontSize: 11,
@@ -118,9 +118,9 @@ const AuditNotesCell = ({
                   fontSize: 11,
                   padding: '2px 4px',
                   borderRadius: 4,
-                  border: '1px solid #93c5fd',
-                  color: addingDriver ? '#1e40af' : '#64748b',
-                  background: '#f0f9ff',
+                  border: '1px solid rgba(var(--cui-info-rgb), 0.5)',
+                  color: addingDriver ? 'var(--cui-info)' : 'var(--cui-secondary-color)',
+                  background: 'rgba(var(--cui-info-rgb), 0.08)',
                   maxWidth: 110,
                 }}
               >
@@ -136,7 +136,7 @@ const AuditNotesCell = ({
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#e03131',
+                  color: 'var(--cui-danger)',
                   cursor: 'pointer',
                   fontSize: 13,
                   padding: '0 2px',
