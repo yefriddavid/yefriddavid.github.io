@@ -27,6 +27,15 @@ tasks:
       - npx firebase deploy --only hosting:yefriddavid --project cashflow-9cbbc
       - node scripts/publish-version.mjs
 
+  deploy:mobile:
+    desc: "Build debug APK and install on a connected phone. Override device: task deploy:mobile DEVICE=<id>"
+    dir: mobile
+    vars:
+      DEVICE: '{{.DEVICE | default "K7EUTKKFEUKNTKAQ"}}'
+    cmds:
+      - flutter build apk --debug
+      - flutter install -d {{.DEVICE}} --debug
+
   lint:
     desc: Run ESLint
     cmd: npm run lint
