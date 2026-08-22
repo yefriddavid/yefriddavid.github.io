@@ -1,9 +1,15 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Column, Lookup } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import {
+  FeatherGrid,
+  FeatherSortHead,
+  FeatherColumnToggle,
+  useFeatherSort,
+  useFeatherColumns,
+  sortFeatherRows,
+} from 'src/components/shared/FeatherGrid'
 import { CCard, CCardHeader, CCardBody, CBadge, CButton } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash, cilPencil, cilDescription, cilUser } from '@coreui/icons'
@@ -25,19 +31,37 @@ const Conductores = () => {
   const activeTenantId = useActiveTenantId()
   const { data: records, fetching } = useSelector((s) => s.taxiDriver)
   const { data: vehicles } = useSelector((s) => s.taxiVehicle)
+  const [sort, toggleSort] = useFeatherSort([{ key: 'name', dir: 'asc' }])
+
+  const DRIVER_COLUMNS = useMemo(
+    () => [
+      { key: 'name', label: t('taxis.drivers.fields.name') },
+      { key: 'idNumber', label: t('taxis.drivers.fields.idNumber') },
+      { key: 'phone', label: t('taxis.drivers.fields.phone') },
+      { key: 'defaultAmount', label: t('taxis.drivers.fields.defaultAmount'), align: 'num' },
+      {
+        key: 'defaultAmountSunday',
+        label: t('taxis.drivers.fields.defaultAmountSunday'),
+        align: 'num',
+      },
+      { key: 'defaultVehicle', label: t('taxis.drivers.fields.defaultVehicle') },
+      { key: 'comment', label: 'Comentario' },
+      { key: 'active', label: 'Estado' },
+    ],
+    [t],
+  )
+
+  const {
+    isVisible: isDriverColVisible,
+    selected: driverColSelected,
+    toggle: toggleDriverCol,
+    clear: clearDriverCols,
+  } = useFeatherColumns(DRIVER_COLUMNS)
 
   useEffect(() => {
     dispatch(taxiDriverActions.fetchRequest())
     dispatch(taxiVehicleActions.fetchRequest())
   }, [dispatch, activeTenantId])
-
-  const vehicleOptions = [
-    { plate: '', label: '— Ninguno —' },
-    ...(vehicles ?? []).map((v) => ({
-      plate: v.plate,
-      label: `${v.plate}${v.brand ? ` · ${v.brand}` : ''}${v.active === false ? ' (Inactivo)' : ''}`,
-    })),
-  ]
 
   const handleEdit = (row) => navigate(`/taxis/drivers/${row.id}`)
 
@@ -52,6 +76,8 @@ const Conductores = () => {
 
   const rows = records ?? []
 
+  const sortedRows = useMemo(() => sortFeatherRows(rows, sort), [rows, sort])
+
   return (
     <CCard>
       <CCardHeader className="d-flex align-items-center justify-content-between">
@@ -59,14 +85,24 @@ const Conductores = () => {
           <strong>Conductores</strong>
           <CBadge color="secondary">{rows.length}</CBadge>
         </div>
-        <CButton
-          size="sm"
-          color="primary"
-          variant="outline"
-          onClick={() => navigate('/taxis/drivers/new')}
-        >
-          <CIcon icon={cilPlus} size="sm" /> Nuevo conductor
-        </CButton>
+        <div className="d-flex align-items-center gap-2">
+          {!isMobile && (
+            <FeatherColumnToggle
+              columns={DRIVER_COLUMNS}
+              selected={driverColSelected}
+              onToggle={toggleDriverCol}
+              onClearAll={clearDriverCols}
+            />
+          )}
+          <CButton
+            size="sm"
+            color="primary"
+            variant="outline"
+            onClick={() => navigate('/taxis/drivers/new')}
+          >
+            <CIcon icon={cilPlus} size="sm" /> Nuevo conductor
+          </CButton>
+        </div>
       </CCardHeader>
 
       <CCardBody>
@@ -137,103 +173,91 @@ const Conductores = () => {
             ]}
           />
         ) : (
-          <StandardGrid keyExpr="id" dataSource={rows} noDataText="Sin conductores aún.">
-            <Column
-              caption=""
-              width={70}
-              allowSorting={false}
-              allowResizing={false}
-              cellRender={({ data }) => (
-                <div className="master-actions">
-                  <button
-                    className="master-btn master-btn--primary"
-                    onClick={() => handleEdit(data)}
-                    title="Editar"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    className="master-btn master-btn--danger"
-                    onClick={() => handleDelete(data.id)}
-                    title="Eliminar"
-                  >
-                    <CIcon icon={cilTrash} size="sm" />
-                  </button>
-                </div>
-              )}
-            />
-            <Column
-              dataField="photo"
-              caption=""
-              width={48}
-              allowSorting={false}
-              allowResizing={false}
-              cellRender={({ value }) =>
-                value ? (
-                  <img src={value} alt="" className="master-photo-thumb" />
-                ) : (
-                  <span className="master-photo-thumb master-photo-thumb--empty">
-                    <CIcon icon={cilUser} size="sm" />
-                  </span>
-                )
+          <FeatherGrid className="master-grid-scroll">
+            <colgroup>
+              <col />
+              <col />
+              {DRIVER_COLUMNS.map((col) => (
+                <col
+                  key={col.key}
+                  style={{ visibility: isDriverColVisible(col.key) ? undefined : 'collapse' }}
+                />
+              ))}
+            </colgroup>
+            <FeatherSortHead
+              columns={DRIVER_COLUMNS}
+              sort={sort}
+              onSort={toggleSort}
+              leading={
+                <>
+                  <th>Acciones</th>
+                  <th>👤</th>
+                </>
               }
             />
-            <Column dataField="name" caption={t('taxis.drivers.fields.name')} minWidth={150} />
-            <Column
-              dataField="idNumber"
-              caption={t('taxis.drivers.fields.idNumber')}
-              width={130}
-              cellRender={({ value }) => <span className="master-mono">{value}</span>}
-            />
-            <Column
-              dataField="phone"
-              caption={t('taxis.drivers.fields.phone')}
-              width={130}
-              hidingPriority={1}
-            />
-            <Column
-              dataField="defaultAmount"
-              caption={t('taxis.drivers.fields.defaultAmount')}
-              dataType="number"
-              width={130}
-              hidingPriority={2}
-              cellRender={({ value }) => (
-                <span className="master-amount">{value ? fmt(value) : '—'}</span>
+            <tbody>
+              {sortedRows.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="master-empty">
+                    Sin conductores aún.
+                  </td>
+                </tr>
+              ) : (
+                sortedRows.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <div className="master-actions">
+                        <button
+                          className="master-btn master-btn--primary"
+                          onClick={() => handleEdit(d)}
+                          title="Editar"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          className="master-btn master-btn--danger"
+                          onClick={() => handleDelete(d.id)}
+                          title="Eliminar"
+                        >
+                          <CIcon icon={cilTrash} size="sm" />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      {d.photo ? (
+                        <img src={d.photo} alt="" className="master-photo-thumb" />
+                      ) : (
+                        <span className="master-photo-thumb master-photo-thumb--empty">
+                          <CIcon icon={cilUser} size="sm" />
+                        </span>
+                      )}
+                    </td>
+                    <td>{d.name}</td>
+                    <td className="master-mono">{d.idNumber}</td>
+                    <td>{d.phone}</td>
+                    <td className="num">
+                      <span className="master-amount">
+                        {d.defaultAmount ? fmt(d.defaultAmount) : '—'}
+                      </span>
+                    </td>
+                    <td className="num">
+                      <span className="master-amount">
+                        {d.defaultAmountSunday ? fmt(d.defaultAmountSunday) : '—'}
+                      </span>
+                    </td>
+                    <td className="master-mono">{d.defaultVehicle || '—'}</td>
+                    <td>{d.comment}</td>
+                    <td>
+                      <StatusBadge
+                        active={d.active !== false}
+                        onClick={() => handleToggleActive(d)}
+                      />
+                    </td>
+                  </tr>
+                ))
               )}
-            />
-            <Column
-              dataField="defaultAmountSunday"
-              caption={t('taxis.drivers.fields.defaultAmountSunday')}
-              dataType="number"
-              width={130}
-              hidingPriority={3}
-              cellRender={({ value }) => (
-                <span className="master-amount">{value ? fmt(value) : '—'}</span>
-              )}
-            />
-            <Column
-              dataField="defaultVehicle"
-              caption={t('taxis.drivers.fields.defaultVehicle')}
-              width={150}
-              hidingPriority={4}
-              cellRender={({ value }) => <span className="master-mono">{value || '—'}</span>}
-            >
-              <Lookup dataSource={vehicleOptions} valueExpr="plate" displayExpr="label" />
-            </Column>
-            <Column dataField="comment" caption="Comentario" minWidth={160} hidingPriority={5} />
-            <Column
-              dataField="active"
-              caption="Estado"
-              width={100}
-              allowSorting={true}
-              cellRender={({ data }) => (
-                <StatusBadge
-                  active={data.active !== false}
-                  onClick={() => handleToggleActive(data)}
-                />
-              )}
-            />
-          </StandardGrid>
+            </tbody>
+          </FeatherGrid>
         )}
       </CCardBody>
     </CCard>

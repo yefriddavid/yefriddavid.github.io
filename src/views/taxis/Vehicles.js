@@ -2,8 +2,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Column, MasterDetail, Paging } from 'devextreme-react/data-grid'
-import StandardGrid from 'src/components/shared/StandardGrid/Index'
+import {
+  FeatherGrid,
+  FeatherSortHead,
+  FeatherColumnToggle,
+  useFeatherSort,
+  useFeatherColumns,
+  sortFeatherRows,
+} from 'src/components/shared/FeatherGrid'
 import StandardCard, { SC } from 'src/components/shared/StandardCard/Index'
 import {
   CCard,
@@ -72,21 +78,14 @@ const Vehiculos = () => {
   const activeTenantId = useActiveTenantId()
   const { data: records, fetching } = useSelector((s) => s.taxiVehicle)
   const { data: drivers } = useSelector((s) => s.taxiDriver)
-  const gridRef = useRef()
 
   const [restrictModal, setRestrictModal] = useState(null)
   const [restrictYear, setRestrictYear] = useState(new Date().getFullYear())
   const [testingNotif, setTestingNotif] = useState(false)
   const [restrictForm, setRestrictForm] = useState(emptyRestrictions())
   const [restrictSaving, setRestrictSaving] = useState(false)
-  const restrictGridRef = useRef()
-  // DevExtreme's cell editor only commits a typed value into restrictForm on
-  // blur/Enter/Tab — clicking "Guardar" (outside the grid) can race that
-  // commit and silently drop the last edited cell. saveEditData() forces the
-  // commit; this ref lets the save/year-change handlers read the value it
-  // just wrote instead of a stale closure over restrictForm.
-  const restrictFormRef = useRef(restrictForm)
-  restrictFormRef.current = restrictForm
+  const [expandedIds, setExpandedIds] = useState(new Set())
+  const [sort, toggleSort] = useFeatherSort([{ key: 'plate', dir: 'asc' }])
 
   useEffect(() => {
     dispatch(taxiVehicleActions.fetchRequest())
@@ -147,11 +146,10 @@ const Vehiculos = () => {
     setRestrictModal({ id: data.id, plate: data.plate, allRestrictions })
   }
 
-  const handleRestrictYearChange = async (newYear) => {
-    await restrictGridRef.current?.instance()?.saveEditData()
+  const handleRestrictYearChange = (newYear) => {
     const merged = {
       ...restrictModal.allRestrictions,
-      [restrictYear]: cleanMonthForm(restrictFormRef.current),
+      [restrictYear]: cleanMonthForm(restrictForm),
     }
     setRestrictModal((prev) => ({ ...prev, allRestrictions: merged }))
     setRestrictYear(newYear)
@@ -170,32 +168,15 @@ const Vehiculos = () => {
     [restrictForm],
   )
 
-  // DevExtreme DataGrid has no "onCellValueChanged" event — that name never
-  // existed in its API, so it silently never fired. onRowUpdating is the
-  // correct event for "cell" editing mode: it fires per committed cell edit,
-  // with e.key = the row key (month number) and e.newData = only the
-  // field(s) that changed.
-  const onRestrictRowUpdating = useCallback((e) => {
-    const month = e.key
-    const patch = Object.fromEntries(
-      Object.entries(e.newData).map(([field, value]) => [field, String(value ?? '')]),
-    )
-    setRestrictForm((prev) => {
-      const next = { ...prev, [month]: { ...prev[month], ...patch } }
-      // Written synchronously here (not left to the render-body sync below)
-      // so it's already correct the instant saveEditData()'s promise
-      // resolves, regardless of whether React has re-rendered yet.
-      restrictFormRef.current = next
-      return next
-    })
-  }, [])
+  const handleRestrictFieldChange = (month, field, value) => {
+    setRestrictForm((prev) => ({ ...prev, [month]: { ...prev[month], [field]: value } }))
+  }
 
-  const handleSaveRestrictions = async () => {
+  const handleSaveRestrictions = () => {
     setRestrictSaving(true)
-    await restrictGridRef.current?.instance()?.saveEditData()
     const merged = {
       ...restrictModal.allRestrictions,
-      [restrictYear]: cleanMonthForm(restrictFormRef.current),
+      [restrictYear]: cleanMonthForm(restrictForm),
     }
     dispatch(
       taxiVehicleActions.updateRestrictionsRequest({ id: restrictModal.id, restrictions: merged }),
@@ -243,6 +224,40 @@ const Vehiculos = () => {
   }, [drivers])
   const driversByPlate = (plate) => driversByPlateMap[plate] ?? []
 
+  const toggleExpanded = (id) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+
+  const VEHICLE_COLUMNS = useMemo(
+    () => [
+      { key: 'plate', label: t('taxis.vehicles.fields.plate') },
+      { key: 'active', label: t('taxis.vehicles.fields.active') },
+      { key: 'brand', label: t('taxis.vehicles.fields.brand') },
+      { key: 'model', label: t('taxis.vehicles.fields.model') },
+      { key: 'year', label: t('taxis.vehicles.fields.year'), align: 'num' },
+      { key: 'comment', label: 'Comentario' },
+    ],
+    [t],
+  )
+
+  const {
+    isVisible: isVehicleColVisible,
+    selected: vehicleColSelected,
+    toggle: toggleVehicleCol,
+    clear: clearVehicleCols,
+  } = useFeatherColumns(VEHICLE_COLUMNS)
+
+  const sortedRows = useMemo(
+    () =>
+      sortFeatherRows(rows, sort, (row, key) =>
+        key === 'active' ? row.active !== false : row[key],
+      ),
+    [rows, sort],
+  )
+
   return (
     <>
       <input
@@ -259,6 +274,14 @@ const Vehiculos = () => {
             <CBadge color="secondary">{rows.length}</CBadge>
           </div>
           <div className="d-flex gap-2">
+            {!isMobile && (
+              <FeatherColumnToggle
+                columns={VEHICLE_COLUMNS}
+                selected={vehicleColSelected}
+                onToggle={toggleVehicleCol}
+                onClearAll={clearVehicleCols}
+              />
+            )}
             <CButton
               size="sm"
               color="warning"
@@ -349,171 +372,206 @@ const Vehiculos = () => {
               ]}
             />
           ) : (
-            <StandardGrid ref={gridRef} keyExpr="id" dataSource={rows}>
-              <Column
-                caption=""
-                width={90}
-                allowSorting={false}
-                allowResizing={false}
-                cellRender={({ data }) => (
-                  <div className="master-actions">
-                    <button
-                      className="master-btn master-btn--warning"
-                      onClick={() => openRestrictModal(data)}
-                      title="Pico y placa"
-                    >
-                      📅
-                    </button>
-                    <button
-                      className="master-btn master-btn--primary"
-                      onClick={() => handleEdit(data)}
-                      title="Editar"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      className="master-btn master-btn--danger"
-                      onClick={() => handleDelete(data.id)}
-                      title="Eliminar"
-                    >
-                      <CIcon icon={cilTrash} size="sm" />
-                    </button>
-                  </div>
-                )}
-              />
-              <Column
-                caption="📷"
-                width={48}
-                allowSorting={false}
-                allowResizing={false}
-                cellRender={({ data: d }) =>
-                  d.photos?.length > 0 ? (
-                    <img
-                      src={d.photos[0]}
-                      alt=""
-                      className="master-photo-thumb master-photo-thumb--addable"
-                      onClick={() => handlePhotoThumbClick(d)}
-                      title="Ver foto"
-                    />
-                  ) : (
-                    <span
-                      className="master-photo-thumb master-photo-thumb--empty master-photo-thumb--addable"
-                      onClick={() => handlePhotoThumbClick(d)}
-                      title="Agregar foto"
-                    >
-                      +
-                    </span>
-                  )
+            <FeatherGrid className="master-grid-scroll">
+              <colgroup>
+                <col />
+                <col />
+                <col />
+                {VEHICLE_COLUMNS.map((col) => (
+                  <col
+                    key={col.key}
+                    style={{ visibility: isVehicleColVisible(col.key) ? undefined : 'collapse' }}
+                  />
+                ))}
+                <col />
+                <col />
+              </colgroup>
+              <FeatherSortHead
+                columns={VEHICLE_COLUMNS}
+                sort={sort}
+                onSort={toggleSort}
+                leading={
+                  <>
+                    <th className="master-expand-col" />
+                    <th>Acciones</th>
+                    <th>📷</th>
+                  </>
+                }
+                trailing={
+                  <>
+                    <th>{t('taxis.vehicles.fields.drivers')}</th>
+                    <th>{t('taxis.vehicles.fields.ppThisMonth')}</th>
+                  </>
                 }
               />
-              <Column dataField="plate" caption={t('taxis.vehicles.fields.plate')} />
-              <Column
-                dataField="active"
-                caption={t('taxis.vehicles.fields.active')}
-                dataType="boolean"
-                width={80}
-                cellRender={({ data }) => (
-                  <StatusBadge
-                    active={data.active !== false}
-                    labels={{ true: 'Sí', false: 'No' }}
-                    onClick={() => handleToggleActive(data)}
-                  />
-                )}
-              />
-              <Column dataField="brand" caption={t('taxis.vehicles.fields.brand')} />
-              <Column dataField="model" caption={t('taxis.vehicles.fields.model')} />
-              <Column
-                dataField="year"
-                caption={t('taxis.vehicles.fields.year')}
-                dataType="number"
-                width={80}
-              />
-              <Column dataField="comment" caption="Comentario" minWidth={160} hidingPriority={3} />
-              <Column
-                caption={t('taxis.vehicles.fields.drivers')}
-                allowEditing={false}
-                hidingPriority={2}
-                cellRender={({ data }) => {
-                  const rowDrivers = driversByPlate(data.plate)
-                  if (rowDrivers.length === 0) return <span className="text-body-tertiary">—</span>
-                  return rowDrivers.map((driver) => (
-                    <CBadge
-                      key={driver.name}
-                      color={driver.active !== false ? 'info' : 'secondary'}
-                      className="driver-badge"
-                    >
-                      {driver.name}
-                      {driver.active === false ? ' (inactivo)' : ''}
-                    </CBadge>
-                  ))
-                }}
-              />
-              <Column
-                caption={t('taxis.vehicles.fields.ppThisMonth')}
-                allowEditing={false}
-                hidingPriority={1}
-                cellRender={({ data }) => currentMonthSummary(data.restrictions)}
-              />
-              <MasterDetail
-                enabled={true}
-                render={({ data }) => (
-                  <DetailPanel columns={2} className="detail-panel--flat">
-                    <DetailSection title={t('taxis.drivers.fields.personalData')}>
-                      <DetailRow label={t('taxis.vehicles.fields.plate')} value={data.plate} mono />
-                      <DetailRow
-                        label={t('taxis.vehicles.fields.status')}
-                        value={
-                          data.active !== false
-                            ? t('taxis.vehicles.fields.active')
-                            : t('taxis.vehicles.fields.inactive')
-                        }
-                      />
-                      <DetailRow label={t('taxis.vehicles.fields.brand')} value={data.brand} />
-                      <DetailRow label={t('taxis.vehicles.fields.model')} value={data.model} />
-                      <DetailRow label={t('taxis.vehicles.fields.year')} value={data.year} />
-                      <DetailRow label="Comentario" value={data.comment || null} />
-                    </DetailSection>
-                    {data.photos?.length > 0 && (
-                      <DetailSection title="Fotos">
-                        <div className="master-photos-gallery">
-                          {data.photos.map((p, i) => (
+              <tbody>
+                {sortedRows.map((v) => {
+                  const expanded = expandedIds.has(v.id)
+                  const rowDrivers = driversByPlate(v.plate)
+                  return (
+                    <React.Fragment key={v.id}>
+                      <tr>
+                        <td className="master-expand-col">
+                          <span
+                            className={`master-chevron${expanded ? ' master-chevron--open' : ''}`}
+                            onClick={() => toggleExpanded(v.id)}
+                          >
+                            ▸
+                          </span>
+                        </td>
+                        <td>
+                          <div className="master-actions">
+                            <button
+                              className="master-btn master-btn--warning"
+                              onClick={() => openRestrictModal(v)}
+                              title="Pico y placa"
+                            >
+                              📅
+                            </button>
+                            <button
+                              className="master-btn master-btn--primary"
+                              onClick={() => handleEdit(v)}
+                              title="Editar"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="master-btn master-btn--danger"
+                              onClick={() => handleDelete(v.id)}
+                              title="Eliminar"
+                            >
+                              <CIcon icon={cilTrash} size="sm" />
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          {v.photos?.length > 0 ? (
                             <img
-                              key={i}
-                              src={p}
-                              alt={`Foto ${i + 1}`}
-                              className="master-photos-gallery__img"
+                              src={v.photos[0]}
+                              alt=""
+                              className="master-photo-thumb master-photo-thumb--addable"
+                              onClick={() => handlePhotoThumbClick(v)}
+                              title="Ver foto"
                             />
-                          ))}
-                        </div>
-                      </DetailSection>
-                    )}
-                    <DetailSection title={t('taxis.vehicles.fields.drivers')}>
-                      {(() => {
-                        const rowDrivers = driversByPlate(data.plate)
-                        return rowDrivers.length > 0 ? (
-                          rowDrivers.map((driver) => (
-                            <DetailRow
-                              key={driver.name}
-                              label={t('taxis.settlements.fields.driver')}
-                              value={
-                                <span
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                                >
-                                  {driver.name}
-                                  <StatusBadge active={driver.active !== false} />
-                                </span>
-                              }
-                            />
-                          ))
-                        ) : (
-                          <span className="master-empty">{t('taxis.settlements.noRecords')}</span>
-                        )
-                      })()}
-                    </DetailSection>
-                  </DetailPanel>
-                )}
-              />
-            </StandardGrid>
+                          ) : (
+                            <span
+                              className="master-photo-thumb master-photo-thumb--empty master-photo-thumb--addable"
+                              onClick={() => handlePhotoThumbClick(v)}
+                              title="Agregar foto"
+                            >
+                              +
+                            </span>
+                          )}
+                        </td>
+                        <td className="master-mono">{v.plate}</td>
+                        <td>
+                          <StatusBadge
+                            active={v.active !== false}
+                            labels={{ true: 'Sí', false: 'No' }}
+                            onClick={() => handleToggleActive(v)}
+                          />
+                        </td>
+                        <td>{v.brand}</td>
+                        <td>{v.model}</td>
+                        <td className="num">{v.year}</td>
+                        <td>{v.comment}</td>
+                        <td>
+                          {rowDrivers.length === 0 ? (
+                            <span className="text-body-tertiary">—</span>
+                          ) : (
+                            rowDrivers.map((driver) => (
+                              <CBadge
+                                key={driver.name}
+                                color={driver.active !== false ? 'info' : 'secondary'}
+                                className="driver-badge"
+                              >
+                                {driver.name}
+                                {driver.active === false ? ' (inactivo)' : ''}
+                              </CBadge>
+                            ))
+                          )}
+                        </td>
+                        <td>{currentMonthSummary(v.restrictions)}</td>
+                      </tr>
+                      {expanded && (
+                        <tr className="master-detail-row">
+                          <td />
+                          <td colSpan={10}>
+                            <DetailPanel columns={2} className="detail-panel--flat">
+                              <DetailSection title={t('taxis.drivers.fields.personalData')}>
+                                <DetailRow
+                                  label={t('taxis.vehicles.fields.plate')}
+                                  value={v.plate}
+                                  mono
+                                />
+                                <DetailRow
+                                  label={t('taxis.vehicles.fields.status')}
+                                  value={
+                                    v.active !== false
+                                      ? t('taxis.vehicles.fields.active')
+                                      : t('taxis.vehicles.fields.inactive')
+                                  }
+                                />
+                                <DetailRow
+                                  label={t('taxis.vehicles.fields.brand')}
+                                  value={v.brand}
+                                />
+                                <DetailRow
+                                  label={t('taxis.vehicles.fields.model')}
+                                  value={v.model}
+                                />
+                                <DetailRow label={t('taxis.vehicles.fields.year')} value={v.year} />
+                                <DetailRow label="Comentario" value={v.comment || null} />
+                              </DetailSection>
+                              {v.photos?.length > 0 && (
+                                <DetailSection title="Fotos">
+                                  <div className="master-photos-gallery">
+                                    {v.photos.map((p, i) => (
+                                      <img
+                                        key={i}
+                                        src={p}
+                                        alt={`Foto ${i + 1}`}
+                                        className="master-photos-gallery__img"
+                                      />
+                                    ))}
+                                  </div>
+                                </DetailSection>
+                              )}
+                              <DetailSection title={t('taxis.vehicles.fields.drivers')}>
+                                {rowDrivers.length > 0 ? (
+                                  rowDrivers.map((driver) => (
+                                    <DetailRow
+                                      key={driver.name}
+                                      label={t('taxis.settlements.fields.driver')}
+                                      value={
+                                        <span
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 8,
+                                          }}
+                                        >
+                                          {driver.name}
+                                          <StatusBadge active={driver.active !== false} />
+                                        </span>
+                                      }
+                                    />
+                                  ))
+                                ) : (
+                                  <span className="master-empty">
+                                    {t('taxis.settlements.noRecords')}
+                                  </span>
+                                )}
+                              </DetailSection>
+                            </DetailPanel>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
+              </tbody>
+            </FeatherGrid>
           )}
         </CCardBody>
       </CCard>
@@ -538,49 +596,36 @@ const Vehiculos = () => {
               demás.
             </span>
           </div>
-          <StandardGrid
-            ref={restrictGridRef}
-            dataSource={restrictionsData}
-            keyExpr="id"
-            style={{ margin: 0 }}
-            editing={{
-              mode: 'cell',
-              allowUpdating: true,
-              allowAdding: false,
-              allowDeleting: false,
-            }}
-            onRowUpdating={onRestrictRowUpdating}
-          >
-            <Paging enabled={false} />
-            <Column
-              dataField="name"
-              caption="Mes"
-              width={140}
-              allowSorting={false}
-              allowEditing={false}
-            />
-            <Column
-              dataField="d1"
-              caption="Día 1"
-              dataType="number"
-              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
-              allowSorting={false}
-            />
-            <Column
-              dataField="d2"
-              caption="Día 2"
-              dataType="number"
-              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
-              allowSorting={false}
-            />
-            <Column
-              dataField="d3"
-              caption="Día 3"
-              dataType="number"
-              editorOptions={{ min: 1, max: 31, placeholder: '—' }}
-              allowSorting={false}
-            />
-          </StandardGrid>
+          <FeatherGrid className="master-grid-scroll">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th className="num">Día 1</th>
+                <th className="num">Día 2</th>
+                <th className="num">Día 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              {restrictionsData.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.name}</td>
+                  {['d1', 'd2', 'd3'].map((field) => (
+                    <td className="num" key={field}>
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="—"
+                        className="master-restrict-input"
+                        value={restrictForm[row.id]?.[field] ?? ''}
+                        onChange={(e) => handleRestrictFieldChange(row.id, field, e.target.value)}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </FeatherGrid>
         </CModalBody>
         <CModalFooter>
           <CButton
