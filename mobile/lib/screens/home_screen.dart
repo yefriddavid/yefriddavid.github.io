@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'calc_percentage_screen.dart';
+import 'tv_remote_screen.dart';
 
 class _MenuItem {
   final String label;
@@ -20,9 +21,11 @@ const _menuItems = <_MenuItem>[
   _MenuItem('Salary Distribution'),
   _MenuItem('Btc Histograma'),
   _MenuItem('Calc List'),
+  _MenuItem('Control TV', _buildTvRemote),
 ];
 
 Widget _buildCalcPercentage(BuildContext context) => const CalcPercentageScreen();
+Widget _buildTvRemote(BuildContext context) => const TvRemoteScreen();
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
